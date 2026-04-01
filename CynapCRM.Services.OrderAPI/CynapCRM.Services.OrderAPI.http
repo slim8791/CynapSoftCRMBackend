@@ -1,0 +1,6 @@
+@CynapCRM.Services.OrderAPI_HostAddress = http://localhost:5138
+
+GET {{CynapCRM.Services.OrderAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

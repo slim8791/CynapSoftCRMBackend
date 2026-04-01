@@ -1,0 +1,6 @@
+@CynapCRM.Services.AuthAPI_HostAddress = http://localhost:5255
+
+GET {{CynapCRM.Services.AuthAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
