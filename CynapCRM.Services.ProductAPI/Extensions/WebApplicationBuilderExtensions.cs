@@ -24,7 +24,6 @@ namespace CynapCRM.Services.ProductApi.Extensions
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(x =>
             {
-                //
                 x.MapInboundClaims = false;
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
