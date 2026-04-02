@@ -10,5 +10,12 @@ namespace CynapCRM.Services.AuthAPI.Service.IService
 
         Task<bool> AssignRole(string email, string roleName);
 
+        Task<bool> ChangePassword(ChangePasswordDto model);
+        Task<bool> ForgotPassword(ForgotPasswordDto model);
+        Task<bool> ChangeRole(ChangeRoleDto model);
+        Task<bool> DeleteUser(DeleteUserDto model);
+
     }
+
+    
 }

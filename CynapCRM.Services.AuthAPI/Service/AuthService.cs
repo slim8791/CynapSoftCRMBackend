@@ -36,17 +36,15 @@ namespace CynapCRM.Services.AuthAPI.Service
             };
             try
             {
-                // Création de l'utilisateur avec hashage auto du mot de passe
                 var result = await _userManager.CreateAsync(user, registrationRequestDto.Password);
 
                 if (result.Succeeded)
                 {
-                    // Attribution du rôle choisi dans la liste déroulante
                     if (!string.IsNullOrEmpty(registrationRequestDto.Role))
                     {
                         await _userManager.AddToRoleAsync(user, registrationRequestDto.Role);
                     }
-                    return ""; // Succès
+                    return ""; 
                 }
                 return result.Errors.FirstOrDefault()?.Description ?? "Erreur d'inscription";
             }
@@ -62,7 +60,6 @@ namespace CynapCRM.Services.AuthAPI.Service
         {
             var user = _db.Utilisateurs.FirstOrDefault(u => u.UserName.ToLower() == loginRequestDto.UserName.ToLower());
 
-            // Vérification du mot de passe
             bool isValid = await _userManager.CheckPasswordAsync(user, loginRequestDto.Password);
 
             if (user == null || !isValid)
@@ -70,10 +67,8 @@ namespace CynapCRM.Services.AuthAPI.Service
                 return new LoginResponseDto() { User = null, Token = "" };
             }
 
-            // Récupération des rôles pour le Token
             var roles = await _userManager.GetRolesAsync(user);
 
-            // Génération du Jeton JWT
             var token = _jwtTokenGenerator.GenerateToken(user, roles);
 
             UserDto userDto = new()
@@ -102,6 +97,55 @@ namespace CynapCRM.Services.AuthAPI.Service
                 return true;
             }
             return false;
+        }
+
+        public async Task<bool> ChangePassword(ChangePasswordDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || user.IsDeleted)
+            {
+                return false;
+            }
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            return result.Succeeded;
+        }
+
+        public async Task<bool> ForgotPassword(ForgotPasswordDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || user.IsDeleted)
+            {
+                return false;
+            }
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
+
+            return result.Succeeded;
+        }
+
+        public async Task<bool> ChangeRole(ChangeRoleDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || user.IsDeleted) return false;
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+            var result = await _userManager.AddToRoleAsync(user, model.NewRole.ToUpper());
+            return result.Succeeded;
+        }
+
+        public async Task<bool> DeleteUser(DeleteUserDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return false;
+            }
+            user.IsDeleted = true;
+            var result = await _userManager.UpdateAsync(user);
+
+            return result.Succeeded;
         }
     }
 }
