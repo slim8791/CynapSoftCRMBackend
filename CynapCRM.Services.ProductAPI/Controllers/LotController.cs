@@ -5,28 +5,28 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.ProductAPI.Controllers
 {
-    [Route("api/produit")]
+    [Route("api/lot")]
     [ApiController]
     [Authorize]
-    public class ProduitController : ControllerBase
+    public class LotController : ControllerBase
     {
         private readonly IProductService _productService;
 
-        protected ResponseDto _response;
+        protected ResponseDto _response; 
+        public LotController(IProductService productService)
 
-        public ProduitController(IProductService productService)
         {
             _productService = productService;
 
             _response = new();
         }
 
-        [HttpGet]
-        public async Task<ResponseDto> GetAllProducts()
+        [HttpGet("{id:int}/lots")]
+        public async Task<ResponseDto> GetLotsByIdProduct(int id)
         {
             try
             {
-                _response.Result = await _productService.GetProductsAsync();
+                _response.Result = await _productService.GetLotsByProductIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -36,27 +36,13 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             return _response;
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<ResponseDto> GetProductById(int id)
-        {
-            try
-            {
-                _response.Result = await _productService.GetProductByIdAsync(id);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.Message = ex.Message;
-            }
-            return _response;
-        }
-        [HttpPost]
+        [HttpPost("lot")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<ResponseDto> CreateUpdateProduct([FromBody] ProduitDto produitDto)
+        public async Task<ResponseDto> CreateUpdateLot([FromBody] LotDto lotDto)
         {
             try
             {
-                _response.Result = await _productService.CreateUpdateProductAsync(produitDto);
+                _response.Result = await _productService.CreateUpdateLotAsync(lotDto);
             }
             catch (Exception ex)
             {
@@ -66,13 +52,13 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             return _response;
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("lot/{numeroLot}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<ResponseDto> DeleteProduct(int id)
+        public async Task<ResponseDto> DeleteLot(string numeroLot)
         {
             try
             {
-                _response.Result = await _productService.DeleteProductAsync(id);
+                _response.Result = await _productService.DeleteLotAsync(numeroLot);
             }
             catch (Exception ex)
             {
@@ -81,7 +67,6 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
             return _response;
         }
- 
-        
+
     }
 }

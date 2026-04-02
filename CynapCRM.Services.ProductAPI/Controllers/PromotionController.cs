@@ -5,28 +5,28 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.ProductAPI.Controllers
 {
-    [Route("api/produit")]
+    [Route("api/promo")]
     [ApiController]
     [Authorize]
-    public class ProduitController : ControllerBase
+    public class PromotionController : ControllerBase
     {
         private readonly IProductService _productService;
 
         protected ResponseDto _response;
+        public PromotionController(IProductService productService)
 
-        public ProduitController(IProductService productService)
         {
-            _productService = productService;
 
+            _productService = productService;
             _response = new();
         }
 
-        [HttpGet]
-        public async Task<ResponseDto> GetAllProducts()
+        [HttpGet("promotions")]
+        public async Task<ResponseDto> GetAllPromotions()
         {
             try
             {
-                _response.Result = await _productService.GetProductsAsync();
+                _response.Result = await _productService.GetPromotionsAsync();
             }
             catch (Exception ex)
             {
@@ -36,43 +36,13 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             return _response;
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<ResponseDto> GetProductById(int id)
-        {
-            try
-            {
-                _response.Result = await _productService.GetProductByIdAsync(id);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.Message = ex.Message;
-            }
-            return _response;
-        }
-        [HttpPost]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<ResponseDto> CreateUpdateProduct([FromBody] ProduitDto produitDto)
-        {
-            try
-            {
-                _response.Result = await _productService.CreateUpdateProductAsync(produitDto);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.Message = ex.Message;
-            }
-            return _response;
-        }
-
-        [HttpDelete("{id:int}")]
+        [HttpPost("promotion")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<ResponseDto> DeleteProduct(int id)
+        public async Task<ResponseDto> CreateUpdatePromotion([FromBody] PromotionDto promotionDto)
         {
             try
             {
-                _response.Result = await _productService.DeleteProductAsync(id);
+                _response.Result = await _productService.CreateUpdatePromotionAsync(promotionDto);
             }
             catch (Exception ex)
             {
@@ -81,7 +51,22 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
             return _response;
         }
- 
-        
+
+        [HttpDelete("promotion/{id:int}")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ResponseDto> DeletePromotion(int id)
+        {
+            try
+            {
+                _response.Result = await _productService.DeletePromotionAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+            }
+            return _response;
+        }
+
     }
 }
