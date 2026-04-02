@@ -40,7 +40,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                     return BadRequest(_response);
                 }
             }
-            // le delegue peut créer uniquement CLIENT
+            // le delegue peut créer  CLIENT et MEDECIN
 
             if (currentUserRole == "DELEGUE")
             {
@@ -67,10 +67,10 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
             var loginResponse = await _authService.Login(model);
-            if (loginResponse.User == null)
+            if (loginResponse.User == null || loginResponse.User.IsDeleted)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Email ou mot de passe incorrect";
+                _response.Message = "Identifiants incorrects ou compte désactivé";
                 return BadRequest(_response);
             }
             _response.Result = loginResponse;
@@ -147,20 +147,24 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         }
         [HttpPut("delete-user")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> DeleteUser([FromBody] DeleteUserDto model)
+        public async Task<IActionResult> DeleteUser([FromBody] string email)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("Email requis.");
+            }
+                
 
-            var result = await _authService.DeleteUser(model);
+            var result = await _authService.DeleteUser(email);
             if (!result)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Échec de la suppression .";
+                _response.Message = "Échec de la suppression.";
                 return BadRequest(_response);
             }
 
             _response.IsSuccess = true;
-            _response.Message = "Utilisateur supprimé .";
+            _response.Message = "Utilisateur supprimé.";
             return Ok(_response);
         }
 

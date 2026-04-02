@@ -62,7 +62,7 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             bool isValid = await _userManager.CheckPasswordAsync(user, loginRequestDto.Password);
 
-            if (user == null || !isValid)
+            if (user == null || user.IsDeleted == true)
             {
                 return new LoginResponseDto() { User = null, Token = "" };
             }
@@ -135,9 +135,9 @@ namespace CynapCRM.Services.AuthAPI.Service
             return result.Succeeded;
         }
 
-        public async Task<bool> DeleteUser(DeleteUserDto model)
+        public async Task<bool> DeleteUser(string email)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
                 return false;
