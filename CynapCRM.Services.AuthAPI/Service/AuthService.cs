@@ -3,6 +3,7 @@ using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Models.Dto;
 using CynapCRM.Services.AuthAPI.Service.IService;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace CynapCRM.Services.AuthAPI.Service
@@ -13,15 +14,18 @@ namespace CynapCRM.Services.AuthAPI.Service
         private readonly UserManager<Utilisateur> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
+        private readonly IEmailService _emailService;
         public AuthService(AppDbContext db,
             UserManager<Utilisateur> userManager,
             RoleManager<IdentityRole<int>> roleManager,
-            IJwtTokenGenerator jwtTokenGenerator)
+            IJwtTokenGenerator jwtTokenGenerator,
+            IEmailService emailService)
         {
             _db = db;
             _userManager = userManager;
             _roleManager = roleManager;
             _jwtTokenGenerator = jwtTokenGenerator;
+            _emailService = emailService;
         }
         public async Task<string> Register(RegistrationRequestDto registrationRequestDto)
         {
@@ -83,21 +87,65 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             return new LoginResponseDto { User = userDto, Token = token };
         }
-
         public async Task<bool> AssignRole(string email, string roleName)
         {
-            var user = _db.Utilisateurs.FirstOrDefault(u => u.Email.ToLower() == email.ToLower());
-            if (user != null)
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
             {
-                if (!await _roleManager.RoleExistsAsync(roleName))
-                {
-                    await _roleManager.CreateAsync(new IdentityRole<int>(roleName));
-                }
-                await _userManager.AddToRoleAsync(user, roleName);
-                return true;
+                return false;
             }
-            return false;
+
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                return false;
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, roleName);
+            return result.Succeeded;
         }
+        public async Task<bool> AddRole(string email, string roleName)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                var roleResult = await _roleManager.CreateAsync(new IdentityRole<int> { Name = roleName });
+                if (!roleResult.Succeeded)
+                {
+                    return false;
+                }
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, roleName);
+            return result.Succeeded;
+        }
+        public async Task<bool> ChangeRole(ChangeRoleDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || user.IsDeleted)
+            {
+                return false;
+            }
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (currentRoles.Any())
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+            if (!await _roleManager.RoleExistsAsync(model.NewRole))
+            {
+                var roleResult = await _roleManager.CreateAsync(new IdentityRole<int> { Name = model.NewRole });
+                if (!roleResult.Succeeded) return false;
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, model.NewRole);
+            return result.Succeeded;
+        }
+
+
 
         public async Task<bool> ChangePassword(ChangePasswordDto model)
         {
@@ -110,28 +158,66 @@ namespace CynapCRM.Services.AuthAPI.Service
             return result.Succeeded;
         }
 
-        public async Task<bool> ForgotPassword(ForgotPasswordDto model)
+        
+        public async Task<ResponseDto> GeneratePasswordResetToken(string email)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var normalizedEmail = _userManager.NormalizeEmail(email);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
+
             if (user == null || user.IsDeleted)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Aucun compte n'est associé à cet e-mail."
+                };
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            return new ResponseDto
+            {
+                IsSuccess = true,
+                Result = token
+            };
+        }
+
+        public async Task<ResponseDto> ResetPassword(string email, string token, string newPassword)
+        {
+            var normalizedEmail = _userManager.NormalizeEmail(email);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
+
+            if (user == null || user.IsDeleted)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Utilisateur introuvable ou supprimé."
+                };
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+            return new ResponseDto
+            {
+                IsSuccess = result.Succeeded,
+                Message = result.Succeeded
+                    ? "Mot de passe réinitialisé avec succès."
+                    : "Le jeton est invalide ou le mot de passe ne respecte pas les règles.",
+                Errors = result.Errors.Select(e => e.Description)
+            };
+
+        }
+
+        public async Task<bool> EnableUser(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
             {
                 return false;
             }
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
+            user.IsDeleted = false;
+            var result = await _userManager.UpdateAsync(user);
 
-            return result.Succeeded;
-        }
-
-        public async Task<bool> ChangeRole(ChangeRoleDto model)
-        {
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null || user.IsDeleted) return false;
-
-            var currentRoles = await _userManager.GetRolesAsync(user);
-            await _userManager.RemoveFromRolesAsync(user, currentRoles);
-
-            var result = await _userManager.AddToRoleAsync(user, model.NewRole.ToUpper());
             return result.Succeeded;
         }
 
@@ -147,5 +233,7 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             return result.Succeeded;
         }
+
+        
     }
 }
