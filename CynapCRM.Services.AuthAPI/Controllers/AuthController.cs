@@ -89,15 +89,21 @@ namespace CynapCRM.Services.AuthAPI.Controllers
 
         [HttpPost("AssignRole")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> AssignRole([FromBody] RegistrationRequestDto model)
+        public async Task<IActionResult> AssignRole([FromBody] AssignRoleDto model)
         {
-            var assignRoleSuccessful = await _authService.AssignRole(model.Email, model.Role.ToUpper());
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var assignRoleSuccessful = await _authService.AssignRole(model.UserId, model.Role.ToUpper());
             if (!assignRoleSuccessful)
             {
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de l'attribution du rôle";
                 return BadRequest(_response);
             }
+            _response.IsSuccess = true;
+            _response.Message = "Rôle attribué avec succès";
             return Ok(_response);
         }
         [HttpPut("add-role")]
@@ -124,6 +130,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
 
 
         [HttpPut("change-password")]
+        [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -152,25 +159,34 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             var response = await _authService.GeneratePasswordResetToken(model.Email);
 
             if (!response.IsSuccess) return NotFound(response);
+            var token = response.Result.ToString();
 
-            if (_env.IsDevelopment())
-            {
-                response.Message = "Token généré en mode DEV.";
-                response.Result = null;
-                return Ok(response);
-            }
+            var encodedToken = System.Web.HttpUtility.UrlEncode(token);
+
+            // ce lien vers l'interface Frontend
+            
+            string resetLink = $"https://localhost:7000/api/auth/reset-password?email={model.Email}&token={encodedToken}";
 
             string subject = "Réinitialisation de mot de passe - CynapCRM";
             string message = $@"
-<h3>Bonjour,</h3>
-<p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
-<p>Votre jeton de sécurité est : <b>{response.Result}</b></p>
-<p>Veuillez copier ce code dans votre application pour choisir un nouveau mot de passe.</p>";
+        <div style='font-family: Arial, sans-serif; border: 1px solid #ddd; padding: 20px;'>
+            <h2 style='color: #2c3e50;'>CynapCRM</h2>
+            <p>Bonjour,</p>
+            <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
+            <p>Veuillez cliquer sur le bouton ci-dessous pour continuer :</p>
+            <a href='{resetLink}' 
+               style='display: inline-block; padding: 10px 20px; background-color: #3498db; color: white; text-decoration: none; border-radius: 5px;'>
+               Réinitialiser mon mot de passe
+            </a>
+            <p style='margin-top: 20px; font-size: 0.8em; color: #7f8c8d;'>
+                Si le bouton ne fonctionne pas, copiez ce lien : <br/> {resetLink}
+            </p>
+        </div>";
 
             await _emailService.SendEmailAsync(model.Email, subject, message);
 
-            response.Message = "Un e-mail contenant le jeton de réinitialisation a été envoyé.";
-            response.Result = null; 
+            response.Message = "Un e-mail de réinitialisation a été envoyé.";
+            response.Result = null;
             return Ok(response);
         }
 

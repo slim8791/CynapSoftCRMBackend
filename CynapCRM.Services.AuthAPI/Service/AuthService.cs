@@ -87,20 +87,20 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             return new LoginResponseDto { User = userDto, Token = token };
         }
-        public async Task<bool> AssignRole(string email, string roleName)
+        public async Task<bool> AssignRole(string userId, string role)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(userId);
             if (user == null)
             {
                 return false;
             }
 
-            if (!await _roleManager.RoleExistsAsync(roleName))
+            if (!await _roleManager.RoleExistsAsync(role))
             {
                 return false;
             }
 
-            var result = await _userManager.AddToRoleAsync(user, roleName);
+            var result = await _userManager.AddToRoleAsync(user, role);
             return result.Succeeded;
         }
         public async Task<bool> AddRole(string email, string roleName)
