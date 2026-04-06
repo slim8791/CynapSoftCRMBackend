@@ -133,8 +133,10 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto model)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var result = await _authService.ChangePassword(model);
             if (!result)
             {
@@ -158,7 +160,10 @@ namespace CynapCRM.Services.AuthAPI.Controllers
 
             var response = await _authService.GeneratePasswordResetToken(model.Email);
 
-            if (!response.IsSuccess) return NotFound(response);
+            if (!response.IsSuccess)
+            {
+                return NotFound(response);
+            }
             var token = response.Result.ToString();
 
             var encodedToken = System.Web.HttpUtility.UrlEncode(token);
@@ -193,7 +198,10 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             var response = await _authService.ResetPassword(model.Email, model.Token, model.NewPassword);
 

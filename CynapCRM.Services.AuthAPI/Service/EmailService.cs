@@ -17,13 +17,13 @@ namespace CynapCRM.Services.AuthAPI.Service
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            var emailSettings = _config.GetSection("EmailSettings"); 
-            var emailMessage = new MimeMessage();
 
+            var emailSettings = _config.GetSection("EmailSettings");
+            // Création du message email
+            var emailMessage = new MimeMessage();
             emailMessage.From.Add(new MailboxAddress("CynapCRM", emailSettings["SenderEmail"]));
             emailMessage.To.Add(new MailboxAddress("", email));
             emailMessage.Subject = subject;
-
             var bodyBuilder = new BodyBuilder { HtmlBody = htmlMessage };
             emailMessage.Body = bodyBuilder.ToMessageBody();
 
