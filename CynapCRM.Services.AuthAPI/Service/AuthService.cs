@@ -154,7 +154,8 @@ namespace CynapCRM.Services.AuthAPI.Service
             {
                 return false;
             }
-            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            var result = await _userManager.ChangePasswordAsync(
+                user, model.CurrentPassword, model.NewPassword);
             return result.Succeeded;
         }
 

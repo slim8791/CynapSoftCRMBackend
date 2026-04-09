@@ -137,11 +137,25 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
+            // recuperer l'email de l'utilisateur connecté à partir des claims
+            var email = User.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return Unauthorized("Utilisateur non authentifié.");
+            }
+            
+            if (!string.Equals(email, model.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Vous n’avez pas le droit de changer le mot de passe d’un autre utilisateur.";
+                return Forbid();
+            }
+
             var result = await _authService.ChangePassword(model);
             if (!result)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Échec du changement de mot de passe.";
+                _response.Message = "Mot de passe actuel incorrect.";
                 return BadRequest(_response);
             }
 
