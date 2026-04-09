@@ -195,21 +195,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             return Ok(response);
         }
 
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var response = await _authService.ResetPassword(model.Email, model.Token, model.NewPassword);
-
-            if (!response.IsSuccess) return BadRequest(response);
-
-            return Ok(response);
-        }
-
+        
 
         [HttpPut("change-role")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]

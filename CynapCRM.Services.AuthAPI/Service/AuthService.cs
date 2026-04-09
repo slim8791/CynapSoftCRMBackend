@@ -181,32 +181,7 @@ namespace CynapCRM.Services.AuthAPI.Service
             };
         }
 
-        public async Task<ResponseDto> ResetPassword(string email, string token, string newPassword)
-        {
-            var normalizedEmail = _userManager.NormalizeEmail(email);
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
-
-            if (user == null || user.IsDeleted)
-            {
-                return new ResponseDto
-                {
-                    IsSuccess = false,
-                    Message = "Utilisateur introuvable ou supprimé."
-                };
-            }
-
-            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-
-            return new ResponseDto
-            {
-                IsSuccess = result.Succeeded,
-                Message = result.Succeeded
-                    ? "Mot de passe réinitialisé avec succès."
-                    : "Le jeton est invalide ou le mot de passe ne respecte pas les règles.",
-                Errors = result.Errors.Select(e => e.Description)
-            };
-
-        }
+        
 
         public async Task<bool> EnableUser(string email)
         {

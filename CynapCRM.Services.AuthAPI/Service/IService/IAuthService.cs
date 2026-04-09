@@ -13,7 +13,7 @@ namespace CynapCRM.Services.AuthAPI.Service.IService
         Task<bool> AddRole(string email, string roleName);
         Task<bool> ChangePassword(ChangePasswordDto model);
         Task<ResponseDto> GeneratePasswordResetToken(string email);
-        Task<ResponseDto> ResetPassword(string email, string token, string newPassword);
+        //Task<ResponseDto> ResetPassword(string email, string token, string newPassword);
         Task<bool> ChangeRole(ChangeRoleDto model);
         Task<bool> EnableUser(string email);
 
