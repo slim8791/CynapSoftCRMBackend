@@ -2,6 +2,8 @@
 using CynapCRM.Services.ProductAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
+using System.Diagnostics.Eventing.Reader;
 
 namespace CynapCRM.Services.ProductAPI.Controllers
 {
@@ -22,64 +24,111 @@ namespace CynapCRM.Services.ProductAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ResponseDto> GetAllProducts()
+        public async Task<IActionResult> GetAllProducts()
         {
             try
             {
                 _response.Result = await _productService.GetProductsAsync();
+                return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
+                return StatusCode(500, _response);
             }
-            return _response;
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ResponseDto> GetProductById(int id)
+        public async Task<IActionResult> GetProductById(int id)
         {
             try
             {
-                _response.Result = await _productService.GetProductByIdAsync(id);
+                if (id <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "ID de produit invalide.";
+                    return BadRequest(_response);
+                }
+                var result = await _productService.GetProductByIdAsync(id);
+                if (result == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Produit non trouvé.";
+                    return NotFound(_response);
+                }
+                _response.Result = result;
+                _response.IsSuccess = true;
+                return Ok(_response);
+
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
+                return StatusCode(500, _response);
             }
-            return _response;
         }
         [HttpPost]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<ResponseDto> CreateUpdateProduct([FromBody] ProduitDto produitDto)
+        public async Task<IActionResult> CreateUpdateProduct([FromBody] ProduitDto produitDto)
         {
             try
             {
-                _response.Result = await _productService.CreateUpdateProductAsync(produitDto);
+                if (!ModelState.IsValid)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Données de produit invalides.";
+                    return BadRequest(_response);
+                }
+                var result = await _productService.CreateUpdateProductAsync(produitDto);
+                if (result == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Erreur lors de la création ou de la mise à jour du produit.";
+                    return StatusCode(500, _response);
+                }
+                _response.Result = result;
+                _response.Message = produitDto.Id_Produit == 0 ? "Produit créé avec succès." : "Produit mis à jour avec succès.";
+                return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
+                return StatusCode(500, _response);
+
             }
-            return _response;
         }
 
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<ResponseDto> DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
             try
             {
-                _response.Result = await _productService.DeleteProductAsync(id);
+                if (id <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "ID de produit invalide.";
+                    return BadRequest(_response);
+                }
+                bool isDeleted = await _productService.DeleteProductAsync(id);
+                if (!isDeleted)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Produit non trouvé ou déjà supprimé.";
+                    return NotFound(_response);
+                }
+                _response.Message = "Produit supprimé avec succès.";
+                return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
+                return StatusCode(500, _response);
             }
-            return _response;
         }
 
 

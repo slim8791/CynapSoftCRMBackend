@@ -3,6 +3,7 @@ using CynapCRM.Services.ProductAPI.Data;
 using CynapCRM.Services.ProductAPI.Models;
 using CynapCRM.Services.ProductAPI.Models.Dto;
 using CynapCRM.Services.ProductAPI.Service.IService;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CynapCRM.Services.ProductAPI.Service
