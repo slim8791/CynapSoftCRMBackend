@@ -8,10 +8,8 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Services de base
 builder.Services.AddControllers();
 
-// 2. Configuration Swagger (UNE SEULE FOIS avec la sécurité)
 builder.Services.AddSwaggerGen(option =>
 {
     option.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme
@@ -37,15 +35,12 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-// 3. Base de données
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 4. AutoMapper & Business Services
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IProductService, ProductService>();
 
-// 5. Authentification 
 builder.AddAppAuthentication();
 
 var app = builder.Build();
@@ -59,7 +54,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();  
-// ------------------------------------
 
 app.MapControllers();
 
@@ -67,7 +61,6 @@ applyMigrations();
 
 app.Run();
 
-// Ta méthode de migration reste identique
 void applyMigrations()
 {
     using (var scope = app.Services.CreateScope())

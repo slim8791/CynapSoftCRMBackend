@@ -19,35 +19,64 @@ namespace CynapCRM.Services.ProductAPI.Controllers
         }
         [HttpPost("fichier")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<ResponseDto> AddFichier([FromBody] FichierDto fichierDto)
+        public async Task<IActionResult> AddFichier([FromBody] FichierDto fichierDto)
         {
             try
             {
-                _response.Result = await _productService.AddFichierToSupportAsync(fichierDto);
+                if (!ModelState.IsValid)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Données invalides.";
+                    return BadRequest(_response);
+                }
+                var result = await _productService.AddFichierToSupportAsync(fichierDto);
+                if (result == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Le support spécifié n'existe pas.";
+                    return BadRequest(_response);
+
+                }
+                _response.Message = "Fichier ajouté avec succès.";
+                return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
+                return StatusCode(500, _response);
             }
-            return _response;
         }
 
         [HttpDelete("fichier/{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<ResponseDto> DeleteFichier(int id)
+        public async Task<IActionResult> DeleteFichier(int id)
         {
-
             try
             {
-                _response.Result = await _productService.DeleteFichierAsync(id);
+                if (id <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "ID de fichier invalide.";
+                    return BadRequest(_response);
+                }
+                bool isDeleted = await _productService.DeleteFichierAsync(id);
+                if (!isDeleted)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Fichier non trouvé.";
+                    return NotFound(_response);
+                }
+                _response.Result = true;
+                _response.Message = "Fichier supprimé avec succès.";
+                return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
+                return StatusCode(500, _response);
             }
-            return _response;
         }
 
     }

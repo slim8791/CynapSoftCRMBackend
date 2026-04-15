@@ -2,6 +2,7 @@
 using CynapCRM.Services.ProductAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.Eventing.Reader;
 
 namespace CynapCRM.Services.ProductAPI.Controllers
 {
@@ -22,50 +23,83 @@ namespace CynapCRM.Services.ProductAPI.Controllers
         }
 
         [HttpGet("promotions")]
-        public async Task<ResponseDto> GetAllPromotions()
+        public async Task<IActionResult> GetAllPromotions()
         {
             try
             {
                 _response.Result = await _productService.GetPromotionsAsync();
+                return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
+                return StatusCode(500, _response);
             }
-            return _response;
         }
 
         [HttpPost("promotion")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<ResponseDto> CreateUpdatePromotion([FromBody] PromotionDto promotionDto)
+        public async Task<IActionResult> CreateUpdatePromotion([FromBody] PromotionDto promotionDto)
         {
             try
             {
-                _response.Result = await _productService.CreateUpdatePromotionAsync(promotionDto);
+                if (!ModelState.IsValid)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Données invalides.";
+                    return BadRequest(_response);
+                }
+                var result = await _productService.CreateUpdatePromotionAsync(promotionDto);
+                if (result == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Erreur lors de la création ou de la mise à jour de la promotion.";
+                    return BadRequest(_response);
+                }
+                _response.Result = result;
+                _response.Message = promotionDto.Id_Promo == 0 ? "Promotion créée avec succès." : "Promotion mise à jour avec succès.";
+                return Ok(_response);
+
+
+
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
+                return StatusCode(500, _response);
             }
-            return _response;
         }
 
         [HttpDelete("promotion/{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<ResponseDto> DeletePromotion(int id)
+        public async Task<IActionResult> DeletePromotion(int id)
         {
             try
             {
-                _response.Result = await _productService.DeletePromotionAsync(id);
+                if (id <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "ID de promotion invalide.";
+                    return BadRequest(_response);
+                }
+                bool isDeleted = await _productService.DeletePromotionAsync(id);
+                if (!isDeleted)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Promotion non trouvée ou déjà supprimée.";
+                    return NotFound(_response);
+                }
+                _response.Message = "Promotion supprimée avec succès.";
+                return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
+                return StatusCode(500, _response);
             }
-            return _response;
         }
 
     }
