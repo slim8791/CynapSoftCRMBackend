@@ -4,47 +4,51 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
 {
     public interface IProductService
     {
-        // Gestion des Produits
+        // 🔹 CRUD
         Task<IEnumerable<ProduitDto>> GetProductsAsync();
-        Task<ProduitDto> GetProductByIdAsync(int produitId);
+        Task<ProduitDto?> GetProductByIdAsync(int produitId);
         Task<ProduitDto> CreateUpdateProductAsync(ProduitDto produitDto);
-        Task<bool> DeleteProductAsync(int produitId);
+        Task<bool> ArchiveProductAsync(int produitId);
 
-        // Gestion des lots
+        // 🔹 Recherche & filtre
+        Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10);
+        Task<IEnumerable<ProduitDto>> FilterProductsAsync(
+            string? keyword,
+            string? category,
+            bool? isAvailable,
+            int page = 1,
+            int pageSize = 20
+        );
 
-        // Récupérer tous les lots d'un médicament (pour voir les dates d'expiration)
-        Task<IEnumerable<LotDto>> GetLotsByProductIdAsync(int productId);
+        // 🔹 Activation
+        Task<bool> ActivateProductAsync(int produitId);
+        Task<bool> DeactivateProductAsync(int produitId);
 
-        // Ajouter un nouveau lot à l'inventaire
-        Task<LotDto> CreateUpdateLotAsync(LotDto lotDto);
+        // 🔹 Disponibilité
+        Task<bool> IsProductAvailableAsync(int productId);
+        Task<IEnumerable<ProduitDto>> GetAvailableProductsAsync();
+        Task<IEnumerable<ProduitDto>> GetOutOfStockProductsAsync();
+        Task<IEnumerable<ProduitDto>> GetLowStockProductsAsync(int threshold);
 
-        // Supprimer un lot (en cas d'erreur de saisie)
-        Task<bool> DeleteLotAsync(string numeroLot);
+        // 🔹 Catégories
+        Task<bool> CategoryExistsAsync(string category);
+        Task<IEnumerable<ProduitDto>> GetProductsByCategoryAsync(string category);
+        Task<IEnumerable<string>> GetCategoriesAsync();
 
+        // 🔹 Stock (lecture uniquement)
+        Task<int> GetTotalStockByProductAsync(int productId);
+        Task<IEnumerable<StockStatusDto>> GetStockStatusAsync();
 
-        // Gestion des promotions
-        // Récupérer toutes les promos actives
-        Task<IEnumerable<PromotionDto>> GetPromotionsAsync();
+        // 🔹 Validation métier
+        Task<bool> ProductExistsAsync(string nomProduit);
+        Task<bool> IsProductValidAsync(int productId);
+        Task<bool> CanDeleteProductAsync(int productId);
 
-        // Créer ou Modifier une promo (ex: -20% sur le Lot X)
-        Task<PromotionDto> CreateUpdatePromotionAsync(PromotionDto promotionDto);
+        // 🔹 KPI
+        Task<IEnumerable<ProduitDto>> GetTopProductsAsync(int topN);
+        Task<ProductDashboardDto> GetProductDashboardAsync();
 
-        // Supprimer une promotion
-        Task<bool> DeletePromotionAsync(int promotionId);
-
-
-        // Gestion marketing et supports
-
-        // Récupérer les supports (vidéos, PDF) d'un produit
-        Task<IEnumerable<SupportMarketingDto>> GetSupportsByProductIdAsync(int productId);
-
-        // Créer un nouveau support (ex: "Campagne Printemps 2026")
-        Task<SupportMarketingDto> CreateUpdateSupportAsync(SupportMarketingDto supportDto);
-
-        // Ajouter un fichier physique (Url, Nom) à un support
-        Task<FichierDto> AddFichierToSupportAsync(FichierDto fichierDto);
-
-        // Supprimer un fichier technique
-        Task<bool> DeleteFichierAsync(int fichierId);
+        // 🔹 UX
+        Task<IEnumerable<string>> GetSearchSuggestionsAsync(string keyword);
     }
 }

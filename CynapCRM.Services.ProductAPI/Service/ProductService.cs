@@ -44,17 +44,51 @@ namespace CynapCRM.Services.ProductAPI.Service
             await _db.SaveChangesAsync();
             return _mapper.Map<ProduitDto>(produit);
         }
-        public async Task<bool> DeleteProductAsync(int produitId)
+        public async Task<bool> ArchiveProductAsync(int produitId)
         {
             var produit = await _db.Produits.FirstOrDefaultAsync(u => u.Id_Produit == produitId);
-            if (produit == null)
+            if (produit == null )
             {
                 return false;
             }
-            _db.Produits.Remove(produit);
+            produit.IsArchived = true;
             await _db.SaveChangesAsync();
             return true;
         }
+        public async Task<bool> ActivateProductAsync(int produitId)
+        {
+            var produit = await _db.Produits.FindAsync(produitId);
+            if (produit == null || produit.IsArchived) return false; // 🔥 règle métier
+            produit.IsActive = true;
+            await _db.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> DeactivateProductAsync(int produitId)
+        {
+            var produit = await _db.Produits.FindAsync(produitId);
+            if (produit == null || produit.IsArchived) return false; // 🔥 règle métier
+            produit.IsActive = false;
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                return Enumerable.Empty<ProduitDto>();
+
+            keyword = keyword.ToLower();
+
+            var produits = await _db.Produits
+                .AsNoTracking()
+                .Where(p => p.Nom.ToLower().Contains(keyword))
+                .OrderBy(p => p.Nom)
+                .Take(10) // 🔥 limiter résultats pour autocomplete
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<ProduitDto>>(produits);
+        }
+
         // 2. Gestion des lots
 
         public async Task<IEnumerable<LotDto>> GetLotsByProductIdAsync(int productId)
@@ -180,6 +214,91 @@ namespace CynapCRM.Services.ProductAPI.Service
             await _db.SaveChangesAsync();
             return true;
 
+        }
+
+        public Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<ProduitDto>> FilterProductsAsync(string? keyword, string? category, bool? isAvailable, int page = 1, int pageSize = 20)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> IsProductAvailableAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<ProduitDto>> GetAvailableProductsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<ProduitDto>> GetOutOfStockProductsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<ProduitDto>> GetLowStockProductsAsync(int threshold)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> CategoryExistsAsync(string category)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<ProduitDto>> GetProductsByCategoryAsync(string category)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<string>> GetCategoriesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> GetTotalStockByProductAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<StockStatusDto>> GetStockStatusAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> ProductExistsAsync(string nomProduit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> IsProductValidAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> CanDeleteProductAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<ProduitDto>> GetTopProductsAsync(int topN)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ProductDashboardDto> GetProductDashboardAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<string>> GetSearchSuggestionsAsync(string keyword)
+        {
+            throw new NotImplementedException();
         }
     }
 }
