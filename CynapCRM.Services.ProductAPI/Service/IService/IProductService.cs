@@ -1,4 +1,5 @@
 ﻿using CynapCRM.Services.ProductAPI.Models.Dto;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.ProductAPI.Service.IService
 {

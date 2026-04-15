@@ -22,6 +22,11 @@ namespace CynapCRM.Services.OrderAPI.Models
 
         [ForeignKey("Id_Commande")]
         public virtual Commande? Commande { get; set; }
+        [Required]
+        public int Id_Ligne { get; set; }
+
+        [ForeignKey("Id_Ligne")]
+        public virtual LigneCommande? LigneCommande { get; set; }
 
         // client
         [Required]
