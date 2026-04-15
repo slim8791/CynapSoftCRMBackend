@@ -10,7 +10,7 @@ namespace CynapCRM.Services.OrderAPI.Models
 
         [Required]
         public int Quantite { get; set; }
-        [Column(TypeName = "decimal(5,2)")]
+        [Column(TypeName = "decimal(18,2)")]
 
         public decimal Remise { get; set; } 
 
@@ -26,5 +26,9 @@ namespace CynapCRM.Services.OrderAPI.Models
 
         [Required]
         public string NumeroLot { get; set; } = string.Empty; // Lien vers InventoryAPI (pour la traçabilité)
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal PrixUnitaire { get; set; }
+
+        public virtual ICollection<Reclamation>? Reclamations { get; set; } = new List<Reclamation>();
     }
 }

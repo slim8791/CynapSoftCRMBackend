@@ -1,23 +1,48 @@
 using CynapCRM.Services.OrderAPI.Data;
+using CynapCRM.Services.OrderAPI.Service;
+using CynapCRM.Services.OrderAPI.Service.IService;
+using Mango.Services.OrderAPI.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
+
+builder.Services.AddSwaggerGen(option =>
+{
+    option.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Entrez 'Bearer ' suivi de votre token",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference= new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            }, new List<string>()
+        }
+    });
+});
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddScoped<IOrderService, OrderService>();
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
+builder.AddAppAuthentication();
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -26,10 +51,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 applyMigrations();
+
 app.Run();
 
 void applyMigrations()
@@ -39,8 +67,6 @@ void applyMigrations()
         try
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            // Vérifie s'il y a des migrations qui n'ont pas encore été appliquées
             if (dbContext.Database.GetPendingMigrations().Any())
             {
                 dbContext.Database.Migrate();
@@ -49,7 +75,6 @@ void applyMigrations()
         }
         catch (Exception ex)
         {
-            // Affiche l'erreur dans la console si la connexion SQL échoue
             Console.WriteLine($">>> Erreur lors de la migration : {ex.Message}");
         }
     }

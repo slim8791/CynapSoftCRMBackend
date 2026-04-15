@@ -35,6 +35,13 @@ namespace CynapCRM.Services.OrderAPI.Data
                 .HasForeignKey(r => r.Id_Commande)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            //ffff
+            modelBuilder.Entity<Reclamation>()
+                .HasOne(r => r.LigneCommande)
+                .WithMany(l => l.Reclamations)
+                .HasForeignKey(r => r.Id_Ligne)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // 3. Indexation pour l’optimisation des performances
             // Les index créés sur Id_Client, Id_Produit et NumeroLot permettent d’accélérer les recherches
             // et les jointures avec d’autres microservices (par exemple Product ou Client).
@@ -44,3 +51,4 @@ namespace CynapCRM.Services.OrderAPI.Data
         }
     }
 }
+    

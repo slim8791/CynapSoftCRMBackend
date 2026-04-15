@@ -14,6 +14,8 @@ namespace CynapCRM.Services.FieldAPI.Models
 
         [Required]
         public string Statut { get; set; } = "En attente";
+        [MaxLength(200)]
+        public string Nom { get; set; }
 
         // Une tournée appartient à un planning de délégué
         [Required]
