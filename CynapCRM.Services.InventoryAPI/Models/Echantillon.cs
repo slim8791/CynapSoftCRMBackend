@@ -17,5 +17,6 @@ namespace CynapCRM.Services.InventoryAPI.Models
         public string NumeroLot { get; set; } = string.Empty;
 
         public DateTime DateDistribution { get; set; } = DateTime.UtcNow;
+        public bool IsDeleted { get; internal set; } = false;
     }
 }

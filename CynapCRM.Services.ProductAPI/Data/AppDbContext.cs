@@ -22,35 +22,34 @@ namespace CynapCRM.Services.ProductAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // 1. Configuration de la relation Produit -> Lots (1-N)
+            // Produit → Lots (1-N)
             modelBuilder.Entity<Lot>()
                 .HasOne(l => l.Produit)
                 .WithMany(p => p.Lots)
                 .HasForeignKey(l => l.Id_Produit)
-                .OnDelete(DeleteBehavior.Cascade); // Si on supprime un produit, on supprime ses lots
-
-            // 2. Configuration de la relation Lot -> Promotions (1-N)
-
-            modelBuilder.Entity<Promotion>()
-                .HasOne(promo => promo.Lot)
-                .WithMany(l => l.Promotions)
-                .HasForeignKey(promo => promo.NumeroLot)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // 3. Configuration Produit -> Supports (1-N)
+            // Lot → Promotions (1-N)
+            modelBuilder.Entity<Promotion>()
+                .HasOne(p => p.Lot)
+                .WithMany(l => l.Promotions)
+                .HasForeignKey(p => p.NumeroLot)
+                .HasPrincipalKey(l => l.Numero)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Produit → Supports Marketing (1-N)
             modelBuilder.Entity<Support_Marketting>()
                 .HasOne(s => s.Produit)
                 .WithMany(p => p.Supports)
                 .HasForeignKey(s => s.Id_Produit)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // 4. Configuration Support -> Fichiers (1-N)
+            // Support → Fichiers (1-N)
             modelBuilder.Entity<Fichier>()
                 .HasOne(f => f.Support)
                 .WithMany(s => s.Fichiers)
                 .HasForeignKey(f => f.Id_Support)
                 .OnDelete(DeleteBehavior.Cascade);
-            
         }
     }
 }

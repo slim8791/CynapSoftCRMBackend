@@ -1,22 +1,26 @@
 ﻿using CynapCRM.Services.FieldAPI.Models.Dto;
 using CynapCRM.Services.FieldAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.FieldAPI.Controllers
 {
-    [Route("api/rapports")]
+
     [ApiController]
+    [Route("api/rapports")]
+    [Authorize]
+
     public class RapportsController : ControllerBase
     {
-        private readonly IKPIService _fieldService;
+        private readonly IRapportService _rapportService;
         protected ResponseDto _response;
-        public RapportsController(IKPIService fieldService)
+        public RapportsController(IRapportService rapportService)
         {
-            _fieldService = fieldService;
+            _rapportService = rapportService;
             _response = new ResponseDto();
         }
         [HttpPost("createUpdate")]
-        public async Task<IActionResult> CreateUpdateRapport([FromBody] RapportDto rapportDto)
+        public async Task<IActionResult> CreateOrUpdateRapport([FromBody] RapportVisiteDto dto)
         {
             try
             {
@@ -26,7 +30,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     _response.Message = "Données de rapport invalides.";
                     return BadRequest(_response);
                 }
-                var result = await _fieldService.CreateOrUpdateRapportAsync(rapportDto);
+                var result = await _rapportService.CreateOrUpdateRapportAsync(dto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -55,7 +59,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     _response.Message = "ID de rapport invalide.";
                     return BadRequest(_response);
                 }
-                var rapport = await _fieldService.GetRapportByIdAsync(id);
+                var rapport = await _rapportService.GetRapportByIdAsync(id);
                 if (rapport == null)
                 {
                     _response.IsSuccess = false;
@@ -72,7 +76,9 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        [HttpGet("visite/{idVisite:int}")]
+
+        [HttpGet("by-visite/{idVisite:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetRapportsByVisiteId(int idVisite)
         {
             try
@@ -83,8 +89,8 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     _response.Message = "ID de visite invalide.";
                     return BadRequest(_response);
                 }
-                var rapports = await _fieldService.GetRapportsByVisiteIdAsync(idVisite);
-                if (rapports == null || !rapports.Any())
+                var rapports = await _rapportService.GetRapportByVisiteAsync(idVisite);
+                if (rapports == null)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Aucun rapport trouvé pour cette visite.";
@@ -100,18 +106,20 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteRapport(int id)
+
+        [HttpDelete("{idRapport:int}")]
+        [Authorize(Roles = "DELEGUE,ADMIN")]
+        public async Task<IActionResult> DeleteRapport(int idRapport)
         {
             try
             {
-                if (id <= 0)
+                if (idRapport <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "ID de rapport invalide.";
                     return BadRequest(_response);
                 }
-                var success = await _fieldService.DeleteRapportAsync(id);
+                var success = await _rapportService.DeleteRapportAsync(idRapport);
                 if (!success)
                 {
                     _response.IsSuccess = false;
@@ -128,12 +136,89 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+
+        [HttpPut("{idRapport:int}/validate")]
+        [Authorize(Roles = "SUPERVISEUR")]
+        public async Task<IActionResult> ValidateRapport(
+                    int idRapport,
+                    [FromQuery] int idSuperviseur)
+        {
+            try
+            {
+                var result = await _rapportService
+                    .ValidateRapportAsync(idRapport, idSuperviseur);
+
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message =
+                        "Validation impossible (rapport introuvable ou visite invalide).";
+                    return BadRequest(_response);
+                }
+
+                _response.Message = "Rapport validé et visite clôturée avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
+        // ==================================================
+        // ✅ CAN CREATE RAPPORT ?
+        // ==================================================
+        [HttpGet("can-create/{idVisite:int}")]
+        [Authorize(Roles = "DELEGUE")]
+        public async Task<IActionResult> CanCreateRapport(int idVisite)
+        {
+            try
+            {
+                var result = await _rapportService
+                    .CanCreateRapportAsync(idVisite);
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
+        // ==================================================
+        // ✅ HAS RAPPORT ?
+        // ==================================================
+        [HttpGet("has-rapport/{idVisite:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> HasRapport(int idVisite)
+        {
+            try
+            {
+                var result = await _rapportService
+                    .HasRapportAsync(idVisite);
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpGet("all")]
         public async Task<IActionResult> GetAllRapports()
         {
             try
             {
-                var rapports = await _fieldService.getra();
+                var rapports = await _rapportService.GetAllRapportsAsync();
                 if (rapports == null || !rapports.Any())
                 {
                     _response.IsSuccess = false;

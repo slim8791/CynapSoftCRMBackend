@@ -18,11 +18,17 @@ namespace CynapCRM.Services.OrderAPI.Service
             _db = db;
         }
         //gestion des commandes 
-        public async Task<IEnumerable<CommandeDto>> GetAllOrdersAsync()
+        public async Task<IEnumerable<CommandeDto>> GetAllOrdersAsync(int page, int pageSize)
         {
-            var commandes = await _db.Commandes.Include(c => c.Lignes).AsNoTracking().ToListAsync();
+            var commandes = await _db.Commandes
+                .Include(c => c.Lignes)
+                .AsNoTracking()
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
             return _mapper.Map<IEnumerable<CommandeDto>>(commandes);
         }
+        
         //une commande par son id
         public async Task<CommandeDto> GetOrderByIdAsync(int orderId)
         {
@@ -62,7 +68,6 @@ namespace CynapCRM.Services.OrderAPI.Service
             }
 
             order.MontantTotalHT = order.Lignes.Sum(l =>
-
             (l.PrixUnitaire * l.Quantite) * (1 - (l.Remise / 100)));
 
 
@@ -74,12 +79,18 @@ namespace CynapCRM.Services.OrderAPI.Service
         }
         public async Task<bool> UpdateOrderStatusAsync(UpdateOrderStatusDto dto)
         {
-            var order = await _db.Commandes.FindAsync(dto.Id_Commande);
+
+            var order = await _db.Commandes
+                            .FirstOrDefaultAsync(o => o.Id_Commande == dto.Id_Commande);
 
             if (order == null)
             {
                 return false; 
             }
+
+            if (order.Statut == EtatCommande.Annulee || order.Statut == EtatCommande.Livree)
+                return false;
+
 
             order.Statut = dto.NouveauStatut;
 
@@ -102,145 +113,8 @@ namespace CynapCRM.Services.OrderAPI.Service
             return true;
 
         }
-        public async Task<LigneCommandeDto?> CreateUpdateLigneCommandeAsync(LigneCommandeDto ligneDto)
-        {
-            // Mapper le DTO vers l'entité
-            var ligne = _mapper.Map<LigneCommande>(ligneDto);
-
-            if (ligne.Id_Ligne > 0) // Cas mise à jour
-            {
-                var existingLigne = await _db.LignesCommandes.FindAsync(ligne.Id_Ligne);
-                if (existingLigne == null)
-                {
-                    return null; // Ligne inexistante
-                }
-
-                _mapper.Map(ligneDto, existingLigne);
-                _db.LignesCommandes.Update(existingLigne);
-            }
-            else // Cas création
-            {
-                var order = await _db.Commandes.FindAsync(ligneDto.Id_Commande);
-                if (order == null)
-                {
-                    return null; // Commande inexistante
-                }
-
-                order.Lignes.Add(ligne);
-                _db.LignesCommandes.Add(ligne);
-            }
-
-            await _db.SaveChangesAsync();
-            return _mapper.Map<LigneCommandeDto>(ligne);
-        }
-
-        public async Task<bool> RemoveLigneCommandeAsync(int ligneId)
-        {
-            var ligne = await _db.LignesCommandes.FindAsync(ligneId);
-            if (ligne == null)
-            {
-                return false;
-            }
-            _db.LignesCommandes.Remove(ligne);
-            await _db.SaveChangesAsync();
-            return true;
-
-
-        }
-        public async Task<IEnumerable<ReclamationDto>> GetAllReclamationsAsync()
-        {
-            var reclamations = await _db.Reclamations
-                .Include(r => r.Commande)
-                .Include(r => r.LigneCommande)
-                .AsNoTracking().ToListAsync();
-            return _mapper.Map<IEnumerable<ReclamationDto>>(reclamations);
-        }
-
-        public async Task<IEnumerable<ReclamationDto>> GetReclamationsByOrderAsync(int orderId)
-        {
-            var reclamations = await _db.Reclamations
-                .Where(r => r.Id_Commande == orderId)
-                .Include(r => r.Commande)
-                .Include(r => r.LigneCommande)
-                .AsNoTracking()
-                .ToListAsync();
-            return _mapper.Map<IEnumerable<ReclamationDto>>(reclamations);
-        }
-        public async Task<IEnumerable<ReclamationDto>> GetReclamationsByClientAsync(int idClient)
-        {
-            var reclamations = await _db.Reclamations
-                .Where(r => r.Id_Client == idClient)
-                .Include(r => r.Commande)
-                .Include(r => r.LigneCommande)
-                .AsNoTracking()
-                .ToListAsync();
-            return _mapper.Map<IEnumerable<ReclamationDto>>(reclamations);
-
-        }
-        public async Task<ReclamationDto?> GetReclamationByIdAsync(int idReclamation)
-        {
-            var reclamation = await _db.Reclamations
-                .Include(r => r.Commande)
-                .Include(r => r.LigneCommande)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id_Rec == idReclamation);
-            return _mapper.Map<ReclamationDto>(reclamation);
-
-        }
-        public async Task<ReclamationDto?> CreateUpdateReclamationAsync(ReclamationDto dto)
-        {
-            // Mapper le DTO vers l'entité
-            var reclamation = _mapper.Map<Reclamation>(dto);
-
-            if (reclamation.Id_Rec > 0) // Cas mise à jour
-            {
-                _db.Reclamations.Update(reclamation);
-            }
-            else // Cas création
-            {
-                // Vérifier que la commande existe
-                var commande = await _db.Commandes.FindAsync(dto.Id_Commande);
-                if (commande == null)
-                {
-                    return null;
-                }
-
-                // Vérifier que la ligne de commande existe
-                var ligne = await _db.LignesCommandes.FindAsync(dto.Id_Ligne);
-                if (ligne == null)
-                {
-                    return null;
-                }
-
-                _db.Reclamations.Add(reclamation);
-            }
-
-            await _db.SaveChangesAsync();
-            return _mapper.Map<ReclamationDto>(reclamation);
-        }
-        public async Task<bool> UpdateReclamationStatusAsync(int reclamationId, string newStatus)
-        {
-            var reclamation = await _db.Reclamations.FindAsync(reclamationId);
-            if (reclamation == null)
-            {
-                return false;
-            }
-            reclamation.Statut = newStatus;
-            await _db.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> DeleteReclamationAsync(int reclamationId)
-        {
-            var reclamation = await _db.Reclamations.FindAsync(reclamationId);
-            if (reclamation == null)
-            {
-                return false;
-            }
-            _db.Reclamations.Remove(reclamation);
-            await _db.SaveChangesAsync();
-            return true;
-        }
+        
+        
 
         
     }

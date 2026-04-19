@@ -1,53 +1,198 @@
-﻿using CynapCRM.Services.ProductAPI.Models.Dto;
+﻿using AutoMapper;
+using CynapCRM.Services.ProductAPI.Data;
+using CynapCRM.Services.ProductAPI.Models;
+using CynapCRM.Services.ProductAPI.Models.Dto;
 using CynapCRM.Services.ProductAPI.Service.IService;
+using Microsoft.EntityFrameworkCore;
 
 namespace CynapCRM.Services.ProductAPI.Service
 {
     public class PromoService : IPromoService
     {
-        public Task<decimal> ApplyPromotionAsync(int productId, decimal prixInitial)
+
+        private readonly AppDbContext _db;
+        private readonly IMapper _mapper;
+
+        public PromoService(AppDbContext db, IMapper mapper)
         {
-            throw new NotImplementedException();
+            _db = db;
+            _mapper = mapper;
         }
 
-        public Task<PromotionDto> CreateUpdatePromotionAsync(PromotionDto promotionDto)
+        // ==================================================
+        // 🔹 Gestion des promotions
+        // ==================================================
+
+        public async Task<IEnumerable<PromotionDto>> GetAllPromotionsAsync()
         {
-            throw new NotImplementedException();
+            var promotions = await _db.Promotions
+                .Include(p => p.Lot)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<PromotionDto>>(promotions);
         }
 
-        public Task<bool> DeletePromotionAsync(int promotionId)
+        public async Task<PromotionDto?> GetPromotionByIdAsync(int promotionId)
         {
-            throw new NotImplementedException();
+            var promo = await _db.Promotions
+                .Include(p => p.Lot)
+                .FirstOrDefaultAsync(p => p.Id_Promo == promotionId);
+
+            return promo == null ? null : _mapper.Map<PromotionDto>(promo);
         }
 
-        public Task<double> GetPromotionCoverageRateAsync()
+        public async Task<PromotionDto> CreateOrUpdatePromotionAsync(PromotionDto promotionDto)
         {
-            throw new NotImplementedException();
+            var promo = await _db.Promotions
+                .FirstOrDefaultAsync(p => p.Id_Promo == promotionDto.Id_Promo);
+
+            if (promo == null)
+            {
+                promo = _mapper.Map<Promotion>(promotionDto);
+                _db.Promotions.Add(promo);
+            }
+            else
+            {
+                _mapper.Map(promotionDto, promo);
+            }
+
+            await _db.SaveChangesAsync();
+            return _mapper.Map<PromotionDto>(promo);
         }
 
-        public Task<IEnumerable<PromotionDto>> GetPromotionsAsync()
+        public async Task<bool> DeletePromotionAsync(int promotionId)
         {
-            throw new NotImplementedException();
+            var promo = await _db.Promotions.FindAsync(promotionId);
+            if (promo == null) return false;
+
+            _db.Promotions.Remove(promo);
+            await _db.SaveChangesAsync();
+            return true;
         }
 
-        public Task<IEnumerable<PromotionDto>> GetPromotionsByLotAsync(string numeroLot)
+        // ==================================================
+        // 🔹 Application des promotions
+        // ==================================================
+
+        public async Task<decimal> ApplyBestPromotionAsync(int productId, decimal initialPrice)
         {
-            throw new NotImplementedException();
+            var today = DateTime.UtcNow;
+
+            var promotions = await _db.Promotions
+                .Include(p => p.Lot)
+                .Where(p =>
+                    p.EstActive &&
+                    p.DateDebut <= today &&
+                    p.DateExpiration >= today &&
+                    p.Lot != null &&
+                    p.Lot.Id_Produit == productId)
+                .ToListAsync();
+
+            if (!promotions.Any())
+                return initialPrice;
+
+            var bestPromo = promotions
+                .OrderByDescending(p => p.Pourcentage)
+                .First();
+
+            var discount = initialPrice * (decimal)(bestPromo.Pourcentage / 100);
+            return initialPrice - discount;
         }
 
-        public Task<IEnumerable<PromotionDto>> GetPromotionsByProductAsync(int productId)
+        public async Task<bool> IsProductInPromotionAsync(int productId)
         {
-            throw new NotImplementedException();
+            var today = DateTime.UtcNow;
+
+            return await _db.Promotions
+                .Include(p => p.Lot)
+                .AnyAsync(p =>
+                    p.EstActive &&
+                    p.DateDebut <= today &&
+                    p.DateExpiration >= today &&
+                    p.Lot != null &&
+                    p.Lot.Id_Produit == productId);
         }
 
-        public Task<bool> IsProductInPromotionAsync(int productId)
+        // ==================================================
+        // 🔹 Consultation par contexte
+        // ==================================================
+
+        public async Task<IEnumerable<PromotionDto>> GetPromotionsByProductAsync(int productId)
         {
-            throw new NotImplementedException();
+            var promotions = await _db.Promotions
+                .Include(p => p.Lot)
+                .Where(p => p.Lot != null && p.Lot.Id_Produit == productId)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<PromotionDto>>(promotions);
         }
 
-        public Task<bool> IsPromotionValidAsync(int promotionId)
+        public async Task<IEnumerable<PromotionDto>> GetPromotionsByLotAsync(string numeroLot)
         {
-            throw new NotImplementedException();
+            var promotions = await _db.Promotions
+                .Where(p => p.NumeroLot == numeroLot)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<PromotionDto>>(promotions);
+        }
+
+        // ==================================================
+        // 🔹 Validation métier
+        // ==================================================
+
+        public async Task<bool> IsPromotionValidAsync(int promotionId)
+        {
+            var today = DateTime.UtcNow;
+
+            return await _db.Promotions.AnyAsync(p =>
+                p.Id_Promo == promotionId &&
+                p.EstActive &&
+                p.DateDebut <= today &&
+                p.DateExpiration >= today);
+        }
+
+        public async Task<bool> IsPromotionApplicableAsync(int promotionId, DateTime referenceDate)
+        {
+            return await _db.Promotions.AnyAsync(p =>
+                p.Id_Promo == promotionId &&
+                p.EstActive &&
+                p.DateDebut <= referenceDate &&
+                p.DateExpiration >= referenceDate);
+        }
+
+        // ==================================================
+        // 🔹 Indicateurs & pilotage
+        // ==================================================
+
+        public async Task<double> GetPromotionCoverageRateAsync()
+        {
+            var totalProducts = await _db.Produits.CountAsync();
+            if (totalProducts == 0) return 0;
+
+            var today = DateTime.UtcNow;
+
+            var productsWithPromo = await _db.Promotions
+                .Include(p => p.Lot)
+                .Where(p =>
+                    p.EstActive &&
+                    p.DateDebut <= today &&
+                    p.DateExpiration >= today &&
+                    p.Lot != null)
+                .Select(p => p.Lot!.Id_Produit)
+                .Distinct()
+                .CountAsync();
+
+            return (double)productsWithPromo / totalProducts * 100;
+        }
+
+        public async Task<int> GetActivePromotionsCountAsync()
+        {
+            var today = DateTime.UtcNow;
+
+            return await _db.Promotions.CountAsync(p =>
+                p.EstActive &&
+                p.DateDebut <= today &&
+                p.DateExpiration >= today);
         }
     }
 }

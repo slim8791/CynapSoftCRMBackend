@@ -2,23 +2,29 @@
 using CynapCRM.Services.OrderAPI.Models;
 using CynapCRM.Services.OrderAPI.Models.Dto;
 using CynapCRM.Services.OrderAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.OrderAPI.Controllers
 {
-    [Route("api/ligne")]
+
     [ApiController]
+    [Route("api/order-lines")]
+    [Authorize]
+
     public class LigneController : ControllerBase
     {
-        private readonly IOrderService _orderService;
+        private readonly ILigneService _ligneService;
         protected ResponseDto _response;
-        public LigneController(IOrderService orderService)
+        public LigneController(ILigneService ligneService)
         {
-            _orderService = orderService;
+            _ligneService = ligneService;
             _response = new();
         }
-        [HttpPost("createUpdate")]
-        public async Task<IActionResult> CreateUpdateLigneCommande([FromBody] LigneCommandeDto ligneDto)
+
+        [HttpPost]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> CreateOrUpdateLigneCommande([FromBody] LigneCommandeDto ligneDto)
         {
             try
             {
@@ -29,7 +35,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                var result = await _orderService.CreateUpdateLigneCommandeAsync(ligneDto);
+                var result = await _ligneService.CreateOrUpdateLigneCommandeAsync(ligneDto);
 
                 if (result == null)
                 {
@@ -67,18 +73,20 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        [HttpDelete("ligne/{id:int}")]
-         public async Task<IActionResult> DeleteLigneCommande(int id)
+
+        [HttpDelete("{ligneId:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> DeleteLigneCommande(int ligneId)
         {
             try
             {
-                if (id <= 0)
+                if (ligneId <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "ID ligne commande invalide.";
                     return BadRequest(_response);
                 }
-                bool isDeleted = await _orderService.RemoveLigneCommandeAsync(id);
+                bool isDeleted = await _ligneService.RemoveLigneCommandeAsync(ligneId);
                 if (!isDeleted)
                 {
                     _response.IsSuccess = false;

@@ -1,27 +1,43 @@
-﻿using CynapCRM.Services.InventoryAPI.Models.Dto;
+﻿using CynapCRM.Services.InventoryAPI.Models;
+using CynapCRM.Services.InventoryAPI.Models.Dto;
 using CynapCRM.Services.InventoryAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.InventoryAPI.Controllers
 {
-    [Route("api/stockDelegue")]
+
+    [Route("api/stocks-delegue")]
     [ApiController]
+    [Authorize]
     public class StocksDelegueController : ControllerBase
     {
-        private readonly IInventoryService _inventoryService;
+        private readonly IStockDelegueService _stockDelegueService;
         protected ResponseDto _response;
 
-        public StocksDelegueController(IInventoryService inventoryService)
+        public StocksDelegueController(IStockDelegueService stockDelegueService)
         {
-            _inventoryService = inventoryService;
+            _stockDelegueService = stockDelegueService;
             _response = new ResponseDto();
         }
+
         [HttpGet]
-        public async Task<IActionResult> GetAllStocks(int pageNumber = 1, int pageSize = 10)
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetAllStocks([FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20)
         {
+
             try
             {
-                _response.Result = await _inventoryService.GetAllStocksAsync(pageNumber, pageSize);
+
+                if (pageNumber <= 0 || pageSize <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Paramètres de pagination invalides.";
+                    return BadRequest(_response);
+                }
+
+                _response.Result = await _stockDelegueService.GetAllStocksAsync(pageNumber, pageSize);
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -31,10 +47,9 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // 1. Récupérer tout le stock d'un délégué
-        [HttpGet("delegue/{idDelegue:int}")]
-        public async Task<IActionResult> GetByDelegue(int idDelegue)
+        [HttpGet("by-delegue/{idDelegue:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetStocksByDelegue(int idDelegue)
         {
             try
             {
@@ -44,7 +59,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     _response.Message = "Id stock invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _inventoryService.GetStocksByDelegueAsync(idDelegue);
+                var result = await _stockDelegueService.GetStocksByDelegueAsync(idDelegue);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -63,19 +78,19 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             }
         }
 
-        // 2. Récupérer le stock par ID
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("{idStock:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetStockById(int idStock)
         {
             try
             {
-                if (id <= 0)
+                if (idStock <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Id stock invalide.";
                     return BadRequest(_response);
                 }
-                var stock = await _inventoryService.GetStockByIdAsync(id);
+                var stock = await _stockDelegueService.GetStockByIdAsync(idStock);
                 if (stock == null)
                 {
                     _response.IsSuccess = false;
@@ -94,9 +109,9 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             }
         }
 
-        // 3. Récupérer le stock d'un produit spécifique
-        [HttpGet("produit/{idProduit:int}")]
-        public async Task<IActionResult> GetByProduit(int idProduit)
+        [HttpGet("by-produit/{idProduit:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetStocksByProduit(int idProduit)
         {
             try
             {
@@ -106,7 +121,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     _response.Message = "Id stock invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _inventoryService.GetStockByProduitAsync(idProduit);
+                var result = await _stockDelegueService.GetStockByProduitAsync(idProduit);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -125,23 +140,23 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             }
         }
 
-        // 4. Récupérer par Numéro de Lot
-        [HttpGet("lot/{lot:int}")]
-        public async Task<IActionResult> GetByLot(string lot)
+        [HttpGet("by-lot/{numeroLot}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetStockByLot(string numeroLot)
         {
             try
             {
-                if (lot == null)
+                if (numeroLot == null)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Id stock invalide.";
                     return BadRequest(_response);
                 }
-                var stock = await _inventoryService.GetStockByLotAsync(lot);
+                var stock = await _stockDelegueService.GetStockByLotAsync(numeroLot);
                 if (stock == null)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = $"Aucun stock trouvé pour le lot {lot}.";
+                    _response.Message = $"Aucun stock trouvé pour le lot {numeroLot}.";
                     return NotFound(_response);
                 }
                 _response.Result = stock;
@@ -158,7 +173,10 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
 
         // 5. Créer ou Mettre à jour un stock
         [HttpPost("stock")]
-        public async Task<IActionResult> CreateUpdateStock([FromBody] StockDelegueDto stockDto)
+
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+
+        public async Task<IActionResult> CreateOrUpdateStock([FromBody] StockDelegueDto stockDto)
         {
             try
             {
@@ -169,7 +187,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var result = await _inventoryService.CreateUpdateStockAsync(stockDto);
+                var result = await _stockDelegueService.CreateUpdateStockAsync( stockDto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -189,9 +207,10 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             }
         }
 
-        // 6. Supprimer une ligne de stock
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int idStock, string type)
+        [HttpDelete("{idStock:int}")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> DeleteStock(int idStock,[FromQuery] StockType type)
+
         {
             try
             {
@@ -201,12 +220,12 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     _response.Message = "Id stock invalide.";
                     return BadRequest(_response);
                 }
-                bool isDeleted = await _inventoryService.DeleteStockAsync(idStock, type);
+                bool isDeleted = await _stockDelegueService.DeleteStockAsync(idStock, type);
                 if (!isDeleted)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Impossible de supprimer : stock inexistant.";
-                    return NotFound(_response);
+                    return BadRequest(_response);
                 }
 
                 _response.Message = "Ligne de stock supprimée.";

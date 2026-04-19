@@ -11,11 +11,16 @@ namespace CynapCRM.Services.InventoryAPI.Models
         public int Id_Produit { get; set; }
 
         public string NumeroLot { get; set; } = string.Empty;
+        public DateTime DateCreation { get; set; }
+
 
         public DateTime DateExpiration { get; set; }
 
         public int QteDisponible { get; set; }
 
         public int QteReservee { get; set; } = 0;
+        public bool IsDeleted { get; internal set; } = false;
+
+
     }
 }

@@ -1,4 +1,4 @@
-using CynapCRM.Services.AuthAPI.Data;
+ï»¿using CynapCRM.Services.AuthAPI.Data;
 using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Service;
 using CynapCRM.Services.AuthAPI.Service.IService;
@@ -60,7 +60,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -75,16 +74,16 @@ void applyMigrations()
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            // Vérifie s'il y a des migrations qui n'ont pas encore été appliquées
+            // VÃ©rifie s'il y a des migrations qui n'ont pas encore Ã©tÃ© appliquÃ©es
             if (dbContext.Database.GetPendingMigrations().Any())
             {
                 dbContext.Database.Migrate();
-                Console.WriteLine(">>> Migration appliquée avec succès !");
+                Console.WriteLine(">>> Migration appliquÃ©e avec succÃ¨s !");
             }
         }
         catch (Exception ex)
         {
-            // Affiche l'erreur dans la console si la connexion SQL échoue
+            // Affiche l'erreur dans la console si la connexion SQL Ã©choue
             Console.WriteLine($">>> Erreur lors de la migration : {ex.Message}");
         }
     }

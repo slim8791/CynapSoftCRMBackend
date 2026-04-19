@@ -30,6 +30,9 @@ namespace CynapCRM.Services.DocAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Numero_Doc"));
 
+                    b.Property<string>("ContentType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DateCreation")
                         .HasColumnType("datetime2");
 
@@ -38,6 +41,9 @@ namespace CynapCRM.Services.DocAPI.Migrations
 
                     b.Property<int>("Id_Commande")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Nom_Doc")
                         .IsRequired()

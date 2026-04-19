@@ -44,7 +44,7 @@ namespace CynapCRM.Services.InventoryAPI.Data
                 .HasKey(e => e.Id_Distribution);
 
             modelBuilder.Entity<StockMovement>()
-                .HasKey(m => m.Id);
+                .HasKey(m => m.Id_Movement);
 
             // ===========================
             // 🔥 3. Index (Performance 🚀)
@@ -56,7 +56,7 @@ namespace CynapCRM.Services.InventoryAPI.Data
             modelBuilder.Entity<Echantillon>().HasIndex(e => e.Id_Medecin);
 
             // ✅ AJOUT important
-            modelBuilder.Entity<StockMovement>().HasIndex(m => m.IdStock);
+            modelBuilder.Entity<StockMovement>().HasIndex(m => m.Id_Stock);
 
             // ===========================
             // 🔥 4. Contraintes (DATA CLEAN 🔐)
@@ -78,7 +78,7 @@ namespace CynapCRM.Services.InventoryAPI.Data
             modelBuilder.Entity<StockMovement>()
                 .HasOne<Stock_Delegue>()
                 .WithMany()
-                .HasForeignKey(m => m.IdStock)
+                .HasForeignKey(m => m.Id_Stock)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // ===========================

@@ -2,11 +2,15 @@
 {
     public class FichierDto
     {
+
         public int Id_Fichier { get; set; }
         public string NomFichier { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
         public string Extension { get; set; } = string.Empty;
         public long Taille { get; set; }
+
+        // Lien métier
         public int Id_Support { get; set; }
+
     }
 }

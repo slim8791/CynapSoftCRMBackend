@@ -1,24 +1,53 @@
 ﻿using CynapCRM.Services.DocAPI.Models.Dto;
 using CynapCRM.Services.DocAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.DocAPI.Controllers
 {
-    [Route("api/bonCommande")]
+    [Route("api/bons-commandes")]
     [ApiController]
+    [Authorize]
+
     public class BonsCommandesController : ControllerBase
     {
-        private readonly IDocumentService _documentService;
+        private readonly IBCService _bCService;
         protected ResponseDto _response;
-
-        public BonsCommandesController(IDocumentService documentService)
+        public BonsCommandesController(IBCService bCService)
         {
-            _documentService = documentService;
+            _bCService = bCService;
             _response = new ResponseDto();
         }
 
-        // 1. Récupérer un Bon de Commande par son ID technique (Id_BC)
+        [HttpGet]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetAllBonsCommande([FromQuery] int pageNumber = 1,
+                                                            [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                if (pageNumber <= 0 || pageSize <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Paramètres de pagination invalides.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _bCService
+                    .GetAllBonsCommandeAsync(pageNumber, pageSize);
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetBonCommandeById(int id)
         {
             try
@@ -29,7 +58,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
                     _response.Message = "id invalide.";
                     return BadRequest();
                 }
-                var bc = await _documentService.GetBonCommandeByIdAsync(id);
+                var bc = await _bCService.GetBonCommandeByIdAsync(id);
                 if (bc == null)
                 {
                     _response.IsSuccess = false;
@@ -49,6 +78,9 @@ namespace CynapCRM.Services.DocAPI.Controllers
 
         // 2. Récupérer tous les Bons de Commande d'un client
         [HttpGet("client/{idClient:int}")]
+
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
         public async Task<IActionResult> GetBonsCommandeByClient(int idClient)
         {
             try
@@ -59,7 +91,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
                     _response.Message = "id invalide.";
                     return BadRequest();
                 }
-                var list = await _documentService.GetBonsCommandeByClientAsync(idClient);
+                var list = await _bCService.GetBonsCommandeByClientAsync(idClient);
                 if (list == null)
                 {
                     _response.IsSuccess = false;
@@ -76,10 +108,39 @@ namespace CynapCRM.Services.DocAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+        [HttpGet("by-date")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetBonsCommandeByDate([FromQuery] DateTime startDate,
+                                                                [FromQuery] DateTime endDate)
+        {
+            try
+            {
+                if (startDate > endDate)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "La date de début doit être antérieure à la date de fin.";
+                    return BadRequest(_response);
+                }
 
-        // 3. Créer ou Mettre à jour un Bon de Commande
+                var result = await _bCService
+                    .GetBonsCommandeByDateAsync(startDate, endDate);
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
         [HttpPost("createUpdate")]
-        public async Task<IActionResult> CreateUpdateBonCommande([FromBody] BonCommandeDto bcDto)
+
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+
+        public async Task<IActionResult> CreateOrUpdateBonCommande([FromBody] BonCommandeDto bcDto)
         {
             try
             {
@@ -90,7 +151,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                var result = await _documentService.CreateUpdateBonCommandeAsync(bcDto);
+                var result = await _bCService.CreateOrUpdateBonCommandeAsync(bcDto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;

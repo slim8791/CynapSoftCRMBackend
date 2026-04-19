@@ -4,21 +4,31 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 {
     public interface IVisiteService
     {
+
         // ================================
-        // 🔹 VISITE
+        // 🔹 VISITES
         // ================================
 
         Task<VisiteDto?> CreateOrUpdateVisiteAsync(VisiteDto dto);
+
         Task<VisiteDto?> GetVisiteByIdAsync(int idVisite);
+
         Task<IEnumerable<VisiteDto>> GetVisitesByDelegueAsync(int idDelegue);
-        Task<IEnumerable<VisiteDto>> GetVisitesByTourneeAsync(int idTournee);
+
+        // ✅ NOUVEAU : logique Planning (remplace Tournee)
+        Task<IEnumerable<VisiteDto>> GetVisitesByPlanningAsync(int idPlanning);
+
         Task<bool> DeleteVisiteAsync(int idVisite);
 
-        // Logique métier
-        Task<bool> AffectVisiteToTourneeAsync(int idVisite, int idTournee);
+        // ================================
+        // 🔹 LOGIQUE MÉTIER
+        // ================================
+        Task<bool> AffectVisiteToPlanningAsync(int idVisite, int idPlanning);
+        // Marquer la visite comme terminée
         Task<bool> CompleteVisiteAsync(int idVisite);
-        // 🔥 NOUVEAU : vérifier appartenance (sécurité métier)
-        // Empêche un délégué de modifier les données d’un autre
+
+        // Sécurité métier : ownership
         Task<bool> IsVisiteOwnedByDelegueAsync(int idVisite, int idDelegue);
+
     }
 }

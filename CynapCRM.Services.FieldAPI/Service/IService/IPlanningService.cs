@@ -4,26 +4,33 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 {
     public interface IPlanningService
     {
+
         // ================================
-        // 🔹 PLANNING
+        // 📅 PLANNING DE VISITES
         // ================================
 
         Task<PlanningVisiteDto?> CreateOrUpdatePlanningAsync(PlanningVisiteDto dto);
+
         Task<PlanningVisiteDto?> GetPlanningByIdAsync(int idPlanning);
+
         Task<IEnumerable<PlanningVisiteDto>> GetPlanningByDelegueAsync(int idDelegue);
+
+        Task<IEnumerable<PlanningVisiteDto>> GetPlanningsByDateRangeAsync(int idDelegue,DateTime startDate,
+                                                                          DateTime endDate);
+
+        Task<IEnumerable<PlanningVisiteDto>> GetPlanningByDelegueAndDateAsync(int idDelegue,DateTime date);
+
         Task<bool> DeletePlanningAsync(int idPlanning);
 
-        // Logique métier
-        Task<bool> ChangePlanningStatusAsync(int idPlanning, string statut);
-        // 🔥 NOUVEAU : vérifier conflit de planning (important en production)
-        // Empêche qu’un délégué ait plusieurs plannings ou visites au même moment
-        Task<bool> CheckPlanningConflictAsync(int idDelegue, DateTime debut, DateTime fin);
+        // ================================
+        // 🔹 LOGIQUE MÉTIER
+        // ================================
 
-        // 🔥 NOUVEAU : validation complète du planning
-        // Vérifie cohérence globale (dates, tournées existantes…)
+        // Vérifier conflit horaire
+        Task<bool> CheckPlanningConflictAsync(int idDelegue,DateTime debut,DateTime fin);
+
+        // Validation du planning (EnAttente → Confirmé)
         Task<bool> ValidatePlanningAsync(int idPlanning);
-        // 🔥 NOUVEAU : vérifier disponibilité réelle du délégué
-        // (évite chevauchement de visites)
-        Task<bool> CheckDelegueAvailabilityAsync(int idDelegue, DateTime date);
+
     }
 }

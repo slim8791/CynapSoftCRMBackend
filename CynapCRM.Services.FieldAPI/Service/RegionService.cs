@@ -16,28 +16,45 @@ namespace CynapCRM.Services.FieldAPI.Service
         {
             _db = db;
             _mapper = mapper;
+        }
             // ================================
             // 🔹 REGION
             // ================================
 
         public async Task<RegionDto?> CreateOrUpdateRegionAsync(RegionDto dto)
         {
-            var entity = _mapper.Map<Region>(dto);
 
-            var existing = await _db.Regions
-                .FirstOrDefaultAsync(r => r.Id_Region == dto.Id_Region);
+            Region region;
 
-            if (existing == null)
+            // ➕ Création
+            if (dto.Id_Region == 0)
             {
-                _db.Regions.Add(entity);
+                region = _mapper.Map<Region>(dto);
+                _db.Regions.Add(region);
             }
+            // ✏️ Mise à jour
             else
             {
-                _db.Entry(existing).CurrentValues.SetValues(entity);
+                region = await _db.Regions.FirstOrDefaultAsync(r => r.Id_Region == dto.Id_Region);
+
+                if (region == null)
+                    return null;
+
+                _mapper.Map(dto, region);
             }
 
             await _db.SaveChangesAsync();
-            return _mapper.Map<RegionDto>(entity);
+            return _mapper.Map<RegionDto>(region);
+
+        }
+
+        public async Task<RegionDto?> GetRegionByIdAsync(int idRegion)
+        {
+            var region = await _db.Regions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id_Region == idRegion);
+
+            return region == null ? null : _mapper.Map<RegionDto>(region);
         }
 
         public async Task<IEnumerable<RegionDto>> GetRegionsByDelegueAsync(int idDelegue)
@@ -45,6 +62,7 @@ namespace CynapCRM.Services.FieldAPI.Service
             var list = await _db.Regions
                 .AsNoTracking()
                 .Where(r => r.Id_User_Delegue == idDelegue)
+                .OrderBy(r => r.NomRegion)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<RegionDto>>(list);
@@ -52,33 +70,23 @@ namespace CynapCRM.Services.FieldAPI.Service
 
         public async Task<bool> DeleteRegionAsync(int idRegion)
         {
-            var entity = await _db.Regions.FindAsync(idRegion);
-            if (entity == null) return false;
-
-            _db.Regions.Remove(entity);
-            await _db.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> AssignRegionToDelegueAsync(int idRegion, int idDelegue)
-        {
-            var region = await _db.Regions.FindAsync(idRegion);
+            var region = await _db.Regions.FirstOrDefaultAsync(r => r.Id_Region == idRegion);
             if (region == null) return false;
 
-            region.Id_User_Delegue = idDelegue;
+            _db.Regions.Remove(region);
             await _db.SaveChangesAsync();
             return true;
         }
+
+        
         public async Task<int> GetNombreRegionsCouvreAsync(int idDelegue)
         {
-            return await _db.Visites
-                .AsNoTracking()
-                .Where(v => v.Id_User_Delegue == idDelegue)
-                .Select(v => v.Id_Region) // ou IdRegion si tu l’ajoutes
-                .Distinct()
-                .CountAsync();
+
+            return await _db.Regions
+                            .CountAsync(r => r.Id_User_Delegue == idDelegue);
+
         }
 
     }
 }
-}
+

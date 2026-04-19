@@ -1,25 +1,29 @@
 ﻿using CynapCRM.Services.InventoryAPI.Models.Dto;
 using CynapCRM.Services.InventoryAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.InventoryAPI.Controllers
 {
-    [Route("api/echantillon")]
+
+    [Route("api/distributions")]
     [ApiController]
-    public class EchantillonController : ControllerBase
+    [Authorize]
+
+    public class DistributionController : ControllerBase
     {
-        private readonly IInventoryService _inventoryService;
+        private readonly IDistributionService _distributionService;
         protected ResponseDto _response;
 
-        public EchantillonController(IInventoryService inventoryService)
+        public DistributionController(IDistributionService distributionService)
         {
-            _inventoryService = inventoryService;
+            _distributionService = distributionService;
             _response = new ResponseDto();
         }
         // 1. Enregistrer ou modifier une distribution (Don d'échantillon)
         [HttpPost("distribution")]
-
-        public async Task<IActionResult> CreateUpdateDistribution([FromBody] EchantillonDto echantillonDto)
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> CreateOrUpdateDistribution([FromBody] EchantillonDto echantillonDto)
         {
             try
             {
@@ -30,12 +34,12 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var result = await _inventoryService.CreateUpdateEchantillonAsync(echantillonDto);
+                var result = await _distributionService.CreateOrUpdateEchantillonAsync(echantillonDto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Erreur lors de l'enregistrement de la distribution.";
-                    return StatusCode(500, _response);
+                    return BadRequest(_response);
                 }
 
                 _response.Result = result;
@@ -51,18 +55,19 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
         }
 
         // 2. Récupérer une distribution spécifique par son ID
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
+
+        [HttpGet("{idDistribution:int}")]
+        public async Task<IActionResult> GetDistributionById(int idDistribution)
         {
             try
             {
-                if (id <= 0)
+                if (idDistribution <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Id distribution invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _inventoryService.GetEchantillonByIdAsync(id);
+                var result = await _distributionService.GetEchantillonByIdAsync(idDistribution);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -81,8 +86,12 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
         }
 
         // 3. Historique des distributions pour un Médecin
-        [HttpGet("medecin/{idMedecin:int}")]
-        public async Task<IActionResult> GetByMedecin(int idMedecin)
+
+        [HttpGet("by-medecin/{idMedecin:int}")]
+
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
+        public async Task<IActionResult> GetDistributionsByMedecin(int idMedecin)
         {
             try
             {
@@ -92,7 +101,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     _response.Message = "Id médecin invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _inventoryService.GetDistributionsByMedecinAsync(idMedecin);
+                var result = await _distributionService.GetDistributionsByMedecinAsync(idMedecin);
                 if (result == null || !result.Any())
                 {
                     _response.IsSuccess = false;
@@ -110,8 +119,10 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
         }
 
         // 4. Historique des distributions pour un Pharmacien
-        [HttpGet("pharmacien/{idPharmacien:int}")]
-        public async Task<IActionResult> GetByPharmacien(int idPharmacien)
+
+        [HttpGet("by-pharmacien/{idPharmacien:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetDistributionsByPharmacien(int idPharmacien)
         {
             try
             {
@@ -121,7 +132,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     _response.Message = "Id pharmacien invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _inventoryService.GetDistributionsByPharmacienAsync(idPharmacien);
+                var result = await _distributionService.GetDistributionsByPharmacienAsync(idPharmacien);
                 if (result == null || !result.Any())
                 {
                     _response.IsSuccess = false;
@@ -139,18 +150,20 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
         }
 
         // 5. Supprimer une distribution (Annulation)
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
+
+        [HttpDelete("{idDistribution:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> DeleteDistribution(int idDistribution)
         {
             try
             {
-                if (id <= 0)
+                if (idDistribution <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Id distribution invalide.";
                     return BadRequest(_response);
                 }
-                bool isDeleted = await _inventoryService.DeleteEchantillonAsync(id);
+                bool isDeleted = await _distributionService.DeleteEchantillonAsync(idDistribution);
                 if (!isDeleted)
                 {
                     _response.IsSuccess = false;

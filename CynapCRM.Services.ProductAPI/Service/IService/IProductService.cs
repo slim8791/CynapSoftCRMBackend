@@ -1,55 +1,119 @@
 ﻿using CynapCRM.Services.ProductAPI.Models.Dto;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.ProductAPI.Service.IService
 {
+    /// <summary>
+    /// Service métier responsable de la gestion du catalogue produit
+    /// </summary>
     public interface IProductService
     {
-        // 🔹 CRUD
-        Task<IEnumerable<ProduitDto>> GetProductsAsync();
-        Task<ProduitDto?> GetProductByIdAsync(int produitId);
-        Task<ProduitDto> CreateUpdateProductAsync(ProduitDto produitDto);
-        Task<bool> ArchiveProductAsync(int produitId);
+        // ==================================================
+        // 🔹 Catalogue & consultation
+        // ==================================================
 
-        // 🔹 Recherche & filtre
+        Task<IEnumerable<ProduitDto>> GetAllProductsAsync();
+        Task<ProduitDto?> GetProductByIdAsync(int productId);
+
+        /// <summary>
+        /// Récupère les produits visibles pour les utilisateurs métier
+        /// (actifs + non archivés)
+        /// </summary>
+        Task<IEnumerable<ProduitDto>> GetVisibleProductsAsync();
+
+        // ==================================================
+        // 🔹 Gestion du cycle de vie produit
+        // ==================================================
+
+        /// <summary>
+        /// Crée ou met à jour un produit
+        /// </summary>
+        Task<ProduitDto> CreateOrUpdateProductAsync(ProduitDto produitDto);
+
+        /// <summary>
+        /// Archive un produit (suppression logique)
+        /// </summary>
+        Task<bool> ArchiveProductAsync(int productId);
+
+        /// <summary>
+        /// Active un produit (visible et vendable)
+        /// </summary>
+        Task<bool> ActivateProductAsync(int productId);
+
+        /// <summary>
+        /// Désactive un produit (non vendable)
+        /// </summary>
+        Task<bool> DeactivateProductAsync(int productId);
+
+        // ==================================================
+        // 🔹 Disponibilité & état produit
+        // ==================================================
+
+        /// <summary>
+        /// Indique si un produit est vendable
+        /// (actif + stock disponible)
+        /// </summary>
+        Task<bool> IsProductAvailableAsync(int productId);
+
+        Task<IEnumerable<ProduitDto>> GetAvailableProductsAsync();
+        Task<IEnumerable<ProduitDto>> GetUnavailableProductsAsync();
+
+        // ==================================================
+        // 🔹 Stock (lecture uniquement)
+        // ==================================================
+
+        /// <summary>
+        /// Stock total calculé à partir des lots
+        /// </summary>
+        Task<int> GetTotalStockAsync(int productId);
+
+        /// <summary>
+        /// État global du stock (OK / faible / rupture)
+        /// </summary>
+        Task<IEnumerable<StockStatusDto>> GetStockStatusAsync();
+
+        Task<IEnumerable<ProduitDto>> GetLowStockProductsAsync(int threshold);
+
+        // ==================================================
+        // 🔹 Recherche & navigation
+        // ==================================================
+
         Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10);
+
         Task<IEnumerable<ProduitDto>> FilterProductsAsync(
             string? keyword,
             string? category,
-            bool? isAvailable,
-            int page = 1,
-            int pageSize = 20
+            bool? onlyAvailable,
+            int page,
+            int pageSize
         );
 
-        // 🔹 Activation
-        Task<bool> ActivateProductAsync(int produitId);
-        Task<bool> DeactivateProductAsync(int produitId);
+        //Task<IEnumerable<string>> GetSearchSuggestionsAsync(string keyword);
 
-        // 🔹 Disponibilité
-        Task<bool> IsProductAvailableAsync(int productId);
-        Task<IEnumerable<ProduitDto>> GetAvailableProductsAsync();
-        Task<IEnumerable<ProduitDto>> GetOutOfStockProductsAsync();
-        Task<IEnumerable<ProduitDto>> GetLowStockProductsAsync(int threshold);
+        // ==================================================
+        // 🔹 Catégories (référentiel léger)
+        // ==================================================
 
-        // 🔹 Catégories
-        Task<bool> CategoryExistsAsync(string category);
-        Task<IEnumerable<ProduitDto>> GetProductsByCategoryAsync(string category);
         Task<IEnumerable<string>> GetCategoriesAsync();
+        Task<IEnumerable<ProduitDto>> GetProductsByCategoryAsync(string category);
 
-        // 🔹 Stock (lecture uniquement)
-        Task<int> GetTotalStockByProductAsync(int productId);
-        Task<IEnumerable<StockStatusDto>> GetStockStatusAsync();
+        // ==================================================
+        // 🔹 Règles métier & validation
+        // ==================================================
 
-        // 🔹 Validation métier
-        Task<bool> ProductExistsAsync(string nomProduit);
+        Task<bool> ProductExistsAsync(string productName);
         Task<bool> IsProductValidAsync(int productId);
-        Task<bool> CanDeleteProductAsync(int productId);
 
-        // 🔹 KPI
+        /// <summary>
+        /// Vérifie si un produit peut être archivé ou supprimé
+        /// (pas de stock, pas de commandes actives)
+        /// </summary>
+        Task<bool> CanArchiveProductAsync(int productId);
+
+        // ==================================================
+        // 🔹 Indicateurs & pilotage
+        // ==================================================
+
         Task<IEnumerable<ProduitDto>> GetTopProductsAsync(int topN);
         Task<ProductDashboardDto> GetProductDashboardAsync();
-
-        // 🔹 UX
-        Task<IEnumerable<string>> GetSearchSuggestionsAsync(string keyword);
     }
 }

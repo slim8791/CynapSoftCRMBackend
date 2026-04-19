@@ -6,11 +6,11 @@
 
         public DateTime Date { get; set; }
 
-        public DateTime HeureDebut { get; set; }
+        public TimeSpan HeureDebut { get; set; }
+        public TimeSpan HeureFin { get; set; }
 
-        public DateTime HeureFin { get; set; }
 
-        public string Etat { get; set; } = string.Empty;
+        public EtatPlanning Etat { get; set; }
 
         public int Id_User_Delegue { get; set; }
     }

@@ -6,9 +6,13 @@ namespace CynapCRM.Services.FieldAPI.Models
     {
         [Key]
         public int Id_Objectif { get; set; }
-        public string Type { get; set; } = string.Empty; 
+        [Required]
+        public string Type { get; set; } = string.Empty;
+        [Required]
         public int ValeurCible { get; set; }
+        [Required]
         public string Periode { get; set; } = string.Empty;
+        [Required]
         public int Id_User_Delegue { get; set; }
     }
 }

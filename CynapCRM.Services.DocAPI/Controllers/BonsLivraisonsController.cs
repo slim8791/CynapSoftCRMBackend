@@ -1,24 +1,29 @@
 ﻿using CynapCRM.Services.DocAPI.Models.Dto;
 using CynapCRM.Services.DocAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.DocAPI.Controllers
 {
-    [Route("api/bonLivraison")]
+
+    [Route("api/bons-livraison")]
     [ApiController]
+    [Authorize]
     public class BonsLivraisonsController : ControllerBase
     {
-        private readonly IDocumentService _documentService;
+        private readonly IBLService _bLService;
         protected ResponseDto _response;
 
-        public BonsLivraisonsController(IDocumentService documentService)
+        public BonsLivraisonsController(IBLService bLService)
         {
-            _documentService = documentService;
+            _bLService = bLService;
             _response = new ResponseDto();
         }
 
-        // 1. Récupérer un Bon de Livraison par son ID technique (Id_BL)
         [HttpGet("{id:int}")]
+
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
         public async Task<IActionResult> GetBonLivraisonById(int id)
         {
             try
@@ -29,7 +34,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
                     _response.Message = "id invalide.";
                     return BadRequest();
                 }
-                var bl = await _documentService.GetBonLivraisonByIdAsync(id);
+                var bl = await _bLService.GetBonLivraisonByIdAsync(id);
                 if (bl == null)
                 {
                     _response.IsSuccess = false;
@@ -47,8 +52,10 @@ namespace CynapCRM.Services.DocAPI.Controllers
             }
         }
 
-        // 2. Récupérer tous les Bons de Livraison d'un client spécifique
         [HttpGet("ByClient/{idClient:int}")]
+
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
         public async Task<IActionResult> GetBonsLivraisonByClient(int idClient)
         {
             try
@@ -59,11 +66,11 @@ namespace CynapCRM.Services.DocAPI.Controllers
                     _response.Message = "id invalide.";
                     return BadRequest();
                 }
-                var list = await _documentService.GetBonsLivraisonByClientAsync(idClient);
+                var list = await _bLService.GetBonsLivraisonByClientAsync(idClient);
                 if (list == null)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Aucune bon commande trouvée pour ce client.";
+                    _response.Message = "Aucun bon de livraison trouvé pour ce client.";
                     return NotFound(_response);
                 }
                 _response.Result = list;
@@ -77,9 +84,9 @@ namespace CynapCRM.Services.DocAPI.Controllers
             }
         }
 
-        // 3. Créer ou Mettre à jour un Bon de Livraison
         [HttpPost("createUpdate")]
-        public async Task<IActionResult> CreateUpdateBonLivraison([FromBody] BonLivraisonDto blDto)
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> CreateOrUpdateBonLivraison([FromBody] BonLivraisonDto blDto)
         {
             try
             {
@@ -90,7 +97,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                var result = await _documentService.CreateUpdateBonLivraisonAsync(blDto);
+                var result = await _bLService.CreateOrUpdateBonLivraisonAsync(blDto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -109,6 +116,62 @@ namespace CynapCRM.Services.DocAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+
+        [HttpGet]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetAllBonsLivraison([FromQuery] int pageNumber = 1,
+                                                            [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                if (pageNumber <= 0 || pageSize <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Paramètres de pagination invalides.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _bLService.GetAllBonsLivraisonAsync(pageNumber, pageSize);
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("by-date")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetBonsLivraisonByDate([FromQuery] DateTime startDate,
+                                                                [FromQuery] DateTime endDate)
+        {
+            try
+            {
+                if (startDate > endDate)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "La date de début doit être antérieure à la date de fin.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _bLService.GetBonsLivraisonByDateAsync(startDate, endDate);
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
     }
 }
         

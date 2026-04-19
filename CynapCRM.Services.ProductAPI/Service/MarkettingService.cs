@@ -1,53 +1,156 @@
-﻿using CynapCRM.Services.ProductAPI.Models.Dto;
+﻿using AutoMapper;
+using CynapCRM.Services.ProductAPI.Data;
+using CynapCRM.Services.ProductAPI.Models;
+using CynapCRM.Services.ProductAPI.Models.Dto;
 using CynapCRM.Services.ProductAPI.Service.IService;
-
+using Microsoft.EntityFrameworkCore;
 namespace CynapCRM.Services.ProductAPI.Service
 {
     public class MarkettingService : IMarkettingService
     {
-        public Task<FichierDto> AddFichierToSupportAsync(FichierDto fichierDto)
+        private readonly AppDbContext _db;
+        private readonly IMapper _mapper;
+        public MarkettingService(AppDbContext db, IMapper mapper)
         {
-            throw new NotImplementedException();
+            _db = db;
+            _mapper = mapper;
         }
 
-        public Task<SupportMarketingDto> CreateUpdateSupportAsync(SupportMarketingDto supportDto)
+        // 🔹 Supports marketing
+
+        public async Task<IEnumerable<SupportMarketingDto>> GetSupportsByProductAsync(int productId)
         {
-            throw new NotImplementedException();
+            var supports = await _db.Support_Markettings
+                .Where(s => s.Id_Produit == productId)
+                .Include(s => s.Fichiers)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<SupportMarketingDto>>(supports);
         }
 
-        public Task<bool> DeleteFichierAsync(int fichierId)
+        public async Task<SupportMarketingDto?> GetSupportByIdAsync(int supportId)
         {
-            throw new NotImplementedException();
+            var support = await _db.Support_Markettings
+                .Include(s => s.Fichiers)
+                .FirstOrDefaultAsync(s => s.Id_SupportMarketting == supportId);
+
+            return support == null ? null : _mapper.Map<SupportMarketingDto>(support);
         }
 
-        public Task<int> GetActivePromotionsCountAsync(int productId)
+        public async Task<SupportMarketingDto> CreateOrUpdateSupportAsync(SupportMarketingDto supportDto)
         {
-            throw new NotImplementedException();
+
+            var support = await _db.Support_Markettings
+                            .FirstOrDefaultAsync(s => s.Id_SupportMarketting == supportDto.Id_SupportMarketting);
+
+            if (support == null)
+            {
+                support = _mapper.Map<Support_Marketting>(supportDto);
+                _db.Support_Markettings.Add(support);
+            }
+            else
+            {
+                _mapper.Map(supportDto, support);
+            }
+
+            await _db.SaveChangesAsync();
+            return _mapper.Map<SupportMarketingDto>(support);
+
         }
 
-        public Task<ProductDashboardDto> GetProductDashboardAsync()
+        public async Task<bool> DisableSupportAsync(int supportId)
         {
-            throw new NotImplementedException();
+            var support = await _db.Support_Markettings.FindAsync(supportId);
+            if (support == null) return false;
+
+            // Suppression logique (champ recommandé)
+            support.IsActive = false;
+
+            await _db.SaveChangesAsync();
+            return true;
         }
 
-        public Task<IEnumerable<SupportMarketingDto>> GetSupportsByCampaignAsync(string campaignName)
+
+        // 🔹 Fichiers marketing
+
+        public async Task<FichierDto> AddFileToSupportAsync(FichierDto fichierDto)
         {
-            throw new NotImplementedException();
+            var supportExists = await _db.Support_Markettings
+                .AnyAsync(s => s.Id_SupportMarketting == fichierDto.Id_Support);
+
+            if (!supportExists)
+                throw new Exception("Support marketing introuvable.");
+
+            var fichier = _mapper.Map<Fichier>(fichierDto);
+            _db.Fichiers.Add(fichier);
+
+            await _db.SaveChangesAsync();
+            return _mapper.Map<FichierDto>(fichier);
         }
 
-        public Task<IEnumerable<SupportMarketingDto>> GetSupportsByProductIdAsync(int productId)
+
+        public async Task<bool> DeleteFileAsync(int fichierId)
         {
-            throw new NotImplementedException();
+            var fichier = await _db.Fichiers.FindAsync(fichierId);
+            if (fichier == null) return false;
+
+            _db.Fichiers.Remove(fichier);
+            await _db.SaveChangesAsync();
+            return true;
         }
 
-        public Task<int> GetTotalLotsAsync(int productId)
+
+        public async Task<IEnumerable<FichierDto>> GetFilesBySupportAsync(int supportId)
         {
-            throw new NotImplementedException();
+            var fichiers = await _db.Fichiers
+                .Where(f => f.Id_Support == supportId)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<FichierDto>>(fichiers);
         }
 
-        public Task<bool> IsSupportActiveAsync(int supportId)
+
+        // 🔹 Visibilité & logique métier
+
+        public async Task<bool> IsSupportActiveAsync(int supportId)
         {
-            throw new NotImplementedException();
+            var support = await _db.Support_Markettings.FindAsync(supportId);
+            return support != null && support.IsActive;
+        }
+
+        public async Task<IEnumerable<SupportMarketingDto>> GetVisibleSupportsByProductAsync(int productId)
+        {
+            var supports = await _db.Support_Markettings
+                .Where(s =>
+                    s.Id_Produit == productId &&
+                    s.IsActive)
+                .Include(s => s.Fichiers)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<SupportMarketingDto>>(supports);
+        }
+
+        // ==================================================
+        // 🔹 Campagnes marketing
+        // ==================================================
+
+        public async Task<IEnumerable<SupportMarketingDto>> GetSupportsByCampaignAsync(string campaignName)
+        {
+            var supports = await _db.Support_Markettings
+                .Where(s => s.CampaignName == campaignName && s.IsActive)
+                .Include(s => s.Fichiers)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<SupportMarketingDto>>(supports);
+        }
+
+        public async Task<IEnumerable<string>> GetCampaignsAsync()
+        {
+            return await _db.Support_Markettings
+                .Where(s => s.CampaignName != null)
+                .Select(s => s.CampaignName!)
+                .Distinct()
+                .ToListAsync();
         }
     }
 }

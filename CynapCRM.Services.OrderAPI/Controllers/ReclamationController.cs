@@ -1,29 +1,35 @@
 ﻿using Azure;
 using CynapCRM.Services.OrderAPI.Models.Dto;
 using CynapCRM.Services.OrderAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CynapCRM.Services.OrderAPI.Controllers
 {
-    [Route("api/reclamation")]
+
     [ApiController]
+    [Route("api/reclamations")]
+    [Authorize]
+    
     public class ReclamationController : ControllerBase
     {
-        private readonly IOrderService _orderService;
+        private readonly IReclamationService _reclamationService;
         protected ResponseDto _response;
-        public ReclamationController(IOrderService orderService)
+        public ReclamationController(IReclamationService reclamationService)
         {
-            _orderService = orderService;
+            _reclamationService = reclamationService;
             _response = new();
 
         }
+
         [HttpGet]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> GetAllReclamations()
         {
             try
             {
-                var result = await _orderService.GetAllReclamationsAsync();
+                var result = await _reclamationService.GetAllReclamationsAsync();
                 return Ok(result);
             }
             catch (Exception ex)
@@ -33,7 +39,9 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        [HttpGet("order/{orderId:int}")]
+
+        [HttpGet("by-commande/{orderId:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetReclamationsByOrder(int orderId)
         {
             try
@@ -44,7 +52,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     _response.Message = "ID de commande invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _orderService.GetReclamationsByOrderAsync(orderId);
+                var result = await _reclamationService.GetReclamationsByOrderAsync(orderId);
                 if (result == null || !result.Any())
                 {
                     _response.IsSuccess = false;
@@ -62,7 +70,9 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        [HttpGet("client/{idClient:int}")]
+
+        [HttpGet("by-client/{idClient:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetReclamationsByClient(int idClient)
         {
             try
@@ -73,7 +83,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     _response.Message = "ID de client invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _orderService.GetReclamationsByClientAsync(idClient);
+                var result = await _reclamationService.GetReclamationsByClientAsync(idClient);
                 if (result == null || !result.Any())
                 {
                     _response.IsSuccess = false;
@@ -91,7 +101,9 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+
         [HttpGet("{idReclamation:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetReclamationById(int idReclamation)
         {
             try
@@ -102,7 +114,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     _response.Message = "ID de réclamation invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _orderService.GetReclamationByIdAsync(idReclamation);
+                var result = await _reclamationService.GetReclamationByIdAsync(idReclamation);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -120,7 +132,9 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        [HttpPost("createUpdate")]
+
+        [HttpPost]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> CreateUpdateReclamation([FromBody] ReclamationDto reclamationDto)
         {
             try
@@ -132,7 +146,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                var result = await _orderService.CreateUpdateReclamationAsync(reclamationDto);
+                var result = await _reclamationService.CreateUpdateReclamationAsync(reclamationDto);
 
                 if (result == null)
                 {
@@ -169,9 +183,11 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        
-        [HttpPost("status")]
-        public async Task<IActionResult> UpdateReclamationStatus([FromBody] UpdateOrderStatusDto orderStatus)
+
+
+        [HttpPut("{reclamationId:int}/status")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> UpdateReclamationStatus(int reclamationId, [FromBody] StatutReclamation newStatus)
         {
             try
             {
@@ -182,7 +198,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                bool isUpdated = await _orderService.UpdateOrderStatusAsync(orderStatus);
+                bool isUpdated = await _reclamationService.UpdateReclamationStatusAsync(reclamationId, newStatus);
                 if (!isUpdated)
                 {
                     _response.IsSuccess = false;
@@ -200,18 +216,20 @@ namespace CynapCRM.Services.OrderAPI.Controllers
             }
 
         }
-        [HttpDelete("{idReclamation:int}")]
-        public async Task<IActionResult> DeleteReclamation(int idReclamation)
+
+        [HttpDelete("{reclamationId:int}")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> DeleteReclamation(int reclamationId)
         {
             try
             {
-                if (idReclamation <= 0)
+                if (reclamationId <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "ID de réclamation invalide.";
                     return BadRequest(_response);
                 }
-                bool isDeleted = await _orderService.DeleteReclamationAsync(idReclamation);
+                bool isDeleted = await _reclamationService.DeleteReclamationAsync(reclamationId);
                 if (!isDeleted)
                 {
                     _response.IsSuccess = false;

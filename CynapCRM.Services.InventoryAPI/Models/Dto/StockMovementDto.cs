@@ -2,12 +2,13 @@
 {
     public class StockMovementDto
     {
-        public int IdStock { get; set; }
 
-        public int Quantity { get; set; }
-
-        public string TypeMovement { get; set; }
-
+        public int Id_Movement { get; set; }
+        public int Id_Stock { get; set; }
+        public int Quantite { get; set; }
+        public string TypeMovement { get; set; } = string.Empty;
         public DateTime DateMovement { get; set; }
+        public string? Description { get; set; }
+
     }
 }

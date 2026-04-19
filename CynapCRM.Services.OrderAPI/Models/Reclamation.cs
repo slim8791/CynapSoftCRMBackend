@@ -1,4 +1,5 @@
 ﻿using CynapCRM.Services.OrderAPI.Models;
+using CynapCRM.Services.OrderAPI.Models.Dto;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -14,7 +15,8 @@ namespace CynapCRM.Services.OrderAPI.Models
 
         public DateTime DateReclamation { get; set; } = DateTime.Now;
 
-        public string Statut { get; set; } = "Ouverte"; // Ouverte, En cours, Résolue
+
+        public StatutReclamation Statut { get; set; } = StatutReclamation.Ouverte;
 
         // RELATION 
         [Required]

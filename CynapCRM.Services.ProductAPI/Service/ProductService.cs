@@ -17,44 +17,82 @@ namespace CynapCRM.Services.ProductAPI.Service
             _db = db;
             _mapper = mapper;
         }
-        // 1. Gestion des produits
-        public async Task<IEnumerable<ProduitDto>> GetProductsAsync()
+
+        // 🔹 Catalogue & consultation
+        public async Task<IEnumerable<ProduitDto>> GetAllProductsAsync()
         {
-            var produits = await _db.Produits.Include(u => u.Lots).Include(u => u.Supports).ToListAsync();
-            return _mapper.Map<IEnumerable<ProduitDto>>(produits);
+
+            var products = await _db.Produits
+                    .Where(p => !p.IsArchived)
+                    .Include(p => p.Lots)
+                        .ThenInclude(l => l.Promotions)
+                    .Include(p => p.Supports)
+                        .ThenInclude(s => s.Fichiers)
+                    .ToListAsync();
+
+            return _mapper.Map<IEnumerable<ProduitDto>>(products);
+
         }
         public async Task<ProduitDto> GetProductByIdAsync(int produitId)
         {
-            var produit = await _db.Produits
-                .Include(u => u.Lots).ThenInclude(l => l.Promotions)
-                .Include(u => u.Supports).ThenInclude(s => s.Fichiers)
-                .FirstOrDefaultAsync(u => u.Id_Produit == produitId);
-            return _mapper.Map<ProduitDto>(produit);
+
+            var product = await _db.Produits
+                    .Include(p => p.Lots)
+                        .ThenInclude(l => l.Promotions)
+                    .Include(p => p.Supports)
+                        .ThenInclude(s => s.Fichiers)
+                    .FirstOrDefaultAsync(p =>
+                        p.Id_Produit == produitId &&
+                        !p.IsArchived);
+
+            return product == null ? null : _mapper.Map<ProduitDto>(product);
+
         }
-        public async Task<ProduitDto> CreateUpdateProductAsync(ProduitDto produitDto)
+        public async Task<IEnumerable<ProduitDto>> GetVisibleProductsAsync()
         {
-            Produit produit = _mapper.Map<Produit>(produitDto);
-            if (produit.Id_Produit > 0)
+            var products = await _db.Produits
+                .Where(p => p.IsActive && !p.IsArchived)
+                .Include(p => p.Supports)
+                    .ThenInclude(s => s.Fichiers)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<ProduitDto>>(products);
+        }
+
+        // 🔹 Cycle de vie produit
+
+        public async Task<ProduitDto> CreateOrUpdateProductAsync(ProduitDto produitDto)
+        {
+
+            var product = await _db.Produits
+                            .FirstOrDefaultAsync(p => p.Id_Produit == produitDto.Id_Produit);
+
+            if (product == null)
             {
-                _db.Produits.Update(produit);
+                product = _mapper.Map<Produit>(produitDto);
+                _db.Produits.Add(product);
             }
             else
             {
-                _db.Produits.Add(produit);
+                _mapper.Map(produitDto, product);
             }
+
             await _db.SaveChangesAsync();
-            return _mapper.Map<ProduitDto>(produit);
+            return _mapper.Map<ProduitDto>(product);
+
         }
         public async Task<bool> ArchiveProductAsync(int produitId)
         {
-            var produit = await _db.Produits.FirstOrDefaultAsync(u => u.Id_Produit == produitId);
-            if (produit == null )
-            {
-                return false;
-            }
-            produit.IsArchived = true;
+
+            var product = await _db.Produits.FindAsync(produitId);
+            if (product == null) return false;
+
+            product.IsArchived = true;
+            product.IsActive = false;
+
             await _db.SaveChangesAsync();
             return true;
+
         }
         public async Task<bool> ActivateProductAsync(int produitId)
         {
@@ -73,7 +111,80 @@ namespace CynapCRM.Services.ProductAPI.Service
             return true;
         }
 
-        public async Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword)
+        // 🔹 Disponibilité & stock (lecture)
+
+        public async Task<bool> IsProductAvailableAsync(int productId)
+        {
+            var product = await _db.Produits
+                .Include(p => p.Lots)
+                .FirstOrDefaultAsync(p => p.Id_Produit == productId);
+
+            if (product == null || !product.IsActive || product.IsArchived)
+                return false;
+
+            return product.Lots!.Any(l =>
+                l.Quantite > 0 &&
+                l.DateExpiration > DateTime.UtcNow);
+        }
+
+        public async Task<IEnumerable<ProduitDto>> GetAvailableProductsAsync()
+        {
+            var products = await _db.Produits
+                .Include(p => p.Lots)
+                .Where(p =>
+                    p.IsActive &&
+                    !p.IsArchived &&
+                    p.Lots!.Any(l => l.Quantite > 0 && l.DateExpiration > DateTime.UtcNow))
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<ProduitDto>>(products);
+        }
+
+        public async Task<IEnumerable<ProduitDto>> GetUnavailableProductsAsync()
+        {
+            var products = await _db.Produits
+                .Include(p => p.Lots)
+                .Where(p =>
+                    !p.IsActive ||
+                    p.IsArchived ||
+                    !p.Lots!.Any(l => l.Quantite > 0 && l.DateExpiration > DateTime.UtcNow))
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<ProduitDto>>(products);
+        }
+
+        public async Task<int> GetTotalStockAsync(int productId)
+        {
+            return await _db.Lots
+                .Where(l => l.Id_Produit == productId)
+                .SumAsync(l => l.Quantite);
+        }
+
+        public async Task<IEnumerable<StockStatusDto>> GetStockStatusAsync()
+        {
+            return await _db.Produits
+                .Select(p => new StockStatusDto
+                {
+                    ProductId = p.Id_Produit,
+                    ProductName = p.Nom,
+                    TotalStock = p.Lots!.Sum(l => l.Quantite)
+                })
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ProduitDto>> GetLowStockProductsAsync(int threshold)
+        {
+            var products = await _db.Produits
+                .Include(p => p.Lots)
+                .Where(p => p.Lots!.Sum(l => l.Quantite) <= threshold)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<ProduitDto>>(products);
+        }
+
+        // 🔹 Recherche & navigation
+
+        public async Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10)
         {
             if (string.IsNullOrWhiteSpace(keyword))
                 return Enumerable.Empty<ProduitDto>();
@@ -82,224 +193,106 @@ namespace CynapCRM.Services.ProductAPI.Service
 
             var produits = await _db.Produits
                 .AsNoTracking()
-                .Where(p => p.Nom.ToLower().Contains(keyword))
+                .Where(p => p.Nom.ToLower().Contains(keyword) && !p.IsArchived) // 🔥 exclure archivés
                 .OrderBy(p => p.Nom)
-                .Take(10) // 🔥 limiter résultats pour autocomplete
+                .Take(limit) // 🔥 paramètre dynamique
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<ProduitDto>>(produits);
         }
 
-        // 2. Gestion des lots
-
-        public async Task<IEnumerable<LotDto>> GetLotsByProductIdAsync(int productId)
+        public async Task<IEnumerable<ProduitDto>> FilterProductsAsync(
+                    string? keyword,
+                    string? category,
+                    bool? onlyAvailable,
+                    int page,
+                    int pageSize)
         {
-            var lots = await _db.Lots.Include(l => l.Promotions)
-                .Where(l =>l.Id_Produit == productId).ToListAsync();
-            return _mapper.Map<IEnumerable<LotDto>>(lots);
+            var query = _db.Produits.AsQueryable();
+
+            if (!string.IsNullOrEmpty(keyword))
+                query = query.Where(p => p.Nom.Contains(keyword));
+
+            if (onlyAvailable == true)
+                query = query.Where(p => p.IsActive && !p.IsArchived);
+
+            var products = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<ProduitDto>>(products);
         }
 
-        public async Task<LotDto> CreateUpdateLotAsync(LotDto lotDto)
-        {
-            Lot lot = _mapper.Map<Lot>(lotDto);
-            var existingLot = await _db.Lots.AsNoTracking().FirstOrDefaultAsync(l => l.Numero == lot.Numero);
-            if (existingLot != null) 
-            { 
-                _db.Lots.Update(lot);
-            }
-            else 
-            { 
-                _db.Lots.Add(lot); 
-            }
-            await _db.SaveChangesAsync();
-            return _mapper.Map<LotDto>(lot);
-
-        }
-        public async Task<bool> DeleteLotAsync(string numeroLot)
-        {
-            var lots = await _db.Lots.FirstOrDefaultAsync(l => l.Numero == numeroLot);
-            if (lots == null)
-            {
-                return false;
-            }
-            _db.Lots.Remove(lots);
-            await _db.SaveChangesAsync();
-            return true;
-        }
-        // 3. Gestion des promotions
-
-        public async Task<IEnumerable<PromotionDto>> GetPromotionsAsync()
-        {
-            var promos = await _db.Promotions.ToListAsync();
-            return _mapper.Map<IEnumerable<PromotionDto>>(promos);
-        }
-
-
-        public async Task<PromotionDto> CreateUpdatePromotionAsync(PromotionDto promotionDto)
-        {
-            try
-            {
-                Promotion promo = _mapper.Map<Promotion>(promotionDto);
-                if (promo.Id_Promo > 0)
-                {
-                    _db.Promotions.Update(promo);
-                }
-                else
-                {
-                    _db.Promotions.Add(promo);
-                }
-
-                await _db.SaveChangesAsync();
-                return _mapper.Map<PromotionDto>(promo);
-            }
-            catch(Exception ex)
-            {
-                var realError = ex.InnerException?.Message ?? ex.Message;
-                throw new Exception(realError);
-
-            }
-            
-        }
-        public async Task<bool> DeletePromotionAsync(int promotionId)
-        {
-            var promo = await _db.Promotions.FirstOrDefaultAsync(p => p.Id_Promo == promotionId);
-            if (promo == null)
-            {
-                return false;
-            }
-            _db.Promotions.Remove(promo);
-            await _db.SaveChangesAsync();
-            return true;
-        }
-
-
-        // 4. Gestion des supports marketing
-
-        public async Task<IEnumerable<SupportMarketingDto>> GetSupportsByProductIdAsync(int productId)
-        {
-            var supports = await _db.Support_Markettings.Include(s => s.Fichiers)
-                .Where(s => s.Id_Produit == productId).ToListAsync();
-            return _mapper.Map<IEnumerable<SupportMarketingDto>>(supports);
-        }
-        public async Task<SupportMarketingDto> CreateUpdateSupportAsync(SupportMarketingDto supportDto)
-        {
-            Support_Marketting support = _mapper.Map<Support_Marketting>(supportDto);
-            if (support.Id_SupportMarketting > 0)
-            {
-                _db.Support_Markettings.Update(support);
-            }
-            else
-            {
-                _db.Support_Markettings.Add(support);
-            }
-
-            await _db.SaveChangesAsync();
-            return _mapper.Map<SupportMarketingDto>(support);
-        }
         
-        public async Task<FichierDto> AddFichierToSupportAsync(FichierDto fichierDto)
+
+        // ==================================================
+        // 🔹 Catégories
+        // ==================================================
+
+        public async Task<IEnumerable<string>> GetCategoriesAsync()
         {
-            Fichier fichier = _mapper.Map<Fichier>(fichierDto);
-            _db.Fichiers.Add(fichier);
-            await _db.SaveChangesAsync();
-            return _mapper.Map<FichierDto>(fichier);
+            return await _db.Produits
+                .Select(p => p.Description)
+                .Distinct()
+                .ToListAsync();
         }
-        public async Task<bool> DeleteFichierAsync(int fichierId)
+
+        public async Task<IEnumerable<ProduitDto>> GetProductsByCategoryAsync(string category)
         {
-            var fichier = await _db.Fichiers.FirstOrDefaultAsync(f => f.Id_Fichier == fichierId);
-            if (fichier == null)
+            var products = await _db.Produits
+                .Where(p => p.Description == category && !p.IsArchived)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<ProduitDto>>(products);
+        }
+
+        // ==================================================
+        // 🔹 Validation métier
+        // ==================================================
+
+        public async Task<bool> ProductExistsAsync(string productName)
+        {
+            return await _db.Produits.AnyAsync(p => p.Nom == productName);
+        }
+
+        public async Task<bool> IsProductValidAsync(int productId)
+        {
+            return await _db.Produits.AnyAsync(p =>
+                p.Id_Produit == productId &&
+                p.IsActive &&
+                !p.IsArchived);
+        }
+
+        public async Task<bool> CanArchiveProductAsync(int productId)
+        {
+            var totalStock = await GetTotalStockAsync(productId);
+            return totalStock == 0;
+        }
+
+        // ==================================================
+        // 🔹 KPI & pilotage
+        // ==================================================
+
+        public async Task<IEnumerable<ProduitDto>> GetTopProductsAsync(int topN)
+        {
+            var products = await _db.Produits
+                .Include(p => p.Lots)
+                .OrderByDescending(p => p.Lots!.Sum(l => l.Quantite))
+                .Take(topN)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<ProduitDto>>(products);
+        }
+
+        public async Task<ProductDashboardDto> GetProductDashboardAsync()
+        {
+            return new ProductDashboardDto
             {
-                return false;
-            }
-            _db.Fichiers.Remove(fichier);
-            await _db.SaveChangesAsync();
-            return true;
-
-        }
-
-        public Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<ProduitDto>> FilterProductsAsync(string? keyword, string? category, bool? isAvailable, int page = 1, int pageSize = 20)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> IsProductAvailableAsync(int productId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<ProduitDto>> GetAvailableProductsAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<ProduitDto>> GetOutOfStockProductsAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<ProduitDto>> GetLowStockProductsAsync(int threshold)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> CategoryExistsAsync(string category)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<ProduitDto>> GetProductsByCategoryAsync(string category)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<string>> GetCategoriesAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<int> GetTotalStockByProductAsync(int productId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<StockStatusDto>> GetStockStatusAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> ProductExistsAsync(string nomProduit)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> IsProductValidAsync(int productId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> CanDeleteProductAsync(int productId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<ProduitDto>> GetTopProductsAsync(int topN)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<ProductDashboardDto> GetProductDashboardAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<string>> GetSearchSuggestionsAsync(string keyword)
-        {
-            throw new NotImplementedException();
+                TotalProducts = await _db.Produits.CountAsync(),
+                ActiveProducts = await _db.Produits.CountAsync(p => p.IsActive),
+                ArchivedProducts = await _db.Produits.CountAsync(p => p.IsArchived)
+            };
         }
     }
 }

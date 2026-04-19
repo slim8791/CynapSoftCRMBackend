@@ -23,27 +23,37 @@ namespace CynapCRM.Services.FieldAPI.Service
 
         public async Task<VisiteDto?> CreateOrUpdateVisiteAsync(VisiteDto dto)
         {
-            var entity = _mapper.Map<Visite>(dto);
 
-            var existing = await _db.Visites
-                .FirstOrDefaultAsync(v => v.Id_Visite == dto.IdVisite);
+            Visite visite;
 
-            if (existing == null)
+            // ➕ Création
+            if (dto.IdVisite == 0)
             {
-                _db.Visites.Add(entity);
+                visite = _mapper.Map<Visite>(dto);
+                visite.IsCompleted = false;
+
+                _db.Visites.Add(visite);
             }
+            // ✏️ Mise à jour
             else
             {
-                _db.Entry(existing).CurrentValues.SetValues(entity);
+                visite = await _db.Visites.FirstOrDefaultAsync(v => v.Id_Visite == dto.IdVisite);
+
+                if (visite == null || visite.IsCompleted)
+                    return null;
+
+                _mapper.Map(dto, visite);
             }
 
+
             await _db.SaveChangesAsync();
-            return _mapper.Map<VisiteDto>(entity);
+            return _mapper.Map<VisiteDto>(visite);
         }
 
         public async Task<VisiteDto?> GetVisiteByIdAsync(int idVisite)
         {
             var visite = await _db.Visites
+            .Include(v => v.Rapport)
             .AsNoTracking()
             .FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
 
@@ -59,18 +69,18 @@ namespace CynapCRM.Services.FieldAPI.Service
         {
             var visites = await _db.Visites
             .Where(v => v.Id_User_Delegue == idDelegue)
-            .OrderByDescending(v => v.Date)
+            .OrderByDescending(v => v.DateVisite)
             .AsNoTracking()
             .ToListAsync();
 
             return _mapper.Map<IEnumerable<VisiteDto>>(visites);
         }
 
-        public async Task<IEnumerable<VisiteDto>> GetVisitesByTourneeAsync(int idTournee)
+        public async Task<IEnumerable<VisiteDto>> GetVisitesByPlanningAsync(int idPlanning)
         {
             var visites = await _db.Visites
-            .Where(v => v.Id_Tournee == idTournee)
-            .OrderByDescending(v => v.Date)
+            .Where(v => v.Id_Planning == idPlanning)
+            .OrderByDescending(v => v.DateVisite)
             .AsNoTracking()
             .ToListAsync();
 
@@ -79,8 +89,8 @@ namespace CynapCRM.Services.FieldAPI.Service
 
         public async Task<bool> DeleteVisiteAsync(int idVisite)
         {
-            var visite = await _db.Visites.FindAsync(idVisite);
-            if (visite == null)
+            var visite = await _db.Visites.FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
+            if (visite == null || visite.IsCompleted)
             {
                 return false;
             }
@@ -89,56 +99,64 @@ namespace CynapCRM.Services.FieldAPI.Service
             await _db.SaveChangesAsync();
             return true;
         }
-
-        // 🔥 logique métier
-        public async Task<bool> AffectVisiteToTourneeAsync(int idVisite, int idTournee)
-        {
-            var visite = await _db.Visites.FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
-            var tournee = await _db.Tournees.FirstOrDefaultAsync(t => t.Id_Tournee == idTournee);
-
-            if (visite == null || tournee == null)
-                return false;
-
-            // Vérifier que le délégué est le même
-            if (visite.Id_User_Delegue != tournee.Id_User_Delegue)
-                return false;
-
-            // Vérifier que la date est la même
-            if (visite.Date.Date != tournee.Date.Date)
-                return false;
-
-            // ✅ Affecter la tournée à la visite
-            visite.Id_Tournee = tournee.Id_Tournee;
-
-            await _db.SaveChangesAsync();
-            return true;
-        }
-
-
         public async Task<bool> CompleteVisiteAsync(int idVisite)
         {
-            var visite = await _db.Visites.FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
+            var visite = await _db.Visites
+                .Include(v => v.Rapport)
+                .FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
             if (visite == null)
             {
                 return false;
             }
 
-            // Ici tu peux ajouter une logique métier : par exemple changer le type ou marquer comme "complétée"
+            if (visite.Rapport == null)
+                return false;
+
+
             visite.IsCompleted = true;
             await _db.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> IsVisiteOwnedByDelegueAsync(int idVisite, int idDelegue)
+        // 🔥 logique métier
+        public async Task<bool> AffectVisiteToPlanningAsync(int idVisite, int idPlanning)
         {
-            var visite = await _db.Visites
-                .AsNoTracking()
-                .FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
+
+            // 1️⃣ Charger la visite
+            var visite = await _db.Visites.FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
 
             if (visite == null)
                 return false;
 
-            // 🔥 Vérifie que le délégué est bien le propriétaire
-            return visite.Id_User_Delegue == idDelegue;
+            // ❌ Impossible si la visite est déjà complétée
+            if (visite.IsCompleted)
+                return false;
+
+            // 2️⃣ Charger le planning
+            var planning = await _db.Plannings
+                .FirstOrDefaultAsync(p => p.Id_Planning == idPlanning);
+
+            if (planning == null)
+                return false;
+
+            // 3️⃣ Sécurité métier : même délégué
+            if (visite.Id_User_Delegue != planning.Id_User_Delegue)
+                return false;
+
+            // 4️⃣ Affectation
+            visite.Id_Planning = idPlanning;
+
+            await _db.SaveChangesAsync();
+            return true;
+
+        }
+
+        public async Task<bool> IsVisiteOwnedByDelegueAsync(int idVisite, int idDelegue)
+        {
+
+            return await _db.Visites
+                            .AnyAsync(v =>
+                                v.Id_Visite == idVisite &&
+                                v.Id_User_Delegue == idDelegue);
         }
     }
 }

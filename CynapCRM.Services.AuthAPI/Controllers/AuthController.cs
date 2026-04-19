@@ -4,6 +4,7 @@ using CynapCRM.Services.AuthAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CynapCRM.Services.AuthAPI.Controllers
 {
@@ -24,13 +25,28 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             _emailService = emailService;
             _env = env;
         }
+        [HttpGet("ping")]
+        public IActionResult Ping()
+        {
+            return Ok("AUTH API OK");
+        }
+
+       
+
+        [HttpGet("check-auth")]
+        [Authorize]
+        public IActionResult CheckAuth()
+        {
+            return Ok(User.Claims.Select(c => new { c.Type, c.Value }));
+        }
+
+
 
         [HttpPost("register")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")] 
         public async Task<IActionResult> Register([FromBody] RegistrationRequestDto model)
         {
-            var currentUserRole = User.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
-
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
             // l'admin peut créer n’importe quel compte
 
             // le superviseur peut créer uniquement DELEGUE, MEDECIN, CLIENT
@@ -55,13 +71,13 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                     return Forbid();
                 }
             }
-            var errorMessage = await _authService.Register(model);
-            if (!string.IsNullOrEmpty(errorMessage))
+            var result = await _authService.Register(model);
+
+            if (!result.IsSuccess)
             {
-                _response.IsSuccess = false;
-                _response.Message = errorMessage;
-                return BadRequest(_response);
+                return BadRequest(result);
             }
+
             _response.IsSuccess = true;
             _response.Message = "Utilisateur créé avec succès.";
             return Ok(_response);
@@ -86,7 +102,36 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             _response.Result = loginResponse;
             return Ok(_response);
         }
+        [HttpGet("users")]
+        [Authorize(Roles = "ADMIN")] 
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var users = await _authService.GetAllUsersAsync();
+                if (users == null || !users.Any())
+                {
+                    _response.IsSuccess = true;
+                    _response.Result = new List<UserDto>();
+                    _response.Message = "Aucun utilisateur trouvé.";
+                    return Ok(_response);
+                }
 
+                _response.IsSuccess = true;
+                _response.Result = users;
+                _response.Message = "Liste de tous les utilisateurs.";
+
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Erreur lors de la récupération des utilisateurs.";
+                return StatusCode(500, _response);
+            }
+
+            
+        }
         [HttpPost("AssignRole")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> AssignRole([FromBody] AssignRoleDto model)
@@ -107,7 +152,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             return Ok(_response);
         }
         [HttpPut("add-role")]
-        [Authorize(Roles = "ADMIN")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> AddRole([FromBody] RegistrationRequestDto model)
         {
             if (!ModelState.IsValid)
@@ -133,35 +178,52 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                // ✅ 1️⃣ Récupérer l’email depuis le token JWT
+                var emailFromToken = User.FindFirstValue(ClaimTypes.Email);
+                // si besoin : User.FindFirstValue("email")
+
+                if (string.IsNullOrWhiteSpace(emailFromToken))
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Utilisateur non authentifié.";
+                    return Unauthorized(_response);
+                }
+
+                // ✅ 2️⃣ Vérifier que l’utilisateur change SON propre mot de passe
+                if (!string.Equals(emailFromToken, model.Email, StringComparison.OrdinalIgnoreCase))
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Vous ne pouvez changer que votre propre mot de passe.";
+                    return Forbid();
+                }
+
+                // ✅ 3️⃣ Appel au service (logique métier)
+                var result = await _authService.ChangePassword(model);
+
+                // ✅ 4️⃣ Mot de passe actuel incorrect
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Mot de passe actuel incorrect.";
+                    return BadRequest(_response);
+                }
+
+                // ✅ 5️⃣ Succès
+                _response.IsSuccess = true;
+                _response.Message = "Mot de passe changé avec succès.";
+                return Ok(_response);
             }
-            // recuperer l'email de l'utilisateur connecté à partir des claims
-            var email = User.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                return Unauthorized("Utilisateur non authentifié.");
-            }
-            
-            if (!string.Equals(email, model.Email, StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Vous n’avez pas le droit de changer le mot de passe d’un autre utilisateur.";
-                return Forbid();
+                _response.Message = $"Erreur lors du changement de mot de passe : {ex.Message}";
+                return StatusCode(500, _response);
             }
-
-            var result = await _authService.ChangePassword(model);
-            if (!result)
-            {
-                _response.IsSuccess = false;
-                _response.Message = "Mot de passe actuel incorrect.";
-                return BadRequest(_response);
-            }
-
-            _response.IsSuccess = true;
-            _response.Message = "Mot de passe changé avec succès.";
-            return Ok(_response);
 
         }
         [HttpPost("forgot-password")]
@@ -218,12 +280,13 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var result = await _authService.ChangeRole(model);
-            if (!result)
+            if (result == null)
             {
                 _response.IsSuccess = false;
                 _response.Message = "Échec du changement de rôle.";
-                return BadRequest(_response);
+                return NotFound(_response);
             }
+
 
             _response.IsSuccess = true;
             _response.Message = "Rôle changé avec succès.";
@@ -231,7 +294,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         }
         [HttpPut("enable-user/{email}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> EnableUser([FromBody] string email)
+        public async Task<IActionResult> EnableUser([FromRoute] string email)
         {
 
             var result = await _authService.EnableUser(email);
@@ -248,9 +311,9 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         }
         [HttpPut("delete-user/{email}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> DeleteUser([FromBody] string email)
+        public async Task<IActionResult> DeleteUser([FromRoute] string email)
         {
-            var result = await _authService.DeleteUser(email);
+            var result = await _authService.DisableUser(email);
             if (!result)
             {
                 _response.IsSuccess = false;
@@ -261,6 +324,35 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             _response.IsSuccess = true;
             _response.Message = "Utilisateur supprimé.";
             return Ok(_response);
+        }
+        [HttpGet("disabled-users")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> GetDisabledUsers()
+        {
+            try
+            {
+                var users = await _authService.GetDisabledUsersAsync();
+                if (users == null || !users.Any())
+                {
+                    _response.IsSuccess = true;
+                    _response.Result = new List<UserDto>();
+                    _response.Message = "Aucun utilisateur désactivé trouvé.";
+                    return Ok(_response);
+                }
+
+                _response.IsSuccess = true;
+                _response.Result = users;
+                _response.Message = "Liste des utilisateurs désactivés.";
+
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Erreur lors de la récupération des utilisateurs désactivés.";
+                return StatusCode(500, _response);
+
+            }
         }
 
     }

@@ -1,12 +1,14 @@
 ﻿using CynapCRM.Services.OrderAPI.Models;
 using CynapCRM.Services.OrderAPI.Models.Dto;
 using CynapCRM.Services.OrderAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.OrderAPI.Controllers
 {
-    [Route("api/order")]
+    [Route("api/orders")]
     [ApiController]
+    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
@@ -17,12 +19,22 @@ namespace CynapCRM.Services.OrderAPI.Controllers
             _response = new();
         }
 
+
         [HttpGet]
-        public async Task<IActionResult> GetAllOrders()
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetAllOrders([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             try
             {
-                _response.Result = await _orderService.GetAllOrdersAsync();
+
+                if (page <= 0 || pageSize <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Paramètres de pagination invalides.";
+                    return BadRequest(_response);
+                }
+
+                _response.Result = await _orderService.GetAllOrdersAsync(page, pageSize);
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -34,18 +46,20 @@ namespace CynapCRM.Services.OrderAPI.Controllers
 
         }
 
-        [HttpGet("{idCommande:int}")]
-        public async Task<IActionResult> GetOrderById(int id)
+
+        [HttpGet("{orderId:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetOrderById(int orderId)
         {
             try
             {
-                if (id <= 0)
+                if (orderId <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "ID de commande invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _orderService.GetOrderByIdAsync(id);
+                var result = await _orderService.GetOrderByIdAsync(orderId);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -63,18 +77,20 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        [HttpGet("client/{idClient:int}")]
-        public async Task<IActionResult> GetOrdersByClientId(int idClient)
+
+        [HttpGet("by-client/{clientId:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetOrdersByClientId(int clientId)
         {
             try
             {
-                if (idClient <= 0)
+                if (clientId <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "ID de client invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _orderService.GetOrdersByClientIdAsync(idClient);
+                var result = await _orderService.GetOrdersByClientIdAsync(clientId);
                 if (result == null || !result.Any())
                 {
                     _response.IsSuccess = false;
@@ -91,7 +107,9 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        [HttpPost("create")]
+
+        [HttpPost]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto orderDto)
         {
             try
@@ -147,18 +165,20 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+
         [HttpDelete("{idCommande:int}")]
-        public async Task<IActionResult> DeleteOrder(int id)
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> DeleteOrder(int idCommande)
         {
             try
             {
-                if (id <= 0)
+                if (idCommande <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "ID de commande invalide.";
                     return BadRequest(_response);
                 }
-                bool IsDeleted = await _orderService.DeleteOrderAsync(id);
+                bool IsDeleted = await _orderService.DeleteOrderAsync(idCommande);
                 if (!IsDeleted)
                 {
                     _response.IsSuccess = false;
