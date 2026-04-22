@@ -9,7 +9,7 @@ The frontend will be built as a standalone Angular 21 application that consumes 
 - Add routing and layout to the existing `Cynapharm` shell
 - Implement authentication flow and secure pages
 - Build feature pages for products, documents, field operations, inventory, and orders
-- Centralize API communication with services and an HTTP interceptor
+- Centralize API communication with services and HTTP interceptors for auth, errors, and logging
 
 ## Feature Areas
 ### Authentication
@@ -102,6 +102,17 @@ The frontend will be built as a standalone Angular 21 application that consumes 
 - `/orders`
 - `/orders/lines`
 - `/orders/reclamations`
+
+## Interceptors and Additional Recommendations
+- `AuthInterceptor`: attach bearer token to outgoing requests and refresh token handling if needed
+- `ErrorInterceptor`: capture API errors, normalize server messages, and trigger global toast/error UI
+- `LoggingInterceptor`: optionally log request/response timing for diagnostics during development
+- `ApiService`: common HTTP helper for headers, error mapping, and request retries
+- `RouteGuard` + `RoleGuard`: protect pages and optionally enforce user roles
+- `SharedModule`: export shared components, pipes, and directives used across feature pages
+- `UiComponents`: reusable data table, card list, search/filter bar, and empty-state display
+- `StateService` / `Store`: manage current user, navigation state, and cached API data for faster loading
+- `Unit tests`: add tests for services, interceptors, and route guards once core routing is stable
 
 ## Implementation Phases
 1. Scaffold shell, routing, auth, and dashboard
