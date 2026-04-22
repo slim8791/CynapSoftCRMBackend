@@ -8,7 +8,7 @@ using System.Diagnostics.Eventing.Reader;
 
 namespace CynapCRM.Services.ProductAPI.Controllers
 {
-    [Route("api/produit")]
+    [Route("api/products")]
     [ApiController]
     [Authorize]
     public class ProductController : ControllerBase
@@ -173,7 +173,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpPut("{id:int}/deactivate")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeactivateProduct(int id)
         {
@@ -192,7 +192,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                     _response.Message = "Produit non trouvé ou déjà supprimé.";
                     return NotFound(_response);
                 }
-                _response.Message = "Produit supprimé avec succès.";
+                _response.Message = "Produit désactivé avec succès.";
                 return Ok(_response);
             }
             catch (Exception ex)

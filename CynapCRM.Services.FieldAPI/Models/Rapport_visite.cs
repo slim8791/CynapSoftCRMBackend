@@ -18,14 +18,13 @@ namespace CynapCRM.Services.FieldAPI.Models
         [Required]
         public DateTime DateRapport { get; set; }
 
-        // ✅ Relation obligatoire avec Visite
+        // Relation obligatoire avec Visite
         [Required]
         public int Id_Visite { get; set; }
 
         [ForeignKey(nameof(Id_Visite))]
         public virtual Visite Visite { get; set; } = null!;
 
-        // Auteur
         [Required]
         public int Id_User_Delegue { get; set; }
     }

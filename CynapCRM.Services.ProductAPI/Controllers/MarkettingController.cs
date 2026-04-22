@@ -24,12 +24,6 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             _response = new();
         }
 
-
-
-        // ==================================================
-        // 🔹 Supports marketing
-        // ==================================================
-
         [HttpGet("product/{productId}/supports")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetSupportsByProduct(int productId)
@@ -117,35 +111,9 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
 
-        [HttpPut("support/{supportId}/disable")]
-        [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> DisableSupport(int supportId)
-        {
-            try
-            {
-                var result = await _markettingService.DisableSupportAsync(supportId);
+        
 
-                if (!result)
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "Impossible de désactiver le support.";
-                    return NotFound(_response);
-                }
-
-                _response.Message = "Support marketing désactivé.";
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.Message = ex.Message;
-                return StatusCode(500, _response);
-            }
-        }
-
-        // ==================================================
-        // 🔹 Fichiers marketing
-        // ==================================================
+        // Fichiers marketing
 
         [HttpPost("support/file")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
@@ -220,9 +188,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
 
-        // ==================================================
-        // 🔹 Visibilité & campagnes
-        // ==================================================
+        //  Visibilité / campagnes
 
         [HttpGet("support/{supportId}/active")]
         public async Task<IActionResult> IsSupportActive(int supportId)
@@ -286,6 +252,72 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 var result = await _markettingService.GetCampaignsAsync();
                 _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+        [HttpPut("support/{supportId}/disable")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> DisableSupport(int supportId)
+        {
+            try
+            {
+                if (supportId <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Identifiant du support invalide.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _markettingService.DisableSupportAsync(supportId);
+
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Support marketing introuvable ou déjà désactivé.";
+                    return NotFound(_response);
+                }
+
+                _response.IsSuccess = true;
+                _response.Message = "Support marketing désactivé avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+        [HttpPut("support/{supportId}/activate")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> ActivateSupport(int supportId)
+        {
+            try
+            {
+                if (supportId <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Identifiant du support invalide.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _markettingService.ActivateSupportAsync(supportId);
+
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Support marketing introuvable.";
+                    return NotFound(_response);
+                }
+
+                _response.IsSuccess = true;
+                _response.Message = "Support marketing réactivé avec succès.";
                 return Ok(_response);
             }
             catch (Exception ex)

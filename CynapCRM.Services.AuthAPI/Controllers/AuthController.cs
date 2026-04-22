@@ -10,14 +10,12 @@ namespace CynapCRM.Services.AuthAPI.Controllers
 {
     [Route("api/auth")]
     [ApiController]
-
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
         protected ResponseDto _response;
         private readonly IEmailService _emailService;
         private readonly IWebHostEnvironment _env;
-
         public AuthController(IAuthService authService, IEmailService emailService, IWebHostEnvironment env)
         {
             _authService = authService;
@@ -25,23 +23,6 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             _emailService = emailService;
             _env = env;
         }
-        [HttpGet("ping")]
-        public IActionResult Ping()
-        {
-            return Ok("AUTH API OK");
-        }
-
-       
-
-        [HttpGet("check-auth")]
-        [Authorize]
-        public IActionResult CheckAuth()
-        {
-            return Ok(User.Claims.Select(c => new { c.Type, c.Value }));
-        }
-
-
-
         [HttpPost("register")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")] 
         public async Task<IActionResult> Register([FromBody] RegistrationRequestDto model)
@@ -183,9 +164,8 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                // ✅ 1️⃣ Récupérer l’email depuis le token JWT
+                // Récupérer l’email depuis le token JWT
                 var emailFromToken = User.FindFirstValue(ClaimTypes.Email);
-                // si besoin : User.FindFirstValue("email")
 
                 if (string.IsNullOrWhiteSpace(emailFromToken))
                 {
@@ -194,7 +174,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                     return Unauthorized(_response);
                 }
 
-                // ✅ 2️⃣ Vérifier que l’utilisateur change SON propre mot de passe
+                // Vérifier que l’utilisateur change SON propre mot de passe
                 if (!string.Equals(emailFromToken, model.Email, StringComparison.OrdinalIgnoreCase))
                 {
                     _response.IsSuccess = false;
@@ -202,10 +182,10 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                     return Forbid();
                 }
 
-                // ✅ 3️⃣ Appel au service (logique métier)
+                // Appel au service (logique métier)
                 var result = await _authService.ChangePassword(model);
 
-                // ✅ 4️⃣ Mot de passe actuel incorrect
+                // Mot de passe actuel incorrect
                 if (!result)
                 {
                     _response.IsSuccess = false;
@@ -213,7 +193,6 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                // ✅ 5️⃣ Succès
                 _response.IsSuccess = true;
                 _response.Message = "Mot de passe changé avec succès.";
                 return Ok(_response);
@@ -271,8 +250,6 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             return Ok(response);
         }
 
-        
-
         [HttpPut("change-role")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> ChangeRole([FromBody] ChangeRoleDto model)
@@ -286,8 +263,6 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                 _response.Message = "Échec du changement de rôle.";
                 return NotFound(_response);
             }
-
-
             _response.IsSuccess = true;
             _response.Message = "Rôle changé avec succès.";
             return Ok(_response);
@@ -296,7 +271,6 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> EnableUser([FromRoute] string email)
         {
-
             var result = await _authService.EnableUser(email);
             if (!result)
             {
@@ -351,9 +325,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de la récupération des utilisateurs désactivés.";
                 return StatusCode(500, _response);
-
             }
         }
-
     }
 }

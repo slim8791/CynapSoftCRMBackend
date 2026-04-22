@@ -8,7 +8,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
 
     [Route("api/stock-movements")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "ADMIN,SUPERVISEUR")]
 
     public class StockMovementController : ControllerBase
     {
@@ -22,7 +22,6 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
         }
         
         [HttpPost("decrement")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> DecrementStock([FromQuery] int idStock, [FromQuery] int qte)
         {
             try
@@ -53,12 +52,8 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             }
         }
 
-
         [HttpPost("increment")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> IncrementStock(
-                    [FromQuery] int idStock,
-                    [FromQuery] int qte)
+        public async Task<IActionResult> IncrementStock([FromQuery] int idStock,[FromQuery] int qte)
         {
 
             try
@@ -90,9 +85,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             }
         }
         [HttpPost("transfer")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> TransferStock(
-                    [FromQuery] int idStockSource,
+        public async Task<IActionResult> TransferStock([FromQuery] int idStockSource,
                     [FromQuery] int idStockDestination,
                     [FromQuery] int qte)
         {
@@ -127,7 +120,6 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
         }
 
         [HttpGet("{idStock:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> GetStockMovements(int idStock)
         {
 

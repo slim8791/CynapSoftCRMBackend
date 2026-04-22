@@ -8,9 +8,7 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
     /// </summary>
     public interface IPromoService
     {
-        // ==================================================
-        // 🔹 Gestion des promotions
-        // ==================================================
+        //  Gestion des promotions
 
         /// <summary>
         /// Récupère toutes les promotions (actives et inactives)
@@ -32,9 +30,7 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         /// </summary>
         Task<bool> DeletePromotionAsync(int promotionId);
 
-        // ==================================================
-        // 🔹 Application de la promotion
-        // ==================================================
+        // Application de la promotion
 
         /// <summary>
         /// Applique la meilleure promotion valide sur un prix donné
@@ -46,9 +42,7 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         /// </summary>
         Task<bool> IsProductInPromotionAsync(int productId);
 
-        // ==================================================
-        // 🔹 Consultation par contexte
-        // ==================================================
+        //  Consultation par contexte
 
         /// <summary>
         /// Récupère les promotions liées à un produit
@@ -60,9 +54,7 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         /// </summary>
         Task<IEnumerable<PromotionDto>> GetPromotionsByLotAsync(string numeroLot);
 
-        // ==================================================
-        // 🔹 Validation métier
-        // ==================================================
+        //  Validation métier
 
         /// <summary>
         /// Vérifie si une promotion est valide
@@ -75,9 +67,7 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         /// </summary>
         Task<bool> IsPromotionApplicableAsync(int promotionId, DateTime referenceDate);
 
-        // ==================================================
-        // 🔹 Indicateurs & pilotage
-        // ==================================================
+        //  Indicateurs // pilotage
 
         /// <summary>
         /// Taux de couverture promotionnelle

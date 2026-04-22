@@ -23,7 +23,7 @@ namespace CynapCRM.Services.FieldAPI.Models
         public int? Id_Medecin { get; set; }
         public int? Id_Pharmacien { get; set; }
 
-        // ✅ Lien vers PlanningVisite
+        // Lien vers PlanningVisite
         public int? Id_Planning { get; set; }
 
         [ForeignKey(nameof(Id_Planning))]
@@ -32,10 +32,9 @@ namespace CynapCRM.Services.FieldAPI.Models
         // Région optionnelle
         public int? Id_Region { get; set; }
 
-        // ✅ Une visite → un rapport
+        // Une visite : un rapport
         public virtual Rapport_Visite? Rapport { get; set; }
 
-        // Statut simple
         public bool IsCompleted { get; set; } = false;
     }
 }

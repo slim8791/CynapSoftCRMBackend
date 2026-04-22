@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.ProductAPI.Controllers
 {
-    [Route("api/promotions")]
+    [Route("api/promos")]
     [ApiController]
     [Authorize]
     public class PromoController : ControllerBase
@@ -19,9 +19,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             _response = new ResponseDto();
         }
 
-        // ==================================================
-        // 🔹 Gestion des promotions
-        // ==================================================
+        // Gestion des promotions
 
         [HttpGet]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
@@ -122,9 +120,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
 
-        // ==================================================
-        // 🔹 Application & logique métier
-        // ==================================================
+        //  Application / logique métier
 
         [HttpGet("product/{productId:int}/apply")]
         public async Task<IActionResult> ApplyBestPromotion(int productId,  [FromQuery] decimal initialPrice)
@@ -169,9 +165,6 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
 
-        // ==================================================
-        // 🔹 Consultation par contexte
-        // ==================================================
 
         [HttpGet("product/{productId:int}")]
         public async Task<IActionResult> GetPromotionsByProduct(int productId)
@@ -223,10 +216,8 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // ==================================================
-        // 🔹 Validation & pilotage
-        // ==================================================
+    
+        //  Validation / pilotage
 
         [HttpGet("{promotionId:int}/valid")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]

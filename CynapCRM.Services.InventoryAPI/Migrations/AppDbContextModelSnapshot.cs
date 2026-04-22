@@ -44,6 +44,9 @@ namespace CynapCRM.Services.InventoryAPI.Migrations
                     b.Property<int?>("Id_Pharmacien")
                         .HasColumnType("int");
 
+                    b.Property<int>("Id_Stock")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -58,6 +61,8 @@ namespace CynapCRM.Services.InventoryAPI.Migrations
                     b.HasKey("Id_Distribution");
 
                     b.HasIndex("Id_Medecin");
+
+                    b.HasIndex("Id_Pharmacien");
 
                     b.HasIndex("NumeroLot");
 

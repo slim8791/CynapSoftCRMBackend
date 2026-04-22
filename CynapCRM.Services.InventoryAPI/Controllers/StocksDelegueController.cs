@@ -170,8 +170,6 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // 5. Créer ou Mettre à jour un stock
         [HttpPost("stock")]
 
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]

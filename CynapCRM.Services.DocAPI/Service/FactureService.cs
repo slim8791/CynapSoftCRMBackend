@@ -22,7 +22,7 @@ namespace CynapCRM.Services.DocAPI.Service
         {
             var doc = await _db.Factures
                 .OfType<Facture>().AsNoTracking()
-                .FirstOrDefaultAsync(f => f.Id_Facture == idFacture && !f.IsDeleted);
+                .FirstOrDefaultAsync(f => f.Numero_Doc == idFacture && !f.IsDeleted);
             if (doc == null)
             {
                 return null;
@@ -45,27 +45,55 @@ namespace CynapCRM.Services.DocAPI.Service
         }
         public async Task<FactureDto?> CreateOrUpdateFactureAsync(FactureDto factureDto)
         {
-
-            var facture = await _db.Factures
-                            .FirstOrDefaultAsync(f => f.Id_Facture == factureDto.Id_Facture);
-
-            if (facture == null)
+            Facture facture;
+            if (factureDto.Numero_Doc == 0)
             {
-                facture = _mapper.Map<Facture>(factureDto);
-                facture.DateCreation = DateTime.UtcNow;
+                facture = new Facture
+                {
+                    // champs hérités de Document
+                    Nom_Doc = factureDto.Nom_Doc,
+                    Id_Commande = factureDto.Id_Commande,
+                    Id_Client = factureDto.Id_Client,
+                    TypeDocument = "FACTURE",
+                    DateCreation = DateTime.UtcNow,
+
+                    // champs spécifiques Facture
+                    MontantHT = factureDto.MontantHT,
+                    MontantTTC = factureDto.MontantTTC,
+                    DateFacture = factureDto.DateFacture
+                };
 
                 _db.Factures.Add(facture);
             }
             else
             {
-                _mapper.Map(factureDto, facture);
+                facture = await _db.Factures
+                    .FirstOrDefaultAsync(f => f.Numero_Doc == factureDto.Numero_Doc);
+
+                if (facture == null)
+                    return null;
+
+                // champs modifiables 
+                facture.Nom_Doc = factureDto.Nom_Doc;
+                facture.MontantHT = factureDto.MontantHT;
+                facture.MontantTTC = factureDto.MontantTTC;
+                facture.DateFacture = factureDto.DateFacture;
             }
 
             await _db.SaveChangesAsync();
-            return _mapper.Map<FactureDto>(facture);
-
+            return new FactureDto
+            {
+                Numero_Doc = facture.Numero_Doc,
+                Nom_Doc = facture.Nom_Doc,
+                DateCreation = facture.DateCreation,
+                Id_Commande = facture.Id_Commande,
+                Id_Client = facture.Id_Client,
+                TypeDocument = "FACTURE",
+                MontantHT= facture.MontantHT,
+                MontantTTC = facture.MontantTTC,
+                DateFacture = facture.DateFacture
+            };
         }
-
         public async Task<IEnumerable<FactureDto>> GetAllFacturesAsync(int pageNumber, int pageSize)
         {
 

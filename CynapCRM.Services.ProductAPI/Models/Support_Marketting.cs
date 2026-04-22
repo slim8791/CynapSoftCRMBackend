@@ -17,7 +17,7 @@ namespace CynapCRM.Services.ProductAPI.Models
         [ForeignKey("Id_Produit")]
         public virtual Produit? Produit { get; set; }
 
-        // 🔹 Nouveau champ pour activer/désactiver le support
+        //  Nouveau champ pour activer/désactiver le support
         public bool IsActive { get; set; } = true;
         [Required]
         public string CampaignName { get; set; } = string.Empty;

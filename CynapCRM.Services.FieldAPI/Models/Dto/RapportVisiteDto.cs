@@ -1,10 +1,13 @@
-﻿namespace CynapCRM.Services.FieldAPI.Models.Dto
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CynapCRM.Services.FieldAPI.Models.Dto
 {
     public class RapportVisiteDto
     {
         public int Id_Rapport { get; set; }
-
+        [Required]
         public string Commentaire { get; set; } = string.Empty;
+        [Required]
 
         public string Resultat { get; set; } = string.Empty;
 

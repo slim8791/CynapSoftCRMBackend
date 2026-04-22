@@ -11,7 +11,7 @@ namespace CynapCRM.Services.InventoryAPI.Models
         public int? Id_Medecin { get; set; }
 
         public int? Id_Pharmacien { get; set; }
-
+        public int Id_Stock { get; set; }
         public int Qte { get; set; }
 
         public string NumeroLot { get; set; } = string.Empty;

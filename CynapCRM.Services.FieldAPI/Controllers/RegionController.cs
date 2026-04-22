@@ -1,4 +1,5 @@
 ﻿using CynapCRM.Services.FieldAPI.Models.Dto;
+using CynapCRM.Services.FieldAPI.Service;
 using CynapCRM.Services.FieldAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,23 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             _regionService = regionService;
             _response = new ResponseDto();
         }
-
-        // ==================================================
-        // ✅ CREATE / UPDATE REGION
-        // ==================================================
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllRegions()
+        {
+            try
+            {
+                var regions = await _regionService.GetAllRegionsAsync();
+                
+                return Ok(regions);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = $"Une erreur est survenue : {ex.Message}";
+                return StatusCode(500, _response);
+            }
+        }
+        
         [HttpPost]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> CreateOrUpdateRegion(
@@ -37,8 +51,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                var result = await _regionService
-                    .CreateOrUpdateRegionAsync(dto);
+                var result = await _regionService.CreateOrUpdateRegionAsync(dto);
 
                 if (result == null)
                 {
@@ -58,18 +71,13 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // ==================================================
-        // ✅ GET REGION BY ID
-        // ==================================================
         [HttpGet("{idRegion:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetRegionById(int idRegion)
         {
             try
             {
-                var result = await _regionService
-                    .GetRegionByIdAsync(idRegion);
+                var result = await _regionService.GetRegionByIdAsync(idRegion);
 
                 if (result == null)
                 {
@@ -89,17 +97,13 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             }
         }
 
-        // ==================================================
-        // ✅ GET REGIONS BY DELEGUE
-        // ==================================================
         [HttpGet("by-delegue/{idDelegue:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetRegionsByDelegue(int idDelegue)
         {
             try
             {
-                var result = await _regionService
-                    .GetRegionsByDelegueAsync(idDelegue);
+                var result = await _regionService.GetRegionsByDelegueAsync(idDelegue);
 
                 _response.Result = result;
                 return Ok(_response);
@@ -111,18 +115,13 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // ==================================================
-        // ✅ KPI : NOMBRE DE RÉGIONS COUVERTES
-        // ==================================================
         [HttpGet("count/{idDelegue:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> GetNombreRegionsCouvre(int idDelegue)
         {
             try
             {
-                var result = await _regionService
-                    .GetNombreRegionsCouvreAsync(idDelegue);
+                var result = await _regionService.GetNombreRegionsCouvreAsync(idDelegue);
 
                 _response.Result = result;
                 return Ok(_response);
@@ -134,18 +133,13 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // ==================================================
-        // ✅ DELETE REGION
-        // ==================================================
         [HttpDelete("{idRegion:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteRegion(int idRegion)
         {
             try
             {
-                var result = await _regionService
-                    .DeleteRegionAsync(idRegion);
+                var result = await _regionService.DeleteRegionAsync(idRegion);
 
                 if (!result)
                 {

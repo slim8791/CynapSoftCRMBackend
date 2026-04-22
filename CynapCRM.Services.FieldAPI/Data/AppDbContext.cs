@@ -18,25 +18,19 @@ namespace CynapCRM.Services.FieldAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // ==================================================
-            // ✅ 1–1 : Visite ↔ RapportVisite
-            // ==================================================
+            //  1–1 : Visite ↔ RapportVisite
             modelBuilder.Entity<Visite>()
                 .HasOne(v => v.Rapport)
                 .WithOne(r => r.Visite)
                 .HasForeignKey<Rapport_Visite>(r => r.Id_Visite)
-                .OnDelete(DeleteBehavior.Cascade);
-            // ✅ Si une visite est supprimée → son rapport aussi
+                .OnDelete(DeleteBehavior.Cascade); // Si une visite est supprimée → son rapport aussi
 
-            // ==================================================
-            // ✅ 1–N : PlanningVisite → Visites
-            // ==================================================
+            //  1–N : PlanningVisite → Visites
             modelBuilder.Entity<Planning_Visite>()
                 .HasMany(p => p.Visites)
                 .WithOne(v => v.Planning)
                 .HasForeignKey(v => v.Id_Planning)
-                .OnDelete(DeleteBehavior.SetNull);
-            // ✅ Si un planning est supprimé, les visites restent (historique)
+                .OnDelete(DeleteBehavior.SetNull); //  Si un planning est supprimé, les visites restent (historique)
 
 
             // 4. Recherches fréquentes par délégué

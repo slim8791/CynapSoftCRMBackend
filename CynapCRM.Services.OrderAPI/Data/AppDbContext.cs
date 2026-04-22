@@ -17,7 +17,7 @@ namespace CynapCRM.Services.OrderAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // 1. Relation Commande → Lignes de commande
+            // 1Relation Commande : Lignes de commande
             // Une commande peut contenir plusieurs lignes. La suppression d’une commande entraîne
             // automatiquement la suppression des lignes associées (DeleteBehavior.Cascade).
             modelBuilder.Entity<LigneCommande>()
@@ -26,7 +26,7 @@ namespace CynapCRM.Services.OrderAPI.Data
                 .HasForeignKey(l => l.Id_Commande)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // 2. Relation Commande → Réclamations
+            // Relation Commande : Réclamations
             // Une commande peut être associée à plusieurs réclamations. La suppression d’une commande
             // entraîne également la suppression des réclamations liées (DeleteBehavior.Cascade).
             modelBuilder.Entity<Reclamation>()
@@ -40,9 +40,9 @@ namespace CynapCRM.Services.OrderAPI.Data
                 .HasOne(r => r.LigneCommande)
                 .WithMany(l => l.Reclamations)
                 .HasForeignKey(r => r.Id_Ligne)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
-            // 3. Indexation pour l’optimisation des performances
+            // Indexation pour l’optimisation des performances
             // Les index créés sur Id_Client, Id_Produit et NumeroLot permettent d’accélérer les recherches
             // et les jointures avec d’autres microservices (par exemple Product ou Client).
             modelBuilder.Entity<Commande>().HasIndex(c => c.Id_Client);

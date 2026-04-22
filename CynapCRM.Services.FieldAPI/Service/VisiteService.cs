@@ -17,24 +17,28 @@ namespace CynapCRM.Services.FieldAPI.Service
             _db = db;
             _mapper = mapper;
         }
-        // ================================
-        // 🔹 VISITE
-        // ================================
-
-        public async Task<VisiteDto?> CreateOrUpdateVisiteAsync(VisiteDto dto)
+        public async Task<VisiteDto?> CreateOrUpdateVisiteAsync(CreateVisiteDto dto)
         {
-
             Visite visite;
-
-            // ➕ Création
             if (dto.IdVisite == 0)
             {
-                visite = _mapper.Map<Visite>(dto);
-                visite.IsCompleted = false;
+                visite = new Visite
+                {
+                    DateVisite = dto.DateVisite,
+                    Type = dto.Type,
+
+                    //  le délégué est valide via le JWT
+                    Id_User_Delegue = dto.IdDelegue,
+                    //  champs optionnels
+                    Id_Medecin = dto.IdMedecin == 0 ? null : dto.IdMedecin,
+                    Id_Pharmacien = dto.IdPharmacien == 0 ? null : dto.IdPharmacien,
+                    Id_Planning = dto.IdPlanning == 0 ? null : dto.IdPlanning,
+
+                    IsCompleted = false
+                };
 
                 _db.Visites.Add(visite);
             }
-            // ✏️ Mise à jour
             else
             {
                 visite = await _db.Visites.FirstOrDefaultAsync(v => v.Id_Visite == dto.IdVisite);
@@ -42,9 +46,14 @@ namespace CynapCRM.Services.FieldAPI.Service
                 if (visite == null || visite.IsCompleted)
                     return null;
 
-                _mapper.Map(dto, visite);
-            }
+                visite.DateVisite = dto.DateVisite;
+                visite.Type = dto.Type;
 
+                //  mise à jour champs optionnels
+                visite.Id_Medecin = dto.IdMedecin == 0 ? null : dto.IdMedecin;
+                visite.Id_Pharmacien = dto.IdPharmacien == 0 ? null : dto.IdPharmacien;
+                visite.Id_Planning = dto.IdPlanning == 0 ? null : dto.IdPlanning;
+            }
 
             await _db.SaveChangesAsync();
             return _mapper.Map<VisiteDto>(visite);
@@ -117,37 +126,36 @@ namespace CynapCRM.Services.FieldAPI.Service
             await _db.SaveChangesAsync();
             return true;
         }
-        // 🔥 logique métier
         public async Task<bool> AffectVisiteToPlanningAsync(int idVisite, int idPlanning)
         {
+            var visite = await _db.Visites
+                .FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
 
-            // 1️⃣ Charger la visite
-            var visite = await _db.Visites.FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
-
-            if (visite == null)
+            if (visite == null || visite.IsCompleted)
                 return false;
 
-            // ❌ Impossible si la visite est déjà complétée
-            if (visite.IsCompleted)
+            if (visite.Id_Planning != null)
                 return false;
 
-            // 2️⃣ Charger le planning
             var planning = await _db.Plannings
                 .FirstOrDefaultAsync(p => p.Id_Planning == idPlanning);
 
             if (planning == null)
                 return false;
 
-            // 3️⃣ Sécurité métier : même délégué
             if (visite.Id_User_Delegue != planning.Id_User_Delegue)
                 return false;
 
-            // 4️⃣ Affectation
+            if (planning.Etat == EtatPlanning.Confirme)
+                return false;
+
+            if (planning.Date.Date != visite.DateVisite.Date)
+                return false;
+
             visite.Id_Planning = idPlanning;
-
             await _db.SaveChangesAsync();
-            return true;
 
+            return true;
         }
 
         public async Task<bool> IsVisiteOwnedByDelegueAsync(int idVisite, int idDelegue)

@@ -3,6 +3,7 @@ using CynapCRM.Services.OrderAPI.Models.Dto;
 using CynapCRM.Services.OrderAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CynapCRM.Services.OrderAPI.Controllers
 {
@@ -109,7 +110,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        [Authorize(Roles = "CLIENT")]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto orderDto)
         {
             try
@@ -120,6 +121,14 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     _response.Message = "Données invalides.";
                     return BadRequest(_response);
                 }
+                // ID CLIENT depuis le JWT (Pharmacien ou Grossiste)
+                var clientIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+                if (clientIdClaim == null)
+                    return Unauthorized("Identité du client introuvable.");
+
+                orderDto.Id_Client = int.Parse(clientIdClaim.Value);
+
                 var result = await _orderService.CreateOrderAsync(orderDto);
                 if (result == null)
                 {
@@ -133,7 +142,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Échec de la création : " + ex.Message;
+                _response.Message = ex.InnerException?.Message ?? ex.Message;
                 return StatusCode(500, _response);
             }
         }

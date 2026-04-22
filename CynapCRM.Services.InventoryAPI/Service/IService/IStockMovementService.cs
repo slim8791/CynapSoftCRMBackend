@@ -4,7 +4,7 @@ namespace CynapCRM.Services.InventoryAPI.Service.IService
 {
     public interface IStockMovementService
     {
-        //  MOUVEMENTS DE STOCK
+        //  movement stocks
         Task<bool> DecrementStockAsync(int idStock, int qte);
         Task<bool> IncrementStockAsync(int idStock, int qte);
         // Historique des mouvements 

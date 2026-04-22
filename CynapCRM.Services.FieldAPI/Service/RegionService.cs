@@ -17,35 +17,37 @@ namespace CynapCRM.Services.FieldAPI.Service
             _db = db;
             _mapper = mapper;
         }
-            // ================================
-            // 🔹 REGION
-            // ================================
-
         public async Task<RegionDto?> CreateOrUpdateRegionAsync(RegionDto dto)
         {
-
             Region region;
 
-            // ➕ Création
             if (dto.Id_Region == 0)
             {
-                region = _mapper.Map<Region>(dto);
+                region = new Region
+                {
+                    NomRegion = dto.NomRegion,
+                    CodePostal = dto.CodePostal,
+
+                    //  ownership garanti
+                    Id_User_Delegue = dto.Id_User_Delegue
+                };
+
                 _db.Regions.Add(region);
             }
-            // ✏️ Mise à jour
             else
             {
-                region = await _db.Regions.FirstOrDefaultAsync(r => r.Id_Region == dto.Id_Region);
+                region = await _db.Regions
+                    .FirstOrDefaultAsync(r => r.Id_Region == dto.Id_Region);
 
                 if (region == null)
                     return null;
 
-                _mapper.Map(dto, region);
-            }
+                region.NomRegion = dto.NomRegion;
+                region.CodePostal = dto.CodePostal;
 
+            }
             await _db.SaveChangesAsync();
             return _mapper.Map<RegionDto>(region);
-
         }
 
         public async Task<RegionDto?> GetRegionByIdAsync(int idRegion)
@@ -82,9 +84,18 @@ namespace CynapCRM.Services.FieldAPI.Service
         public async Task<int> GetNombreRegionsCouvreAsync(int idDelegue)
         {
 
-            return await _db.Regions
-                            .CountAsync(r => r.Id_User_Delegue == idDelegue);
+            return await _db.Regions.CountAsync(r => r.Id_User_Delegue == idDelegue);
 
+        }
+
+
+        public async Task<IEnumerable<RegionDto>> GetAllRegionsAsync()
+        {
+            var regions = await _db.Regions
+                .AsNoTracking()
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<RegionDto>>(regions);
         }
 
     }

@@ -109,10 +109,9 @@ namespace CynapCRM.Services.FieldAPI.Controllers
 
         [HttpGet("by-range")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
-        public async Task<IActionResult> GetPlanningsByDateRange(
-                    [FromQuery] int idDelegue,
-                    [FromQuery] DateTime startDate,
-                    [FromQuery] DateTime endDate)
+        public async Task<IActionResult> GetPlanningsByDateRange([FromQuery] int idDelegue,
+                                                                    [FromQuery] DateTime startDate,
+                                                                        [FromQuery] DateTime endDate)
         {
             try
             {
@@ -129,15 +128,10 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // ==================================================
-        // ✅ GET PLANNING BY DÉLÉGUÉ & DATE
-        // ==================================================
         [HttpGet("by-date")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
-        public async Task<IActionResult> GetPlanningByDelegueAndDate(
-            [FromQuery] int idDelegue,
-            [FromQuery] DateTime date)
+        public async Task<IActionResult> GetPlanningByDelegueAndDate([FromQuery] int idDelegue,
+                                                                            [FromQuery] DateTime date)
         {
             try
             {
@@ -213,10 +207,5 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-
-
-
-
     }
 }

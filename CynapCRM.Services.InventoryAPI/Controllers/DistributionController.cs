@@ -1,4 +1,5 @@
-﻿using CynapCRM.Services.InventoryAPI.Models.Dto;
+﻿using CynapCRM.Services.InventoryAPI.Models;
+using CynapCRM.Services.InventoryAPI.Models.Dto;
 using CynapCRM.Services.InventoryAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,10 +21,9 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             _distributionService = distributionService;
             _response = new ResponseDto();
         }
-        // 1. Enregistrer ou modifier une distribution (Don d'échantillon)
         [HttpPost("distribution")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
-        public async Task<IActionResult> CreateOrUpdateDistribution([FromBody] EchantillonDto echantillonDto)
+        public async Task<IActionResult> CreateOrUpdateDistribution([FromBody] Echantillon echantillon)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var result = await _distributionService.CreateOrUpdateEchantillonAsync(echantillonDto);
+                var result = await _distributionService.CreateOrUpdateEchantillonAsync(echantillon);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -53,8 +53,6 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // 2. Récupérer une distribution spécifique par son ID
 
         [HttpGet("{idDistribution:int}")]
         public async Task<IActionResult> GetDistributionById(int idDistribution)
@@ -84,8 +82,6 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // 3. Historique des distributions pour un Médecin
 
         [HttpGet("by-medecin/{idMedecin:int}")]
 
@@ -117,8 +113,36 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+        [HttpGet("by-delegue/{idDelegue:int}")]
 
-        // 4. Historique des distributions pour un Pharmacien
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
+        public async Task<IActionResult> GetDistributionsByDelegue(int idDelegue)
+        {
+            try
+            {
+                if (idDelegue <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Id médecin invalide.";
+                    return BadRequest(_response);
+                }
+                var result = await _distributionService.GetDistributionsByMedecinAsync(idDelegue);
+                if (result == null || !result.Any())
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Aucune distribution trouvée pour ce médecin.";
+                    return NotFound(_response);
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
 
         [HttpGet("by-pharmacien/{idPharmacien:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
@@ -148,8 +172,6 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // 5. Supprimer une distribution (Annulation)
 
         [HttpDelete("{idDistribution:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]

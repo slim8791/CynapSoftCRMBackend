@@ -9,15 +9,12 @@ namespace CynapCRM.Services.AuthAPI.Service.IService
 
         Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto);
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
-        //Task<bool> EnsureRoleExistsAndAssign(Utilisateur user, string roleName);
         Task<bool> AssignRole(string email, string roleName);
         Task<bool> AddRole(string email, string roleName);
         Task<bool> ChangePassword(ChangePasswordDto model);
         Task<ResponseDto> GeneratePasswordResetToken(string email);
-        //Task<ResponseDto> ResetPassword(string email, string token, string newPassword);
         Task<LoginResponseDto> ChangeRole(ChangeRoleDto model);
         Task<bool> EnableUser(string email);
-
         Task<bool> DisableUser(string email);
         Task<IEnumerable<UserDto>> GetDisabledUsersAsync();
     }

@@ -102,7 +102,6 @@ namespace CynapCRM.Services.DocAPI.Controllers
             }
         }
 
-        // 3. Créer ou Mettre à jour une facture
         [HttpPost("createUpdate")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
 

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CynapCRM.Services.DocAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260326220435_InitialDoc")]
-    partial class InitialDoc
+    [Migration("20260422151809_AddDocumentDiscriminator")]
+    partial class AddDocumentDiscriminator
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,6 +42,9 @@ namespace CynapCRM.Services.DocAPI.Migrations
                     b.Property<int>("Id_Commande")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Nom_Doc")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -59,7 +62,7 @@ namespace CynapCRM.Services.DocAPI.Migrations
 
                     b.ToTable("T_Documents_Commerciaux", (string)null);
 
-                    b.HasDiscriminator<string>("TypeDocument").HasValue("Document_Base");
+                    b.HasDiscriminator<string>("TypeDocument").HasValue("GENERIC");
 
                     b.UseTphMappingStrategy();
                 });
@@ -88,8 +91,17 @@ namespace CynapCRM.Services.DocAPI.Migrations
                 {
                     b.HasBaseType("CynapCRM.Services.DocAPI.Models.Document");
 
+                    b.Property<DateTime>("DateFacture")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Id_Facture")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("MontantHT")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MontantTTC")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasDiscriminator().HasValue("Facture");
                 });

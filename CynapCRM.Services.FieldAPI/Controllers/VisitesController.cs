@@ -2,6 +2,7 @@
 using CynapCRM.Services.FieldAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CynapCRM.Services.FieldAPI.Controllers
 {
@@ -19,7 +20,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
 
         [HttpPost]
         [Authorize(Roles = "DELEGUE,ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> CreateOrUpdateVisite([FromBody] VisiteDto visiteDto)
+        public async Task<IActionResult> CreateOrUpdateVisite([FromBody] CreateVisiteDto dto)
         {
             try
             {
@@ -29,7 +30,19 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     _response.Message = "Données de visite invalides.";
                     return BadRequest(_response);
                 }
-                var result = await _visiteService.CreateOrUpdateVisiteAsync(visiteDto);
+
+                var delegueIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+                if (delegueIdClaim == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Identité du délégué introuvable.";
+                    return Unauthorized(_response);
+                }
+
+                dto.IdDelegue = int.Parse(delegueIdClaim.Value);    
+
+                var result = await _visiteService.CreateOrUpdateVisiteAsync(dto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -43,9 +56,12 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = $"Une erreur est survenue : {ex.Message}";
+
+                // afficher la vrai erreur //
+                _response.Message =ex.InnerException != null? ex.InnerException.Message: ex.Message;
                 return StatusCode(500, _response);
             }
+
         }
 
         [HttpGet("{idVisite:int}")]

@@ -17,60 +17,61 @@ namespace CynapCRM.Services.FieldAPI.Service
             _db = db;
             _mapper = mapper;
         }
-
-        // ================================
-        // 🔹 PLANNING
-        // ================================
-
         public async Task<PlanningVisiteDto?> CreateOrUpdatePlanningAsync(PlanningVisiteDto dto)
         {
+            if (dto.HeureDebut >= dto.HeureFin)
+                return null;
 
-
-            Planning_Visite planning;
-
-            // ✅ Construire les DateTime complets à partir du DTO
             var debut = dto.Date.Date.Add(dto.HeureDebut);
             var fin = dto.Date.Date.Add(dto.HeureFin);
 
-            // ✅ Vérifier la disponibilité du délégué
-            var hasConflict = await CheckPlanningConflictAsync(
-                dto.Id_User_Delegue,
-                debut,
-                fin);
+            var hasConflict = await _db.Plannings.AnyAsync(p =>
+                p.Id_User_Delegue == dto.Id_User_Delegue &&
+                p.Date == dto.Date &&
+                p.Id_Planning != dto.Id_Planning &&
+                debut.TimeOfDay < p.HeureFin &&
+                fin.TimeOfDay > p.HeureDebut
+            );
 
             if (hasConflict)
-                return null; // ❌ délégué non disponible
+                return null;
 
-            // ➕ Création
+            Planning_Visite planning;
+
             if (dto.Id_Planning == 0)
             {
-                planning = _mapper.Map<Planning_Visite>(dto);
-                planning.Etat = EtatPlanning.EnAttente;
+                planning = new Planning_Visite
+                {
+                    Date = dto.Date,
+                    HeureDebut = dto.HeureDebut,
+                    HeureFin = dto.HeureFin,
+                    Etat = EtatPlanning.EnAttente,
+                    Id_User_Delegue = dto.Id_User_Delegue
+                };
 
                 _db.Plannings.Add(planning);
             }
             else
             {
-                // ✏️ Mise à jour
                 planning = await _db.Plannings
                     .FirstOrDefaultAsync(p => p.Id_Planning == dto.Id_Planning);
 
                 if (planning == null || planning.Etat == EtatPlanning.Confirme)
                     return null;
 
-                _mapper.Map(dto, planning);
+                planning.Date = dto.Date;
+                planning.HeureDebut = dto.HeureDebut;
+                planning.HeureFin = dto.HeureFin;
             }
 
             await _db.SaveChangesAsync();
             return _mapper.Map<PlanningVisiteDto>(planning);
-
-
         }
 
         public async Task<PlanningVisiteDto?> GetPlanningByIdAsync(int idPlanning)
         {
             var planningVisite = await _db.Plannings
-                .AsNoTracking() // 🔥 optimisation
+                .AsNoTracking() // optimisation
                 .FirstOrDefaultAsync(p => p.Id_Planning == idPlanning);
 
             if (planningVisite == null)
@@ -95,17 +96,19 @@ namespace CynapCRM.Services.FieldAPI.Service
             return _mapper.Map<IEnumerable<PlanningVisiteDto>>(plannings);
         }
 
-        public async Task<IEnumerable<PlanningVisiteDto>> GetPlanningsByDateRangeAsync(
-                    int idDelegue,
-                    DateTime startDate,
-                    DateTime endDate)
+        public async Task<IEnumerable<PlanningVisiteDto>> GetPlanningsByDateRangeAsync(int idDelegue,
+                                                                        DateTime startDate,
+                                                                        DateTime endDate)
         {
+            if (startDate.Date > endDate.Date)
+                return Enumerable.Empty<PlanningVisiteDto>();
+
             var plannings = await _db.Plannings
                 .AsNoTracking()
                 .Where(p =>
                     p.Id_User_Delegue == idDelegue &&
                     p.Date >= startDate.Date &&
-                    p.Date <= endDate.Date)
+                    p.Date <= endDate.Date )
                 .OrderBy(p => p.Date)
                 .ThenBy(p => p.HeureDebut)
                 .ToListAsync();
@@ -113,9 +116,8 @@ namespace CynapCRM.Services.FieldAPI.Service
             return _mapper.Map<IEnumerable<PlanningVisiteDto>>(plannings);
         }
 
-        public async Task<IEnumerable<PlanningVisiteDto>> GetPlanningByDelegueAndDateAsync(
-                    int idDelegue,
-                    DateTime date)
+        public async Task<IEnumerable<PlanningVisiteDto>> GetPlanningByDelegueAndDateAsync(int idDelegue,
+                                                                                        DateTime date)
         {
             var plannings = await _db.Plannings
                 .AsNoTracking()
@@ -141,10 +143,8 @@ namespace CynapCRM.Services.FieldAPI.Service
             return true;
 
         }
-
-        //  logique métier
-
-        public async Task<bool> CheckPlanningConflictAsync(int idDelegue,DateTime debut,DateTime fin)
+        public async Task<bool> CheckPlanningConflictAsync(int idDelegue,DateTime debut,DateTime fin,
+            int? excludePlanningId = null)
         {
             var date = debut.Date;
             var heureDebut = debut.TimeOfDay;
@@ -153,6 +153,7 @@ namespace CynapCRM.Services.FieldAPI.Service
             return await _db.Plannings.AnyAsync(p =>
                 p.Id_User_Delegue == idDelegue &&
                 p.Date == date &&
+                (excludePlanningId == null || p.Id_Planning != excludePlanningId) &&
                 heureDebut < p.HeureFin &&
                 heureFin > p.HeureDebut
             );
@@ -170,7 +171,5 @@ namespace CynapCRM.Services.FieldAPI.Service
             await _db.SaveChangesAsync();
             return true;
         }
-
-
     }
 }

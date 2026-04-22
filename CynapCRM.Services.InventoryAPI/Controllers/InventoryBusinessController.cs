@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CynapCRM.Services.InventoryAPI.Controllers
 {
 
-    [Route("api/inventory/business")]
+    [Route("api/inventory-business")]
     [ApiController]
     [Authorize]
 
@@ -20,8 +20,6 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             _inventoryBusinessService = inventoryBusinessService;
             _response = new ResponseDto();
         }
-
-        // 5. Disponibilité rapide (pour vérification UI avant validation)
 
         [HttpGet("check-availability")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
@@ -55,8 +53,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
 
         [HttpPost("distribute-echantillon")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
-        public async Task<IActionResult> DistributeEchantillon(
-                    [FromQuery] int idDelegue,
+        public async Task<IActionResult> DistributeEchantillon([FromQuery] int idDelegue,
                     [FromQuery] int idPharmacien,
                     [FromQuery] int idMedecin,
                     [FromQuery] int idStock,
@@ -96,16 +93,11 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             }
         }
 
-
-
-        // 3. Appliquer la règle de gratuité (Promotion)
-
         [HttpPost("apply-gratuite")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> ApplyGratuite(
-                    [FromQuery] int idStock,
-                    [FromQuery] int quantiteAchetee,
-                    [FromQuery] int seuilPromo)
+        public async Task<IActionResult> ApplyGratuite([FromQuery] int idStock,
+                                                    [FromQuery] int quantiteAchetee,
+                                                    [FromQuery] int seuilPromo)
         {
 
             try
@@ -133,15 +125,10 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        // 2. Réserver du stock (bloquer une quantité)
-
         [HttpPost("reserve-stock")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> ReserveStock(
-                    [FromQuery] int idStock,
-                    [FromQuery] int quantite)
+        public async Task<IActionResult> ReserveStock([FromQuery] int idStock,[FromQuery] int quantite)
         {
-
             try
             {
                if (idStock <= 0 || quantite <= 0)
@@ -169,9 +156,5 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        
-
-        
     }
-
 }

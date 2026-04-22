@@ -62,30 +62,48 @@ namespace CynapCRM.Services.DocAPI.Service
                         .ToListAsync();
             return _mapper.Map<IEnumerable<DocumentDto>>(doc);
         }
-        
 
-        
-        public async Task<DocumentDto?> CreateOrUpdateDocumentAsync(DocumentDto docDto)
+
+
+        public async Task<DocumentDto?> CreateOrUpdateDocumentAsync(DocumentDto dto)
         {
+            Document document;
 
-            var document = await _db.Documents
-                            .FirstOrDefaultAsync(d => d.Numero_Doc == docDto.Numero_Doc);
-
-            if (document == null)
+            // ➕ CRÉATION
+            if (dto.Numero_Doc == 0)
             {
-                document = _mapper.Map<Document>(docDto);
-                document.DateCreation = DateTime.UtcNow;
+                document = new Document
+                {
+                    Nom_Doc = dto.Nom_Doc,
+                    Id_Commande = dto.Id_Commande,
+                    Id_Client = dto.Id_Client,
+                    TypeDocument = "GENERIC",
+                    DateCreation = DateTime.UtcNow
+                };
 
                 _db.Documents.Add(document);
             }
             else
             {
-                _mapper.Map(docDto, document);
+                document = await _db.Documents.FirstOrDefaultAsync(d => d.Numero_Doc == dto.Numero_Doc);
+
+                if (document == null)
+                    return null;
+
+                document.Nom_Doc = dto.Nom_Doc;
             }
 
             await _db.SaveChangesAsync();
-            return _mapper.Map<DocumentDto>(document);
 
+            return new DocumentDto
+            {
+                Numero_Doc = document.Numero_Doc,
+                Nom_Doc = document.Nom_Doc,
+                DateCreation = document.DateCreation,
+                Id_Commande = document.Id_Commande,
+                Id_Client = document.Id_Client,
+                TypeDocument = document.TypeDocument
+            };
         }
         public async Task<bool> DeleteDocumentAsync(int numeroDoc)
         {
@@ -99,13 +117,6 @@ namespace CynapCRM.Services.DocAPI.Service
             await _db.SaveChangesAsync();
             return true;
         }
-        
-
-
-        
-        
-
-        
 
     }
 }

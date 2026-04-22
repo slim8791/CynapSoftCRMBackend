@@ -30,28 +30,25 @@ namespace CynapCRM.Services.InventoryAPI.Service
             return _mapper.Map<IEnumerable<StockDelegueDto>>(stocks);
         }
 
-        public async Task<StockDelegueDto?> CreateUpdateStockAsync(StockDelegueDto stockDto)
+        public async Task<StockDelegueDto?> CreateUpdateStockAsync(StockDelegueDto dto)
         {
 
-
-            var stock = await _db.StocksDelegues
-                            .FirstOrDefaultAsync(s => s.Id_stock == stockDto.Id_stock);
-
-            if (stock == null)
+            var stock = new Stock_Delegue
             {
-                stock = _mapper.Map<Stock_Delegue>(stockDto);
-                stock.DateCreation = DateTime.UtcNow;
-                stock.IsDeleted = false;
+                Id_User_Delegue = dto.Id_User_Delegue,
+                Id_Produit = dto.Id_Produit,
+                NumeroLot = dto.NumeroLot,
+                QteDisponible = dto.QteDisponible,
+                QteReservee = 0,
+                DateCreation = DateTime.UtcNow,
+                IsDeleted = false
+            };
 
-                _db.StocksDelegues.Add(stock);
-            }
-            else
-            {
-                _mapper.Map(stockDto, stock);
-            }
-
+            _db.StocksDelegues.Add(stock);
             await _db.SaveChangesAsync();
+
             return _mapper.Map<StockDelegueDto>(stock);
+
         }
         public async Task<StockDelegueDto?> GetStockByIdAsync(int idStock)
         {
@@ -115,14 +112,6 @@ namespace CynapCRM.Services.InventoryAPI.Service
             await _db.SaveChangesAsync();
             return true;
 
-        }
-        
-        
-        
-        
-
-        
-
-        
+        }    
     }
 }

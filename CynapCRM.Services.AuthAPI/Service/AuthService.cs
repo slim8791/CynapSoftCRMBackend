@@ -38,14 +38,10 @@ namespace CynapCRM.Services.AuthAPI.Service
             _roleManager = roleManager;
             _jwtTokenGenerator = jwtTokenGenerator;
             _emailService = emailService;
-            _emailService = emailService;
         }
-
-
-
         public async Task<ResponseDto> Register(RegistrationRequestDto model)
         {
-            // ✅ 1️⃣ Validation stricte du rôle
+            // Validation du rôle Identity
             if (string.IsNullOrWhiteSpace(model.Role) ||
                 !AllowedRoles.Contains(model.Role))
             {
@@ -56,9 +52,8 @@ namespace CynapCRM.Services.AuthAPI.Service
                 };
             }
 
-            // ✅ 2️⃣ Vérifier si l’email existe déjà (UX + sécurité)
-            var existingUser = await _userManager.FindByEmailAsync(model.Email);
-            if (existingUser != null)
+            // Vérification email
+            if (await _userManager.FindByEmailAsync(model.Email) != null)
             {
                 return new ResponseDto
                 {
@@ -67,20 +62,67 @@ namespace CynapCRM.Services.AuthAPI.Service
                 };
             }
 
-            // ✅ 3️⃣ Normalisation du rôle (cohérence interne)
             var role = model.Role.ToUpper();
+            Utilisateur user;
 
-            // ✅ 4️⃣ Création de l’utilisateur
-            var user = new Utilisateur
+            // LOGIQUE MÉTIER CLÉ ICI
+            if (role == "CLIENT")
             {
-                UserName = model.Email,
-                Email = model.Email,
-                NormalizedEmail = model.Email.ToUpper(),
-                Name = model.Name,
-                PhoneNumber = model.PhoneNumber,
-                Adresse = model.Adresse,
-                IsDeleted = false
-            };
+                if (string.IsNullOrWhiteSpace(model.UserType))
+                {
+                    return new ResponseDto
+                    {
+                        IsSuccess = false,
+                        Message = "UserType requis pour un client (Pharmacien ou Grossiste)."
+                    };
+                }
+
+                if (model.UserType.Equals("Pharmacien", StringComparison.OrdinalIgnoreCase))
+                {
+                    user = new Pharmacien
+                    {
+                        Name = model.Name,
+                        Email = model.Email,
+                        UserName = model.Email,
+                        Adresse = model.Adresse,
+                        NomOfficine = model.NomOfficine,
+                        TypePharmacie = model.TypePharmacie,
+                        IsDeleted = false
+                    };
+                }
+                else if (model.UserType.Equals("Grossiste", StringComparison.OrdinalIgnoreCase))
+                {
+                    user = new Grossiste
+                    {
+                        Name = model.Name,
+                        Email = model.Email,
+                        UserName = model.Email,
+                        Adresse = model.Adresse,
+                        RaisonSociale = model.RaisonSociale,
+                        IsDeleted = false
+                    };
+                }
+                else
+                {
+                    return new ResponseDto
+                    {
+                        IsSuccess = false,
+                        Message = "UserType invalide. Valeurs : Pharmacien, Grossiste."
+                    };
+                }
+            }
+            else
+            {
+                // ADMIN / SUPERVISEUR / DELEGUE / MEDECIN qui herite de utilisateur
+                user = new Utilisateur
+                {
+                    Name = model.Name,
+                    Email = model.Email,
+                    UserName = model.Email,
+                    Adresse = model.Adresse,
+                    IsDeleted = false
+                };
+            }
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
@@ -90,48 +132,27 @@ namespace CynapCRM.Services.AuthAPI.Service
                 {
                     IsSuccess = false,
                     Message = result.Errors.FirstOrDefault()?.Description
-                              ?? "Erreur lors de l’inscription."
                 };
             }
 
-            // ✅ 5️⃣ Création du rôle s’il n’existe pas
+            // Rôle Identity
             if (!await _roleManager.RoleExistsAsync(role))
             {
-                var roleCreationResult =
-                    await _roleManager.CreateAsync(new IdentityRole<int> { Name = role });
-
-                if (!roleCreationResult.Succeeded)
-                {
-                    return new ResponseDto
-                    {
-                        IsSuccess = false,
-                        Message = "Erreur lors de la création du rôle."
-                    };
-                }
+                await _roleManager.CreateAsync(new IdentityRole<int> { Name = role });
             }
 
-            // ✅ 6️⃣ Affectation du rôle à l’utilisateur
-            var addRoleResult = await _userManager.AddToRoleAsync(user, role);
+            await _userManager.AddToRoleAsync(user, role);
 
-            if (!addRoleResult.Succeeded)
-            {
-                return new ResponseDto
-                {
-                    IsSuccess = false,
-                    Message = "Erreur lors de l’affectation du rôle."
-                };
-            }
-
-            // ✅ 7️⃣ Succès
             return new ResponseDto
             {
                 IsSuccess = true,
-                Message = $"Inscription réussie avec le rôle {role}."
+                Message = $"Inscription réussie avec le rôle {role} et le type {model.UserType ?? role}."
             };
         }
+
         public async Task<LoginResponseDto> Login(LoginRequestDto model)
         {
-            // ✅ 1️⃣ Recherche utilisateur via Identity (plus propre)
+            // Recherche utilisateur via Identity 
             var user = await _userManager.FindByNameAsync(model.UserName);
 
             if (user == null || user.IsDeleted)
@@ -143,7 +164,7 @@ namespace CynapCRM.Services.AuthAPI.Service
                 };
             }
 
-            // ✅ 2️⃣ Vérification du mot de passe
+            // Vérification du mot de passe
             var isValidPassword =
                 await _userManager.CheckPasswordAsync(user, model.Password);
 
@@ -156,10 +177,10 @@ namespace CynapCRM.Services.AuthAPI.Service
                 };
             }
 
-            // ✅ 3️⃣ Récupération des rôles
+            // Récupération des rôles
             var roles = await _userManager.GetRolesAsync(user);
 
-            // ✅ Sécurité métier : un utilisateur DOIT avoir un rôle
+            // un utilisateur DOIT avoir un rôle
             if (!roles.Any())
             {
                 return new LoginResponseDto
@@ -169,10 +190,10 @@ namespace CynapCRM.Services.AuthAPI.Service
                 };
             }
 
-            // ✅ 4️⃣ Génération du JWT (rôles synchronisés)
+            // Génération du JWT
             var token = _jwtTokenGenerator.GenerateToken(user, roles);
 
-            // ✅ 5️⃣ Construction du DTO utilisateur
+            // Construction du DTO utilisateur
             var userDto = new UserDto
             {
                 Id = user.Id,
@@ -181,7 +202,7 @@ namespace CynapCRM.Services.AuthAPI.Service
                 PhoneNumber = user.PhoneNumber,
                 Adresse = user.Adresse,
 
-                // ✅ rôle normalisé
+                // rôle normalisé
                 Role = roles.First().ToUpper()
             };
 
@@ -194,7 +215,7 @@ namespace CynapCRM.Services.AuthAPI.Service
 
         public async Task<bool> AssignRole(string email, string role)
         {
-            // ✅ Validation stricte du rôle
+            // Validation stricte du rôle
             if (string.IsNullOrWhiteSpace(role) ||
                 !AllowedRoles.Contains(role))
                 return false;
@@ -205,7 +226,7 @@ namespace CynapCRM.Services.AuthAPI.Service
             if (user == null || user.IsDeleted)
                 return false;
 
-            // ✅ Créer le rôle s’il n’existe pas
+            // Créer le rôle s’il n’existe pas
             if (!await _roleManager.RoleExistsAsync(normalizedRole))
             {
                 var roleResult = await _roleManager.CreateAsync(
@@ -215,7 +236,7 @@ namespace CynapCRM.Services.AuthAPI.Service
                     return false;
             }
 
-            // ✅ Éviter doublon
+            // Éviter doublon
             if (await _userManager.IsInRoleAsync(user, normalizedRole))
                 return true;
 
@@ -224,7 +245,7 @@ namespace CynapCRM.Services.AuthAPI.Service
         }
         public async Task<bool> AddRole(string email, string roleName)
         {
-            // ✅ Validation stricte
+            // Validation stricte
             if (string.IsNullOrWhiteSpace(roleName) ||
                 !AllowedRoles.Contains(roleName))
                 return false;
@@ -261,12 +282,12 @@ namespace CynapCRM.Services.AuthAPI.Service
             if (user == null || user.IsDeleted)
                 return null;
 
-            // 1️⃣ Supprimer anciens rôles
+            // Supprimer anciens rôles
             var currentRoles = await _userManager.GetRolesAsync(user);
             if (currentRoles.Any())
                 await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
-            // 2️⃣ Créer le rôle si nécessaire
+            // Créer le rôle si nécessaire
             if (!await _roleManager.RoleExistsAsync(model.NewRole))
             {
                 var roleResult = await _roleManager.CreateAsync(
@@ -276,15 +297,15 @@ namespace CynapCRM.Services.AuthAPI.Service
                     return null;
             }
 
-            // 3️⃣ Ajouter le nouveau rôle
+            // Ajouter le nouveau rôle
             var result = await _userManager.AddToRoleAsync(user, model.NewRole);
             if (!result.Succeeded)
                 return null;
 
-            // ✅ 4️⃣ RÉCUPÉRER LES RÔLES À JOUR
+            // RÉCUPÉRER LES RÔLES À JOUR
             var updatedRoles = await _userManager.GetRolesAsync(user);
 
-            // ✅ 5️⃣ GÉNÉRER UN NOUVEAU TOKEN
+            // GÉNÉRER UN NOUVEAU TOKEN
             var newToken = _jwtTokenGenerator.GenerateToken(user, updatedRoles);
 
             return new LoginResponseDto
@@ -336,9 +357,6 @@ namespace CynapCRM.Services.AuthAPI.Service
                 Result = token
             };
         }
-
-        
-
         public async Task<bool> EnableUser(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -351,7 +369,6 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             return result.Succeeded;
         }
-
         public async Task<bool> DisableUser(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -383,14 +400,14 @@ namespace CynapCRM.Services.AuthAPI.Service
         }
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
-            // ✅ 1️⃣ Récupérer tous les utilisateurs
+            // Récupérer tous les utilisateurs
             var users = await _userManager.Users
                 .AsNoTracking()
                 .ToListAsync();
 
             var result = new List<UserDto>();
 
-            // ✅ 2️⃣ Mapping MANUEL + récupération du rôle
+            // Mapping MANUEL, récupération du rôle
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
@@ -402,10 +419,9 @@ namespace CynapCRM.Services.AuthAPI.Service
                     Name = user.Name,
                     PhoneNumber = user.PhoneNumber,
                     Adresse = user.Adresse,
-                    Role = roles.FirstOrDefault() ?? "" // ✅ rôle principal
+                    Role = roles.FirstOrDefault() ?? "" 
                 });
             }
-
             return result;
         }
     }

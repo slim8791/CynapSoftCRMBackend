@@ -23,11 +23,11 @@ namespace CynapCRM.Services.OrderAPI.Models
         [Required]
         public EtatCommande Statut { get; set; } = EtatCommande.Brouillon;
 
-        // RELATIONS ESSENTIELLES
+        // relation essentielle avec le client
 
 
         [Required]
-        public int Id_Client { get; set; } // Le client (Pharmacie/Grossiste) (AuthAPI)
+        public int Id_Client { get; set; } // Le client (Pharmacie/Grossiste) ===(AuthAPI)
 
         // Une commande a plusieurs lignes
         public virtual ICollection<LigneCommande> Lignes { get; set; } = new List<LigneCommande>();

@@ -1,23 +1,32 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CynapCRM.Services.DocAPI.Models
 {
     public class Document
     {
+
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+
         public int Numero_Doc { get; set; }
 
         [Required]
         public string Nom_Doc { get; set; } = string.Empty;
 
+        public DateTime DateCreation { get; set; } = DateTime.UtcNow;
 
-        public string? ContentType { get; set; }
-        public DateTime DateCreation { get; set; } = DateTime.Now;
-
-        // ID de la commande associée (vient de OrderAPI)
+        // Référence vers OrderAPI
+        [Required]
         public int Id_Commande { get; set; }
-        // optionnel : référence à l'utilisateur qui a créé le document MMMM
+
+        // Client 
         public int? Id_Client { get; set; }
-        public bool IsDeleted { get; internal set; } = false;
+
+        [Required]
+        public string TypeDocument { get; set; } = string.Empty;
+
+        public bool IsDeleted { get; set; } = false;
+
     }
 }

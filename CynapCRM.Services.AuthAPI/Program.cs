@@ -28,25 +28,28 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(option =>
 {
-    option.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Description = "Entrez 'Bearer ' suivi de votre token",
+        Type = SecuritySchemeType.Http,   
+        Scheme = "Bearer",                
+        BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Description = "Entrez : Bearer {votre token JWT}"
     });
+
     option.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference= new OpenApiReference
+                Reference = new OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
-            }, new List<string>()
+            },
+            Array.Empty<string>()
         }
     });
 });

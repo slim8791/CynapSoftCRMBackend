@@ -23,7 +23,7 @@ namespace CynapCRM.Services.FieldAPI.Models
         [Required]
         public int Id_User_Delegue { get; set; }
 
-        // ✅ Un planning contient plusieurs visites
+        //  Un planning contient plusieurs visites
         public virtual ICollection<Visite> Visites { get; set; } = new List<Visite>();
     }
 }

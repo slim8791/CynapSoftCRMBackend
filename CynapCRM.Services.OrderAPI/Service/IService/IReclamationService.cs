@@ -4,7 +4,6 @@ namespace CynapCRM.Services.OrderAPI.Service.IService
 {
     public interface IReclamationService
     {
-        //  RÉCLAMATIONS
 
         Task<IEnumerable<ReclamationDto>> GetAllReclamationsAsync();
 

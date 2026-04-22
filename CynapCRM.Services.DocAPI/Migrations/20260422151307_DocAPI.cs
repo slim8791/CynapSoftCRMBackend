@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CynapCRM.Services.DocAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialDoc : Migration
+    public partial class DocAPI : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,9 +22,13 @@ namespace CynapCRM.Services.DocAPI.Migrations
                     Id_Commande = table.Column<int>(type: "int", nullable: false),
                     Id_Client = table.Column<int>(type: "int", nullable: true),
                     TypeDocument = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     Id_BC = table.Column<int>(type: "int", nullable: true),
                     Id_BL = table.Column<int>(type: "int", nullable: true),
-                    Id_Facture = table.Column<int>(type: "int", nullable: true)
+                    Id_Facture = table.Column<int>(type: "int", nullable: true),
+                    MontantHT = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    MontantTTC = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    DateFacture = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {

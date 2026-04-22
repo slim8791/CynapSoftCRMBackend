@@ -139,14 +139,11 @@ namespace CynapCRM.Services.FieldAPI.Controllers
 
         [HttpPut("{idRapport:int}/validate")]
         [Authorize(Roles = "SUPERVISEUR")]
-        public async Task<IActionResult> ValidateRapport(
-                    int idRapport,
-                    [FromQuery] int idSuperviseur)
+        public async Task<IActionResult> ValidateRapport(int idRapport,[FromQuery] int idSuperviseur)
         {
             try
             {
-                var result = await _rapportService
-                    .ValidateRapportAsync(idRapport, idSuperviseur);
+                var result = await _rapportService.ValidateRapportAsync(idRapport, idSuperviseur);
 
                 if (!result)
                 {
@@ -166,18 +163,13 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // ==================================================
-        // ✅ CAN CREATE RAPPORT ?
-        // ==================================================
         [HttpGet("can-create/{idVisite:int}")]
         [Authorize(Roles = "DELEGUE")]
         public async Task<IActionResult> CanCreateRapport(int idVisite)
         {
             try
             {
-                var result = await _rapportService
-                    .CanCreateRapportAsync(idVisite);
+                var result = await _rapportService.CanCreateRapportAsync(idVisite);
 
                 _response.Result = result;
                 return Ok(_response);
@@ -189,18 +181,13 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // ==================================================
-        // ✅ HAS RAPPORT ?
-        // ==================================================
         [HttpGet("has-rapport/{idVisite:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> HasRapport(int idVisite)
         {
             try
             {
-                var result = await _rapportService
-                    .HasRapportAsync(idVisite);
+                var result = await _rapportService.HasRapportAsync(idVisite);
 
                 _response.Result = result;
                 return Ok(_response);

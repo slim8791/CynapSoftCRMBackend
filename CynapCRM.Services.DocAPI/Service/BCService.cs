@@ -38,7 +38,7 @@ namespace CynapCRM.Services.DocAPI.Service
         {
             var bonCommande = await _db.BonsCommandes
                 .OfType<BonCommande>().AsNoTracking()
-                .FirstOrDefaultAsync(bc => bc.Id_BC == idBC);
+                .FirstOrDefaultAsync(bc => bc.Numero_Doc == idBC);
             if (bonCommande == null)
             {
                 return null;
@@ -47,33 +47,70 @@ namespace CynapCRM.Services.DocAPI.Service
         }
         public async Task<BonCommandeDto?> CreateOrUpdateBonCommandeAsync(BonCommandeDto bcDto)
         {
-            var entity = _mapper.Map<BonCommande>(bcDto);
+            BonCommande bc;
 
-            // Si le document existe déjà, on met à jour
-            var existing = await _db.Documents
-                .FirstOrDefaultAsync(d => d.Numero_Doc == bcDto.Numero_Doc);
-
-            if (existing == null)
+            if (bcDto.Numero_Doc == 0)
             {
-                _db.Documents.Add(entity);
+                bc = new BonCommande
+                {
+                    // Champs hérités de Document
+                    Nom_Doc = bcDto.Nom_Doc,
+                    Id_Commande = bcDto.Id_Commande,
+                    Id_Client = bcDto.Id_Client,
+                    TypeDocument = "BC",
+                    DateCreation = DateTime.UtcNow
+                };
+
+                _db.BonsCommandes.Add(bc);
             }
             else
             {
-                _db.Entry(existing).CurrentValues.SetValues(entity);
+                bc = await _db.BonsCommandes.FirstOrDefaultAsync(b => b.Numero_Doc == bcDto.Numero_Doc);
+
+                if (bc == null)
+                    return null;
+                // champs modifiables
+                bc.Nom_Doc = bcDto.Nom_Doc;
+
+                
             }
 
             await _db.SaveChangesAsync();
-            return _mapper.Map<BonCommandeDto>(entity);
+
+            // retour dto manuel
+            return new BonCommandeDto
+            {
+                Numero_Doc = bc.Numero_Doc,
+                Nom_Doc = bc.Nom_Doc,
+                DateCreation = bc.DateCreation,
+                Id_Commande = bc.Id_Commande,
+                Id_Client = bc.Id_Client,
+                TypeDocument = "BC"
+            };
+        }
+        public async Task<IEnumerable<BonCommandeDto>> GetAllBonsCommandeAsync(int pageNumber, int pageSize)
+        {
+
+            var bons = await _db.BonsCommandes
+                    .AsNoTracking()
+                    .OrderByDescending(bc => bc.DateCreation)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+            return _mapper.Map<IEnumerable<BonCommandeDto>>(bons);
         }
 
-        public Task<IEnumerable<BonCommandeDto>> GetAllBonsCommandeAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<BonCommandeDto>> GetBonsCommandeByDateAsync(DateTime startDate, DateTime endDate)
         {
-            throw new NotImplementedException();
-        }
 
-        public Task<IEnumerable<BonCommandeDto>> GetBonsCommandeByDateAsync(DateTime startDate, DateTime endDate)
-        {
-            throw new NotImplementedException();
+            var bons = await _db.BonsCommandes
+                    .AsNoTracking()
+                    .Where(bc =>
+                        bc.DateCreation >= startDate &&
+                        bc.DateCreation <= endDate)
+                    .OrderByDescending(bc => bc.DateCreation)
+                    .ToListAsync();
+            return _mapper.Map<IEnumerable<BonCommandeDto>>(bons);
         }
     }
 }

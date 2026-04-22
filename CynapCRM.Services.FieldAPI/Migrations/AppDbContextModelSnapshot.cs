@@ -30,18 +30,25 @@ namespace CynapCRM.Services.FieldAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Objectif"));
 
+                    b.Property<DateTime>("DateDebut")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateFin")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Id_User_Delegue")
                         .HasColumnType("int");
 
-                    b.Property<string>("Periode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Periode")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<int>("ValeurCible")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ValeurRealisee")
                         .HasColumnType("int");
 
                     b.HasKey("Id_Objectif");

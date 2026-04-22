@@ -41,63 +41,56 @@ namespace CynapCRM.Services.FieldAPI.Service
             return _mapper.Map<RapportVisiteDto>(rapport);
         }
 
-
-        // ================================
-        // 🔹 RAPPORT
-        // ================================
-
-
         public async Task<RapportVisiteDto?> CreateOrUpdateRapportAsync(RapportVisiteDto dto)
         {
-            // 🔎 Charger la visite avec son rapport
             var visite = await _db.Visites
                 .Include(v => v.Rapport)
                 .FirstOrDefaultAsync(v => v.Id_Visite == dto.Id_Visite);
 
             if (visite == null)
                 return null;
-
-            // ❌ Impossible si la visite est déjà complétée
+            if (string.IsNullOrWhiteSpace(dto.Commentaire))
+                return null;
+            if (string.IsNullOrWhiteSpace(dto.Resultat))
+                return null;
             if (visite.IsCompleted)
                 return null;
 
+            // OWNERSHIP : le délégué doit être le propriétaire de la visite
+            if (visite.Id_User_Delegue != dto.Id_User_Delegue)
+                return null;
+
             Rapport_Visite rapport;
-
-            switch (dto.Id_Rapport)
+            if (dto.Id_Rapport == 0)
             {
-                // ==================================================
-                // ➕ CRÉATION
-                // ==================================================
-                case 0:
-                    // ❌ Un rapport existe déjà
-                    if (visite.Rapport != null)
-                        return null;
+                if (visite.Rapport != null)
+                    return null;
 
-                    rapport = _mapper.Map<Rapport_Visite>(dto);
-                    rapport.DateRapport = DateTime.UtcNow;
+                rapport = new Rapport_Visite
+                {
+                    Id_Visite = dto.Id_Visite,
+                    Commentaire = dto.Commentaire,
+                    Resultat = dto.Resultat,
+                    DateRapport = DateTime.UtcNow,
 
-                    _db.Rapports.Add(rapport);
-                    break;
+                    // injecté depuis le JWT
+                    Id_User_Delegue = dto.Id_User_Delegue
+                };
 
-                // ==================================================
-                // ✏️ MODIFICATION
-                // ==================================================
-                default:
-                    rapport = await _db.Rapports
-                        .FirstOrDefaultAsync(r => r.Id_Rapport == dto.Id_Rapport);
+                _db.Rapports.Add(rapport);
+            }
+            else
+            {
+                rapport = await _db.Rapports.FirstOrDefaultAsync(r =>
+                        r.Id_Rapport == dto.Id_Rapport &&
+                        r.Id_Visite == dto.Id_Visite &&
+                        r.Id_User_Delegue == dto.Id_User_Delegue);
 
-                    if (rapport == null)
-                        return null;
+                if (rapport == null)
+                    return null;
 
-                    // ❌ Sécurité : le rapport doit appartenir à la visite
-                    if (rapport.Id_Visite != dto.Id_Visite)
-                        return null;
-
-                    // ✅ Mise à jour des champs modifiables
-                    rapport.Commentaire = dto.Commentaire;
-                    rapport.Resultat = dto.Resultat;
-                    // ❌ On ne modifie PAS DateRapport
-                    break;
+                rapport.Commentaire = dto.Commentaire;
+                rapport.Resultat = dto.Resultat;
             }
 
             await _db.SaveChangesAsync();
@@ -151,7 +144,6 @@ namespace CynapCRM.Services.FieldAPI.Service
         }
         public async Task<bool> CanCreateRapportAsync(int idVisite)
         {
-            // Charger la visite avec son rapport
             var visite = await _db.Visites
                 .AsNoTracking()
                 .Include(v => v.Rapport)

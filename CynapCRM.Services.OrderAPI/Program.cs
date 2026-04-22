@@ -1,7 +1,7 @@
 using CynapCRM.Services.OrderAPI.Data;
+using CynapCRM.Services.OrderAPI.Extensions;
 using CynapCRM.Services.OrderAPI.Service;
 using CynapCRM.Services.OrderAPI.Service.IService;
-using Mango.Services.OrderAPI.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -39,6 +39,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<ILigneService, LigneService>();
+builder.Services.AddScoped<IReclamationService, ReclamationService>();
 
 builder.AddAppAuthentication();
 

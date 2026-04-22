@@ -7,9 +7,7 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
     /// </summary>
     public interface IProductService
     {
-        // ==================================================
-        // 🔹 Catalogue & consultation
-        // ==================================================
+        //  Catalogue  consultation
 
         Task<IEnumerable<ProduitDto>> GetAllProductsAsync();
         Task<ProduitDto?> GetProductByIdAsync(int productId);
@@ -20,9 +18,7 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         /// </summary>
         Task<IEnumerable<ProduitDto>> GetVisibleProductsAsync();
 
-        // ==================================================
-        // 🔹 Gestion du cycle de vie produit
-        // ==================================================
+        //  Gestion du cycle de vie produit
 
         /// <summary>
         /// Crée ou met à jour un produit
@@ -44,9 +40,7 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         /// </summary>
         Task<bool> DeactivateProductAsync(int productId);
 
-        // ==================================================
-        // 🔹 Disponibilité & état produit
-        // ==================================================
+        //🔹 Disponibilité / état produit
 
         /// <summary>
         /// Indique si un produit est vendable
@@ -57,9 +51,7 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         Task<IEnumerable<ProduitDto>> GetAvailableProductsAsync();
         Task<IEnumerable<ProduitDto>> GetUnavailableProductsAsync();
 
-        // ==================================================
-        // 🔹 Stock (lecture uniquement)
-        // ==================================================
+        //  Stock (lecture uniquement)
 
         /// <summary>
         /// Stock total calculé à partir des lots
@@ -73,10 +65,8 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
 
         Task<IEnumerable<ProduitDto>> GetLowStockProductsAsync(int threshold);
 
-        // ==================================================
-        // 🔹 Recherche & navigation
-        // ==================================================
-
+        //  Recherche et navigation
+    
         Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10);
 
         Task<IEnumerable<ProduitDto>> FilterProductsAsync(
@@ -89,16 +79,12 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
 
         //Task<IEnumerable<string>> GetSearchSuggestionsAsync(string keyword);
 
-        // ==================================================
-        // 🔹 Catégories (référentiel léger)
-        // ==================================================
+        //  Catégories (référentiel léger)
 
         Task<IEnumerable<string>> GetCategoriesAsync();
         Task<IEnumerable<ProduitDto>> GetProductsByCategoryAsync(string category);
 
-        // ==================================================
-        // 🔹 Règles métier & validation
-        // ==================================================
+        //  Règles métier  validation
 
         Task<bool> ProductExistsAsync(string productName);
         Task<bool> IsProductValidAsync(int productId);
@@ -109,9 +95,7 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         /// </summary>
         Task<bool> CanArchiveProductAsync(int productId);
 
-        // ==================================================
-        // 🔹 Indicateurs & pilotage
-        // ==================================================
+        //  Indicateurs // pilotage
 
         Task<IEnumerable<ProduitDto>> GetTopProductsAsync(int topN);
         Task<ProductDashboardDto> GetProductDashboardAsync();

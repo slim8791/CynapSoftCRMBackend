@@ -3,6 +3,7 @@ using CynapCRM.Services.OrderAPI.Models.Dto;
 using CynapCRM.Services.OrderAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CynapCRM.Services.OrderAPI.Controllers
@@ -134,7 +135,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        [Authorize(Roles = "CLIENT")]
         public async Task<IActionResult> CreateUpdateReclamation([FromBody] ReclamationDto reclamationDto)
         {
             try
@@ -145,6 +146,14 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     _response.Message = "Données invalides.";
                     return BadRequest(_response);
                 }
+
+                // ID CLIENT depuis le JWT
+                var clientIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+                if (clientIdClaim == null)
+                    return Unauthorized("Identité du client introuvable.");
+
+                reclamationDto.Id_Client = int.Parse(clientIdClaim.Value);
 
                 var result = await _reclamationService.CreateUpdateReclamationAsync(reclamationDto);
 

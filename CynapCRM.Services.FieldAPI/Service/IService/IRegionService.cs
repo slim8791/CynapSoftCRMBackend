@@ -4,11 +4,7 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 {
     public interface IRegionService
     {
-
-        // ================================
-        // 🔹 RÉGIONS
-        // ================================
-
+        Task<IEnumerable<RegionDto>> GetAllRegionsAsync();
         Task<RegionDto?> CreateOrUpdateRegionAsync(RegionDto dto);
 
         Task<RegionDto?> GetRegionByIdAsync(int idRegion);
@@ -16,10 +12,6 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
         Task<IEnumerable<RegionDto>> GetRegionsByDelegueAsync(int idDelegue);
 
         Task<bool> DeleteRegionAsync(int idRegion);
-
-        // ================================
-        // 🔹 LOGIQUE MÉTIER / KPI
-        // ================================
 
         // Nombre de régions couvertes par un délégué
         Task<int> GetNombreRegionsCouvreAsync(int idDelegue);

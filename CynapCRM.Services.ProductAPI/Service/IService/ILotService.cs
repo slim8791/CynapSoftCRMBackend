@@ -4,9 +4,6 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
 {
     public interface ILotService
     {
-        // ================================
-        // 🔹 Gestion des Lots
-        // ================================
 
         Task<LotDto?> GetLotByNumeroAsync(string numeroLot);
 

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CynapCRM.Services.OrderAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260419134636_OrderAPI")]
-    partial class OrderAPI
+    [Migration("20260421172303_MakeNumeroLotNullable")]
+    partial class MakeNumeroLotNullable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -70,7 +70,6 @@ namespace CynapCRM.Services.OrderAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("NumeroLot")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("PrixUnitaire")
@@ -151,7 +150,7 @@ namespace CynapCRM.Services.OrderAPI.Migrations
                     b.HasOne("CynapCRM.Services.OrderAPI.Models.LigneCommande", "LigneCommande")
                         .WithMany("Reclamations")
                         .HasForeignKey("Id_Ligne")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Commande");

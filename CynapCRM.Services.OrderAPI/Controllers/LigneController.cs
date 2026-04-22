@@ -9,7 +9,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
 {
 
     [ApiController]
-    [Route("api/order-lines")]
+    [Route("api/lignes")]
     [Authorize]
 
     public class LigneController : ControllerBase
@@ -23,8 +23,8 @@ namespace CynapCRM.Services.OrderAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
-        public async Task<IActionResult> CreateOrUpdateLigneCommande([FromBody] LigneCommandeDto ligneDto)
+        [Authorize(Roles = "CLIENT")]
+        public async Task<IActionResult> CreateOrUpdateLigneCommande([FromBody] CreateOrUpdateLigneCommandeDto ligneDto)
         {
             try
             {

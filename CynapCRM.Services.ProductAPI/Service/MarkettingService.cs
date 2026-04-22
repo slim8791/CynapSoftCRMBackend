@@ -16,7 +16,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             _mapper = mapper;
         }
 
-        // 🔹 Supports marketing
+        //  Supports marketing
 
         public async Task<IEnumerable<SupportMarketingDto>> GetSupportsByProductAsync(int productId)
         {
@@ -71,7 +71,7 @@ namespace CynapCRM.Services.ProductAPI.Service
         }
 
 
-        // 🔹 Fichiers marketing
+        //  Fichiers marketing
 
         public async Task<FichierDto> AddFileToSupportAsync(FichierDto fichierDto)
         {
@@ -110,7 +110,7 @@ namespace CynapCRM.Services.ProductAPI.Service
         }
 
 
-        // 🔹 Visibilité & logique métier
+        //  Visibilité // logique métier
 
         public async Task<bool> IsSupportActiveAsync(int supportId)
         {
@@ -130,10 +130,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return _mapper.Map<IEnumerable<SupportMarketingDto>>(supports);
         }
 
-        // ==================================================
-        // 🔹 Campagnes marketing
-        // ==================================================
-
+        //  Campagnes marketing
         public async Task<IEnumerable<SupportMarketingDto>> GetSupportsByCampaignAsync(string campaignName)
         {
             var supports = await _db.Support_Markettings
@@ -152,5 +149,15 @@ namespace CynapCRM.Services.ProductAPI.Service
                 .Distinct()
                 .ToListAsync();
         }
+        public async Task<bool> ActivateSupportAsync(int supportId)
+        {
+            var support = await _db.Support_Markettings.FindAsync(supportId);
+            if (support == null) return false;
+
+            support.IsActive = true;
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

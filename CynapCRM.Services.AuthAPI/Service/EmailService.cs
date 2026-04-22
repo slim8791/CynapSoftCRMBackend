@@ -35,7 +35,7 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             using var client = new SmtpClient
             {
-                Timeout = 10000 // ✅ 10 secondes
+                Timeout = 10000 // 10 secondes
             };
 
             try
@@ -56,7 +56,6 @@ namespace CynapCRM.Services.AuthAPI.Service
             }
             catch (Exception ex)
             {
-                // 👉 Ici tu peux logger l’erreur (ILogger)
                 throw new Exception("Erreur lors de l'envoi de l'email.", ex);
             }
         }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CynapCRM.Services.OrderAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialOrder : Migration
+    public partial class OrderAPI : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,10 +35,11 @@ namespace CynapCRM.Services.OrderAPI.Migrations
                     Id_Ligne = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Quantite = table.Column<int>(type: "int", nullable: false),
-                    Remise = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    Remise = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Id_Commande = table.Column<int>(type: "int", nullable: false),
                     Id_Produit = table.Column<int>(type: "int", nullable: false),
-                    NumeroLot = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    NumeroLot = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PrixUnitaire = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -59,8 +60,9 @@ namespace CynapCRM.Services.OrderAPI.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateReclamation = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Statut = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Statut = table.Column<int>(type: "int", nullable: false),
                     Id_Commande = table.Column<int>(type: "int", nullable: false),
+                    Id_Ligne = table.Column<int>(type: "int", nullable: false),
                     Id_Client = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -72,6 +74,11 @@ namespace CynapCRM.Services.OrderAPI.Migrations
                         principalTable: "Commandes",
                         principalColumn: "Id_Commande",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Reclamations_LignesCommandes_Id_Ligne",
+                        column: x => x.Id_Ligne,
+                        principalTable: "LignesCommandes",
+                        principalColumn: "Id_Ligne");
                 });
 
             migrationBuilder.CreateIndex(
@@ -98,16 +105,21 @@ namespace CynapCRM.Services.OrderAPI.Migrations
                 name: "IX_Reclamations_Id_Commande",
                 table: "Reclamations",
                 column: "Id_Commande");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reclamations_Id_Ligne",
+                table: "Reclamations",
+                column: "Id_Ligne");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "LignesCommandes");
+                name: "Reclamations");
 
             migrationBuilder.DropTable(
-                name: "Reclamations");
+                name: "LignesCommandes");
 
             migrationBuilder.DropTable(
                 name: "Commandes");

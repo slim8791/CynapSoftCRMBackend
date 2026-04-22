@@ -11,10 +11,6 @@ namespace CynapCRM.Services.AuthAPI.Data
         {
 
         }
-        public DbSet<Utilisateur> Utilisateurs { get; set; }
-
-        
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -36,8 +32,6 @@ namespace CynapCRM.Services.AuthAPI.Data
                 new IdentityRole<int> { Id = 4, Name = "Medecin", NormalizedName = "MEDECIN" },
                 new IdentityRole<int> { Id = 5, Name = "Client", NormalizedName = "CLIENT" }
             );
-            
-
         }
     }
 }

@@ -18,16 +18,15 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
         }
 
-        public async Task<EchantillonDto?> CreateOrUpdateEchantillonAsync(EchantillonDto echantillonDto)
+        public async Task<bool> CreateOrUpdateEchantillonAsync(Echantillon echantillon)
         {
 
-            var distribution = await _db.Echantillons
-                            .FirstOrDefaultAsync(e =>
-                                e.Id_Distribution == echantillonDto.Id_Distribution);
+            var distribution = await _db.Echantillons.FirstOrDefaultAsync
+                                            (e =>e.Id_Distribution == echantillon.Id_Distribution);
 
             if (distribution == null)
             {
-                distribution = _mapper.Map<Echantillon>(echantillonDto);
+                distribution = _mapper.Map<Echantillon>(echantillon);
                 distribution.DateDistribution = DateTime.UtcNow;
                 distribution.IsDeleted = false;
 
@@ -35,19 +34,19 @@ namespace CynapCRM.Services.InventoryAPI.Service
             }
             else
             {
-                _mapper.Map(echantillonDto, distribution);
+                _mapper.Map(echantillon, distribution);
             }
 
-            await _db.SaveChangesAsync();
-            return _mapper.Map<EchantillonDto>(distribution);
 
+            _db.Echantillons.Add(echantillon);
+            await _db.SaveChangesAsync();
+            return true;
         }
         public async Task<EchantillonDto?> GetEchantillonByIdAsync(int idDistribution)
         {
 
-            var distribution = await _db.Echantillons
-                            .AsNoTracking()
-                            .FirstOrDefaultAsync(e =>
+            var distribution = await _db.Echantillons.AsNoTracking()
+                                .FirstOrDefaultAsync(e =>
                                 e.Id_Distribution == idDistribution && !e.IsDeleted);
             if (distribution == null)
             {
@@ -94,6 +93,19 @@ namespace CynapCRM.Services.InventoryAPI.Service
             distribution.IsDeleted = true;
             await _db.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<IEnumerable<EchantillonDto>> GetDistributionsByDelegueAsync(int idDelegue)
+        {
+            var distributions = await _db.Echantillons
+                            .AsNoTracking()
+                            .Where(e =>
+                                e.Id_Pharmacien == idDelegue &&
+                                !e.IsDeleted)
+                            .OrderByDescending(e => e.DateDistribution)
+                            .ToListAsync();
+
+            return _mapper.Map<IEnumerable<EchantillonDto>>(distributions);
         }
     }
 }

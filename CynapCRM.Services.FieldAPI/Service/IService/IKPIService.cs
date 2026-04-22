@@ -4,26 +4,22 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 {
     public interface IKPIService
     {
-        // ================================
-        // 🔥 LOGIQUE MÉTIER AVANCÉE / KPI
-        // ================================
 
-        // ✅ Nombre de visites effectuées sur une période
         Task<int> GetNombreVisitesAsync(int idDelegue, DateTime debut, DateTime fin);
 
-        // ✅ Vérifier s’il existe déjà une visite à une date donnée
+        // Vérifier s’il existe déjà une visite à une date donnée
         Task<bool> HasVisiteAtDateAsync(int idDelegue, DateTime date);
 
-        // ✅ Historique d’activité du délégué (audit / reporting)
+        // Historique d’activité du délégué (audit / reporting)
         Task<IEnumerable<ActiviteHistoriqueDto>> GetHistoriqueActiviteAsync(int idDelegue);
 
-        // ✅ KPI client (fidélité)
+        // KPI client (fidélité)
         Task<int> CalculateClientFideliteAsync(int idClient);
 
-        // ✅ Performance par objectif
+        // Performance par objectif
         Task<IEnumerable<PerformanceDto>> CalculatePerformanceAsync(int idDelegue);
 
-        // ✅ KPI global simplifié (dashboard)
+        // KPI global simplifié (dashboard)
         Task<double> GetPerformanceRateAsync(int idDelegue);
 
     }

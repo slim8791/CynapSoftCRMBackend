@@ -185,9 +185,6 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
 
-        // ==================================================
-        // 🔹 Expiration
-        // ==================================================
 
         [HttpGet("lot/{numeroLot}/expired")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
@@ -352,7 +349,6 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
 
     }
 }

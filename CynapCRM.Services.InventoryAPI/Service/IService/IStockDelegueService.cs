@@ -14,13 +14,5 @@ namespace CynapCRM.Services.InventoryAPI.Service.IService
         Task<StockDelegueDto?> GetStockByLotAsync(string numeroLot);
 
         Task<bool> DeleteStockAsync(int idStock, StockType type);
-
-        
-
-        
-
-       
-
-        
     }
 }

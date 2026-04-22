@@ -76,7 +76,6 @@ namespace CynapCRM.Services.DocAPI.Controllers
             }
         }
 
-        // 2. Récupérer tous les Bons de Commande d'un client
         [HttpGet("client/{idClient:int}")]
 
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]

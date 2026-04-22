@@ -40,6 +40,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ILotService, LotService>();
+builder.Services.AddScoped<IMarkettingService, MarkettingService>();
+builder.Services.AddScoped<IPromoService, PromoService>();
+
+
 
 builder.AddAppAuthentication();
 

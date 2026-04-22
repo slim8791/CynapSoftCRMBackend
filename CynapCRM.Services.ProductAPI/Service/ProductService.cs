@@ -111,7 +111,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return true;
         }
 
-        // 🔹 Disponibilité & stock (lecture)
+        //  Disponibilité // stock (lecture)
 
         public async Task<bool> IsProductAvailableAsync(int productId)
         {
@@ -182,7 +182,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return _mapper.Map<IEnumerable<ProduitDto>>(products);
         }
 
-        // 🔹 Recherche & navigation
+        //  Recherche et navigation
 
         public async Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10)
         {
@@ -195,7 +195,7 @@ namespace CynapCRM.Services.ProductAPI.Service
                 .AsNoTracking()
                 .Where(p => p.Nom.ToLower().Contains(keyword) && !p.IsArchived) // 🔥 exclure archivés
                 .OrderBy(p => p.Nom)
-                .Take(limit) // 🔥 paramètre dynamique
+                .Take(limit) 
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<ProduitDto>>(produits);
@@ -226,9 +226,7 @@ namespace CynapCRM.Services.ProductAPI.Service
 
         
 
-        // ==================================================
-        // 🔹 Catégories
-        // ==================================================
+        //  Catégories
 
         public async Task<IEnumerable<string>> GetCategoriesAsync()
         {
@@ -247,9 +245,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return _mapper.Map<IEnumerable<ProduitDto>>(products);
         }
 
-        // ==================================================
-        // 🔹 Validation métier
-        // ==================================================
+        //  Validation métier
 
         public async Task<bool> ProductExistsAsync(string productName)
         {
@@ -270,9 +266,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return totalStock == 0;
         }
 
-        // ==================================================
-        // 🔹 KPI & pilotage
-        // ==================================================
+        //  KPI /pilotage
 
         public async Task<IEnumerable<ProduitDto>> GetTopProductsAsync(int topN)
         {

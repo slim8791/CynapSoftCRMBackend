@@ -11,46 +11,38 @@ namespace CynapCRM.Services.AuthAPI.Extensions
         public static WebApplicationBuilder AddAppAuthentication(
             this WebApplicationBuilder builder)
         {
-            // ✅ Nettoyage des claims par défaut
+            //Désactiver le mapping automatique des claims
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-            var settingsSection = builder.Configuration.GetSection("ApiSettings:JwtOptions");
+            var jwtSection = builder.Configuration.GetSection("ApiSettings:JwtOptions");
 
-            var secret = settingsSection.GetValue<string>("Secret");
-            var issuer = settingsSection.GetValue<string>("Issuer");
-            var audience = settingsSection.GetValue<string>("Audience");
+            var secret = jwtSection.GetValue<string>("Secret");
+            var issuer = jwtSection.GetValue<string>("Issuer");
+            var audience = jwtSection.GetValue<string>("Audience");
 
             var key = Encoding.UTF8.GetBytes(secret);
 
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.MapInboundClaims = false;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        // ✅ Sécurité clé
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(key),
+            builder.Services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(x =>{x.TokenValidationParameters = new TokenValidationParameters{
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
 
-                        // ✅ Émetteur / audience
-                        ValidateIssuer = true,
-                        ValidIssuer = issuer,
+                    ValidateIssuer = true,
+                    ValidIssuer = issuer,
 
-                        ValidateAudience = true,
-                        ValidAudience = audience,
+                    ValidateAudience = true,
+                    ValidAudience = audience,
 
-                        // ✅ EXPIRATION DU TOKEN (IMPORTANT)
-                        ValidateLifetime = true,
-                        ClockSkew = TimeSpan.Zero,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
 
-                        // ✅ RÔLES COMPATIBLES AVEC [Authorize(Roles = "...")]
-                        RoleClaimType = ClaimTypes.Role
                     };
                 });
-
-            // ✅ OBLIGATOIRE
             builder.Services.AddAuthorization();
-
             return builder;
         }
     }

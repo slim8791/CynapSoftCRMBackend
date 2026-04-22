@@ -19,9 +19,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             _mapper = mapper;
         }
 
-        // ==================================================
-        // 🔹 Gestion des promotions
-        // ==================================================
+        //  Gestion des promotions
 
         public async Task<IEnumerable<PromotionDto>> GetAllPromotionsAsync()
         {
@@ -70,9 +68,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return true;
         }
 
-        // ==================================================
-        // 🔹 Application des promotions
-        // ==================================================
+        //  Application des promotions
 
         public async Task<decimal> ApplyBestPromotionAsync(int productId, decimal initialPrice)
         {
@@ -113,9 +109,7 @@ namespace CynapCRM.Services.ProductAPI.Service
                     p.Lot.Id_Produit == productId);
         }
 
-        // ==================================================
-        // 🔹 Consultation par contexte
-        // ==================================================
+        //  Consultation par contexte
 
         public async Task<IEnumerable<PromotionDto>> GetPromotionsByProductAsync(int productId)
         {
@@ -136,9 +130,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return _mapper.Map<IEnumerable<PromotionDto>>(promotions);
         }
 
-        // ==================================================
-        // 🔹 Validation métier
-        // ==================================================
+        //  Validation métier
 
         public async Task<bool> IsPromotionValidAsync(int promotionId)
         {
@@ -160,9 +152,7 @@ namespace CynapCRM.Services.ProductAPI.Service
                 p.DateExpiration >= referenceDate);
         }
 
-        // ==================================================
-        // 🔹 Indicateurs & pilotage
-        // ==================================================
+        //  Indicateurs / pilotage
 
         public async Task<double> GetPromotionCoverageRateAsync()
         {

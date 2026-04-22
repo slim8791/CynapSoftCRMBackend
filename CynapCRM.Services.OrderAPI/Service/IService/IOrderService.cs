@@ -2,8 +2,6 @@
 
 public interface IOrderService
 { 
-    //  COMMANDES
-
     Task<IEnumerable<CommandeDto>> GetAllOrdersAsync(int page, int pageSize);
 
     Task<CommandeDto> GetOrderByIdAsync(int orderId);

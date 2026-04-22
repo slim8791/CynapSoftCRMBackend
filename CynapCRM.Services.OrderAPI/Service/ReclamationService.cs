@@ -59,34 +59,45 @@ namespace CynapCRM.Services.OrderAPI.Service
         public async Task<ReclamationDto?> CreateUpdateReclamationAsync(ReclamationDto dto)
         {
 
-            var commandeExists = await _db.Commandes.AnyAsync(c => c.Id_Commande == dto.Id_Commande);
+            var ligneValide = await _db.LignesCommandes.AnyAsync(l =>
+                    l.Id_Ligne == dto.Id_Ligne &&
+                    l.Id_Commande == dto.Id_Commande);
 
-            if (!commandeExists)
+            if (!ligneValide)
                 return null;
-
 
             Reclamation rec;
 
             if (dto.Id_Rec == 0)
             {
-                rec = _mapper.Map<Reclamation>(dto);
-                rec.DateReclamation = DateTime.UtcNow;
+                rec = new Reclamation
+                {
+                    Id_Commande = dto.Id_Commande,
+                    Id_Ligne = dto.Id_Ligne,
+                    Id_Client = dto.Id_Client,
+                    Message = dto.Message,
+                    DateReclamation = DateTime.UtcNow,
 
-                rec.Statut = StatutReclamation.Ouverte;
+                    // statut initial par défaut à "Ouverte" lors de la création
+                    Statut = StatutReclamation.Ouverte
+                };
 
                 _db.Reclamations.Add(rec);
             }
             else
             {
-                // ✏️ Mise à jour
-                rec = await _db.Reclamations.FirstOrDefaultAsync(r => r.Id_Rec == dto.Id_Rec);
+                // ✏️ MISE À JOUR
+                rec = await _db.Reclamations
+                    .FirstOrDefaultAsync(r => r.Id_Rec == dto.Id_Rec && r.Id_Client == dto.Id_Client);
 
                 if (rec == null)
                     return null;
+
                 rec.Message = dto.Message;
             }
 
             await _db.SaveChangesAsync();
+
             return _mapper.Map<ReclamationDto>(rec);
         }
         public async Task<bool> UpdateReclamationStatusAsync(int reclamationId, StatutReclamation newStatus)
@@ -100,7 +111,6 @@ namespace CynapCRM.Services.OrderAPI.Service
             switch (reclamation.Statut)
             {
                 case StatutReclamation.Resolue:
-                    //  Déjà résolue → aucune modification possible
                     return false;
 
                 case StatutReclamation.Ouverte:

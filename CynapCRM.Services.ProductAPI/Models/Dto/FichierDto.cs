@@ -9,7 +9,6 @@
         public string Extension { get; set; } = string.Empty;
         public long Taille { get; set; }
 
-        // Lien métier
         public int Id_Support { get; set; }
 
     }

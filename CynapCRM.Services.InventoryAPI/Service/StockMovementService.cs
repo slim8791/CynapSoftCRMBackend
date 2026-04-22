@@ -25,7 +25,7 @@ namespace CynapCRM.Services.InventoryAPI.Service
             }
 
             var stock = await _db.StocksDelegues
-                            .FirstOrDefaultAsync(s => s.Id_stock == idStock && !s.IsDeleted);
+                .FirstOrDefaultAsync(s => s.Id_stock == idStock && !s.IsDeleted);
             if (stock == null || stock.QteDisponible < qte)
             {
                 return false;

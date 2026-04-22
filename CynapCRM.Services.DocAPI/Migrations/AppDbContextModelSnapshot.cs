@@ -30,9 +30,6 @@ namespace CynapCRM.Services.DocAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Numero_Doc"));
 
-                    b.Property<string>("ContentType")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("DateCreation")
                         .HasColumnType("datetime2");
 
@@ -62,7 +59,7 @@ namespace CynapCRM.Services.DocAPI.Migrations
 
                     b.ToTable("T_Documents_Commerciaux", (string)null);
 
-                    b.HasDiscriminator<string>("TypeDocument").HasValue("Document_Base");
+                    b.HasDiscriminator<string>("TypeDocument").HasValue("GENERIC");
 
                     b.UseTphMappingStrategy();
                 });
@@ -71,18 +68,12 @@ namespace CynapCRM.Services.DocAPI.Migrations
                 {
                     b.HasBaseType("CynapCRM.Services.DocAPI.Models.Document");
 
-                    b.Property<int>("Id_BC")
-                        .HasColumnType("int");
-
                     b.HasDiscriminator().HasValue("BonCommande");
                 });
 
             modelBuilder.Entity("CynapCRM.Services.DocAPI.Models.BonLivraison", b =>
                 {
                     b.HasBaseType("CynapCRM.Services.DocAPI.Models.Document");
-
-                    b.Property<int>("Id_BL")
-                        .HasColumnType("int");
 
                     b.HasDiscriminator().HasValue("BonLivraison");
                 });
@@ -91,8 +82,14 @@ namespace CynapCRM.Services.DocAPI.Migrations
                 {
                     b.HasBaseType("CynapCRM.Services.DocAPI.Models.Document");
 
-                    b.Property<int>("Id_Facture")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("DateFacture")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("MontantHT")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MontantTTC")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasDiscriminator().HasValue("Facture");
                 });

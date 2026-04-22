@@ -9,7 +9,6 @@ namespace CynapCRM.Services.FieldAPI.Controllers
     [ApiController]
     [Route("api/objectifs")]
     [Authorize]
-
     public class ObjectifController : Controller
     {
 
@@ -22,9 +21,44 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             _response = new ResponseDto();
         }
 
-        // ==================================================
-        // ✅ CREATE / UPDATE OBJECTIF
-        // ==================================================
+        [HttpGet("{idObjectif}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetObjectifById(int idObjectif)
+        {
+            try
+            {
+                var objectif = await _objectifService.GetObjectifsByIdAsync(idObjectif);
+
+                if (objectif == null)
+                    return NotFound();
+
+                return Ok(objectif);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+        [HttpGet]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetAllObjectifs()
+        {
+            try
+            {
+                var objectifs = await _objectifService.GetAllObjectifsAsync();
+                return Ok(objectifs);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+            
+        }
+
         [HttpPost]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> CreateOrUpdateObjectif(
@@ -60,9 +94,6 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             }
         }
 
-        // ==================================================
-        // ✅ GET OBJECTIFS BY DÉLÉGUÉ
-        // ==================================================
         [HttpGet("by-delegue/{idDelegue:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> GetObjectifsByDelegue(int idDelegue)
@@ -81,10 +112,6 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // ==================================================
-        // ✅ UPDATE OBJECTIF VALUE
-        // ==================================================
         [HttpPut("{idObjectif:int}/value")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> UpdateObjectifValue(
@@ -102,7 +129,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                _response.Message = "Valeur de l’objectif mise à jour avec succès.";
+                _response.Message = "Valeur réalisé mise à jour avec succès.";
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -112,10 +139,6 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
-        // ==================================================
-        // ✅ DELETE OBJECTIF
-        // ==================================================
         [HttpDelete("{idObjectif:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteObjectif(int idObjectif)

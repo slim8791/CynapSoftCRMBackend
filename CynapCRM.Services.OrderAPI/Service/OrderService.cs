@@ -17,7 +17,7 @@ namespace CynapCRM.Services.OrderAPI.Service
             _mapper = mapper;
             _db = db;
         }
-        //gestion des commandes 
+        // Gestion des commandes 
         public async Task<IEnumerable<CommandeDto>> GetAllOrdersAsync(int page, int pageSize)
         {
             var commandes = await _db.Commandes
@@ -56,16 +56,33 @@ namespace CynapCRM.Services.OrderAPI.Service
         //creation d'une commande
         public async Task<CommandeDto> CreateOrderAsync(CreateOrderDto orderDto)
         {
-            var order = _mapper.Map<Commande>(orderDto);
-            order.DateCommande = DateTime.Now;
-            if (orderDto.IsFinalValidation)
+
+            var order = new Commande
             {
-                order.Statut = EtatCommande.EnAttente; // (1)
-            }
-            else
+                Id_Client = orderDto.Id_Client, 
+                DateCommande = DateTime.UtcNow,
+                Statut = orderDto.IsFinalValidation
+                        ? EtatCommande.EnAttente
+                        : EtatCommande.Brouillon,
+                Lignes = new List<LigneCommande>()
+            };
+
+            foreach (var ligneDto in orderDto.Lignes)
             {
-                order.Statut = EtatCommande.Brouillon; // (0)
+                var ligne = new LigneCommande
+                {
+                    Id_Produit = ligneDto.Id_Produit,
+                    Quantite = ligneDto.Quantite,
+                    PrixUnitaire = ligneDto.PrixUnitaire,
+                    Remise = ligneDto.Remise,
+                    NumeroLot = null,            
+                    Commande = order             
+                };
+
+                order.Lignes.Add(ligne);
             }
+
+            // calcul des montants
 
             order.MontantTotalHT = order.Lignes.Sum(l =>
             (l.PrixUnitaire * l.Quantite) * (1 - (l.Remise / 100)));
@@ -113,9 +130,6 @@ namespace CynapCRM.Services.OrderAPI.Service
             return true;
 
         }
-        
-        
-
-        
+  
     }
 }

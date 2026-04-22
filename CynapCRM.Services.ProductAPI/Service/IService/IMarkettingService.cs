@@ -2,82 +2,50 @@
 
 namespace CynapCRM.Services.ProductAPI.Service.IService
 {
-    /// <summary>
-    /// Service métier responsable de la gestion des supports marketing
-    /// (documents, visuels, campagnes commerciales)
-    /// </summary>
+
     public interface IMarkettingService
     {
-        // ==================================================
-        // 🔹 Supports marketing
-        // ==================================================
 
-        /// <summary>
-        /// Récupère tous les supports marketing d’un produit
-        /// </summary>
+
+        // Récupère tous les supports marketing d’un produit
         Task<IEnumerable<SupportMarketingDto>> GetSupportsByProductAsync(int productId);
 
-        /// <summary>
         /// Récupère un support marketing par son identifiant
-        /// </summary>
         Task<SupportMarketingDto?> GetSupportByIdAsync(int supportId);
 
-        /// <summary>
-        /// Crée ou met à jour un support marketing
-        /// </summary>
+        // Crée ou met à jour un support marketing
         Task<SupportMarketingDto> CreateOrUpdateSupportAsync(SupportMarketingDto supportDto);
 
-        /// <summary>
-        /// Désactive un support marketing (suppression logique)
-        /// </summary>
+        // Désactive un support marketing (suppression logique)
         Task<bool> DisableSupportAsync(int supportId);
+        Task<bool> ActivateSupportAsync(int supportId);
 
-        // ==================================================
-        // 🔹 Fichiers marketing
-        // ==================================================
+        //  Fichiers marketing
 
-        /// <summary>
-        /// Ajoute un fichier (PDF, image, vidéo…) à un support marketing
-        /// </summary>
+        // Ajoute un fichier (PDF, image, vidéo…) à un support marketing
         Task<FichierDto> AddFileToSupportAsync(FichierDto fichierDto);
 
-        /// <summary>
-        /// Supprime un fichier marketing
-        /// </summary>
+        // Supprime un fichier marketing
         Task<bool> DeleteFileAsync(int fichierId);
 
-        /// <summary>
-        /// Récupère les fichiers associés à un support marketing
-        /// </summary>
+        // Récupère les fichiers associés à un support marketing
         Task<IEnumerable<FichierDto>> GetFilesBySupportAsync(int supportId);
 
-        // ==================================================
-        // 🔹 Visibilité & logique métier
-        // ==================================================
+        // 🔹 Visibilité / logique métier
 
-        /// <summary>
-        /// Vérifie si un support marketing est actif et exploitable
-        /// </summary>
+        // Vérifie si un support marketing est actif et exploitable
         Task<bool> IsSupportActiveAsync(int supportId);
 
-        /// <summary>
-        /// Récupère les supports visibles pour la vente
-        /// (délégués médicaux / clients)
-        /// </summary>
+        // Récupère les supports visibles pour la vente
+        // (délégués médicaux / clients)
         Task<IEnumerable<SupportMarketingDto>> GetVisibleSupportsByProductAsync(int productId);
 
-        // ==================================================
-        // 🔹 Campagnes marketing
-        // ==================================================
-
-        /// <summary>
-        /// Récupère les supports marketing associés à une campagne
-        /// </summary>
+        //  Campagnes marketing
+        
+        // Récupère les supports marketing associés à une campagne
         Task<IEnumerable<SupportMarketingDto>> GetSupportsByCampaignAsync(string campaignName);
 
-        /// <summary>
-        /// Récupère toutes les campagnes marketing existantes
-        /// </summary>
+        // Récupère toutes les campagnes marketing existantes
         Task<IEnumerable<string>> GetCampaignsAsync();
     }
 }
