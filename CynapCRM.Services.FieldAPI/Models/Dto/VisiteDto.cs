@@ -12,7 +12,6 @@
 
         public int? IdPlanning { get; set; }
 
-        // Infos utiles UI
         public bool IsCompleted { get; set; }
         public bool HasRapport { get; set; }
         public string? ClientNom { get; set; }

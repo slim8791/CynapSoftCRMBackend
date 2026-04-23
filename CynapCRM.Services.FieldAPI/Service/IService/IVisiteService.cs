@@ -15,12 +15,12 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 
         Task<bool> DeleteVisiteAsync(int idVisite);
 
-        // logique metier
+        // business logic
         Task<bool> AffectVisiteToPlanningAsync(int idVisite, int idPlanning);
-        // Marquer la visite comme terminée
+        // Mark the visit as completed
         Task<bool> CompleteVisiteAsync(int idVisite);
 
-        // Sécurité métier : ownership
+        // Business security: ownership
         Task<bool> IsVisiteOwnedByDelegueAsync(int idVisite, int idDelegue);
 
     }

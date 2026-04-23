@@ -75,8 +75,6 @@ void applyMigrations()
         try
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            // Vérifie s'il y a des migrations qui n'ont pas encore été appliquées
             if (dbContext.Database.GetPendingMigrations().Any())
             {
                 dbContext.Database.Migrate();
@@ -85,7 +83,6 @@ void applyMigrations()
         }
         catch (Exception ex)
         {
-            // Affiche l'erreur dans la console si la connexion SQL échoue
             Console.WriteLine($">>> Erreur lors de la migration : {ex.Message}");
         }
     }

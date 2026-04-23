@@ -27,9 +27,9 @@ namespace CynapCRM.Services.FieldAPI.Service
                     DateVisite = dto.DateVisite,
                     Type = dto.Type,
 
-                    //  le délégué est valide via le JWT
+                    //  The delegate is valid via the JWT
                     Id_User_Delegue = dto.IdDelegue,
-                    //  champs optionnels
+                    //  optional fields
                     Id_Medecin = dto.IdMedecin == 0 ? null : dto.IdMedecin,
                     Id_Pharmacien = dto.IdPharmacien == 0 ? null : dto.IdPharmacien,
                     Id_Planning = dto.IdPlanning == 0 ? null : dto.IdPlanning,
@@ -49,7 +49,7 @@ namespace CynapCRM.Services.FieldAPI.Service
                 visite.DateVisite = dto.DateVisite;
                 visite.Type = dto.Type;
 
-                //  mise à jour champs optionnels
+                //  update optional fields
                 visite.Id_Medecin = dto.IdMedecin == 0 ? null : dto.IdMedecin;
                 visite.Id_Pharmacien = dto.IdPharmacien == 0 ? null : dto.IdPharmacien;
                 visite.Id_Planning = dto.IdPlanning == 0 ? null : dto.IdPlanning;

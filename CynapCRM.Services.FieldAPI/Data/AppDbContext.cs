@@ -23,24 +23,24 @@ namespace CynapCRM.Services.FieldAPI.Data
                 .HasOne(v => v.Rapport)
                 .WithOne(r => r.Visite)
                 .HasForeignKey<Rapport_Visite>(r => r.Id_Visite)
-                .OnDelete(DeleteBehavior.Cascade); // Si une visite est supprimée → son rapport aussi
+                .OnDelete(DeleteBehavior.Cascade); // If a visit is deleted → its report is also deleted
 
             //  1–N : PlanningVisite → Visites
             modelBuilder.Entity<Planning_Visite>()
                 .HasMany(p => p.Visites)
                 .WithOne(v => v.Planning)
                 .HasForeignKey(v => v.Id_Planning)
-                .OnDelete(DeleteBehavior.SetNull); //  Si un planning est supprimé, les visites restent (historique)
+                .OnDelete(DeleteBehavior.SetNull); // If a planning is deleted, the visits remain (historical)
 
 
-            // 4. Recherches fréquentes par délégué
+            // 4. Frequent searches by delegate
             modelBuilder.Entity<Region>().HasIndex(r => r.Id_User_Delegue);
             modelBuilder.Entity<Objectif_Delegue>().HasIndex(o => o.Id_User_Delegue);
             modelBuilder.Entity<Planning_Visite>().HasIndex(p => p.Id_User_Delegue);
             modelBuilder.Entity<Visite>().HasIndex(v => v.Id_User_Delegue);
             modelBuilder.Entity<Rapport_Visite>().HasIndex(r => r.Id_User_Delegue);
 
-            // 5. Contraintes supplémentaires
+            // 5. Additional constraints
             modelBuilder.Entity<Region>().HasIndex(r => r.CodePostal);
         }
     }

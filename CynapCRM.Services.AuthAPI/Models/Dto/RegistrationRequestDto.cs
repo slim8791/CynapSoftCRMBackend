@@ -16,7 +16,7 @@
         public string? RaisonSociale { get; set; }
 
 
-        public string Role { get; set; }      // CLIENT / ADMIN / 
-        public string UserType { get; set; }  // Pharmacien / Grossiste / 
+        public UserRole Role { get; set; }      // CLIENT / ADMIN / SUPERVISEUR / DELEGUE / MEDECIN
+        public UserType UserType { get; set; }  // PHARMACIEN / GROSSISTE
     }
 }

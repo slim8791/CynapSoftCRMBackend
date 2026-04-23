@@ -16,7 +16,7 @@ namespace CynapCRM.Services.DocAPI.Models
 
         public DateTime DateCreation { get; set; } = DateTime.UtcNow;
 
-        // Référence vers OrderAPI
+        // Refers to OrderAPI
         [Required]
         public int Id_Commande { get; set; }
 

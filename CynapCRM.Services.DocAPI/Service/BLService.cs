@@ -52,7 +52,7 @@ namespace CynapCRM.Services.DocAPI.Service
             {
                 bl = new BonLivraison
                 {
-                    // Champs Document
+                    // Fields inherited from Document
                     Nom_Doc = blDto.Nom_Doc,
                     Id_Commande = blDto.Id_Commande,
                     Id_Client = blDto.Id_Client,
@@ -70,7 +70,7 @@ namespace CynapCRM.Services.DocAPI.Service
                 if (bl == null)
                     return null;
 
-                // champs modifiables 
+                // Modifiable fields
                 bl.Nom_Doc = blDto.Nom_Doc;
 
             }

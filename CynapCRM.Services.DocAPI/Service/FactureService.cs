@@ -50,14 +50,14 @@ namespace CynapCRM.Services.DocAPI.Service
             {
                 facture = new Facture
                 {
-                    // champs hérités de Document
+                    // fields inherited from Document 
                     Nom_Doc = factureDto.Nom_Doc,
                     Id_Commande = factureDto.Id_Commande,
                     Id_Client = factureDto.Id_Client,
                     TypeDocument = "FACTURE",
                     DateCreation = DateTime.UtcNow,
 
-                    // champs spécifiques Facture
+                    // fields specific to Facture
                     MontantHT = factureDto.MontantHT,
                     MontantTTC = factureDto.MontantTTC,
                     DateFacture = factureDto.DateFacture
@@ -73,7 +73,7 @@ namespace CynapCRM.Services.DocAPI.Service
                 if (facture == null)
                     return null;
 
-                // champs modifiables 
+                // Modifiable fields
                 facture.Nom_Doc = factureDto.Nom_Doc;
                 facture.MontantHT = factureDto.MontantHT;
                 facture.MontantTTC = factureDto.MontantTTC;

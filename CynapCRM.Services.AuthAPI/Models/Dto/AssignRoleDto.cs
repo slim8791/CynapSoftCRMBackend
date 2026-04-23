@@ -8,6 +8,6 @@ namespace CynapCRM.Services.AuthAPI.Models.Dto
         public string UserId { get; set; }
 
         [Required(ErrorMessage = "Le rôle est obligatoire.")]
-        public string Role { get; set; }
+        public UserRole Role { get; set; }
     }
 }

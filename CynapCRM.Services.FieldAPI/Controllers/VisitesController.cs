@@ -56,8 +56,6 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-
-                // afficher la vrai erreur //
                 _response.Message =ex.InnerException != null? ex.InnerException.Message: ex.Message;
                 return StatusCode(500, _response);
             }

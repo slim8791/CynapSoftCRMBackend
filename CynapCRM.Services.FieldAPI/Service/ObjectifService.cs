@@ -35,7 +35,7 @@ namespace CynapCRM.Services.FieldAPI.Service
                     ValeurCible = dto.ValeurCible,
                     ValeurRealisee = 0,
                     Periode = dto.Periode,
-                    // Ownership garanti (injecté depuis le JWT dans le controller)
+                    //Ownership guaranteed (injected from the JWT into the controller)
                     Id_User_Delegue = dto.Id_User_Delegue
                 };
 
@@ -43,7 +43,7 @@ namespace CynapCRM.Services.FieldAPI.Service
             }
             else
             {
-                //  on ne modifie que SES objectifs (sécurité renforcée)
+                //  We are only changing ITS objectives (enhanced security)
                 objectif = await _db.Objectifs
                     .FirstOrDefaultAsync(o =>
                         o.Id_Objectif == dto.Id_Objectif &&
@@ -52,7 +52,7 @@ namespace CynapCRM.Services.FieldAPI.Service
                 if (objectif == null)
                     return null;
 
-                // Champs modifiables 
+                // Editable fields
                 objectif.Type = dto.Type;
                 objectif.ValeurCible = dto.ValeurCible;
                 objectif.Periode = dto.Periode;

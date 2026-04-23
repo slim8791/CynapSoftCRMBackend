@@ -21,6 +21,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CynapCRM.Services.OrderAPI"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CynapCRM.Gateway", "CynapCRM.Gateway\CynapCRM.Gateway.csproj", "{22078AD6-A773-4E8C-AD1F-3459A7C7D5D4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{5D74269A-7E19-4164-B16B-9350C378676B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CynapCRM.Mobile", "..\CynapSoftFrontend\CynapCRM.Mobile\CynapCRM.Mobile.csproj", "{0644F487-58C4-4524-9F48-404CE4D6AA9B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +59,10 @@ Global
 		{22078AD6-A773-4E8C-AD1F-3459A7C7D5D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22078AD6-A773-4E8C-AD1F-3459A7C7D5D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22078AD6-A773-4E8C-AD1F-3459A7C7D5D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0644F487-58C4-4524-9F48-404CE4D6AA9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0644F487-58C4-4524-9F48-404CE4D6AA9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0644F487-58C4-4524-9F48-404CE4D6AA9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0644F487-58C4-4524-9F48-404CE4D6AA9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +75,7 @@ Global
 		{59106CB7-68C5-4479-9C56-9164C6802035} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{EE56374A-A9E1-4ED2-B725-E2167EA59AD6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{22078AD6-A773-4E8C-AD1F-3459A7C7D5D4} = {E3AEB317-AB78-4EC2-8102-C5869B3506C8}
+		{0644F487-58C4-4524-9F48-404CE4D6AA9B} = {5D74269A-7E19-4164-B16B-9350C378676B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {776B6696-BBC6-414B-BFC9-8DD92B1264F6}

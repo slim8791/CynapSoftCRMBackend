@@ -35,7 +35,7 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             using var client = new SmtpClient
             {
-                Timeout = 10000 // 10 secondes
+                Timeout = 10000 // 10 seconds
             };
 
             try

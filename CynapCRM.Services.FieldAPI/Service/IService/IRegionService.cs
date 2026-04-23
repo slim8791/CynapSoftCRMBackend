@@ -13,7 +13,7 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 
         Task<bool> DeleteRegionAsync(int idRegion);
 
-        // Nombre de régions couvertes par un délégué
+        // Number of regions covered by a delegate
         Task<int> GetNombreRegionsCouvreAsync(int idDelegue);
 
     }

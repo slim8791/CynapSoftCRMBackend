@@ -53,7 +53,7 @@ namespace CynapCRM.Services.DocAPI.Service
             {
                 bc = new BonCommande
                 {
-                    // Champs hérités de Document
+                    // Fields inherited from Document
                     Nom_Doc = bcDto.Nom_Doc,
                     Id_Commande = bcDto.Id_Commande,
                     Id_Client = bcDto.Id_Client,
@@ -69,7 +69,7 @@ namespace CynapCRM.Services.DocAPI.Service
 
                 if (bc == null)
                     return null;
-                // champs modifiables
+                // Modifiable fields
                 bc.Nom_Doc = bcDto.Nom_Doc;
 
                 
@@ -77,7 +77,7 @@ namespace CynapCRM.Services.DocAPI.Service
 
             await _db.SaveChangesAsync();
 
-            // retour dto manuel
+            // manual dto return
             return new BonCommandeDto
             {
                 Numero_Doc = bc.Numero_Doc,

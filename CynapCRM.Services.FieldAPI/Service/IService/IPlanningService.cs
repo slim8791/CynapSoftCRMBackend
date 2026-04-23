@@ -18,10 +18,10 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 
         Task<bool> DeletePlanningAsync(int idPlanning);
 
-        // Vérifier conflit horaire
+        // Check time zone conflict
         Task<bool> CheckPlanningConflictAsync(int idDelegue,DateTime debut,DateTime fin,
             int? excludePlanningId = null);
-        // Validation du planning (EnAttente vers Confirmé)
+        // Validate planning (Pending to Confirmed)
         Task<bool> ValidatePlanningAsync(int idPlanning);
 
     }

@@ -24,13 +24,6 @@
         }
       ]
     },
-
-
-
-
-
-
-
     {
       "UpstreamPathTemplate": "/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
@@ -47,10 +40,6 @@
       }
     },
     {
-
-
-
-
       "UpstreamPathTemplate": "/products/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
       "DownstreamPathTemplate": "/api/products/{everything}",
@@ -110,11 +99,6 @@
         "AuthenticationProviderKey": "Bearer"
       }
     },
-
-
-
-
-
     {
       "UpstreamPathTemplate": "/documents/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
@@ -146,7 +130,6 @@
       }
     },
     {
-
       "UpstreamPathTemplate": "/documents/bons-livraison/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
       "DownstreamPathTemplate": "/api/bons-livraison/{everything}",
@@ -159,10 +142,8 @@
       ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
-
       }
     },
-
     {
       "UpstreamPathTemplate": "/documents/bons-commandes/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
@@ -178,10 +159,6 @@
         "AuthenticationProviderKey": "Bearer"
       }
     },
-
-
-
-
     {
       "UpstreamPathTemplate": "/fields/kpi/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
@@ -272,13 +249,6 @@
         "AuthenticationProviderKey": "Bearer"
       }
     },
-
-
-
-
-
-
-
     {
       "UpstreamPathTemplate": "/inventory/distributions/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
@@ -384,12 +354,6 @@
         "AuthenticationProviderKey": "Bearer"
       }
     },
-
-
-
-
-
-
     {
       "UpstreamPathTemplate": "/orders/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
@@ -434,7 +398,6 @@
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
-
     }
   ],
   "GlobalConfiguration": {

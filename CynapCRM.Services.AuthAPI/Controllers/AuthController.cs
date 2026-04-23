@@ -28,24 +28,28 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         public async Task<IActionResult> Register([FromBody] RegistrationRequestDto model)
         {
             var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
-            // l'admin peut créer n’importe quel compte
+            // The admin can create any account
 
-            // le superviseur peut créer uniquement DELEGUE, MEDECIN, CLIENT
+            // The supervisor can only create DELEGUE, MEDECIN, CLIENT
 
-            if (currentUserRole == "SUPERVISEUR")
+            if (currentUserRole == UserRole.SUPERVISEUR.ToString())
             {
-                if (!(model.Role.ToUpper() == "DELEGUE" || model.Role.ToUpper() == "MEDECIN" || model.Role.ToUpper() == "CLIENT"))
+
+                if (model.Role != UserRole.DELEGUE &&
+                            model.Role != UserRole.MEDECIN &&
+                            model.Role != UserRole.CLIENT)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Vous n’avez pas le droit d’exécuter cette opération.";
                     return Forbid();
                 }
             }
-            // le delegue peut créer  CLIENT et MEDECIN
+            // The delegate can create CLIENT and MEDECIN
 
-            if (currentUserRole == "DELEGUE")
+            if (currentUserRole == UserRole.DELEGUE.ToString())
             {
-                if (!(model.Role.ToUpper() == "CLIENT" || model.Role.ToUpper()== "MEDECIN"))
+
+                if (model.Role != UserRole.CLIENT && model.Role != UserRole.MEDECIN)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Vous n’avez pas le droit d’exécuter cette opération.";
@@ -121,7 +125,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var assignRoleSuccessful = await _authService.AssignRole(model.UserId, model.Role.ToUpper());
+            var assignRoleSuccessful = await _authService.AssignRole(model.UserId, model.Role);
             if (!assignRoleSuccessful)
             {
                 _response.IsSuccess = false;
@@ -164,7 +168,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                // Récupérer l’email depuis le token JWT
+                // Retrieve the email from the JWT token
                 var emailFromToken = User.FindFirstValue(ClaimTypes.Email);
 
                 if (string.IsNullOrWhiteSpace(emailFromToken))
@@ -174,7 +178,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                     return Unauthorized(_response);
                 }
 
-                // Vérifier que l’utilisateur change SON propre mot de passe
+                // Verify that the user is changing THEIR own password
                 if (!string.Equals(emailFromToken, model.Email, StringComparison.OrdinalIgnoreCase))
                 {
                     _response.IsSuccess = false;
@@ -182,10 +186,10 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                     return Forbid();
                 }
 
-                // Appel au service (logique métier)
+                // Call to the service (business logic)
                 var result = await _authService.ChangePassword(model);
 
-                // Mot de passe actuel incorrect
+                // Incorrect current password
                 if (!result)
                 {
                     _response.IsSuccess = false;
@@ -223,8 +227,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
 
             var encodedToken = System.Web.HttpUtility.UrlEncode(token);
 
-            // ce lien vers l'interface Frontend
-            
+            // to frontend            
             string resetLink = $"https://localhost:7000/api/auth/reset-password?email={model.Email}&token={encodedToken}";
 
             string subject = "Réinitialisation de mot de passe - CynapCRM";
@@ -269,7 +272,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         }
         [HttpPut("enable-user/{email}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> EnableUser([FromRoute] string email)
+        public async Task<IActionResult> EnableUser([FromBody] string email)
         {
             var result = await _authService.EnableUser(email);
             if (!result)
@@ -285,7 +288,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         }
         [HttpPut("delete-user/{email}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> DeleteUser([FromRoute] string email)
+        public async Task<IActionResult> DeleteUser([FromBody] string email)
         {
             var result = await _authService.DisableUser(email);
             if (!result)

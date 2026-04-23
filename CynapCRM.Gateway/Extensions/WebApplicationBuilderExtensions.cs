@@ -11,7 +11,6 @@ namespace CynapCRM.Gateway.Extensions
         public static WebApplicationBuilder AddAppAuthentication(
             this WebApplicationBuilder builder)
         {
-            //Désactiver le mapping automatique des claims
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
             var jwtSection = builder.Configuration.GetSection("ApiSettings");

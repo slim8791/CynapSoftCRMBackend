@@ -9,8 +9,8 @@ namespace CynapCRM.Services.AuthAPI.Service.IService
 
         Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto);
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
-        Task<bool> AssignRole(string email, string roleName);
-        Task<bool> AddRole(string email, string roleName);
+        Task<bool> AssignRole(string email, UserRole role);
+        Task<bool> AddRole(string email, UserRole role);
         Task<bool> ChangePassword(ChangePasswordDto model);
         Task<ResponseDto> GeneratePasswordResetToken(string email);
         Task<LoginResponseDto> ChangeRole(ChangeRoleDto model);

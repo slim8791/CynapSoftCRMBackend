@@ -27,8 +27,6 @@ namespace CynapCRM.Services.FieldAPI.Service
                 {
                     NomRegion = dto.NomRegion,
                     CodePostal = dto.CodePostal,
-
-                    //  ownership garanti
                     Id_User_Delegue = dto.Id_User_Delegue
                 };
 

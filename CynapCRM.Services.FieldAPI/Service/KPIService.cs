@@ -61,7 +61,7 @@ namespace CynapCRM.Services.FieldAPI.Service
                 .ToListAsync();
         }
 
-        // fidelité client = nombre de visites chez ce client (médecin ou pharmacien)
+        // Customer loyalty = number of visits to that customer (Medecin or pharmacien)
         public async Task<int> CalculateClientFideliteAsync(int idClient)
         {
             return await _db.Visites
@@ -70,7 +70,7 @@ namespace CynapCRM.Services.FieldAPI.Service
                     v.Id_Pharmacien == idClient);
         }
 
-        // performance individuelle = pourcentage de réalisation des objectifs
+        // Individual performance = percentage of goal achievement
         public async Task<IEnumerable<PerformanceDto>> CalculatePerformanceAsync(int idDelegue)
         {
             var objectifs = await _db.Objectifs

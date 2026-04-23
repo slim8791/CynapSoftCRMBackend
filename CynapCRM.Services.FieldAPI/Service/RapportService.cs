@@ -56,7 +56,7 @@ namespace CynapCRM.Services.FieldAPI.Service
             if (visite.IsCompleted)
                 return null;
 
-            // OWNERSHIP : le délégué doit être le propriétaire de la visite
+            // OWNERSHIP: the delegate must be the owner of the tour
             if (visite.Id_User_Delegue != dto.Id_User_Delegue)
                 return null;
 
@@ -73,7 +73,7 @@ namespace CynapCRM.Services.FieldAPI.Service
                     Resultat = dto.Resultat,
                     DateRapport = DateTime.UtcNow,
 
-                    // injecté depuis le JWT
+                    // injected from the JWT
                     Id_User_Delegue = dto.Id_User_Delegue
                 };
 

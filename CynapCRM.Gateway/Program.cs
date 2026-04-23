@@ -4,13 +4,13 @@ using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Charger config Ocelot
+// Load Ocelot config
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
 // Ocelot
 builder.Services.AddOcelot(builder.Configuration);
 
-// JWT pour le Gateway
+// JWT for the Gateway
 builder.AddAppAuthentication();
 
 var app = builder.Build();

@@ -71,7 +71,7 @@ namespace CynapCRM.Services.FieldAPI.Service
         public async Task<PlanningVisiteDto?> GetPlanningByIdAsync(int idPlanning)
         {
             var planningVisite = await _db.Plannings
-                .AsNoTracking() // optimisation
+                .AsNoTracking() // optimization
                 .FirstOrDefaultAsync(p => p.Id_Planning == idPlanning);
 
             if (planningVisite == null)

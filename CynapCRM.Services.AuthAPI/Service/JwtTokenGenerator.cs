@@ -25,7 +25,7 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             var claims = new List<Claim>
     {
-        // Identité
+        // Identity
         new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
 
@@ -33,10 +33,10 @@ namespace CynapCRM.Services.AuthAPI.Service
         new Claim(JwtRegisteredClaimNames.Email, user.Email),
         new Claim(ClaimTypes.Email, user.Email), // 
 
-        // Identifiant unique du token
+        // Unique token identifier
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 
-        // Date d’émission
+        // Issued at
         new Claim(JwtRegisteredClaimNames.Iat,
             DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
             ClaimValueTypes.Integer64)
@@ -56,7 +56,7 @@ namespace CynapCRM.Services.AuthAPI.Service
                 Issuer = _jwtOptions.Issuer,
                 Audience = _jwtOptions.Audience,
 
-                // Sécurité temporelle
+                // Temporal security
                 NotBefore = now,
                 Expires = now.AddMinutes(_jwtOptions.ExpiryMinutes),
 

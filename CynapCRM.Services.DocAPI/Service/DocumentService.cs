@@ -69,7 +69,7 @@ namespace CynapCRM.Services.DocAPI.Service
         {
             Document document;
 
-            // ➕ CRÉATION
+            // If Numero_Doc is 0, we create a new document. Otherwise, we try to update an existing one.
             if (dto.Numero_Doc == 0)
             {
                 document = new Document

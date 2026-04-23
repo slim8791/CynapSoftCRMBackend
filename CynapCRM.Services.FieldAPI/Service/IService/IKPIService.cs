@@ -7,19 +7,19 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 
         Task<int> GetNombreVisitesAsync(int idDelegue, DateTime debut, DateTime fin);
 
-        // Vérifier s’il existe déjà une visite à une date donnée
+        // Check if a visit already exists on a given date.  
         Task<bool> HasVisiteAtDateAsync(int idDelegue, DateTime date);
 
-        // Historique d’activité du délégué (audit / reporting)
+        // Delegate activity history (audit / reporting)
         Task<IEnumerable<ActiviteHistoriqueDto>> GetHistoriqueActiviteAsync(int idDelegue);
 
-        // KPI client (fidélité)
+        // Client KPI (loyalty)
         Task<int> CalculateClientFideliteAsync(int idClient);
 
-        // Performance par objectif
+        // Performance by objective
         Task<IEnumerable<PerformanceDto>> CalculatePerformanceAsync(int idDelegue);
 
-        // KPI global simplifié (dashboard)
+        // Simplified global KPI (dashboard)
         Task<double> GetPerformanceRateAsync(int idDelegue);
 
     }
