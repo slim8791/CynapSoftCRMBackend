@@ -10,30 +10,15 @@ This agent orchestrates the creation of Angular pages, services, interceptors, a
 > Use only `angular-project-orchestrator` for user requests. The internal orchestration steps are handled by separate subagent definitions, but those subagents are not intended to be invoked directly.
 
 ## Workflow
-- Principal entrypoint: `angular-project-orchestrator`
-- Internal subagents:
-  - `angular-project-planner`
-  - `angular-project-developer`
-  - `angular-project-reviewer`
+1. **Planning Phase**: Invoke `angular-project-planner` to generate the plan document.
+2. **Feedback Gate**: Ask the user to review the generated plan and provide feedback with options:
+   - **Yes**: Plan is approved; proceed to implementation
+   - **No**: Plan is rejected; stop or request revisions
+   - **Feedback**: User provides comments; send feedback back to `angular-project-planner` for revisions
+3. **Implementation Phase** (if approved): Invoke `angular-project-developer` to build the Angular project based on the approved plan.
+4. **Validation Phase**: Invoke `angular-project-reviewer` to validate the build and ensure quality.
 
-The orchestrator stages planning, implementation, and validation while keeping the user-facing interface simple and centralized.
-
-## Planner
-- **Role**: Plans the structure and requirements for Angular pages.
-- **Tasks**:
-  - Analyze project requirements.
-  - Extract all web APIs from the backend projects.
-  - Define page structure and navigation hierarchy.
-  - Identify services and their responsibilities.
-  - Plan interceptors for API communication.
-  - Map backend APIs to be consumed.
-  - Generate a markdown document summarizing the plan.
-- **Feedback Step**: After generating the document, the planner will ask the user for confirmation (yes, no, or feedback) before proceeding to the developer.
-
-## Developer
-- **Role**: Implements the Angular pages, services, and interceptors based on the planner's document.
-- **Output**: Angular code files.
-
-## Reviewer
-- **Role**: Validates the Angular project build and resolves issues by coordinating with the developer.
-- **Output**: A validated and build-ready Angular project.
+## Internal Subagents
+- `angular-project-planner`: Generates the initial plan
+- `angular-project-developer`: Implements the approved plan
+- `angular-project-reviewer`: Validates the implementation

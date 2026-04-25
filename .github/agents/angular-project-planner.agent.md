@@ -16,6 +16,6 @@ This internal agent is part of `angular-project-orchestrator` and handles planni
 - Define Angular page and navigation structure.
 - Identify required services and interceptors.
 - Plan API integration and data flow.
-- Produce a structured plan document for implementation.
+- Generate a structured plan document (markdown) saved to `.github/plans/` with filename format: `angular-frontend-plan-ddMMyy-hhmm.md` (e.g., `angular-frontend-plan-250425-1430.md`).
 
 > This subagent is internal to the orchestrator and should not be invoked directly by users.
