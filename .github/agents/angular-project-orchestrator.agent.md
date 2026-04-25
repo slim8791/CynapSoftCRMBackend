@@ -1,30 +1,22 @@
 ---
 name: angular-project-orchestrator
-description: "Orchestrates the creation of Angular pages, services, interceptors, and integration with backend APIs."
-subagents:
-  - name: planner
-    description: "Plans and creates a document outlining the structure and requirements for Angular pages. Extracts all web APIs from the backend projects."
-    tools:
-      - "create_file"
-      - "list_dir"
-    feedback:
-      - "Ask user for yes, no, or feedback after generating the document."
-  - name: developer
-    description: "Implements the Angular pages, services, and interceptors based on the planner's document."
-    tools:
-      - "create_file"
-      - "insert_edit_into_file"
-      - "get_errors"
-  - name: reviewer
-    description: "Validates the Angular project build and resolves issues by coordinating with the developer."
-    tools:
-      - "get_errors"
-      - "insert_edit_into_file"
+description: "Orchestrates the creation of Angular pages, services, interceptors, and integration with backend APIs. Only the principal agent should be invoked directly; its subagents are internal."
 ---
 
 # Angular Project Orchestrator
 
-This agent orchestrates the creation of Angular pages, services, interceptors, and integration with backend APIs. It consists of three subagents:
+This agent orchestrates the creation of Angular pages, services, interceptors, and integration with backend APIs.
+
+> Use only `angular-project-orchestrator` for user requests. The internal orchestration steps are handled by separate subagent definitions, but those subagents are not intended to be invoked directly.
+
+## Workflow
+- Principal entrypoint: `angular-project-orchestrator`
+- Internal subagents:
+  - `angular-project-planner`
+  - `angular-project-developer`
+  - `angular-project-reviewer`
+
+The orchestrator stages planning, implementation, and validation while keeping the user-facing interface simple and centralized.
 
 ## Planner
 - **Role**: Plans the structure and requirements for Angular pages.
