@@ -112,7 +112,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de la récupération des utilisateurs.";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
 
             
@@ -205,7 +205,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Erreur lors du changement de mot de passe : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
 
         }
@@ -327,7 +327,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de la récupération des utilisateurs désactivés.";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
     }

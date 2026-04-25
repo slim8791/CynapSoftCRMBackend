@@ -36,7 +36,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -67,7 +67,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("visible")]
@@ -92,7 +92,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -119,7 +119,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpPut("{productId:int}/archive")]
@@ -144,7 +144,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpPut("{productId:int}/activate")]
@@ -169,7 +169,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -199,7 +199,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("{productId:int}/available")]
@@ -217,7 +217,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("available")]
@@ -242,7 +242,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("unavailable")]
@@ -267,7 +267,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("{productId:int}/stock")]
@@ -285,7 +285,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("stock-status")]
@@ -303,7 +303,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("low-stock")]
@@ -336,7 +336,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("search")]
@@ -361,7 +361,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de la recherche : " + ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("filter")]
@@ -402,7 +402,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("categories")]
@@ -427,7 +427,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("category/{category}")]
@@ -459,7 +459,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("exists")]
@@ -484,7 +484,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("{productId:int}/valid")]
@@ -502,7 +502,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("{productId:int}/can-archive")]
@@ -520,7 +520,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("top")]
@@ -545,7 +545,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("dashboard")]
@@ -563,7 +563,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
     }

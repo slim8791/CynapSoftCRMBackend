@@ -47,7 +47,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -89,7 +89,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -122,7 +122,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpPost("reserve-stock")]
@@ -153,7 +153,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
     }

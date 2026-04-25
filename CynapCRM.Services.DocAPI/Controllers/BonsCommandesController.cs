@@ -43,7 +43,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("{id:int}")]
@@ -72,7 +72,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -104,7 +104,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpGet("by-date")]
@@ -132,7 +132,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpPost("createUpdate")]
@@ -166,7 +166,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
     }

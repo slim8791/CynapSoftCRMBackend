@@ -38,7 +38,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de la récupération : " + ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
             
         }
@@ -66,7 +66,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
             
         }
@@ -93,7 +93,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
             
         }
@@ -120,7 +120,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
 
             }
 
@@ -144,7 +144,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Erreur lors de la création/mise à jour du document.";
-                    return StatusCode(500, _response);
+                    return StatusCode(515, _response);
                 }
                 _response.Result = result;
                 _response.Message = "Document créé/mis à jour avec succès.";
@@ -154,7 +154,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
                     }
         [HttpDelete("{numeroDoc:int}")]
@@ -185,7 +185,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de la suppression : " + ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
 
         }

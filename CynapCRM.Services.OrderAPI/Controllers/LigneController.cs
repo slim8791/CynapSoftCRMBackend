@@ -70,7 +70,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de l'opération : " + ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -100,7 +100,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de la suppression : " + ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
 
         }

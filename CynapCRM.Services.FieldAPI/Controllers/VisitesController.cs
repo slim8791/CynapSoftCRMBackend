@@ -57,7 +57,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message =ex.InnerException != null? ex.InnerException.Message: ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
 
         }
@@ -88,7 +88,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -118,7 +118,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -148,7 +148,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -178,7 +178,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
@@ -214,7 +214,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
         [HttpPut("{idVisite:int}/complete")]
@@ -243,7 +243,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
     }

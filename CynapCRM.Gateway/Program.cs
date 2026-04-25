@@ -17,6 +17,10 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
+#if DEBUG
+app.MapGet("/", () => "CynapCRM Gateway is Running!");
+#endif
+
 app.UseAuthentication();
 app.UseAuthorization();
 
