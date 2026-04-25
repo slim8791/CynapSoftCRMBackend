@@ -1,23 +1,29 @@
+using CynapCRM.Gateway.Extensions;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configuration JSON
+// Load Ocelot config
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
-// 2. Services Ocelot + TON Authentification (Trés important pour la sécurité)
+// Ocelot
 builder.Services.AddOcelot(builder.Configuration);
-//builder.AddAppAuthentication();
+
+// JWT for the Gateway
+builder.AddAppAuthentication();
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
 
-
-
+#if DEBUG
 app.MapGet("/", () => "CynapCRM Gateway is Running!");
+#endif
 
-// 3. Utiliser la version moderne 'await'
+app.UseAuthentication();
+app.UseAuthorization();
+
 await app.UseOcelot();
 
 app.Run();

@@ -17,7 +17,8 @@ namespace CynapCRM.Services.ProductAPI.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Prix_Creation { get; set; }
         public int TVA { get; set; }
-
+        public bool IsArchived { get; set; } = false;
+        public bool IsActive { get; set; } = true;
         // Un produit peut avoir plusieurs lots 
         public virtual ICollection<Lot>? Lots { get; set; }
 

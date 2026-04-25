@@ -24,8 +24,7 @@ namespace CynapCRM.Services.OrderAPI.Models
         [Required]
         public int Id_Produit { get; set; } // Lien vers ProductAPI (pour savoir quoi on achète)
 
-        [Required]
-        public string NumeroLot { get; set; } = string.Empty; // Lien vers InventoryAPI (pour la traçabilité)
+        public string? NumeroLot { get; set; } = string.Empty; // Lien vers InventoryAPI (pour la traçabilité)
         [Column(TypeName = "decimal(18,2)")]
         public decimal PrixUnitaire { get; set; }
 

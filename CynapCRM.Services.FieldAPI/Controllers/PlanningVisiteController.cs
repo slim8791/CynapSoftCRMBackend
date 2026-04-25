@@ -1,22 +1,28 @@
 ﻿using Azure;
 using CynapCRM.Services.FieldAPI.Models.Dto;
 using CynapCRM.Services.FieldAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.FieldAPI.Controllers
 {
-    [Route("api/planning")]
+
     [ApiController]
+    [Route("api/plannings")]
+    [Authorize]
+
     public class PlanningVisiteController : ControllerBase
     {
-        private readonly IKPIService _fieldService;
+        private readonly IPlanningService _planningService;
         protected ResponseDto _response;
-        public PlanningVisiteController(IKPIService fieldService)
+        public PlanningVisiteController(IPlanningService planningService)
         {
-            _fieldService = fieldService;
+            _planningService = planningService;
             _response = new ResponseDto();
         }
-        [HttpPost("createUpdate")]
+
+        [HttpPost]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> CreateUpdatePlanningVisite([FromBody] PlanningVisiteDto planningDto)
         {
             try
@@ -27,7 +33,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     _response.Message = "Données de planning de visite invalides.";
                     return BadRequest(_response);
                 }
-                var result = await _fieldService.CreateOrUpdatePlanningAsync(planningDto);
+                var result = await _planningService.CreateOrUpdatePlanningAsync(planningDto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -42,38 +48,11 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
-        [HttpPut("ChangeStatus/{id:int}")]
-        public async Task<IActionResult> ChangePlanningStatus(int id, [FromQuery] string newStatus)
-        {
-            try
-            {
-                if (id <= 0 || string.IsNullOrEmpty(newStatus))
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "ID de planning ou nouveau statut invalide.";
-                    return BadRequest(_response);
-                }
-                var success = await _fieldService.ChangePlanningStatusAsync(id, newStatus);
-                if (!success)
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "Échec du changement de statut du planning.";
-                    return NotFound(_response);
-                }
-                _response.Message = $"Le statut a été mis à jour : {newStatus}";
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
-            }
-        }
-        [HttpGet("{idPlanning:int}")]
+               [HttpGet("{idPlanning:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetPlanningById(int idPlanning)
         {
             try
@@ -84,7 +63,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     _response.Message = "ID de planning de visite invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _fieldService.GetPlanningByIdAsync(idPlanning);
+                var result = await _planningService.GetPlanningByIdAsync(idPlanning);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -99,10 +78,12 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
-        [HttpGet("delegue/{idDelegue:int}")]
+
+        [HttpGet("by-delegue/{idDelegue:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetPlanningByDelegue(int idDelegue)
         {
             try
@@ -113,7 +94,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     _response.Message = "ID de délégué invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _fieldService.GetPlanningByDelegueAsync(idDelegue);
+                var result = await _planningService.GetPlanningByDelegueAsync(idDelegue);
                 _response.Result = result;
                 _response.Message = "Plannings de visite récupérés avec succès.";
                 return Ok(_response);
@@ -122,10 +103,55 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
+
+        [HttpGet("by-range")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetPlanningsByDateRange([FromQuery] int idDelegue,
+                                                                    [FromQuery] DateTime startDate,
+                                                                        [FromQuery] DateTime endDate)
+        {
+            try
+            {
+                var result = await _planningService
+                    .GetPlanningsByDateRangeAsync(idDelegue, startDate, endDate);
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+        [HttpGet("by-date")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetPlanningByDelegueAndDate([FromQuery] int idDelegue,
+                                                                            [FromQuery] DateTime date)
+        {
+            try
+            {
+                var result = await _planningService
+                    .GetPlanningByDelegueAndDateAsync(idDelegue, date);
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
+
         [HttpDelete("{idPlanning:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> DeletePlanning(int idPlanning)
         {
             try
@@ -136,7 +162,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     _response.Message = "ID de planning de visite invalide.";
                     return BadRequest(_response);
                 }
-                var success = await _fieldService.DeletePlanningAsync(idPlanning);
+                var success = await _planningService.DeletePlanningAsync(idPlanning);
                 if (!success)
                 {
                     _response.IsSuccess = false;
@@ -150,12 +176,36 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Une erreur est survenue : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
+        [HttpPut("{idPlanning:int}/validate")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> ValidatePlanning(int idPlanning)
+        {
+            try
+            {
+                var result = await _planningService
+                    .ValidatePlanningAsync(idPlanning);
 
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message =
+                        "Validation impossible (planning introuvable ou déjà validé).";
+                    return BadRequest(_response);
+                }
 
-
+                _response.Message = "Planning validé avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
     }
 }

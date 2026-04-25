@@ -1,12 +1,16 @@
 ﻿using Azure;
 using CynapCRM.Services.DocAPI.Models.Dto;
 using CynapCRM.Services.DocAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.DocAPI.Controllers
 {
-    [Route("api/document")]
+    [Route("api/documents")]
     [ApiController]
+
+    [Authorize]
+
     public class DocumentsController : ControllerBase
     {
         private readonly IDocumentService _documentService;
@@ -17,31 +21,31 @@ namespace CynapCRM.Services.DocAPI.Controllers
             _response = new();
         }
         [HttpGet]
-        public async Task<ActionResult> GetAllDocuments(int pageNumber = 1, int pageSize = 10)
+
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetAllDocuments([FromQuery] int pageNumber = 1,
+                                                         [FromQuery] int pageSize = 20)
         {
+
             try
             {
-                var docs = await _documentService.GetAllDocumentsAsync(pageNumber, pageSize);
-                if (docs == null || !docs.Any())
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "Aucun document trouvé.";
-                    return NotFound(_response);
-                }
-                _response.Result = docs;
-                _response.Message = "Documents récupérés avec succès.";
+                var result = await _documentService.GetAllDocumentsAsync(pageNumber, pageSize);
+                _response.Result = result;
                 return Ok(_response);
             }
+
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de la récupération : " + ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
             
         }
 
         [HttpGet("{numeroDoc:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+    
         public async Task<ActionResult> GetDocumentById(int numeroDoc)
         {
             try
@@ -50,7 +54,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
                 if (doc == null)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Document non trouvé.";
+                    _response.Message = "Document introuvable.";
                     return NotFound(_response);
                 }
                 _response.Result = doc;
@@ -62,11 +66,14 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
             
         }
         [HttpGet("client/{idClient:int}")]
+
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
         public async Task<ActionResult> GetDocumentsByClient(int idClient)
         {
             try
@@ -86,11 +93,14 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
             
         }
         [HttpGet("commande/{idCommande:int}")]
+
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
         public async Task<ActionResult> GetDocumentsByCommande(int idCommande)
         {
             try
@@ -110,34 +120,31 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
 
             }
 
         }
         [HttpPost("document")]
+
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+
         public async Task<ActionResult> CreateUpdateDocument([FromBody] DocumentDto docDto)
         {
             try
             {
-                if (!ModelState.IsValid)
+                if (!ModelState.IsValid || docDto == null)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Données du document invalides.";
                     return BadRequest(_response);
                 }
-                if (docDto == null)
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "Données du document invalides.";
-                    return BadRequest(_response);
-                }
-                var result = await _documentService.CreateUpdateDocumentAsync(docDto);
+                var result = await _documentService.CreateOrUpdateDocumentAsync(docDto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Erreur lors de la création/mise à jour du document.";
-                    return StatusCode(500, _response);
+                    return StatusCode(515, _response);
                 }
                 _response.Result = result;
                 _response.Message = "Document créé/mis à jour avec succès.";
@@ -147,10 +154,13 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
                     }
         [HttpDelete("{numeroDoc:int}")]
+
+        [Authorize(Roles = "ADMIN")]
+
         public async Task<ActionResult> DeleteDocument(int numeroDoc)
         {
             try
@@ -165,7 +175,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
                 if (!isDeleted)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Document introuvable pour suppression.";
+                    _response.Message = "Suppression impossible. Document introuvable.";
                     return NotFound(_response);
                 }
                 _response.Message = "Document supprimé avec succès.";
@@ -175,7 +185,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = "Erreur lors de la suppression : " + ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
 
         }

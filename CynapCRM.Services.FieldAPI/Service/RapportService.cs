@@ -4,6 +4,7 @@ using CynapCRM.Services.FieldAPI.Models;
 using CynapCRM.Services.FieldAPI.Models.Dto;
 using CynapCRM.Services.FieldAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 
 namespace CynapCRM.Services.FieldAPI.Service
 {
@@ -18,24 +19,82 @@ namespace CynapCRM.Services.FieldAPI.Service
             _mapper = mapper;
         }
 
-        // ================================
-        // 🔹 RAPPORT
-        // ================================
-
-        public async Task<RapportVisiteDto?> CreateRapportAsync(RapportVisiteDto dto)
+        public async Task<IEnumerable<RapportVisiteDto>> GetAllRapportsAsync()
         {
-            // 🔥 règle métier : 1 visite = 1 rapport
-            var exists = await _db.Rapports
-                .AnyAsync(r => r.Id_Visite == dto.Id_Visite);
+            var rapports = await _db.Rapports
+                .AsNoTracking()
+                .OrderByDescending(r => r.DateRapport)
+                .ToListAsync();
 
-            if (exists) return null;
+            return _mapper.Map<IEnumerable<RapportVisiteDto>>(rapports);
+        }
 
-            var entity = _mapper.Map<Rapport_visite>(dto);
+        public async Task<RapportVisiteDto?> GetRapportByIdAsync(int idRapport)
+        {
+            var rapport = await _db.Rapports
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id_Rapport == idRapport);
 
-            _db.Rapports.Add(entity);
+            if (rapport == null)
+                return null;
+
+            return _mapper.Map<RapportVisiteDto>(rapport);
+        }
+
+        public async Task<RapportVisiteDto?> CreateOrUpdateRapportAsync(RapportVisiteDto dto)
+        {
+            var visite = await _db.Visites
+                .Include(v => v.Rapport)
+                .FirstOrDefaultAsync(v => v.Id_Visite == dto.Id_Visite);
+
+            if (visite == null)
+                return null;
+            if (string.IsNullOrWhiteSpace(dto.Commentaire))
+                return null;
+            if (string.IsNullOrWhiteSpace(dto.Resultat))
+                return null;
+            if (visite.IsCompleted)
+                return null;
+
+            // OWNERSHIP: the delegate must be the owner of the tour
+            if (visite.Id_User_Delegue != dto.Id_User_Delegue)
+                return null;
+
+            Rapport_Visite rapport;
+            if (dto.Id_Rapport == 0)
+            {
+                if (visite.Rapport != null)
+                    return null;
+
+                rapport = new Rapport_Visite
+                {
+                    Id_Visite = dto.Id_Visite,
+                    Commentaire = dto.Commentaire,
+                    Resultat = dto.Resultat,
+                    DateRapport = DateTime.UtcNow,
+
+                    // injected from the JWT
+                    Id_User_Delegue = dto.Id_User_Delegue
+                };
+
+                _db.Rapports.Add(rapport);
+            }
+            else
+            {
+                rapport = await _db.Rapports.FirstOrDefaultAsync(r =>
+                        r.Id_Rapport == dto.Id_Rapport &&
+                        r.Id_Visite == dto.Id_Visite &&
+                        r.Id_User_Delegue == dto.Id_User_Delegue);
+
+                if (rapport == null)
+                    return null;
+
+                rapport.Commentaire = dto.Commentaire;
+                rapport.Resultat = dto.Resultat;
+            }
+
             await _db.SaveChangesAsync();
-
-            return _mapper.Map<RapportVisiteDto>(entity);
+            return _mapper.Map<RapportVisiteDto>(rapport);
         }
 
         public async Task<RapportVisiteDto?> GetRapportByVisiteAsync(int idVisite)
@@ -54,51 +113,59 @@ namespace CynapCRM.Services.FieldAPI.Service
 
         public async Task<bool> DeleteRapportAsync(int idRapport)
         {
-            var entity = await _db.Rapports.FindAsync(idRapport);
-            if (entity == null) return false;
+            var rapport = await _db.Rapports
+                .Include(r => r.Visite)
+                .FirstOrDefaultAsync(r => r.Id_Rapport == idRapport);
 
-            _db.Rapports.Remove(entity);
+            if (rapport == null) return false;
+
+            if (rapport.Visite != null && rapport.Visite.IsCompleted)
+                return false;
+
+            _db.Rapports.Remove(rapport);
             await _db.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> ValidateRapportAsync(int idRapport, int idSuperviseur)
         {
-            var rapport = await _db.Rapports.FindAsync(idRapport);
-            if (rapport == null)
+            var rapport = await _db.Rapports
+                .Include(r => r.Visite)
+                .FirstOrDefaultAsync(r => r.Id_Rapport == idRapport);
+
+            if (rapport == null || rapport.Visite == null)
             {
                 return false;
             }
 
-            rapport.Resultat = $"Validé par superviseur {idSuperviseur}";
+            rapport.Visite.IsCompleted = true;
             await _db.SaveChangesAsync();
             return true;
         }
         public async Task<bool> CanCreateRapportAsync(int idVisite)
         {
-            // Charger la visite avec son rapport
             var visite = await _db.Visites
                 .AsNoTracking()
                 .Include(v => v.Rapport)
                 .FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
-
-            // Si la visite n’existe pas → impossible
-            if (visite == null)
+            if ( visite == null)
+            {
                 return false;
+            }
 
-            // Si la visite a déjà un rapport → impossible
-            if (visite.Rapport != null)
+            if (visite.IsCompleted || visite.Rapport != null)
+            {
                 return false;
-
-            // Sinon → autorisé
+            }
             return true;
+
         }
         public async Task<bool> HasRapportAsync(int idVisite)
         {
-            var rapport = await _db.Rapports
-                        .FirstOrDefaultAsync(r => r.Id_Visite == idVisite);
 
-            return rapport != null;
+            return await _db.Rapports
+                            .AnyAsync(r => r.Id_Visite == idVisite);
+
         }
 
     }

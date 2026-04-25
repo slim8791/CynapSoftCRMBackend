@@ -2,6 +2,5 @@
 {
     public class BonLivraisonDto : DocumentDto
     {
-        public int Id_BL { get; set; }
     }
 }

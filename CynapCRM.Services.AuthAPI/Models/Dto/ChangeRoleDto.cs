@@ -8,6 +8,6 @@ namespace CynapCRM.Services.AuthAPI.Models.Dto
         public string Email { get; set; }
 
         [Required]
-        public string NewRole { get; set; }
+        public UserRole NewRole { get; set; }
     }
 }

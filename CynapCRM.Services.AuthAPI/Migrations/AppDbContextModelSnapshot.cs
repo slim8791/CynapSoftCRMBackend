@@ -282,22 +282,18 @@ namespace CynapCRM.Services.AuthAPI.Migrations
                     b.HasDiscriminator().HasValue("Admin");
                 });
 
+            modelBuilder.Entity("CynapCRM.Services.AuthAPI.Models.Client", b =>
+                {
+                    b.HasBaseType("CynapCRM.Services.AuthAPI.Models.Utilisateur");
+
+                    b.HasDiscriminator().HasValue("Client");
+                });
+
             modelBuilder.Entity("CynapCRM.Services.AuthAPI.Models.Delegue", b =>
                 {
                     b.HasBaseType("CynapCRM.Services.AuthAPI.Models.Utilisateur");
 
                     b.HasDiscriminator().HasValue("Delegue");
-                });
-
-            modelBuilder.Entity("CynapCRM.Services.AuthAPI.Models.Grossiste", b =>
-                {
-                    b.HasBaseType("CynapCRM.Services.AuthAPI.Models.Utilisateur");
-
-                    b.Property<string>("RaisonSociale")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasDiscriminator().HasValue("Grossiste");
                 });
 
             modelBuilder.Entity("CynapCRM.Services.AuthAPI.Models.Medecin", b =>
@@ -313,21 +309,6 @@ namespace CynapCRM.Services.AuthAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasDiscriminator().HasValue("Medecin");
-                });
-
-            modelBuilder.Entity("CynapCRM.Services.AuthAPI.Models.Pharmacien", b =>
-                {
-                    b.HasBaseType("CynapCRM.Services.AuthAPI.Models.Utilisateur");
-
-                    b.Property<string>("NomOfficine")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TypePharmacie")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasDiscriminator().HasValue("Pharmacien");
                 });
 
             modelBuilder.Entity("CynapCRM.Services.AuthAPI.Models.Superviseur", b =>

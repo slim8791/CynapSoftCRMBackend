@@ -30,18 +30,25 @@ namespace CynapCRM.Services.FieldAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Objectif"));
 
+                    b.Property<DateTime>("DateDebut")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateFin")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Id_User_Delegue")
                         .HasColumnType("int");
 
-                    b.Property<string>("Periode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Periode")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<int>("ValeurCible")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ValeurRealisee")
                         .HasColumnType("int");
 
                     b.HasKey("Id_Objectif");
@@ -51,7 +58,7 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     b.ToTable("Objectifs");
                 });
 
-            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.PlanningVisite", b =>
+            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Planning_Visite", b =>
                 {
                     b.Property<int>("Id_Planning")
                         .ValueGeneratedOnAdd()
@@ -62,15 +69,14 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Etat")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Etat")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("HeureDebut")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("HeureDebut")
+                        .HasColumnType("time");
 
-                    b.Property<DateTime>("HeureFin")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("HeureFin")
+                        .HasColumnType("time");
 
                     b.Property<int>("Id_User_Delegue")
                         .HasColumnType("int");
@@ -82,7 +88,7 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     b.ToTable("Plannings");
                 });
 
-            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Rapport_visite", b =>
+            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Rapport_Visite", b =>
                 {
                     b.Property<int>("Id_Rapport")
                         .ValueGeneratedOnAdd()
@@ -94,7 +100,7 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime>("DateRapport")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Id_User_Delegue")
@@ -144,34 +150,6 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     b.ToTable("Regions");
                 });
 
-            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Tournee", b =>
-                {
-                    b.Property<int>("Id_Tournee")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Tournee"));
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Id_Planning")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Id_User_Delegue")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Statut")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id_Tournee");
-
-                    b.HasIndex("Id_Planning");
-
-                    b.ToTable("Tournees");
-                });
-
             modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Visite", b =>
                 {
                     b.Property<int>("Id_Visite")
@@ -180,7 +158,7 @@ namespace CynapCRM.Services.FieldAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Visite"));
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime>("DateVisite")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("Id_Medecin")
@@ -189,63 +167,52 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     b.Property<int?>("Id_Pharmacien")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Id_Tournee")
+                    b.Property<int?>("Id_Planning")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Id_Region")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_User_Delegue")
                         .HasColumnType("int");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.HasKey("Id_Visite");
 
-                    b.HasIndex("Id_Tournee");
+                    b.HasIndex("Id_Planning");
 
                     b.HasIndex("Id_User_Delegue");
 
                     b.ToTable("Visites");
                 });
 
-            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Rapport_visite", b =>
+            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Rapport_Visite", b =>
                 {
                     b.HasOne("CynapCRM.Services.FieldAPI.Models.Visite", "Visite")
                         .WithOne("Rapport")
-                        .HasForeignKey("CynapCRM.Services.FieldAPI.Models.Rapport_visite", "Id_Visite")
+                        .HasForeignKey("CynapCRM.Services.FieldAPI.Models.Rapport_Visite", "Id_Visite")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Visite");
                 });
 
-            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Tournee", b =>
+            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Visite", b =>
                 {
-                    b.HasOne("CynapCRM.Services.FieldAPI.Models.PlanningVisite", "Planning")
-                        .WithMany("Tournees")
+                    b.HasOne("CynapCRM.Services.FieldAPI.Models.Planning_Visite", "Planning")
+                        .WithMany("Visites")
                         .HasForeignKey("Id_Planning")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Planning");
                 });
 
-            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Visite", b =>
-                {
-                    b.HasOne("CynapCRM.Services.FieldAPI.Models.Tournee", "Tournee")
-                        .WithMany("Visites")
-                        .HasForeignKey("Id_Tournee")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Tournee");
-                });
-
-            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.PlanningVisite", b =>
-                {
-                    b.Navigation("Tournees");
-                });
-
-            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Tournee", b =>
+            modelBuilder.Entity("CynapCRM.Services.FieldAPI.Models.Planning_Visite", b =>
                 {
                     b.Navigation("Visites");
                 });

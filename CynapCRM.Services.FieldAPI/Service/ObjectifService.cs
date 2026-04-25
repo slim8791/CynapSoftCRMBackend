@@ -17,63 +17,109 @@ namespace CynapCRM.Services.FieldAPI.Service
             _db = db;
             _mapper = mapper;
         }
-    }
-    // ================================
-        // 🔹 OBJECTIF
-        // ================================
-
         public async Task<ObjectifDelegueDto?> CreateOrUpdateObjectifAsync(ObjectifDelegueDto dto)
         {
-            var entity = _mapper.Map<Objectif_Delegue>(dto);
+            if (dto.ValeurCible <= 0)
+                return null;
 
-            var existing = await _db.Objectifs
-                .FirstOrDefaultAsync(o => o.Id_Objectif == dto.Id_Objectif);
+            if (!Enum.IsDefined(typeof(TypeObjectif), dto.Type) ||
+                !Enum.IsDefined(typeof(PeriodeObjectif), dto.Periode))
+                return null;
 
-            if (existing == null)
+            Objectif_Delegue objectif;
+            if (dto.Id_Objectif == 0)
             {
-                _db.Objectifs.Add(entity);
+                objectif = new Objectif_Delegue
+                {
+                    Type = dto.Type,
+                    ValeurCible = dto.ValeurCible,
+                    ValeurRealisee = 0,
+                    Periode = dto.Periode,
+                    //Ownership guaranteed (injected from the JWT into the controller)
+                    Id_User_Delegue = dto.Id_User_Delegue
+                };
+
+                _db.Objectifs.Add(objectif);
             }
             else
             {
-                _db.Entry(existing).CurrentValues.SetValues(entity);
-            }
+                //  We are only changing ITS objectives (enhanced security)
+                objectif = await _db.Objectifs
+                    .FirstOrDefaultAsync(o =>
+                        o.Id_Objectif == dto.Id_Objectif &&
+                        o.Id_User_Delegue == dto.Id_User_Delegue);
 
+                if (objectif == null)
+                    return null;
+
+                // Editable fields
+                objectif.Type = dto.Type;
+                objectif.ValeurCible = dto.ValeurCible;
+                objectif.Periode = dto.Periode;
+            }
             await _db.SaveChangesAsync();
-            return _mapper.Map<ObjectifDelegueDto>(entity);
+            return _mapper.Map<ObjectifDelegueDto>(objectif);
         }
 
-        public async Task<ObjectifDelegueDto?> GetObjectifByDelegueAsync(int idDelegue)
+        public async Task<IEnumerable<ObjectifDelegueDto?>> GetObjectifsByDelegueAsync(int idDelegue)
         {
-            var objectif = await _db.Objectifs
-                .AsNoTracking()
-                .FirstOrDefaultAsync(o => o.Id_User_Delegue == idDelegue);
 
-            if (objectif == null)
-            {
-                return null;
-            }
+            var objectifs = await _db.Objectifs
+                            .AsNoTracking()
+                            .Where(o => o.Id_User_Delegue == idDelegue)
+                            .OrderBy(o => o.Periode)
+                            .ToListAsync();
 
-            return _mapper.Map<ObjectifDelegueDto>(objectif);
+            return _mapper.Map<IEnumerable<ObjectifDelegueDto>>(objectifs);
         }
 
         public async Task<bool> DeleteObjectifAsync(int idObjectif)
         {
-            var entity = await _db.Objectifs.FindAsync(idObjectif);
-            if (entity == null) return false;
 
-            _db.Objectifs.Remove(entity);
+            var objectif = await _db.Objectifs.FirstOrDefaultAsync(o => o.Id_Objectif == idObjectif);
+            if (objectif == null)
+                return false;
+
+            _db.Objectifs.Remove(objectif);
             await _db.SaveChangesAsync();
             return true;
+
         }
 
         public async Task<bool> UpdateObjectifValueAsync(int idObjectif, int nouvelleValeur)
         {
-            var obj = await _db.Objectifs.FindAsync(idObjectif);
+
+            if (nouvelleValeur < 0)
+                return false;
+
+            var obj = await _db.Objectifs.FirstOrDefaultAsync(o => o.Id_Objectif == idObjectif);
             if (obj == null) return false;
 
-            obj.ValeurCible = nouvelleValeur;
+            obj.ValeurRealisee = nouvelleValeur;
             await _db.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<IEnumerable<ObjectifDelegueDto>> GetAllObjectifsAsync()
+        {
+
+            var objectifs = await _db.Objectifs
+                    .AsNoTracking()
+                    .ToListAsync();
+
+            return _mapper.Map<IEnumerable<ObjectifDelegueDto>>(objectifs);
+        }
+
+        public async Task<ObjectifDelegueDto?> GetObjectifsByIdAsync(int idObjectif)
+        {
+            var objectif = await _db.Objectifs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(o => o.Id_Objectif == idObjectif);
+
+            if (objectif == null)
+                return null;
+
+            return _mapper.Map<ObjectifDelegueDto>(objectif);
         }
     }
 }

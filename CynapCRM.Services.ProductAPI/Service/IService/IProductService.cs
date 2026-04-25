@@ -1,51 +1,103 @@
 ﻿using CynapCRM.Services.ProductAPI.Models.Dto;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.ProductAPI.Service.IService
 {
+    /// <summary>
+    /// Service métier responsable de la gestion du catalogue produit
+    /// </summary>
     public interface IProductService
     {
-        // Gestion des Produits
-        Task<IEnumerable<ProduitDto>> GetProductsAsync();
-        Task<ProduitDto> GetProductByIdAsync(int produitId);
-        Task<ProduitDto> CreateUpdateProductAsync(ProduitDto produitDto);
-        Task<bool> DeleteProductAsync(int produitId);
+        //  Catalogue  consultation
 
-        // Gestion des lots
+        Task<IEnumerable<ProduitDto>> GetAllProductsAsync();
+        Task<ProduitDto?> GetProductByIdAsync(int productId);
 
-        // Récupérer tous les lots d'un médicament (pour voir les dates d'expiration)
-        Task<IEnumerable<LotDto>> GetLotsByProductIdAsync(int productId);
+        /// <summary>
+        /// Récupère les produits visibles pour les utilisateurs métier
+        /// (actifs + non archivés)
+        /// </summary>
+        Task<IEnumerable<ProduitDto>> GetVisibleProductsAsync();
 
-        // Ajouter un nouveau lot à l'inventaire
-        Task<LotDto> CreateUpdateLotAsync(LotDto lotDto);
+        //  Gestion du cycle de vie produit
 
-        // Supprimer un lot (en cas d'erreur de saisie)
-        Task<bool> DeleteLotAsync(string numeroLot);
+        /// <summary>
+        /// Crée ou met à jour un produit
+        /// </summary>
+        Task<ProduitDto> CreateOrUpdateProductAsync(ProduitDto produitDto);
 
+        /// <summary>
+        /// Archive un produit (suppression logique)
+        /// </summary>
+        Task<bool> ArchiveProductAsync(int productId);
 
-        // Gestion des promotions
-        // Récupérer toutes les promos actives
-        Task<IEnumerable<PromotionDto>> GetPromotionsAsync();
+        /// <summary>
+        /// Active un produit (visible et vendable)
+        /// </summary>
+        Task<bool> ActivateProductAsync(int productId);
 
-        // Créer ou Modifier une promo (ex: -20% sur le Lot X)
-        Task<PromotionDto> CreateUpdatePromotionAsync(PromotionDto promotionDto);
+        /// <summary>
+        /// Désactive un produit (non vendable)
+        /// </summary>
+        Task<bool> DeactivateProductAsync(int productId);
 
-        // Supprimer une promotion
-        Task<bool> DeletePromotionAsync(int promotionId);
+        //🔹 Disponibilité / état produit
 
+        /// <summary>
+        /// Indique si un produit est vendable
+        /// (actif + stock disponible)
+        /// </summary>
+        Task<bool> IsProductAvailableAsync(int productId);
 
-        // Gestion marketing et supports
+        Task<IEnumerable<ProduitDto>> GetAvailableProductsAsync();
+        Task<IEnumerable<ProduitDto>> GetUnavailableProductsAsync();
 
-        // Récupérer les supports (vidéos, PDF) d'un produit
-        Task<IEnumerable<SupportMarketingDto>> GetSupportsByProductIdAsync(int productId);
+        //  Stock (lecture uniquement)
 
-        // Créer un nouveau support (ex: "Campagne Printemps 2026")
-        Task<SupportMarketingDto> CreateUpdateSupportAsync(SupportMarketingDto supportDto);
+        /// <summary>
+        /// Stock total calculé à partir des lots
+        /// </summary>
+        Task<int> GetTotalStockAsync(int productId);
 
-        // Ajouter un fichier physique (Url, Nom) à un support
-        Task<FichierDto> AddFichierToSupportAsync(FichierDto fichierDto);
+        /// <summary>
+        /// État global du stock (OK / faible / rupture)
+        /// </summary>
+        Task<IEnumerable<StockStatusDto>> GetStockStatusAsync();
 
-        // Supprimer un fichier technique
-        Task<bool> DeleteFichierAsync(int fichierId);
+        Task<IEnumerable<ProduitDto>> GetLowStockProductsAsync(int threshold);
+
+        //  Recherche et navigation
+    
+        Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10);
+
+        Task<IEnumerable<ProduitDto>> FilterProductsAsync(
+            string? keyword,
+            string? category,
+            bool? onlyAvailable,
+            int page,
+            int pageSize
+        );
+
+        //Task<IEnumerable<string>> GetSearchSuggestionsAsync(string keyword);
+
+        //  Catégories (référentiel léger)
+
+        Task<IEnumerable<string>> GetCategoriesAsync();
+        Task<IEnumerable<ProduitDto>> GetProductsByCategoryAsync(string category);
+
+        //  Règles métier  validation
+
+        Task<bool> ProductExistsAsync(string productName);
+        Task<bool> IsProductValidAsync(int productId);
+
+        /// <summary>
+        /// Vérifie si un produit peut être archivé ou supprimé
+        /// (pas de stock, pas de commandes actives)
+        /// </summary>
+        Task<bool> CanArchiveProductAsync(int productId);
+
+        //  Indicateurs // pilotage
+
+        Task<IEnumerable<ProduitDto>> GetTopProductsAsync(int topN);
+        Task<ProductDashboardDto> GetProductDashboardAsync();
     }
 }

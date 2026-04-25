@@ -11,43 +11,64 @@ namespace CynapCRM.Services.AuthAPI.Service
     public class JwtTokenGenerator : IJwtTokenGenerator
     {
         private readonly JwtOptions _jwtOptions;
+
         public JwtTokenGenerator(IOptions<JwtOptions> jwtOptions)
         {
             _jwtOptions = jwtOptions.Value;
         }
 
+
         public string GenerateToken(Utilisateur user, IEnumerable<string> roles)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_jwtOptions.Secret);
 
-            // On convertit la clé secrète en tableau d'octets (Bytes)
-            var key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
+            var claims = new List<Claim>
+    {
+        // Identity
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
 
-            // 1. On définit le contenu du Token (Les Claims)
-            var claimList = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Name, user.Name)
-            };
+        // Email 
+        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+        new Claim(ClaimTypes.Email, user.Email), // 
 
-            // 2. On ajoute les rôles de l'utilisateur dans le Token
-            claimList.AddRange(roles.Select(role => new Claim("role", role.ToUpper())));
-            // 3. Configuration du Token (Durée, Signature, Cible)
+        // Unique token identifier
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+
+        // Issued at
+        new Claim(JwtRegisteredClaimNames.Iat,
+            DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
+            ClaimValueTypes.Integer64)
+    };
+
+            // Rôles (Authorize(Roles = "..."))
+            claims.AddRange(
+                roles.Select(role =>
+                    new Claim(ClaimTypes.Role, role.ToUpper()))
+            );
+
+            var now = DateTime.UtcNow;
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Audience = _jwtOptions.Audience,
+                Subject = new ClaimsIdentity(claims),
                 Issuer = _jwtOptions.Issuer,
-                Subject = new ClaimsIdentity(claimList),
-                Expires = DateTime.UtcNow.AddDays(7), // Le token expire après 7 jours
+                Audience = _jwtOptions.Audience,
+
+                // Temporal security
+                NotBefore = now,
+                Expires = now.AddMinutes(_jwtOptions.ExpiryMinutes),
+
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
-                    SecurityAlgorithms.HmacSha256Signature)
+                    SecurityAlgorithms.HmacSha256
+                )
             };
 
-            // 4. Création et écriture du Token final
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
     }
 }

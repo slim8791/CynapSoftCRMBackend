@@ -5,23 +5,25 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.ProductAPI.Controllers
 {
-    [Route("api/lot")]
+    [Route("api/lots")]
     [ApiController]
     [Authorize]
     public class LotController : ControllerBase
     {
-        private readonly IProductService _productService;
+        private readonly ILotService _lotService;
 
         protected ResponseDto _response;
-        public LotController(IProductService productService)
+        public LotController(ILotService lotService)
 
         {
-            _productService = productService;
+            _lotService = lotService;
 
             _response = new();
         }
 
         [HttpGet("{id:int}/lots")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
         public async Task<IActionResult> GetLotsByIdProduct(int id)
         {
             try
@@ -33,7 +35,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                var result = await _productService.GetLotsByProductIdAsync(id);
+                var result = await _lotService.GetLotsByProductIdAsync(id);
                 if (result == null || !result.Any())
                 {
                     _response.IsSuccess = false;
@@ -50,13 +52,13 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
         [HttpPost("lot")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> CreateUpdateLot([FromBody] LotDto lotDto)
+        public async Task<IActionResult> CreateOrUpdateLot([FromBody] LotDto lotDto)
         {
             try
             {
@@ -66,7 +68,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                     _response.Message = "Données de lot invalides.";
                     return BadRequest(_response);
                 }
-                var result = await _productService.CreateUpdateLotAsync(lotDto);
+                var result = await _lotService.CreateOrUpdateLotAsync(lotDto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -80,7 +82,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
 
             }
         }
@@ -97,7 +99,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                     _response.Message = "Numéro de lot invalide.";
                     return BadRequest(_response);
                 }
-                bool idDeleted = await _productService.DeleteLotAsync(numeroLot);
+                bool idDeleted = await _lotService.DeleteLotAsync(numeroLot);
                 if (!idDeleted)
                 {
                     _response.IsSuccess = false;
@@ -112,8 +114,239 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
 
+            }
+        }
+
+        [HttpPut("product/{productId}/adjust-stock")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> AdjustStock(int productId, [FromQuery] int quantityChange)
+        {
+            try
+            {
+                if (productId <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "ID de produit invalide.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _lotService.AdjustStockAsync(productId, quantityChange);
+
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Impossible d’ajuster le stock (stock insuffisant ou lots expirés).";
+                    return BadRequest(_response);
+                }
+
+                _response.Message = "Stock ajusté avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
+        [HttpPut("lot/{numeroLot}/update-quantity")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> UpdateLotQuantity(string numeroLot, [FromQuery] int quantityChange)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(numeroLot))
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Numéro de lot invalide.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _lotService.UpdateLotQuantityAsync(numeroLot, quantityChange);
+
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Impossible de mettre à jour la quantité du lot.";
+                    return BadRequest(_response);
+                }
+
+                _response.Message = "Quantité du lot mise à jour avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
+
+        [HttpGet("lot/{numeroLot}/expired")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> IsLotExpired(string numeroLot)
+        {
+            try
+            {
+                var result = await _lotService.IsLotExpiredAsync(numeroLot);
+                _response.Result = result;
+                return Ok(_response);
+            }
+
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
+        [HttpGet("near-expiration")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
+        public async Task<IActionResult> GetLotsNearExpiration([FromQuery] int daysThreshold)
+        {
+            try
+            {
+                var result = await _lotService.GetLotsNearExpirationAsync(daysThreshold);
+
+                if (result == null || !result.Any())
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Aucun lot proche de l’expiration.";
+                    return NotFound(_response);
+                }
+
+                _response.Result = result;
+                return Ok(_response);
+
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+        [HttpGet("lot/{numeroLot}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetLotByNumero(string numeroLot)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(numeroLot))
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Numéro de lot invalide.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _lotService.GetLotByNumeroAsync(numeroLot);
+
+                if (result == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Lot introuvable.";
+                    return NotFound(_response);
+                }
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+        [HttpGet("product/{productId}/available")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
+        public async Task<IActionResult> GetAvailableLots(int productId)
+        {
+            try
+            {
+                if (productId <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "ID de produit invalide.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _lotService.GetAvailableLotsAsync(productId);
+
+                if (result == null || !result.Any())
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Aucun lot disponible pour ce produit.";
+                    return NotFound(_response);
+                }
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+        [HttpGet("lot/{numeroLot}/out-of-stock")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+
+        public async Task<IActionResult> IsLotOutOfStock(string numeroLot)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(numeroLot))
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Numéro de lot invalide.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _lotService.IsLotOutOfStockAsync(numeroLot);
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+        [HttpGet("expired")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+
+        public async Task<IActionResult> GetExpiredLots()
+        {
+            try
+            {
+                var result = await _lotService.GetExpiredLotsAsync();
+
+                if (result == null || !result.Any())
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Aucun lot expiré trouvé.";
+                    return NotFound(_response);
+                }
+
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
             }
         }
 

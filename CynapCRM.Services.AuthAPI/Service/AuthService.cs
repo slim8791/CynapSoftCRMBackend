@@ -1,9 +1,12 @@
-﻿using CynapCRM.Services.AuthAPI.Data;
+﻿using AutoMapper;
+using CynapCRM.Services.AuthAPI.Data;
 using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Models.Dto;
 using CynapCRM.Services.AuthAPI.Service.IService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Crypto;
+using System.Data;
 
 
 namespace CynapCRM.Services.AuthAPI.Service
@@ -19,7 +22,8 @@ namespace CynapCRM.Services.AuthAPI.Service
             UserManager<Utilisateur> userManager,
             RoleManager<IdentityRole<int>> roleManager,
             IJwtTokenGenerator jwtTokenGenerator,
-            IEmailService emailService)
+            IEmailService emailService
+            )
         {
             _db = db;
             _userManager = userManager;
@@ -27,126 +31,253 @@ namespace CynapCRM.Services.AuthAPI.Service
             _jwtTokenGenerator = jwtTokenGenerator;
             _emailService = emailService;
         }
-        public async Task<string> Register(RegistrationRequestDto registrationRequestDto)
+        public async Task<ResponseDto> Register(RegistrationRequestDto model)
         {
-            Utilisateur user = new()
-            {
-                UserName = registrationRequestDto.Email,
-                Email = registrationRequestDto.Email,
-                NormalizedEmail = registrationRequestDto.Email.ToUpper(),
-                Name = registrationRequestDto.Name,
-                PhoneNumber = registrationRequestDto.PhoneNumber,
-                Adresse = registrationRequestDto.Adresse
-            };
-            try
-            {
-                var result = await _userManager.CreateAsync(user, registrationRequestDto.Password);
 
-                if (result.Succeeded)
+            // verify email 
+            if (await _userManager.FindByEmailAsync(model.Email) != null)
+            {
+                return new ResponseDto
                 {
-                    if (!string.IsNullOrEmpty(registrationRequestDto.Role))
+                    IsSuccess = false,
+                    Message = "Un compte avec cet email existe déjà."
+                };
+            }
+
+            Utilisateur user;
+
+            if (model.Role == UserRole.CLIENT)
+            {
+                user = model.UserType switch
+                {
+                    UserType.PHARMACIEN => new Pharmacien
                     {
-                        await _userManager.AddToRoleAsync(user, registrationRequestDto.Role);
-                    }
-                    return ""; 
-                }
-                return result.Errors.FirstOrDefault()?.Description ?? "Erreur d'inscription";
+                        Name = model.Name,
+                        Email = model.Email,
+                        UserName = model.Email,
+                        Adresse = model.Adresse,
+                        NomOfficine = model.NomOfficine,
+                        TypePharmacie = model.TypePharmacie,
+                        IsDeleted = false
+                    },
+                    UserType.GROSSISTE => new Grossiste
+                    {
+                        Name = model.Name,
+                        Email = model.Email,
+                        UserName = model.Email,
+                        Adresse = model.Adresse,
+                        RaisonSociale = model.RaisonSociale,
+                        IsDeleted = false
+                    },
+
+                    _ => throw new ArgumentException("UserType invalide pour un Client.")
+                };
             }
-            catch (Exception ex)
+
+            else
             {
-                return "Erreur : " + ex.Message;
+                // ADMIN / SUPERVISEUR / DELEGUE / MEDECIN 
+                user = new Utilisateur
+                {
+                    Name = model.Name,
+                    Email = model.Email,
+                    UserName = model.Email,
+                    Adresse = model.Adresse,
+                    IsDeleted = false
+                };
             }
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (!result.Succeeded)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = result.Errors.FirstOrDefault()?.Description
+                };
+            }
+            var role = model.Role.ToString().ToUpper();
+            // Rôle Identity
+            if (!await _roleManager.RoleExistsAsync(role))
+            {
+                await _roleManager.CreateAsync(new IdentityRole<int> { Name = role });
+            }
+
+            await _userManager.AddToRoleAsync(user, role);
+
+            return new ResponseDto
+            {
+                IsSuccess = true,
+                Message = $"Inscription réussie avec le rôle {role} "
+            };
         }
-        
-        
 
-        public async Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto)
+        public async Task<LoginResponseDto> Login(LoginRequestDto model)
         {
-            var user = _db.Utilisateurs.FirstOrDefault(u => u.UserName.ToLower() == loginRequestDto.UserName.ToLower());
+            // User search via Identity
+            var user = await _userManager.FindByNameAsync(model.UserName);
 
-            bool isValid = await _userManager.CheckPasswordAsync(user, loginRequestDto.Password);
-
-            if (user == null || user.IsDeleted == true)
+            if (user == null || user.IsDeleted)
             {
-                return new LoginResponseDto() { User = null, Token = "" };
+                return new LoginResponseDto
+                {
+                    User = null,
+                    Token = ""
+                };
             }
 
+            // Password verification
+            var isValidPassword =
+                await _userManager.CheckPasswordAsync(user, model.Password);
+
+            if (!isValidPassword)
+            {
+                return new LoginResponseDto
+                {
+                    User = null,
+                    Token = ""
+                };
+            }
+
+            // Retrieving roles
             var roles = await _userManager.GetRolesAsync(user);
 
+            // a user MUST have a role
+            if (!roles.Any())
+            {
+                return new LoginResponseDto
+                {
+                    User = null,
+                    Token = ""
+                };
+            }
+
+            // JWT Generation
             var token = _jwtTokenGenerator.GenerateToken(user, roles);
 
-            UserDto userDto = new()
+            // User DTO Construction
+            var userDto = new UserDto
             {
                 Id = user.Id,
                 Email = user.Email,
                 Name = user.Name,
                 PhoneNumber = user.PhoneNumber,
                 Adresse = user.Adresse,
-                Role = roles.FirstOrDefault() ?? ""
+
+                Role = roles.First().ToUpper()
             };
 
-            return new LoginResponseDto { User = userDto, Token = token };
-        }
-        public async Task<bool> AssignRole(string userId, string role)
-        {
-            var user = await _userManager.FindByEmailAsync(userId);
-            if (user == null)
+            return new LoginResponseDto
             {
-                return false;
-            }
-
-            if (!await _roleManager.RoleExistsAsync(role))
-            {
-                return false;
-            }
-
-            var result = await _userManager.AddToRoleAsync(user, role);
-            return result.Succeeded;
+                User = userDto,
+                Token = token
+            };
         }
-        public async Task<bool> AddRole(string email, string roleName)
+
+        public async Task<bool> AssignRole(string email, UserRole role)
         {
+
+            var roleName = role.ToString();
             var user = await _userManager.FindByEmailAsync(email);
-            if (user == null)
-            {
-                return false;
-            }
 
+            if (user == null || user.IsDeleted)
+                return false;
+
+
+            // Create the role if it does not exist
             if (!await _roleManager.RoleExistsAsync(roleName))
             {
-                var roleResult = await _roleManager.CreateAsync(new IdentityRole<int> { Name = roleName });
+                var roleResult = await _roleManager.CreateAsync(
+                    new IdentityRole<int> { Name = roleName });
+
                 if (!roleResult.Succeeded)
-                {
                     return false;
-                }
             }
+
+            // Avoid duplicates
+            if (await _userManager.IsInRoleAsync(user, roleName))
+                return true;
 
             var result = await _userManager.AddToRoleAsync(user, roleName);
             return result.Succeeded;
         }
-        public async Task<bool> ChangeRole(ChangeRoleDto model)
+        public async Task<bool> AddRole(string email, UserRole role)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            var roleName = role.ToString();
+
+
+            var user = await _userManager.FindByEmailAsync(email);
             if (user == null || user.IsDeleted)
-            {
                 return false;
+
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                var roleResult = await _roleManager.CreateAsync(
+                    new IdentityRole<int> { Name = roleName });
+
+                if (!roleResult.Succeeded)
+                    return false;
             }
 
+            if (await _userManager.IsInRoleAsync(user, roleName))
+                return true;
+
+            var result = await _userManager.AddToRoleAsync(user, roleName);
+            return result.Succeeded;
+        }
+        public async Task<LoginResponseDto> ChangeRole(ChangeRoleDto model)
+        {
+
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || user.IsDeleted)
+                return null;
+
+            // Delete old roles
             var currentRoles = await _userManager.GetRolesAsync(user);
             if (currentRoles.Any())
                 await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
-            if (!await _roleManager.RoleExistsAsync(model.NewRole))
+            var roleName = model.NewRole.ToString();
+
+            // Create the role if necessary
+            if (!await _roleManager.RoleExistsAsync(roleName))
             {
-                var roleResult = await _roleManager.CreateAsync(new IdentityRole<int> { Name = model.NewRole });
-                if (!roleResult.Succeeded) return false;
+                var roleResult = await _roleManager.CreateAsync(
+                    new IdentityRole<int> { Name = roleName });
+
+                if (!roleResult.Succeeded)
+                    return null;
             }
 
-            var result = await _userManager.AddToRoleAsync(user, model.NewRole);
-            return result.Succeeded;
+            // Add the new role
+            var result = await _userManager.AddToRoleAsync(user, roleName);
+            if (!result.Succeeded)
+                return null;
+
+            // Retrieve updated roles
+            var updatedRoles = await _userManager.GetRolesAsync(user);
+
+            // GENERATE A NEW TOKEN
+            var newToken = _jwtTokenGenerator.GenerateToken(user, updatedRoles);
+
+            return new LoginResponseDto
+            {
+                User = new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Adresse = user.Adresse,
+                    Role = updatedRoles.FirstOrDefault() ?? ""
+                },
+                Token = newToken
+            };
+
         }
-
-
-
         public async Task<bool> ChangePassword(ChangePasswordDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -181,9 +312,6 @@ namespace CynapCRM.Services.AuthAPI.Service
                 Result = token
             };
         }
-
-        
-
         public async Task<bool> EnableUser(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -196,8 +324,7 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             return result.Succeeded;
         }
-
-        public async Task<bool> DeleteUser(string email)
+        public async Task<bool> DisableUser(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
@@ -209,7 +336,48 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             return result.Succeeded;
         }
+        public async Task<IEnumerable<UserDto>> GetDisabledUsersAsync()
+        {
+            var users = await _userManager.Users
+                .Where(u => u.IsDeleted)
+                .AsNoTracking()
+                .ToListAsync();
 
-        
+            return users.Select(u => new UserDto
+            {
+                Id = u.Id,
+                Email = u.Email,
+                Name = u.Name,
+                PhoneNumber = u.PhoneNumber,
+                Adresse = u.Adresse,
+                Role = "" 
+            });
+        }
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        {
+            // Get all users
+            var users = await _userManager.Users
+                .AsNoTracking()
+                .ToListAsync();
+
+            var result = new List<UserDto>();
+
+            // MANUAL Mapping, Role Retrieval
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+
+                result.Add(new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Adresse = user.Adresse,
+                    Role = roles.FirstOrDefault() ?? "" 
+                });
+            }
+            return result;
+        }
     }
 }

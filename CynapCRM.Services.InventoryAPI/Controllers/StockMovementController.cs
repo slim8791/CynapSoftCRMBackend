@@ -1,36 +1,38 @@
 ﻿using CynapCRM.Services.InventoryAPI.Models.Dto;
 using CynapCRM.Services.InventoryAPI.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CynapCRM.Services.InventoryAPI.Controllers
 {
-    [Route("api/stockMovement")]
+
+    [Route("api/stock-movements")]
     [ApiController]
+    [Authorize(Roles = "ADMIN,SUPERVISEUR")]
 
     public class StockMovementController : ControllerBase
     {
-        private readonly IInventoryService _inventoryService;
+        private readonly IStockMovementService _stockMovementService;
         protected ResponseDto _response;
 
-        public StockMovementController(IInventoryService inventoryService)
+        public StockMovementController(IStockMovementService stockMovementService)
         {
-            _inventoryService = inventoryService;
+            _stockMovementService = stockMovementService    ;
             _response = new ResponseDto();
         }
-        // 1. Décrémenter le stock (Ajustement négatif)
+        
         [HttpPost("decrement")]
-        public async Task<IActionResult> Decrement([FromBody] StockMovementDto movementDto)
+        public async Task<IActionResult> DecrementStock([FromQuery] int idStock, [FromQuery] int qte)
         {
             try
             {
-                if (movementDto.Quantity <= 0)
+                if (qte <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "La quantité doit être supérieure à zéro pour un décrément.";
                     return BadRequest(_response);
                 }
-                // On utilise movementDto.IdStock et movementDto.Quantity
-                bool result = await _inventoryService.DecrementStockAsync(movementDto.IdStock, movementDto.Quantity);
+                bool result = await _stockMovementService.DecrementStockAsync(idStock, qte);
 
                 if (!result)
                 {
@@ -46,24 +48,24 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 
-        // 2. Incrémenter le stock (Ajustement positif)
         [HttpPost("increment")]
-        public async Task<IActionResult> Increment([FromBody] StockMovementDto movementDto)
+        public async Task<IActionResult> IncrementStock([FromQuery] int idStock,[FromQuery] int qte)
         {
+
             try
             {
-                if (movementDto.Quantity <= 0)
+                if (qte <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "La quantité doit être supérieure à zéro pour un incrément.";
                     return BadRequest(_response);
                 }
 
-                bool result = await _inventoryService.IncrementStockAsync(movementDto.IdStock, movementDto.Quantity);
+                bool result = await _stockMovementService.IncrementStockAsync(idStock, qte);
 
                 if (!result)
                 {
@@ -79,29 +81,25 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
-
-        // 3. Transférer du stock
-        // Note : Pour le transfert, on a besoin de deux IDs. 
-        // Si ton DTO n'a qu'un seul IdStock, tu peux passer l'Id destination dans l'URL
-        [HttpPost("transfer/{idStockDestination:int}")]
-        public async Task<IActionResult> Transfer([FromBody] StockMovementDto movementDto, int idStockDestination)
+        [HttpPost("transfer")]
+        public async Task<IActionResult> TransferStock([FromQuery] int idStockSource,
+                    [FromQuery] int idStockDestination,
+                    [FromQuery] int qte)
         {
+
             try
             {
-                if (movementDto.Quantity <= 0)
+                if (qte <= 0)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "La quantité doit être supérieure à zéro pour un transfert.";
                     return BadRequest(_response);
                 }
-                // movementDto.IdStock sert d'ID Source
-                bool result = await _inventoryService.TransferStockAsync(
-                    movementDto.IdStock,
-                    idStockDestination,
-                    movementDto.Quantity);
+                bool result = await _stockMovementService.TransferStockAsync(idStockSource,idStockDestination,
+                    qte);
 
                 if (!result)
                 {
@@ -117,7 +115,36 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
+            }
+        }
+
+        [HttpGet("{idStock:int}")]
+        public async Task<IActionResult> GetStockMovements(int idStock)
+        {
+
+            try
+            {
+                if (idStock <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Id stock invalide.";
+                    return BadRequest(_response);
+                }
+                var result = await _stockMovementService.GetStockMovementsAsync(idStock);
+                if (result == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Ligne de stock introuvable.";
+                    return NotFound(_response);
+                }
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
             }
         }
     }

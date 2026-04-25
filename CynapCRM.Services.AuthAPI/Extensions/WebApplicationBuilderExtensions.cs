@@ -1,47 +1,48 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace CynapCRM.Services.AuthAPI.Extensions
 {
     public static class WebApplicationBuilderExtensions
     {
-        public static WebApplicationBuilder AddAppAuthentication(this WebApplicationBuilder builder)
+        public static WebApplicationBuilder AddAppAuthentication(
+            this WebApplicationBuilder builder)
         {
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-            // Récupération des paramètres depuis le JSON
-            var settingsSection = builder.Configuration.GetSection("ApiSettings:JwtOptions");
-            var secret = settingsSection.GetValue<string>("Secret");
-            var issuer = settingsSection.GetValue<string>("Issuer");
-            var audience = settingsSection.GetValue<string>("Audience");
+            var jwtSection = builder.Configuration.GetSection("ApiSettings:JwtOptions");
 
-            var key = Encoding.ASCII.GetBytes(secret);
+            var secret = jwtSection.GetValue<string>("Secret");
+            var issuer = jwtSection.GetValue<string>("Issuer");
+            var audience = jwtSection.GetValue<string>("Audience");
+
+            var key = Encoding.UTF8.GetBytes(secret);
 
             builder.Services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(x =>
-            {
-                x.MapInboundClaims = false;
-
-                x.TokenValidationParameters = new TokenValidationParameters
-                {
+            })
+                .AddJwtBearer(x =>{x.TokenValidationParameters = new TokenValidationParameters{
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
+
                     ValidateIssuer = true,
                     ValidIssuer = issuer,
+
                     ValidateAudience = true,
                     ValidAudience = audience,
-                    RoleClaimType = "role" 
-                };
-            });
 
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
+
+                    };
+                });
+            builder.Services.AddAuthorization();
             return builder;
         }
     }
 }
-
-           

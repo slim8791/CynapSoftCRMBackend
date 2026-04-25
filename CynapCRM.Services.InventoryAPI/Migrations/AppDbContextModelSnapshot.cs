@@ -31,17 +31,29 @@ namespace CynapCRM.Services.InventoryAPI.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Distribution"));
 
                     b.Property<DateTime>("DateDistribution")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<int>("Id_Medecin")
+                    b.Property<int>("Id_Delegue")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id_User_Delegue")
+                    b.Property<int?>("Id_Medecin")
                         .HasColumnType("int");
+
+                    b.Property<int?>("Id_Pharmacien")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Id_Stock")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("NumeroLot")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("Qte")
                         .HasColumnType("int");
@@ -50,9 +62,44 @@ namespace CynapCRM.Services.InventoryAPI.Migrations
 
                     b.HasIndex("Id_Medecin");
 
+                    b.HasIndex("Id_Pharmacien");
+
                     b.HasIndex("NumeroLot");
 
                     b.ToTable("Distributions_Echantillons", (string)null);
+                });
+
+            modelBuilder.Entity("CynapCRM.Services.InventoryAPI.Models.StockMovement", b =>
+                {
+                    b.Property<int>("Id_Movement")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Movement"));
+
+                    b.Property<DateTime>("DateMovement")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id_Stock")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantite")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TypeMovement")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id_Movement");
+
+                    b.HasIndex("Id_Stock");
+
+                    b.ToTable("Stock_Movements", (string)null);
                 });
 
             modelBuilder.Entity("CynapCRM.Services.InventoryAPI.Models.Stock_Delegue", b =>
@@ -63,18 +110,33 @@ namespace CynapCRM.Services.InventoryAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_stock"));
 
+                    b.Property<DateTime>("DateCreation")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateExpiration")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Id_Produit")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_User_Delegue")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("NumeroLot")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("QteDisponible")
                         .HasColumnType("int");
+
+                    b.Property<int>("QteReservee")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("TypeStock")
                         .IsRequired()
@@ -116,6 +178,15 @@ namespace CynapCRM.Services.InventoryAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasDiscriminator().HasValue("Gratuite");
+                });
+
+            modelBuilder.Entity("CynapCRM.Services.InventoryAPI.Models.StockMovement", b =>
+                {
+                    b.HasOne("CynapCRM.Services.InventoryAPI.Models.Stock_Delegue", null)
+                        .WithMany()
+                        .HasForeignKey("Id_Stock")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

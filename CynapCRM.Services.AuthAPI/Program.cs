@@ -1,4 +1,4 @@
-using CynapCRM.Services.AuthAPI.Data;
+ï»¿using CynapCRM.Services.AuthAPI.Data;
 using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Service;
 using CynapCRM.Services.AuthAPI.Service.IService;
@@ -28,25 +28,28 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(option =>
 {
-    option.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Description = "Entrez 'Bearer ' suivi de votre token",
+        Type = SecuritySchemeType.Http,   
+        Scheme = "Bearer",                
+        BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Description = "Entrez : Bearer {votre token JWT}"
     });
+
     option.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference= new OpenApiReference
+                Reference = new OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
-            }, new List<string>()
+            },
+            Array.Empty<string>()
         }
     });
 });
@@ -60,7 +63,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -75,16 +77,16 @@ void applyMigrations()
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            // Vérifie s'il y a des migrations qui n'ont pas encore été appliquées
+            // Check if there are any migrations that have not yet been applied.
             if (dbContext.Database.GetPendingMigrations().Any())
             {
                 dbContext.Database.Migrate();
-                Console.WriteLine(">>> Migration appliquée avec succès !");
+                Console.WriteLine(">>> Migration appliquÃ©e avec succÃ¨s !");
             }
         }
         catch (Exception ex)
         {
-            // Affiche l'erreur dans la console si la connexion SQL échoue
+            // Displays the error in the console if the SQL connection fails
             Console.WriteLine($">>> Erreur lors de la migration : {ex.Message}");
         }
     }

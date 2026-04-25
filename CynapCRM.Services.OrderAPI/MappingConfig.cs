@@ -13,6 +13,10 @@ namespace CynapCRM.Services.OrderAPI
             CreateMap<CommandeDto, Commande>().ReverseMap();
             CreateMap<LigneCommandeDto, LigneCommande>().ReverseMap();
             CreateMap<ReclamationDto, Reclamation>().ReverseMap();
+            CreateMap<CreateOrderDto, Commande>().ReverseMap();
+
+            CreateMap<CreateOrUpdateLigneCommandeDto, LigneCommande>();
+
 
         }
     }
