@@ -5,7 +5,61 @@ description: "Orchestrates the creation of Angular pages, services, interceptors
 
 # Angular Project Orchestrator
 
-This agent orchestrates the creation of Angular pages, services, interceptors, and integration with backend APIs.
+This agent orchestrates the creation of Angular pages, services, interceptors, and integration with backend APIs, following recommended Angular project organization standards.
+
+## Angular Project Organization Standards
+All subagents must enforce the following organization:
+
+### Folder Structure
+```
+src/
+├── app/
+│   ├── core/                    # Singleton services, interceptors, guards
+│   │   ├── services/
+│   │   ├── guards/
+│   │   ├── interceptors/
+│   │   └── models/
+│   ├── shared/                  # Reusable components, directives, pipes
+│   │   ├── components/
+│   │   ├── directives/
+│   │   ├── pipes/
+│   │   └── models/
+│   ├── features/                # Feature modules (e.g., dashboard, products, orders)
+│   │   └── [feature-name]/
+│   │       ├── components/
+│   │       ├── pages/
+│   │       ├── services/
+│   │       ├── models/
+│   │       ├── [feature-name].module.ts
+│   │       └── [feature-name]-routing.module.ts
+│   ├── app.component.ts/html/css
+│   ├── app.module.ts
+│   └── app-routing.module.ts
+├── assets/
+├── styles/
+└── environments/
+```
+
+### Component File Structure
+- **Every component** must have separate files:
+  - `component-name.component.ts` (Logic)
+  - `component-name.component.html` (Template)
+  - `component-name.component.css` (Styles)
+- Use `templateUrl` and `styleUrls` in component decorator
+- Never inline templates or styles
+
+### Naming Conventions
+- Components: `feature-name.component.ts` (kebab-case)
+- Services: `feature-name.service.ts` (kebab-case)
+- Modules: `feature-name.module.ts` (kebab-case)
+- Guards: `feature-name.guard.ts` (kebab-case)
+- Interceptors: `feature-name.interceptor.ts` (kebab-case)
+- Models/Interfaces: `feature-name.model.ts` or `feature-name.interface.ts` (kebab-case)
+
+### Lazy Loading & Feature Modules
+- Each feature should be a separate module with lazy loading routes
+- Core services should be provided in CoreModule and imported once in AppModule
+- Shared components/services should be in SharedModule and imported as needed
 
 > Use only `angular-project-orchestrator` for user requests. The internal orchestration steps are handled by separate subagent definitions, but those subagents are not intended to be invoked directly.
 
