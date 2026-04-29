@@ -1,0 +1,30 @@
+<div class="order-list-container">
+  <h1>Orders</h1>
+
+  <div class="action-bar">
+    <a routerLink="/orders/new">
+      <app-button label="Create Order" variant="primary"></app-button>
+    </a>
+  </div>
+
+  <app-card title="Order List">
+    <div *ngIf="!loading">
+      <app-table [columns]="columns" [data]="orders"></app-table>
+      <div class="table-actions" *ngFor="let order of orders">
+        <a [routerLink]="['/orders', order.id]">
+          <app-button label="View" variant="secondary" (clicked)="onView(order.id)"></app-button>
+        </a>
+        <app-button label="Edit" variant="secondary" (clicked)="onEdit(order.id)"></app-button>
+        <app-button label="Delete" variant="danger" (clicked)="onDelete(order.id)"></app-button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <p>Loading orders...</p>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <p>{{ error }}</p>
+    </div>
+  </app-card>
+</div>

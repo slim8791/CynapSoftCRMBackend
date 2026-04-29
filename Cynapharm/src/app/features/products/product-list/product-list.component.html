@@ -1,0 +1,30 @@
+<div class="product-list-container">
+  <h1>Products</h1>
+
+  <div class="action-bar">
+    <a routerLink="/products/new">
+      <app-button label="Add Product" variant="primary"></app-button>
+    </a>
+  </div>
+
+  <app-card title="Product List">
+    <div *ngIf="!loading">
+      <app-table [columns]="columns" [data]="products"></app-table>
+      <div class="table-actions" *ngFor="let product of products">
+        <a [routerLink]="['/products', product.id]">
+          <app-button label="View" variant="secondary" (clicked)="onView(product.id)"></app-button>
+        </a>
+        <app-button label="Edit" variant="secondary" (clicked)="onEdit(product.id)"></app-button>
+        <app-button label="Delete" variant="danger" (clicked)="onDelete(product.id)"></app-button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <p>Loading products...</p>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <p>{{ error }}</p>
+    </div>
+  </app-card>
+</div>

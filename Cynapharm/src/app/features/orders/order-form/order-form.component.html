@@ -1,0 +1,75 @@
+<div class="order-form-container">
+  <h1>{{ isEditMode ? 'Edit Order' : 'Create Order' }}</h1>
+
+  <app-card [title]="isEditMode ? 'Update Order' : 'New Order'">
+    <form [formGroup]="orderForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="orderNumber">Order Number:</label>
+        <input
+          type="text"
+          id="orderNumber"
+          formControlName="orderNumber"
+          class="form-control"
+          placeholder="Enter order number">
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status:</label>
+        <select id="status" formControlName="status" class="form-control">
+          <option value="">Select order status</option>
+          <option value="pending">Pending</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="totalAmount">Total Amount:</label>
+        <input
+          type="number"
+          id="totalAmount"
+          formControlName="totalAmount"
+          class="form-control"
+          placeholder="Enter total amount">
+      </div>
+
+      <div class="form-group">
+        <label for="createdDate">Order Date:</label>
+        <input
+          type="date"
+          id="createdDate"
+          formControlName="createdDate"
+          class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="items">Items (JSON):</label>
+        <textarea
+          id="items"
+          formControlName="items"
+          class="form-control"
+          rows="4"
+          placeholder='[{"productId":"1","quantity":2}]'></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <a routerLink="/orders">
+          <app-button label="Cancel" variant="secondary"></app-button>
+        </a>
+        <app-button
+          [label]="isEditMode ? 'Update' : 'Create'"
+          variant="primary"
+          [disabled]="!orderForm.valid || loading"
+          (clicked)="onSubmit()"></app-button>
+      </div>
+
+      <div *ngIf="error" class="error">
+        <p>{{ error }}</p>
+      </div>
+
+      <div *ngIf="success" class="success">
+        <p>Order {{ isEditMode ? 'updated' : 'created' }} successfully!</p>
+      </div>
+    </form>
+  </app-card>
+</div>

@@ -1,0 +1,29 @@
+<div class="dashboard-container">
+  <h1>Dashboard</h1>
+  
+  <div class="metrics-grid" *ngIf="!loading">
+    <app-card title="Total Products" class="metric-card">
+      <h2>{{ metrics?.totalProducts || 0 }}</h2>
+    </app-card>
+    
+    <app-card title="Total Orders" class="metric-card">
+      <h2>{{ metrics?.totalOrders || 0 }}</h2>
+    </app-card>
+    
+    <app-card title="Total Users" class="metric-card">
+      <h2>{{ metrics?.totalUsers || 0 }}</h2>
+    </app-card>
+    
+    <app-card title="Revenue" class="metric-card">
+      <h2>{{ metrics?.revenue || '$0' }}</h2>
+    </app-card>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <div class="error" *ngIf="error">
+    <p>{{ error }}</p>
+  </div>
+</div>

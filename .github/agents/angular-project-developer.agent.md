@@ -6,7 +6,6 @@ tools:
   - create_file
   - insert_edit_into_file
   - get_errors
-  - vscode/askQuestions
 ---
 
 # Angular Project Developer

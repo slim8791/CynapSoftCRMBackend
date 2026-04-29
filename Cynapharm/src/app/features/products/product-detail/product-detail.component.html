@@ -1,0 +1,46 @@
+<div class="product-detail-container">
+  <h1>Product Details</h1>
+
+  <div *ngIf="!loading && product" class="detail-view">
+    <app-card [title]="product.name">
+      <div class="detail-content">
+        <div class="detail-row">
+          <label>ID:</label>
+          <span>{{ product.id }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Name:</label>
+          <span>{{ product.name }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Price:</label>
+          <span>{{ product.price }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Quantity:</label>
+          <span>{{ product.quantity }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Description:</label>
+          <span>{{ product.description }}</span>
+        </div>
+      </div>
+      
+      <div class="action-buttons">
+        <a routerLink="/products">
+          <app-button label="Back" variant="secondary"></app-button>
+        </a>
+        <app-button label="Edit" variant="primary" (clicked)="onEdit()"></app-button>
+        <app-button label="Delete" variant="danger" (clicked)="onDelete()"></app-button>
+      </div>
+    </app-card>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading product details...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+  </div>
+</div>

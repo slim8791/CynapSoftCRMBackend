@@ -1,0 +1,46 @@
+<div class="order-detail-container">
+  <h1>Order Details</h1>
+
+  <div *ngIf="!loading && order" class="detail-view">
+    <app-card [title]="order.orderNumber">
+      <div class="detail-content">
+        <div class="detail-row">
+          <label>ID:</label>
+          <span>{{ order.id }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Order Number:</label>
+          <span>{{ order.orderNumber }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Status:</label>
+          <span>{{ order.status }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Total Amount:</label>
+          <span>{{ order.totalAmount }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Created Date:</label>
+          <span>{{ order.createdDate }}</span>
+        </div>
+      </div>
+      
+      <div class="action-buttons">
+        <a routerLink="/orders">
+          <app-button label="Back" variant="secondary"></app-button>
+        </a>
+        <app-button label="Edit" variant="primary" (clicked)="onEdit()"></app-button>
+        <app-button label="Delete" variant="danger" (clicked)="onDelete()"></app-button>
+      </div>
+    </app-card>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading order details...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+  </div>
+</div>

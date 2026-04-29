@@ -1,0 +1,30 @@
+<div class="user-list-container">
+  <h1>Users</h1>
+
+  <div class="action-bar">
+    <a routerLink="/users/new">
+      <app-button label="Add User" variant="primary"></app-button>
+    </a>
+  </div>
+
+  <app-card title="User List">
+    <div *ngIf="!loading">
+      <app-table [columns]="columns" [data]="users"></app-table>
+      <div class="table-actions" *ngFor="let user of users">
+        <a [routerLink]="['/users', user.id]">
+          <app-button label="View" variant="secondary" (clicked)="onView(user.id)"></app-button>
+        </a>
+        <app-button label="Edit" variant="secondary" (clicked)="onEdit(user.id)"></app-button>
+        <app-button label="Delete" variant="danger" (clicked)="onDelete(user.id)"></app-button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <p>Loading users...</p>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <p>{{ error }}</p>
+    </div>
+  </app-card>
+</div>
