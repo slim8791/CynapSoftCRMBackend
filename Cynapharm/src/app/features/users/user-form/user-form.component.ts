@@ -1,25 +1,40 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { UserService } from '../user.service';
-import { CardComponent } from '../../shared/components/card/card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { UserRole, UserType } from '../../../core/services/auth.service'; // ✅ MODIF
+import { CardComponent } from '../../../shared/components/card/card.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, CardComponent, ButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterLink,
+    CardComponent,
+    ButtonComponent
+  ],
   templateUrl: './user-form.component.html',
-  styleUrl: './user-form.component.css'
+  styleUrls: ['./user-form.component.css']
 })
 export class UserFormComponent implements OnInit {
+
   userForm: FormGroup;
-  isEditMode: boolean = false;
-  loading: boolean = false;
-  error: string = '';
-  success: boolean = false;
-  private userId: string = '';
+  isEditMode = false;
+  loading = false;
+  error = '';
+  success = false;
+
+  // ✅ MODIF : backend enums
+  roles = Object.values(UserRole);
+  userTypes = Object.values(UserType);
+
+  private userId!: number;
+  private userEmail!: string; // ✅ backend utilise EMAIL
 
   constructor(
     private fb: FormBuilder,
@@ -27,65 +42,121 @@ export class UserFormComponent implements OnInit {
     private router: Router,
     private userService: UserService
   ) {
+    // ✅ MODIF : formulaire ALIGNÉ backend
     this.userForm = this.fb.group({
-      firstName: ['', [Validators.required]],
-      lastName: ['', [Validators.required]],
+      name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      role: ['', [Validators.required]],
-      password: ['', [Validators.required]]
+      adresse: ['', Validators.required],
+
+      role: ['', Validators.required],
+      userType: [UserType.PHARMACIEN],
+
+      password: [''] // ✅ requis UNIQUEMENT en création
     });
   }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      if (params['id']) {
-        this.isEditMode = true;
-        this.userId = params['id'];
-        this.userForm.get('password')?.clearValidators();
-        this.userForm.get('password')?.updateValueAndValidity();
-        this.loadUserData();
-      }
-    });
+    const idParam = this.route.snapshot.paramMap.get('id');
+
+    if (idParam) {
+      this.isEditMode = true;
+      this.userId = Number(idParam);
+
+      // ❌ MODIF : password inutile en édition
+      this.userForm.get('password')?.clearValidators();
+      this.userForm.get('password')?.updateValueAndValidity();
+
+      this.loadUser();
+    } else {
+      // ✅ création → mot de passe obligatoire
+      this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+    }
   }
 
-  private loadUserData(): void {
-    this.userService.getUserById(this.userId).subscribe({
-      next: (data) => {
-        this.userForm.patchValue(data);
+  /**
+   * ✅ MODIF : récupération via getUsers + filter
+   */
+  private loadUser(): void {
+    this.loading = true;
+
+    this.userService.getUsers().subscribe({
+      next: users => {
+        const user = users.find(u => u.id === this.userId);
+
+        if (!user) {
+          this.error = 'User not found';
+          this.loading = false;
+          return;
+        }
+
+        this.userEmail = user.email;
+
+        this.userForm.patchValue({
+          name: user.name,
+          email: user.email,
+          adresse: user.adresse,
+          role: user.role
+        });
+
+        this.loading = false;
       },
-      error: (err) => {
-        this.error = 'Failed to load user data';
+      error: err => {
+        this.loading = false;
+        this.error = 'Failed to load user';
         console.error(err);
       }
     });
   }
 
   onSubmit(): void {
-    if (!this.userForm.valid) return;
+    if (this.userForm.invalid) return;
 
     this.loading = true;
     this.error = '';
     this.success = false;
 
-    const formData = this.userForm.value;
+    const form = this.userForm.value;
 
-    const request = this.isEditMode
-      ? this.userService.updateUser(this.userId, formData)
-      : this.userService.createUser(formData);
+    if (this.isEditMode) {
+      // ✅ MODIF : changement de rôle UNIQUEMENT
+      this.userService.changeRole({
+        email: this.userEmail,
+        newRole: form.role
+      }).subscribe({
+        next: () => this.onSuccess(),
+        error: err => this.onError(err)
+      });
 
-    request.subscribe({
-      next: () => {
-        this.success = true;
-        this.loading = false;
-        setTimeout(() => {
-          this.router.navigate(['/users']);
-        }, 1500);
-      },
-      error: (err) => {
-        this.error = `Failed to ${this.isEditMode ? 'update' : 'create'} user`;
-        this.loading = false;
-        console.error(err);
-      }
-    });
+    } else {
+      // ✅ MODIF : création via REGISTER
+      const payload = {
+        email: form.email,
+        name: form.name,
+        password: form.password,
+        adresse: form.adresse,
+        role: form.role,
+        userType: form.userType
+      };
+
+      this.userService.registerUser(payload).subscribe({
+        next: () => this.onSuccess(),
+        error: err => this.onError(err)
+      });
+    }
+  }
+
+  private onSuccess(): void {
+    this.success = true;
+    this.loading = false;
+
+    setTimeout(() => {
+      this.router.navigate(['/users']);
+    }, 1200);
+  }
+
+  private onError(err: any): void {
+    this.loading = false;
+    this.error = 'Operation failed';
+    console.error(err);
   }
 }

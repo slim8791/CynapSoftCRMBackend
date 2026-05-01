@@ -6,27 +6,66 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class UserService {
-  private endpoint = '/users';
 
-  constructor(private apiService: ApiService) { }
+  // ✅ MODIF : endpoint réel AuthAPI
+  private baseUrl = '/auth';
 
+  constructor(private apiService: ApiService) {}
+
+  /**
+   * ✅ GET ALL USERS (ADMIN)
+   * GET /api/auth/users
+   */
   getUsers(): Observable<any[]> {
-    return this.apiService.get<any[]>(this.endpoint);
+    return this.apiService.get<any[]>(`${this.baseUrl}/users`);
   }
 
-  getUserById(id: string): Observable<any> {
-    return this.apiService.get<any>(`${this.endpoint}/${id}`);
+  /**
+   * ❌ SUPPRIMÉ : endpoint inexistant
+   * getUserById(id: string)
+   */
+
+  /**
+   * ✅ CREATE USER
+   * POST /api/auth/register
+   */
+  registerUser(payload: any): Observable<any> {
+    return this.apiService.post<any>(`${this.baseUrl}/register`, payload);
   }
 
-  createUser(userData: any): Observable<any> {
-    return this.apiService.post<any>(this.endpoint, userData);
+  /**
+   * ❌ SUPPRIMÉ : createUser()
+   * ❌ SUPPRIMÉ : updateUser()
+   * (backend ne supporte PAS ces routes)
+   */
+
+  /**
+   * ✅ CHANGE ROLE
+   * PUT /api/auth/change-role
+   */
+  changeRole(payload: { email: string; newRole: string }): Observable<any> {
+    return this.apiService.put<any>(`${this.baseUrl}/change-role`, payload);
   }
 
-  updateUser(id: string, userData: any): Observable<any> {
-    return this.apiService.put<any>(`${this.endpoint}/${id}`, userData);
+  /**
+   * ✅ DISABLE USER (soft delete)
+   * PUT /api/auth/delete-user/{email}
+   */
+  disableUser(email: string): Observable<any> {
+    return this.apiService.put<any>(
+      `${this.baseUrl}/delete-user/${email}`,
+      {}
+    );
   }
 
-  deleteUser(id: string): Observable<any> {
-    return this.apiService.delete<any>(`${this.endpoint}/${id}`);
+  /**
+   * ✅ ENABLE USER
+   * PUT /api/auth/enable-user/{email}
+   */
+  enableUser(email: string): Observable<any> {
+    return this.apiService.put<any>(
+      `${this.baseUrl}/enable-user/${email}`,
+      {}
+    );
   }
 }

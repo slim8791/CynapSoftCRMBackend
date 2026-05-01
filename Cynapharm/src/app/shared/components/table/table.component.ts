@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './table.component.html',
-  styleUrl: './table.component.css'
+  styleUrls: ['./table.component.css']
 })
 export class TableComponent {
   @Input() columns: string[] = [];

@@ -1,50 +1,65 @@
 <div class="user-detail-container">
   <h1>User Details</h1>
 
-  <div *ngIf="!loading && user" class="detail-view">
-    <app-card [title]="user.firstName + ' ' + user.lastName">
-      <div class="detail-content">
-        <div class="detail-row">
-          <label>User ID:</label>
-          <span>{{ user.id }}</span>
-        </div>
-        <div class="detail-row">
-          <label>First Name:</label>
-          <span>{{ user.firstName }}</span>
-        </div>
-        <div class="detail-row">
-          <label>Last Name:</label>
-          <span>{{ user.lastName }}</span>
-        </div>
-        <div class="detail-row">
-          <label>Email:</label>
-          <span>{{ user.email }}</span>
-        </div>
-        <div class="detail-row">
-          <label>Role:</label>
-          <span>{{ user.role }}</span>
-        </div>
-        <div class="detail-row">
-          <label>Status:</label>
-          <span [ngClass]="'status-' + user.status">{{ user.status }}</span>
-        </div>
+  <div *ngIf="!loading && user">
+    <app-card [title]="user.name">
+
+      <div class="detail-row">
+        <label>ID:</label>
+        <span>{{ user.id }}</span>
       </div>
-      
+
+      <div class="detail-row">
+        <label>Email:</label>
+        <span>{{ user.email }}</span>
+      </div>
+
+      <div class="detail-row">
+        <label>Adresse:</label>
+        <span>{{ user.adresse }}</span>
+      </div>
+
+      <div class="detail-row">
+        <label>Role:</label>
+        <span>{{ user.role }}</span>
+      </div>
+
+      <div class="detail-row">
+        <label>Status:</label>
+        <span [class.disabled]="user.isDeleted">
+          {{ user.isDeleted ? 'Disabled' : 'Active' }}
+        </span>
+      </div>
+
       <div class="action-buttons">
         <a routerLink="/users">
           <app-button label="Back" variant="secondary"></app-button>
         </a>
-        <app-button label="Edit" variant="primary" (clicked)="onEdit()"></app-button>
-        <app-button label="Delete" variant="danger" (clicked)="onDelete()"></app-button>
+
+        <app-button
+          label="Edit"
+          variant="primary"
+          (clicked)="onEdit()">
+        </app-button>
+
+        <app-button
+          *ngIf="!user.isDeleted"
+          label="Disable"
+          variant="danger"
+          (clicked)="onDelete()">
+        </app-button>
+
+        <app-button
+          *ngIf="user.isDeleted"
+          label="Enable"
+          variant="primary"
+          (clicked)="onEnable()">
+        </app-button>
       </div>
+
     </app-card>
   </div>
 
-  <div *ngIf="loading" class="loading">
-    <p>Loading user details...</p>
-  </div>
-
-  <div *ngIf="error" class="error">
-    <p>{{ error }}</p>
-  </div>
+  <div *ngIf="loading">Loading user details...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
 </div>

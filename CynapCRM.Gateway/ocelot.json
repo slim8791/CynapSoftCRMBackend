@@ -401,6 +401,12 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:7777"
+    "BaseUrl": "http://localhost:5555",
+    "CorsOptions": {
+      "AllowCredentials": false,
+      "AllowedOrigins": ["*"],
+      "AllowedMethods": ["*"],
+      "AllowedHeaders": ["*"]
+    }
   }
 }

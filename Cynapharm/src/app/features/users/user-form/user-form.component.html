@@ -2,75 +2,55 @@
   <h1>{{ isEditMode ? 'Edit User' : 'Add User' }}</h1>
 
   <app-card [title]="isEditMode ? 'Edit User' : 'Add New User'">
+
     <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+
       <div class="form-group">
-        <label for="firstName">First Name:</label>
-        <input 
-          type="text" 
-          id="firstName" 
-          formControlName="firstName" 
-          class="form-control"
-          placeholder="Enter first name">
+        <label>Name</label>
+        <input class="form-control" formControlName="name">
       </div>
 
       <div class="form-group">
-        <label for="lastName">Last Name:</label>
-        <input 
-          type="text" 
-          id="lastName" 
-          formControlName="lastName" 
-          class="form-control"
-          placeholder="Enter last name">
+        <label>Email</label>
+        <input class="form-control" formControlName="email" [readonly]="isEditMode">
       </div>
 
       <div class="form-group">
-        <label for="email">Email:</label>
-        <input 
-          type="email" 
-          id="email" 
-          formControlName="email" 
-          class="form-control"
-          placeholder="Enter email">
+        <label>Adresse</label>
+        <input class="form-control" formControlName="adresse">
       </div>
 
       <div class="form-group">
-        <label for="role">Role:</label>
-        <select id="role" formControlName="role" class="form-control">
-          <option value="">Select a role</option>
-          <option value="admin">Admin</option>
-          <option value="user">User</option>
-          <option value="manager">Manager</option>
+        <label>Role</label>
+        <select class="form-control" formControlName="role">
+          <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
         </select>
       </div>
 
+      <!-- ✅ Création uniquement -->
       <div class="form-group" *ngIf="!isEditMode">
-        <label for="password">Password:</label>
-        <input 
-          type="password" 
-          id="password" 
-          formControlName="password" 
-          class="form-control"
-          placeholder="Enter password">
+        <label>Password</label>
+        <input type="password" class="form-control" formControlName="password">
       </div>
 
       <div class="action-buttons">
         <a routerLink="/users">
           <app-button label="Cancel" variant="secondary"></app-button>
         </a>
-        <app-button 
-          [label]="isEditMode ? 'Update' : 'Create'" 
-          variant="primary" 
-          [disabled]="!userForm.valid || loading"
-          (clicked)="onSubmit()"></app-button>
+
+        <app-button
+          [label]="isEditMode ? 'Update Role' : 'Create User'"
+          variant="primary"
+          [disabled]="userForm.invalid || loading">
+        </app-button>
       </div>
 
-      <div *ngIf="error" class="error">
-        <p>{{ error }}</p>
-      </div>
-
+      <div *ngIf="error" class="error">{{ error }}</div>
       <div *ngIf="success" class="success">
-        <p>User {{ isEditMode ? 'updated' : 'created' }} successfully!</p>
+        User {{ isEditMode ? 'updated' : 'created' }} successfully ✅
       </div>
+
     </form>
+
   </app-card>
 </div>

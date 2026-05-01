@@ -2,16 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ProductService } from '../product.service';
-import { TableComponent } from '../../shared/components/table/table.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
-import { CardComponent } from '../../shared/components/card/card.component';
+import { TableComponent } from '../../../shared/components/table/table.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { CardComponent } from '../../../shared/components/card/card.component';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
   imports: [CommonModule, RouterLink, TableComponent, ButtonComponent, CardComponent],
   templateUrl: './product-list.component.html',
-  styleUrl: './product-list.component.css'
+  styleUrls: ['./product-list.component.css']
 })
 export class ProductListComponent implements OnInit {
   products: any[] = [];

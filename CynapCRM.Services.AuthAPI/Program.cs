@@ -26,6 +26,17 @@ builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("ApiSett
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddSwaggerGen(option =>
 {
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -63,6 +74,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ✅ CORS DOIT ÊTRE ICI
+app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
 

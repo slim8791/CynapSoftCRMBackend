@@ -7,15 +7,30 @@ import { AuthService } from './core/services/auth.service';
   selector: 'app-root',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrls: ['./app.css']
 })
 export class App {
   protected readonly title = signal('Cynapharm');
   protected authService = inject(AuthService);
   protected router = inject(Router);
 
+  // ✅ AJOUT : décider quand afficher le menu
+  showNavbar(): boolean {
+    const url = this.router.url;
+
+    // ❌ NE PAS afficher le menu sur login / register
+    if (url.startsWith('/login') || url.startsWith('/register')) {
+      return false;
+    }
+
+    // ✅ afficher le menu seulement si connecté
+    return this.authService.isAuthenticated();
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
 }
+
+

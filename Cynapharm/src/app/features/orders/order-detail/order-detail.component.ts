@@ -2,15 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OrderService } from '../order.service';
-import { CardComponent } from '../../shared/components/card/card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { CardComponent } from '../../../shared/components/card/card.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
   imports: [CommonModule, RouterLink, CardComponent, ButtonComponent],
   templateUrl: './order-detail.component.html',
-  styleUrl: './order-detail.component.css'
+  styleUrls: ['./order-detail.component.css']
 })
 export class OrderDetailComponent implements OnInit {
   order: any;

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DashboardService } from '../dashboard.service';
+import { DashboardService } from './dashboard.service';
 import { CardComponent } from '../../shared/components/card/card.component';
 
 @Component({
@@ -8,7 +8,7 @@ import { CardComponent } from '../../shared/components/card/card.component';
   standalone: true,
   imports: [CommonModule, CardComponent],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
   metrics: any;
@@ -26,11 +26,11 @@ export class DashboardComponent implements OnInit {
     this.error = '';
 
     this.dashboardService.getMetrics().subscribe({
-      next: (data) => {
+      next: (data: any) => {
         this.metrics = data;
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = 'Failed to load dashboard data';
         this.loading = false;
         console.error(err);

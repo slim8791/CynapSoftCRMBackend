@@ -1,68 +1,69 @@
 <div class="register-container">
   <app-card title="Create a Cynapharm Account">
+
     <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+
+      <!-- ✅ Name -->
       <div class="form-group">
-        <label for="firstName">First Name:</label>
-        <input
-          type="text"
-          id="firstName"
-          formControlName="firstName"
-          class="form-control"
-          placeholder="Enter your first name"
-          required>
+        <label>Name</label>
+        <input class="form-control" formControlName="name" />
       </div>
 
+      <!-- ✅ Email -->
       <div class="form-group">
-        <label for="lastName">Last Name:</label>
-        <input
-          type="text"
-          id="lastName"
-          formControlName="lastName"
-          class="form-control"
-          placeholder="Enter your last name"
-          required>
+        <label>Email</label>
+        <input class="form-control" formControlName="email" />
       </div>
 
+      <!-- ✅ Password -->
       <div class="form-group">
-        <label for="email">Email:</label>
-        <input
-          type="email"
-          id="email"
-          formControlName="email"
-          class="form-control"
-          placeholder="Enter your email"
-          required>
+        <label>Password</label>
+        <input type="password" class="form-control" formControlName="password" />
       </div>
 
+      <!-- ✅ Adresse -->
       <div class="form-group">
-        <label for="password">Password:</label>
-        <input
-          type="password"
-          id="password"
-          formControlName="password"
-          class="form-control"
-          placeholder="Enter your password"
-          required>
+        <label>Adresse</label>
+        <input class="form-control" formControlName="adresse" />
       </div>
 
-      <div class="action-buttons">
-        <a routerLink="/login">
-          <app-button label="Back to Login" variant="secondary"></app-button>
-        </a>
-        <app-button
-          label="Register"
-          variant="primary"
-          [disabled]="!registerForm.valid || loading"
-          (clicked)="onRegister()"></app-button>
+      <!-- ✅ Role -->
+      <div class="form-group">
+        <label>Role</label>
+        <select class="form-control" formControlName="role">
+          <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+        </select>
       </div>
 
-      <div *ngIf="error" class="error">
-        <p>{{ error }}</p>
+      <!-- ✅ UserType (CLIENT uniquement) -->
+      <div class="form-group" *ngIf="registerForm.value.role === 'CLIENT'">
+        <label>User Type</label>
+        <select class="form-control" formControlName="userType">
+          <option *ngFor="let t of userTypes" [value]="t">{{ t }}</option>
+        </select>
       </div>
 
-      <div *ngIf="success" class="success">
-        <p>Registration successful! Redirecting to dashboard...</p>
+      <!-- ✅ Pharmacien -->
+      <div *ngIf="registerForm.value.userType === 'PHARMACIEN'">
+        <input class="form-control" placeholder="Nom Officine" formControlName="nomOfficine" />
+        <input class="form-control" placeholder="Type Pharmacie" formControlName="typePharmacie" />
       </div>
+
+      <!-- ✅ Grossiste -->
+      <div *ngIf="registerForm.value.userType === 'GROSSISTE'">
+        <input class="form-control" placeholder="Raison Sociale" formControlName="raisonSociale" />
+      </div>
+
+      <app-button
+        label="Register"
+        variant="primary"
+        [disabled]="registerForm.invalid || loading">
+      </app-button>
+
+      <div *ngIf="error" class="error">{{ error }}</div>
+      <div *ngIf="success" class="success">Utilisateur créé avec succès ✅</div>
+
     </form>
+
   </app-card>
 </div>

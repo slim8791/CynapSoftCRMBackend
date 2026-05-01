@@ -1,44 +1,66 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
+import { UserRole } from './core/services/auth.service';
+
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 
 export const routes: Routes = [
+
+  // ✅ PUBLIC
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+
+  // ✅ FORBIDDEN (utilisé par RoleGuard)
   {
-    path: 'login',
-    component: LoginComponent
+    path: 'forbidden',
+    loadComponent: () =>
+      import('./features/shared/forbidden.component')
+        .then(m => m.ForbiddenComponent)
   },
-  {
-    path: 'register',
-    component: RegisterComponent
-  },
-  {
-    path: '',
-    redirectTo: 'dashboard',
-    pathMatch: 'full'
-  },
+
+  // ✅ DEFAULT
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+  // ✅ DASHBOARD (auth seulement)
   {
     path: 'dashboard',
-    loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule),
+    loadChildren: () =>
+      import('./features/dashboard/dashboard.module')
+        .then(m => m.DashboardModule),
     canActivate: [authGuard]
   },
-  {
-    path: 'products',
-    loadChildren: () => import('./features/products/products.module').then(m => m.ProductsModule),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'orders',
-    loadChildren: () => import('./features/orders/orders.module').then(m => m.OrdersModule),
-    canActivate: [authGuard]
-  },
+
+  // ✅ USERS (AUTH + ROLE ✅✅✅)
   {
     path: 'users',
-    loadChildren: () => import('./features/users/users.module').then(m => m.UsersModule),
+    loadChildren: () =>
+      import('./features/users/users.module')
+        .then(m => m.UsersModule),
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: [UserRole.ADMIN, UserRole.SUPERVISEUR]
+    }
+  },
+
+  // ✅ AUTRES
+  {
+    path: 'products',
+    loadChildren: () =>
+      import('./features/products/products.module')
+        .then(m => m.ProductsModule),
     canActivate: [authGuard]
   },
+
   {
-    path: '**',
-    redirectTo: 'login'
-  }
+    path: 'orders',
+    loadChildren: () =>
+      import('./features/orders/orders.module')
+        .then(m => m.OrdersModule),
+    canActivate: [authGuard]
+  },
+
+  // ✅ FALLBACK
+  { path: '**', redirectTo: 'dashboard' }
 ];

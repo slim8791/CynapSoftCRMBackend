@@ -48,3 +48,13 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+button {
+  width: 100%;
+}
+

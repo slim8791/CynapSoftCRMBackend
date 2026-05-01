@@ -2,15 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../product.service';
-import { CardComponent } from '../../shared/components/card/card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { CardComponent } from '../../../shared/components/card/card.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
   imports: [CommonModule, RouterLink, CardComponent, ButtonComponent],
   templateUrl: './product-detail.component.html',
-  styleUrl: './product-detail.component.css'
+  styleUrls: ['./product-detail.component.css']
 })
 export class ProductDetailComponent implements OnInit {
   product: any;

@@ -2,16 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { OrderService } from '../order.service';
-import { TableComponent } from '../../shared/components/table/table.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
-import { CardComponent } from '../../shared/components/card/card.component';
+import { TableComponent } from '../../../shared/components/table/table.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { CardComponent } from '../../../shared/components/card/card.component';
 
 @Component({
   selector: 'app-order-list',
   standalone: true,
   imports: [CommonModule, RouterLink, TableComponent, ButtonComponent, CardComponent],
   templateUrl: './order-list.component.html',
-  styleUrl: './order-list.component.css'
+  styleUrls: ['./order-list.component.css']
 })
 export class OrderListComponent implements OnInit {
   orders: any[] = [];

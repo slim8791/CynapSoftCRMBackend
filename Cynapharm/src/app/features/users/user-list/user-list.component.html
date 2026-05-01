@@ -8,23 +8,48 @@
   </div>
 
   <app-card title="User List">
+
     <div *ngIf="!loading">
+
+      <!-- ✅ Table alignée UserDto -->
       <app-table [columns]="columns" [data]="users"></app-table>
+
+      <!-- ✅ Actions -->
       <div class="table-actions" *ngFor="let user of users">
         <a [routerLink]="['/users', user.id]">
-          <app-button label="View" variant="secondary" (clicked)="onView(user.id)"></app-button>
+          <app-button label="View" variant="secondary"></app-button>
         </a>
-        <app-button label="Edit" variant="secondary" (clicked)="onEdit(user.id)"></app-button>
-        <app-button label="Delete" variant="danger" (clicked)="onDelete(user.id)"></app-button>
+
+        <app-button
+          label="Edit"
+          variant="secondary"
+          (clicked)="onEdit(user.id)">
+        </app-button>
+
+        <app-button
+          *ngIf="!user.isDeleted"
+          label="Disable"
+          variant="danger"
+          (clicked)="onDelete(user)">
+        </app-button>
+
+        <app-button
+          *ngIf="user.isDeleted"
+          label="Disabled"
+          variant="secondary"
+          [disabled]="true">
+        </app-button>
       </div>
+
     </div>
 
     <div *ngIf="loading" class="loading">
-      <p>Loading users...</p>
+      Loading users...
     </div>
 
     <div *ngIf="error" class="error">
-      <p>{{ error }}</p>
+      {{ error }}
     </div>
+
   </app-card>
 </div>

@@ -1,93 +1,146 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { tap, map } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+
+// ✅ MODIF : modèles alignés backend
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  SUPERVISEUR = 'SUPERVISEUR',
+  DELEGUE = 'DELEGUE',
+  MEDECIN = 'MEDECIN',
+  CLIENT = 'CLIENT'
+}
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  adresse: string;
+  role: UserRole;
+  isDeleted: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = '/api/auth';
-  private currentUserSubject: BehaviorSubject<any>;
-  public currentUser$: Observable<any>;
 
-  constructor(private http: HttpClient) {
-    this.currentUserSubject = new BehaviorSubject<any>(this.getUserFromStorage());
+  private apiUrl = `${environment.apiUrl}/auth`;
+
+  // ✅ MODIF : typer le user
+  private currentUserSubject: BehaviorSubject<User | null>;
+  public currentUser$: Observable<User | null>;
+
+  private isBrowser: boolean;
+
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+
+    // ✅ MODIF : récupération propre du user
+    this.currentUserSubject = new BehaviorSubject<User | null>(
+      this.isBrowser ? this.getUserFromStorage() : null
+    );
+
     this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
   /**
-   * Login with email and password
+   * ✅ LOGIN (OK – aligné backend)
    */
   login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
+    return this.http.post<any>(`${this.apiUrl}/login`, {
+      UserName: email,
+      password: password
+    }).pipe(
       tap(response => {
-        if (response && response.token) {
-          localStorage.setItem('token', response.token);
-          localStorage.setItem('user', JSON.stringify(response.user));
-          this.currentUserSubject.next(response.user);
+        const data = response?.result;
+
+        if (data?.token && data?.user) {
+          if (this.isBrowser) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
+          this.currentUserSubject.next(data.user);
         }
       })
     );
   }
 
   /**
-   * Register a new user
+   * ✅ MODIF MAJEURE : REGISTER
+   * Le backend NE renvoie PAS de token ici
+   * L’utilisateur doit se connecter après création
    */
   register(userData: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/register`, userData).pipe(
-      tap(response => {
-        if (response && response.token) {
-          localStorage.setItem('token', response.token);
-          localStorage.setItem('user', JSON.stringify(response.user));
-          this.currentUserSubject.next(response.user);
-        }
-      })
-    );
+    return this.http.post<any>(`${this.apiUrl}/register`, userData);
+    // ❌ SUPPRIMÉ : stockage token/user (inexistant côté backend)
   }
 
   /**
-   * Get user profile
+   * ❌ SUPPRIMÉ : endpoint inexistant dans AuthAPI
    */
-  getProfile(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/profile`);
-  }
+  // getProfile(): Observable<any> {
+  //   return this.http.get<any>(`${this.apiUrl}/profile`);
+  // }
 
   /**
-   * Logout the current user
+   * ✅ LOGOUT
    */
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    if (this.isBrowser) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
     this.currentUserSubject.next(null);
   }
 
   /**
-   * Get the authentication token
+   * ✅ TOKEN
    */
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return this.isBrowser ? localStorage.getItem('token') : null;
   }
 
   /**
-   * Check if user is authenticated
+   * ✅ AUTH CHECK
    */
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
   /**
-   * Get current user from local storage
+   * ✅ ROLE UTILS (NOUVEAU)
    */
-  private getUserFromStorage(): any {
+  getUserRole(): UserRole | null {
+    return this.currentUserSubject.value?.role ?? null;
+  }
+
+  hasRole(roles: UserRole[]): boolean {
+    const role = this.getUserRole();
+    return role ? roles.includes(role) : false;
+  }
+
+  /**
+   * ✅ STORAGE
+   */
+  private getUserFromStorage(): User | null {
+    if (!this.isBrowser) return null;
+
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
   }
 
   /**
-   * Get current user synchronously
+   * ✅ CURRENT USER
    */
-  getCurrentUser(): any {
+  getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
 }

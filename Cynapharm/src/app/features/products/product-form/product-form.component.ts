@@ -3,15 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { ProductService } from '../product.service';
-import { CardComponent } from '../../shared/components/card/card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { CardComponent } from '../../../shared/components/card/card.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, CardComponent, ButtonComponent],
   templateUrl: './product-form.component.html',
-  styleUrl: './product-form.component.css'
+  styleUrls: ['./product-form.component.css']
 })
 export class ProductFormComponent implements OnInit {
   productForm: FormGroup;

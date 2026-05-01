@@ -1,6 +1,8 @@
-<button 
-  [ngClass]="['btn', 'btn-' + variant, { 'btn-disabled': disabled }]"
-  [disabled]="disabled"
-  (click)="onClick()">
+<button
+  (click)="onClick()"
+  [attr.type]="type"
+  class="btn btn-{{ variant }}"
+  [class.btn-disabled]="disabled"
+  [disabled]="disabled">
   {{ label }}
 </button>

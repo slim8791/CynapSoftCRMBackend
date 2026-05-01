@@ -3,15 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OrderService } from '../order.service';
-import { CardComponent } from '../../shared/components/card/card.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
+import { CardComponent } from '../../../shared/components/card/card.component';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-order-form',
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, CardComponent, ButtonComponent],
   templateUrl: './order-form.component.html',
-  styleUrl: './order-form.component.css'
+  styleUrls: ['./order-form.component.css']
 })
 export class OrderFormComponent implements OnInit {
   orderForm: FormGroup;
