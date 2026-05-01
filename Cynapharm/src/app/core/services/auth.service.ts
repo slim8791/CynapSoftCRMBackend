@@ -14,6 +14,11 @@ export enum UserRole {
   CLIENT = 'CLIENT'
 }
 
+export enum UserType {
+  PHARMACIEN = 'PHARMACIEN',
+  GROSSISTE = 'GROSSISTE'
+}
+
 export interface User {
   id: number;
   name: string;
