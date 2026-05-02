@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -15,7 +16,19 @@ export class ApiService {
    * Generic GET request
    */
   get<T>(endpoint: string, params?: HttpParams): Observable<T> {
-    return this.http.get<T>(`${this.apiUrl}${endpoint}`, { params });
+    return this.http.get<T>(`${this.apiUrl}${endpoint}`, { params }).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error('API GET error', endpoint, err.status, err.error);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  unwrapResponse<T>(response: any): T {
+    if (response?.IsSuccess !== false && response?.Result !== undefined) {
+      return response.Result;
+    }
+    return response;
   }
 
   /**

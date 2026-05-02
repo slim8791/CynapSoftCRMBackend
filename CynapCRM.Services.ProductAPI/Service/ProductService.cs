@@ -23,7 +23,6 @@ namespace CynapCRM.Services.ProductAPI.Service
         {
 
             var products = await _db.Produits
-                    .Where(p => !p.IsArchived)
                     .Include(p => p.Lots)
                         .ThenInclude(l => l.Promotions)
                     .Include(p => p.Supports)
@@ -41,9 +40,7 @@ namespace CynapCRM.Services.ProductAPI.Service
                         .ThenInclude(l => l.Promotions)
                     .Include(p => p.Supports)
                         .ThenInclude(s => s.Fichiers)
-                    .FirstOrDefaultAsync(p =>
-                        p.Id_Produit == produitId &&
-                        !p.IsArchived);
+                    .FirstOrDefaultAsync(p => p.Id_Produit == produitId);
 
             return product == null ? null : _mapper.Map<ProduitDto>(product);
 

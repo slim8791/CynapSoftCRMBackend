@@ -291,7 +291,7 @@ namespace CynapCRM.Services.AuthAPI.Service
         }
 
         
-        public async Task<ResponseDto> GeneratePasswordResetToken(string email)
+public async Task<ResponseDto> GeneratePasswordResetToken(string email)
         {
             var normalizedEmail = _userManager.NormalizeEmail(email);
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
@@ -310,6 +310,46 @@ namespace CynapCRM.Services.AuthAPI.Service
             {
                 IsSuccess = true,
                 Result = token
+            };
+        }
+
+        public async Task<ResponseDto> ResetPassword(ResetPasswordDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || user.IsDeleted)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Lien de réinitialisation invalide ou expiré."
+                };
+            }
+
+            // ✅ NOUVEAU: Vérifier si le nouveau mot de passe est différent de l'ancien
+            var isSameAsOld = await _userManager.CheckPasswordAsync(user, model.NewPassword);
+            if (isSameAsOld)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Le nouveau mot de passe doit être différent de l'ancien mot de passe."
+                };
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Lien de réinitialisation invalide ou expiré."
+                };
+            }
+
+            return new ResponseDto
+            {
+                IsSuccess = true,
+                Message = "Mot de passe réinitialisé avec succès."
             };
         }
         public async Task<bool> EnableUser(string email)
@@ -356,9 +396,7 @@ namespace CynapCRM.Services.AuthAPI.Service
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
             // Get all users
-            var users = await _userManager.Users
-                .AsNoTracking()
-                .ToListAsync();
+            var users = await _userManager.Users.ToListAsync();
 
             var result = new List<UserDto>();
 
@@ -374,7 +412,9 @@ namespace CynapCRM.Services.AuthAPI.Service
                     Name = user.Name,
                     PhoneNumber = user.PhoneNumber,
                     Adresse = user.Adresse,
-                    Role = roles.FirstOrDefault() ?? "" 
+                    Role = roles.FirstOrDefault() ?? "" ,
+                    IsDeleted = user.IsDeleted
+
                 });
             }
             return result;

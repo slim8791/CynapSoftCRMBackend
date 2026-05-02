@@ -1,14 +1,25 @@
 <div class="app-container">
-<nav class="navbar" *ngIf="showNavbar()">
-      <div class="navbar-brand">
+  <nav class="navbar" *ngIf="showNavbar()">
+    <div class="navbar-brand">
       <h1>Cynapharm CRM</h1>
     </div>
+
     <ul class="nav-menu">
-      <li><a routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
-      <li><a routerLink="/products" routerLinkActive="active">Products</a></li>
-      <li><a routerLink="/orders" routerLinkActive="active">Orders</a></li>
-      <li><a routerLink="/users" routerLinkActive="active">Users</a></li>
-      <li><a href="#" (click)="logout(); $event.preventDefault()">Logout</a></li>
+      <li>
+        <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      </li>
+      <li>
+        <a routerLink="/products" routerLinkActive="active">Products</a>
+      </li>
+      <li>
+        <a routerLink="/orders" routerLinkActive="active">Orders</a>
+      </li>
+      <li>
+        <a routerLink="/users" routerLinkActive="active">Users</a>
+      </li>
+      <li>
+        <a href="#" (click)="logout(); $event.preventDefault()">Logout</a>
+      </li>
     </ul>
   </nav>
 
@@ -16,55 +27,3 @@
     <router-outlet></router-outlet>
   </main>
 </div>
-
-<style>
-  .app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-  }
-
-  .navbar {
-    background-color: #333;
-    color: white;
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-
-  .navbar-brand h1 {
-    margin: 0;
-    font-size: 24px;
-  }
-
-  .nav-menu {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    gap: 2rem;
-  }
-
-  .nav-menu a {
-    color: white;
-    text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-  }
-
-  .nav-menu a:hover {
-    background-color: #555;
-  }
-
-  .nav-menu a.active {
-    background-color: #007bff;
-  }
-
-  .main-content {
-    flex: 1;
-    overflow-y: auto;
-  }
-</style>

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService, UserRole, UserType } from '../../../core/services/auth.service'; // ✅ MODIF
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -13,7 +13,6 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    RouterLink,
     CardComponent,
     ButtonComponent
   ],

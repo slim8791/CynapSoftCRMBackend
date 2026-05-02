@@ -9,18 +9,40 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./table.component.css']
 })
 export class TableComponent {
-  @Input() columns: string[] = [];
+  // Support both string[] and { key, label }[]
+  @Input() columns: (string | { key: string; label: string })[] = [];
   @Input() data: any[] = [];
 
-  getColumnValue(row: any, column: string): any {
-    const keys = column.split('.');
-    let value = row;
+  getColumnKey(column: string | { key: string; label: string }): string {
+    return typeof column === 'string' ? column : column.key;
+  }
 
-    for (const key of keys) {
-      value = value[key];
-      if (value === undefined) break;
+  getColumnLabel(column: string | { key: string; label: string }): string {
+    return typeof column === 'string' ? column : column.label;
+  }
+
+  getColumnValue(row: any, column: string | { key: string; label: string }): any {
+    const key = this.getColumnKey(column);
+    
+    // Try direct key first
+    if (row[key] !== undefined) {
+      return row[key];
     }
-
-    return value;
+    
+    // Try case-insensitive match
+    const lowerKey = key.toLowerCase();
+    for (const rowKey of Object.keys(row)) {
+      if (rowKey.toLowerCase() === lowerKey) {
+        return row[rowKey];
+      }
+    }
+    
+    // Try with underscore prefix/suffix variations
+    const underscoreKey = '_' + key;
+    if (row[underscoreKey] !== undefined) {
+      return row[underscoreKey];
+    }
+    
+    return undefined;
   }
 }

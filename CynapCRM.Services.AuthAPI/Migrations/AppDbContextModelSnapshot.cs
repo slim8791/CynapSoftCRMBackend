@@ -318,6 +318,32 @@ namespace CynapCRM.Services.AuthAPI.Migrations
                     b.HasDiscriminator().HasValue("Superviseur");
                 });
 
+            modelBuilder.Entity("CynapCRM.Services.AuthAPI.Models.Grossiste", b =>
+                {
+                    b.HasBaseType("CynapCRM.Services.AuthAPI.Models.Client");
+
+                    b.Property<string>("RaisonSociale")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasDiscriminator().HasValue("Grossiste");
+                });
+
+            modelBuilder.Entity("CynapCRM.Services.AuthAPI.Models.Pharmacien", b =>
+                {
+                    b.HasBaseType("CynapCRM.Services.AuthAPI.Models.Client");
+
+                    b.Property<string>("NomOfficine")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TypePharmacie")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasDiscriminator().HasValue("Pharmacien");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)

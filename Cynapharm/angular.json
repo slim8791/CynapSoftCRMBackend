@@ -23,10 +23,15 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets"
               }
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.scss",
+              "src/app/app.css"
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",

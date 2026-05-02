@@ -5,32 +5,49 @@
 
     <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
 
-      <div class="form-group">
+<div class="form-group">
         <label>Name</label>
         <input class="form-control" formControlName="name">
+        <div *ngIf="userForm.get('name')?.invalid && userForm.get('name')?.touched" class="invalid-feedback">
+          <div *ngIf="userForm.get('name')?.hasError('required')">Name is required</div>
+        </div>
       </div>
 
-      <div class="form-group">
+<div class="form-group">
         <label>Email</label>
         <input class="form-control" formControlName="email" [readonly]="isEditMode">
+        <div *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched" class="invalid-feedback">
+          <div *ngIf="userForm.get('email')?.hasError('required')">Email is required</div>
+          <div *ngIf="userForm.get('email')?.hasError('email')">Valid email required</div>
+        </div>
       </div>
 
-      <div class="form-group">
+<div class="form-group">
         <label>Adresse</label>
-        <input class="form-control" formControlName="adresse">
+        <input class="form-control" formControlName="adresse" [class.is-invalid]="userForm.get('adresse')?.invalid && userForm.get('adresse')?.touched">
+        <div *ngIf="userForm.get('adresse')?.invalid && userForm.get('adresse')?.touched" class="invalid-feedback">
+          <div *ngIf="userForm.get('adresse')?.hasError('required')">Adresse is required</div>
+        </div>
       </div>
 
-      <div class="form-group">
+<div class="form-group">
         <label>Role</label>
-        <select class="form-control" formControlName="role">
+        <select class="form-control" formControlName="role" [class.is-invalid]="userForm.get('role')?.invalid && userForm.get('role')?.touched">
           <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
         </select>
+        <div *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched" class="invalid-feedback">
+          <div *ngIf="userForm.get('role')?.hasError('required')">Role is required</div>
+        </div>
       </div>
 
       <!-- ✅ Création uniquement -->
       <div class="form-group" *ngIf="!isEditMode">
         <label>Password</label>
-        <input type="password" class="form-control" formControlName="password">
+        <input type="password" class="form-control" formControlName="password" [class.is-invalid]="userForm.get('password')?.invalid && userForm.get('password')?.touched">
+        <div *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched" class="invalid-feedback">
+          <div *ngIf="userForm.get('password')?.hasError('required')">Password is required</div>
+          <div *ngIf="userForm.get('password')?.hasError('minlength')">Password must be at least 6 characters</div>
+        </div>
       </div>
 
       <div class="action-buttons">

@@ -21,7 +21,10 @@ namespace CynapCRM.Services.AuthAPI.Data
                 .HasValue<Superviseur>("Superviseur")
                 .HasValue<Delegue>("Delegue")
                 .HasValue<Medecin>("Medecin")
-                .HasValue<Client>("Client");
+                .HasValue<Client>("Client")
+                .HasValue<Pharmacien>("Pharmacien") 
+                .HasValue<Grossiste>("Grossiste");
+
 
 
             // Seed data

@@ -1,30 +1,126 @@
 <div class="product-list-container">
-  <h1>Products</h1>
+  <h1>Produits</h1>
 
   <div class="action-bar">
     <a routerLink="/products/new">
-      <app-button label="Add Product" variant="primary"></app-button>
+      <app-button label="Ajouter un produit" variant="primary"></app-button>
     </a>
   </div>
 
-  <app-card title="Product List">
-    <div *ngIf="!loading">
-      <app-table [columns]="columns" [data]="products"></app-table>
-      <div class="table-actions" *ngFor="let product of products">
-        <a [routerLink]="['/products', product.id]">
-          <app-button label="View" variant="secondary" (clicked)="onView(product.id)"></app-button>
-        </a>
-        <app-button label="Edit" variant="secondary" (clicked)="onEdit(product.id)"></app-button>
-        <app-button label="Delete" variant="danger" (clicked)="onDelete(product.id)"></app-button>
+  <!-- Messages de succès/erreur -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <app-card title="Liste des produits">
+    <!-- Filtres -->
+    <div class="filters-section" style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #e0e0e0;">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <label style="font-weight: 500; margin: 0;">Filtrer par statut:</label>
+        <select [(ngModel)]="statusFilter" (change)="filterProducts()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-width: 180px;">
+          <option value="all">Tous les produits</option>
+          <option value="active">Actifs</option>
+          <option value="inactive">Désactivés</option>
+          <option value="archived">Archivés</option>
+        </select>
       </div>
     </div>
 
     <div *ngIf="loading" class="loading">
-      <p>Loading products...</p>
+      <p>Chargement des produits...</p>
     </div>
 
-    <div *ngIf="error" class="error">
-      <p>{{ error }}</p>
+    <div *ngIf="!loading && filteredProducts.length === 0" class="no-data">
+      <p>Aucun produit trouvé avec le filtre sélectionné.</p>
+    </div>
+
+    <div *ngIf="!loading && filteredProducts.length > 0" class="table-responsive">
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th *ngFor="let col of columns">{{ col.label }}</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+<tbody>
+          <tr *ngFor="let product of filteredProducts">
+            <td>{{ product.Id_Produit }}</td>
+            <td>{{ product.Nom }}</td>
+            <td>{{ product.Description }}</td>
+            <td>{{ product.Prix_Vente | currencyTND }}</td>
+            <td>{{ product.Prix_Creation | currencyTND }}</td>
+            <td>{{ product.TVA }}%</td>
+            <td>
+              <span [class]="getStatusClass(product)">
+                {{ getStatusText(product) }}
+              </span>
+            </td>
+            <td>{{ product.IsArchived ? 'Oui' : 'Non' }}</td>
+            <td class="actions-cell">
+              <!-- Icône Edit -->
+              <button class="action-btn edit-btn" (click)="onEdit(product.Id_Produit)" title="Modifier" [disabled]="product.IsArchived">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+              <!-- Icône Activate (si inactif et non archivé) -->
+              <button class="action-btn activate-btn" *ngIf="!product.IsActive && !product.IsArchived" (click)="onActivate(product.Id_Produit)" title="Activer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </button>
+              <!-- Icône Delete (si actif et non archivé) -->
+              <button class="action-btn delete-btn" *ngIf="product.IsActive && !product.IsArchived" (click)="onDelete(product.Id_Produit)" title="Désactiver">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+              </button>
+              <!-- Icône Archive (si non archivé) -->
+              <button class="action-btn archive-btn" *ngIf="!product.IsArchived" (click)="onArchive(product.Id_Produit)" title="Archiver">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                  <line x1="1" y1="3" x2="23" y2="3"></line>
+                  <path d="M10 12v6"></path>
+                  <path d="M14 12v6"></path>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </app-card>
+
+  <!-- Modal de confirmation -->
+  <div *ngIf="showConfirmModal" class="modal-overlay" (click)="cancelAction()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Confirmation</h2>
+
+        <button class="close-btn" (click)="$event.stopPropagation(); cancelAction()" title="Fermer">×</button>
+
+      </div>
+      <div class="modal-body">
+        <p>{{ getConfirmMessage() }}</p>
+      </div>
+      <div class="modal-footer">
+
+        <button class="btn btn-secondary" (click)="$event.stopPropagation(); cancelAction()" [disabled]="loading">
+          Annuler
+        </button>
+
+
+        <button class="btn btn-danger" (click)="$event.stopPropagation(); confirmAction_execute()" [disabled]="loading">
+          {{ loading ? 'Traitement...' : ('Confirmer ' + getActionText()) }}
+        </button>
+
+      </div>
+    </div>
+  </div>
 </div>

@@ -3,6 +3,6 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://localhost:7777',
+  apiUrl: 'http://localhost:5555',
   appName: 'Cynapharm CRM'
 };

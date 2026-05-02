@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -21,7 +21,8 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
   templateUrl: './user-form.component.html',
   styleUrls: ['./user-form.component.css']
 })
-export class UserFormComponent implements OnInit {
+export class UserFormComponent implements OnInit, AfterViewInit {
+export class UserFormComponent implements OnInit, AfterViewInit {
 
   userForm: FormGroup;
   isEditMode = false;
@@ -108,17 +109,41 @@ export class UserFormComponent implements OnInit {
     });
   }
 
+  ngAfterViewInit(): void {
+    console.log('🔍 USER FORM LOADED:', {
+      valid: this.userForm.valid,
+      value: this.userForm.value,
+      status: this.userForm.status,
+      passwordValidators: this.userForm.get('password')?.hasValidator(Validators.required)
+    });
+  }
+
   onSubmit(): void {
-    if (this.userForm.invalid) return;
+    console.log('🚀 USER FORM SUBMIT:', {
+      value: this.userForm.value,
+      valid: this.userForm.valid,
+      touched: this.userForm.touched
+    });
+    if (this.userForm.invalid) {
+      console.log('❌ FORM INVALID. Errors:', Object.keys(this.userForm.controls).reduce((acc, k) => {
+        const ctrl = this.userForm.get(k);
+        if (ctrl?.invalid) acc[k] = ctrl.errors;
+        return acc;
+      }, {} as any));
+
+      // Mark all touched to show errors
+      Object.keys(this.userForm.controls).forEach(key => this.userForm.get(key)?.markAsTouched());
+      return;
+    }
 
     this.loading = true;
     this.error = '';
     this.success = false;
 
     const form = this.userForm.value;
+    console.log('📤 SENDING:', form);
 
     if (this.isEditMode) {
-      // ✅ MODIF : changement de rôle UNIQUEMENT
       this.userService.changeRole({
         email: this.userEmail,
         newRole: form.role
@@ -126,9 +151,7 @@ export class UserFormComponent implements OnInit {
         next: () => this.onSuccess(),
         error: err => this.onError(err)
       });
-
     } else {
-      // ✅ MODIF : création via REGISTER
       const payload = {
         email: form.email,
         name: form.name,
@@ -137,7 +160,7 @@ export class UserFormComponent implements OnInit {
         role: form.role,
         userType: form.userType
       };
-
+      console.log('📤 REGISTER PAYLOAD:', payload);
       this.userService.registerUser(payload).subscribe({
         next: () => this.onSuccess(),
         error: err => this.onError(err)

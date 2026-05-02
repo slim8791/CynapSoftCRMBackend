@@ -103,15 +103,25 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                 }
 
                 _response.IsSuccess = true;
-                _response.Result = users;
+                _response.Result = users.ToList();
                 _response.Message = "Liste de tous les utilisateurs.";
 
                 return Ok(_response);
             }
             catch (Exception ex)
             {
+                // FULL DEBUG
+                var errorDetails = $@"
+GetAllUsers EXCEPTION:
+Type: {ex.GetType().Name}
+Message: {ex.Message}
+Stack: {ex.StackTrace}
+Inner: {ex.InnerException?.Message}";
+                
+                Console.WriteLine(errorDetails);
+                
                 _response.IsSuccess = false;
-                _response.Message = "Erreur lors de la récupération des utilisateurs.";
+                _response.Message = $"Server error: {ex.Message}";
                 return StatusCode(515, _response);
             }
 
@@ -209,7 +219,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             }
 
         }
-        [HttpPost("forgot-password")]
+[HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
         {
             if (!ModelState.IsValid)
@@ -227,8 +237,8 @@ namespace CynapCRM.Services.AuthAPI.Controllers
 
             var encodedToken = System.Web.HttpUtility.UrlEncode(token);
 
-            // to frontend            
-            string resetLink = $"https://localhost:7000/api/auth/reset-password?email={model.Email}&token={encodedToken}";
+            // ✅ MODIF: lien vers FRONTEND Angular
+            string resetLink = $"http://localhost:4200/reset-password?email={model.Email}&token={encodedToken}";
 
             string subject = "Réinitialisation de mot de passe - CynapCRM";
             string message = $@"
@@ -251,6 +261,24 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             response.Message = "Un e-mail de réinitialisation a été envoyé.";
             response.Result = null;
             return Ok(response);
+        }
+
+[HttpPut("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _authService.ResetPassword(model);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
         }
 
         [HttpPut("change-role")]

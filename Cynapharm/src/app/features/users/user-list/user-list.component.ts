@@ -25,8 +25,29 @@ export class UserListComponent implements OnInit {
   loading = false;
   error = '';
 
-  // ✅ MODIF : colonnes ALIGNÉES backend
-  columns = ['id', 'name', 'email', 'role', 'isDeleted'];
+// ✅ FIXED : columns as {key, label} array like products
+  columns = [
+    { key: 'id', label: 'ID' },
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'role', label: 'Role' },
+    { key: 'isDeleted', label: 'Status' }
+  ];
+
+  getStatusText(isDeleted: boolean): string {
+    return isDeleted ? 'Disabled' : 'Active';
+  }
+
+  getStatusClass(isDeleted: boolean): string {
+    return isDeleted ? 'status-disabled' : 'status-active';
+  }
+
+  getValue(user: any, key: string): any {
+    if (key === 'isDeleted') {
+      return this.getStatusText(user.isDeleted);
+    }
+    return user[key] || '';
+  }
 
   constructor(
     private userService: UserService,
@@ -42,16 +63,44 @@ export class UserListComponent implements OnInit {
     this.error = '';
 
     this.userService.getUsers().subscribe({
-      next: users => {
-        this.users = users;
+      next: (response: any) => {
+        console.log('Users API response:', response);
+        let usersData = [];
+        if (Array.isArray(response)) {
+          usersData = response;
+        } else if (response && (response.result || response.Result)) {
+          usersData = response.result || response.Result;
+        }
+        console.log('Parsed users:', usersData);
+        this.users = usersData.map(u => this.normalizeUser(u));
         this.loading = false;
       },
-      error: err => {
+      error: (err: any) => {
+        console.error('Users load error:', err);
         this.loading = false;
-        this.error = 'Failed to load users';
-        console.error(err);
-      }
+        let errorMsg = 'Failed to load users';
+        if (err.status === 515) {
+          errorMsg = 'Backend error (515) - Service crash. Check AuthAPI logs/DB.';
+        } else if (err.status === 403) {
+          errorMsg = 'Access denied - ADMIN role required.';
+        } else if (err.status === 0) {
+          errorMsg = 'Gateway not running - check localhost:5555';
+        }
+        this.error = errorMsg;
+      },
+      complete: () => console.log('Users API complete')
     });
+  }
+
+  private normalizeUser(user: any): any {
+    return {
+      ...user,
+      id: user.id ?? user.Id ?? user.userId,
+      name: user.name ?? user.Name ?? user.nom,
+      email: user.email ?? user.Email,
+      role: user.role ?? user.Role,
+      isDeleted: user.isDeleted ?? user.IsDeleted ?? false
+    };
   }
 
   // ✅ MODIF : suppression = DISABLE via email
@@ -66,7 +115,20 @@ export class UserListComponent implements OnInit {
     }
   }
 
+  onView(id: number): void {
+    this.router.navigate(['/users', id]);
+  }
+
   onEdit(id: number): void {
     this.router.navigate(['/users', id, 'edit']);
+  }
+
+  onEnable(user: any): void {
+    if (confirm(`Enable user ${user.email}?`)) {
+      this.userService.enableUser(user.email).subscribe({
+        next: () => this.loadUsers(),
+        error: err => console.error(err)
+      });
+    }
   }
 }

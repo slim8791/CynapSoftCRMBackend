@@ -1,38 +1,20 @@
 <div class="product-form-container">
-  <h1>{{ isEditMode ? 'Edit Product' : 'Add Product' }}</h1>
+  <h1>{{ isEditMode ? 'Modifier le produit' : 'Ajouter un produit' }}</h1>
 
-  <app-card [title]="isEditMode ? 'Edit Product' : 'Add New Product'">
+  <app-card [title]="isEditMode ? 'Modifier le produit' : 'Nouveau produit'">
     <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+      <!-- Nom du produit -->
       <div class="form-group">
-        <label for="name">Product Name:</label>
+        <label for="nom">Nom du produit:</label>
         <input 
           type="text" 
-          id="name" 
-          formControlName="name" 
+          id="nom" 
+          formControlName="nom" 
           class="form-control"
-          placeholder="Enter product name">
+          placeholder="Entrez le nom du produit">
       </div>
 
-      <div class="form-group">
-        <label for="price">Price:</label>
-        <input 
-          type="number" 
-          id="price" 
-          formControlName="price" 
-          class="form-control"
-          placeholder="Enter price">
-      </div>
-
-      <div class="form-group">
-        <label for="quantity">Quantity:</label>
-        <input 
-          type="number" 
-          id="quantity" 
-          formControlName="quantity" 
-          class="form-control"
-          placeholder="Enter quantity">
-      </div>
-
+      <!-- Description -->
       <div class="form-group">
         <label for="description">Description:</label>
         <textarea 
@@ -40,15 +22,64 @@
           formControlName="description" 
           class="form-control"
           rows="4"
-          placeholder="Enter product description"></textarea>
+          placeholder="Entrez la description du produit"></textarea>
+      </div>
+
+      <!-- Prix de vente -->
+      <div class="form-group">
+        <label for="prix_Vente">Prix de vente :</label>
+        <input 
+          type="text" 
+          inputmode="decimal"
+          id="prix_Vente" 
+          formControlName="prix_Vente" 
+          class="form-control"
+          placeholder="0.00"
+          (input)="formatDecimal($event, 'prix_Vente')">
+      </div>
+
+      <!-- Prix de création -->
+      <div class="form-group">
+        <label for="prix_Creation">Prix de création :</label>
+        <input 
+          type="text" 
+          inputmode="decimal"
+          id="prix_Creation" 
+          formControlName="prix_Creation" 
+          class="form-control"
+          placeholder="0.00"
+          (input)="formatDecimal($event, 'prix_Creation')">
+      </div>
+
+      <!-- TVA -->
+      <div class="form-group">
+        <label for="tVA">TVA (%):</label>
+        <input 
+          type="number" 
+          id="tVA" 
+          formControlName="tVA" 
+          class="form-control"
+          placeholder="Entrez le taux de TVA"
+          min="0"
+          max="100">
+      </div>
+
+      <!-- Statut -->
+      <div class="form-group checkbox-group">
+        <label>
+          <input 
+            type="checkbox" 
+            formControlName="isActive">
+          <span>Produit actif</span>
+        </label>
       </div>
 
       <div class="action-buttons">
         <a routerLink="/products">
-          <app-button label="Cancel" variant="secondary"></app-button>
+          <app-button label="Annuler" variant="secondary"></app-button>
         </a>
         <app-button 
-          [label]="isEditMode ? 'Update' : 'Create'" 
+          [label]="isEditMode ? 'Mettre à jour' : 'Créer'" 
           variant="primary" 
           [disabled]="!productForm.valid || loading"
           (clicked)="onSubmit()"></app-button>
@@ -59,7 +90,7 @@
       </div>
 
       <div *ngIf="success" class="success">
-        <p>Product {{ isEditMode ? 'updated' : 'created' }} successfully!</p>
+        <p>Produit {{ isEditMode ? 'mis à jour' : 'créé' }} avec succès!</p>
       </div>
     </form>
   </app-card>

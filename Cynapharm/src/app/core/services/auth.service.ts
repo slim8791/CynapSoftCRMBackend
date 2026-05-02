@@ -142,10 +142,32 @@ export class AuthService {
     return userStr ? JSON.parse(userStr) : null;
   }
 
-  /**
+/**
    * ✅ CURRENT USER
    */
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
+  }
+
+/**
+   * ✅ NOUVEAU : FORGOT PASSWORD
+   * Demande un email de réinitialisation de mot de passe
+   */
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/forgot-password`, {
+      Email: email
+    });
+  }
+
+  /**
+   * ✅ NOUVEAU : RESET PASSWORD
+   * Réinitialise le mot de passe avec le token
+   */
+  resetPassword(email: string, token: string, newPassword: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/reset-password`, {
+      Email: email,
+      Token: token,
+      NewPassword: newPassword
+    });
   }
 }
