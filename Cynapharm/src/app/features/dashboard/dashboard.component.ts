@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardService } from './dashboard.service';
 import { CardComponent } from '../../shared/components/card/card.component';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,7 +16,7 @@ export class DashboardComponent implements OnInit {
   loading: boolean = false;
   error: string = '';
 
-  constructor(private dashboardService: DashboardService) { }
+  constructor(private dashboardService: DashboardService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -29,11 +30,13 @@ export class DashboardComponent implements OnInit {
       next: (data: any) => {
         this.metrics = data;
         this.loading = false;
+        this.cdr.detectChanges(); // Ensure UI updates
       },
       error: (err: any) => {
         this.error = 'Failed to load dashboard data';
         this.loading = false;
         console.error(err);
+        this.cdr.detectChanges(); // Ensure UI updates
       }
     });
   }

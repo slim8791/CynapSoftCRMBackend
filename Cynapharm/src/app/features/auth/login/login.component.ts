@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, UserRole } from '../../../core/services/auth.service'; // ✅ MODIF : import UserRole
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-login',
@@ -33,7 +34,8 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef // Added ChangeDetectorRef
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -52,6 +54,7 @@ export class LoginComponent {
     this.authService.login(email, password).subscribe({
       next: () => {
         this.loading = false;
+        this.cdr.detectChanges(); // Ensure UI updates
 
         // ✅ MODIF : récupération user + rôle
         const user = this.authService.getCurrentUser();
@@ -61,9 +64,11 @@ export class LoginComponent {
 
         this.router.navigateByUrl(returnUrl);
       },
-      error: () => {
+      error: (err: any) => {
         this.loading = false;
-        this.error = 'Email ou mot de passe incorrect.';
+        this.error = 'Login failed';
+        console.error(err);
+        this.cdr.detectChanges(); // Ensure UI updates
       }
     });
   }

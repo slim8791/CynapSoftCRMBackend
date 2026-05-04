@@ -1,30 +1,36 @@
 import { Component, signal, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterOutlet,        // ✅ OBLIGATOIRE
+    RouterLink,
+    RouterLinkActive
+  ],
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
 export class App {
   protected readonly title = signal('Cynapharm');
-  protected authService = inject(AuthService);
-  protected router = inject(Router);
+  protected showNavbar = signal(false);
 
-  // ✅ AJOUT : décider quand afficher le menu
-  showNavbar(): boolean {
-    const url = this.router.url;
+  private router = inject(Router);
+  private authService = inject(AuthService);
 
-    // ❌ NE PAS afficher le menu sur login / register
-    if (url.startsWith('/login') || url.startsWith('/register')) {
-      return false;
-    }
-
-    // ✅ afficher le menu seulement si connecté
-    return this.authService.isAuthenticated();
+  constructor() {
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe((e: NavigationEnd) => {
+        const url = e.urlAfterRedirects;
+        const hide = url.startsWith('/login') || url.startsWith('/register');
+        this.showNavbar.set(!hide && this.authService.isAuthenticated());
+      });
   }
 
   logout(): void {
@@ -32,5 +38,3 @@ export class App {
     this.router.navigate(['/login']);
   }
 }
-
-
