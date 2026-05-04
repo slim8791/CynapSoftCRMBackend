@@ -1,260 +1,278 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CurrencyTNDPipe } from '../../../shared/pipes/currency-tnd.pipe';
 import { Router, RouterLink } from '@angular/router';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
+import { CurrencyTNDPipe } from '../../../shared/pipes/currency-tnd.pipe';
 import { ProductService } from '../product.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { TableComponent } from '../../../shared/components/table/table.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { CardComponent } from '../../../shared/components/card/card.component';
-import { Observable } from 'rxjs';
+import { ToastService } from '../../../shared/services/toast.service';
+
+type StatusFilter = 'all' | 'active' | 'inactive' | 'archived';
+type ConfirmAction = 'deactivate' | 'archive' | 'activate' | 'unarchive';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyTNDPipe, RouterLink, TableComponent, ButtonComponent, CardComponent],
+  imports: [CommonModule, FormsModule, CurrencyTNDPipe, RouterLink],
   templateUrl: './product-list.component.html',
-  styleUrls: ['./product-list.component.css']
+  styleUrls: ['./product-list.component.scss']
 })
-export class ProductListComponent implements OnInit {
+export class ProductListComponent implements OnInit, OnDestroy {
+
+  // ── État principal ───────────────────────────────────
   products: any[] = [];
   filteredProducts: any[] = [];
-  loading: boolean = false;
-  error: string = '';
-  successMessage: string = '';
-  
-  // Modal et filtres
-  showConfirmModal: boolean = false;
-  confirmAction: string = '';
-  confirmProductId: number | null = null;
-  confirmProductName: string = '';
-  
-  statusFilter: 'all' | 'active' | 'inactive' | 'archived' = 'all';
+  loading = false;
+  error = '';
+  successMessage = '';
 
-  columns = [
-    { key: 'Id_Produit', label: 'ID' },
-    { key: 'Nom', label: 'Nom' },
-    { key: 'Description', label: 'Description' },
-    { key: 'Prix_Vente', label: 'Prix de vente' },
-    { key: 'Prix_Creation', label: 'Prix de création' },
-    { key: 'TVA', label: 'TVA (%)' },
-    { key: 'IsActive', label: 'Statut' },
-    { key: 'IsArchived', label: 'Archivé' }
+  // ── Filtres & pagination ─────────────────────────────
+  searchTerm = '';
+  statusFilter: StatusFilter = 'all';
+  currentPage = 1;
+  pageSize = 10;
+  totalPages = 0;
+
+  // ── Modal de confirmation ────────────────────────────
+  showConfirmModal = false;
+  confirmAction: ConfirmAction | '' = '';
+  confirmProductId: number | null = null;
+  confirmProductName = '';
+
+  // ── Colonnes (utilisées dans le template @for) ───────
+  readonly columns = [
+    { key: 'Id_Produit',    label: 'ID' },
+    { key: 'Nom',           label: 'Nom' },
+    { key: 'Description',   label: 'Description' },
+    { key: 'Prix_Vente',    label: 'Prix de vente' },
+    { key: 'TVA',           label: 'TVA (%)' },
+    { key: 'IsActive',      label: 'Statut' },
   ];
 
-  constructor(
-    private productService: ProductService, 
-    private router: Router,
-    private authService: AuthService
-  ) { }
+  protected readonly Math = Math;
+
+  private readonly destroy$ = new Subject<void>();
+  private readonly router = inject(Router);
+  private readonly productService = inject(ProductService);
+  private readonly toastService = inject(ToastService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  // ── Lifecycle ────────────────────────────────────────
 
   ngOnInit(): void {
     this.loadProducts();
   }
 
-  filterProducts(): void {
-    if (this.statusFilter === 'all') {
-      this.filteredProducts = this.products;
-    } else if (this.statusFilter === 'active') {
-      this.filteredProducts = this.products.filter(p => p.IsActive && !p.IsArchived);
-    } else if (this.statusFilter === 'inactive') {
-      this.filteredProducts = this.products.filter(p => !p.IsActive && !p.IsArchived);
-    } else if (this.statusFilter === 'archived') {
-      this.filteredProducts = this.products.filter(p => p.IsArchived);
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
+
+  // ── Chargement ───────────────────────────────────────
 
   private loadProducts(): void {
     this.loading = true;
     this.error = '';
     this.successMessage = '';
-    this.products = [];
 
-console.log('[ProductList] Starting API call to /api/products...');
-
-    this.productService.getProducts().subscribe({
-      next: (response: any) => {
-        console.log('[ProductList] RAW products:', JSON.stringify(response, null, 2));
-
-        let productsData: any[] = [];
-        if (Array.isArray(response)) {
-          productsData = response;
-        } else if (response) {
-          productsData = [response];
+    this.productService.getProducts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          const raw: any[] = Array.isArray(response) ? response : response ? [response] : [];
+          this.products = raw.map(p => this.normalizeProduct(p));
+          this.applyFilters();
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          console.error('[ProductList] Load failed:', err);
+          this.error = this.resolveErrorMessage(err);
+          this.loading = false;
+          this.cdr.markForCheck();
         }
+      });
+  }
 
-        console.log('[ProductList] Parsed products:', JSON.stringify(productsData, null, 2));
-        if (productsData.length > 0) {
-          console.log('[ProductList] First product keys:', Object.keys(productsData[0]));
+  // ── Filtres ──────────────────────────────────────────
+
+  applyFilters(): void {
+    let result = [...this.products];
+
+    if (this.statusFilter !== 'all') {
+      result = result.filter(p => {
+        switch (this.statusFilter) {
+          case 'active':   return p.IsActive && !p.IsArchived;
+          case 'inactive': return !p.IsActive && !p.IsArchived;
+          case 'archived': return p.IsArchived;
         }
-
-        this.products = productsData.map((p: any) => this.normalizeProduct(p));
-        console.log('[ProductList] Products count:', this.products.length);
-        this.filterProducts();
-        this.loading = false;
-      },
-      error: (err: any) => {
-        console.error('[ProductList] API Error:', err);
-        
-        let errorMsg = 'Erreur de connexion';
-        if (err.status === 401) {
-          errorMsg = 'Session expiree - Veuillez vous reconnecter';
-        } else if (err.status === 403) {
-          errorMsg = 'Acces refuse - Droits insuffisants';
-        } else if (err.status === 0) {
-          errorMsg = 'Serveur inaccessible - Verifier la connexion';
-        } else if (err.message) {
-          errorMsg = err.message;
-        }
-        this.error = errorMsg;
-        this.loading = false;
-      }
-    });
-  }
-
-  onView(id: number): void {
-    console.log('View product:', id);
-    this.router.navigate(['/products', id]);
-  }
-
-onEdit(id: number): void {
-    console.log('Editing product ID:', id, typeof id);
-    this.router.navigate(['/products', id.toString(), 'edit']);
-  }
-
-  onDelete(id: number): void {
-    const product = this.products.find(p => p.Id_Produit === id);
-    this.confirmProductId = id;
-    this.confirmProductName = product?.Nom || `Produit ${id}`;
-    this.confirmAction = 'deactivate';
-    this.showConfirmModal = true;
-  }
-
-  onArchive(id: number): void {
-    const product = this.products.find(p => p.Id_Produit === id);
-    this.confirmProductId = id;
-    this.confirmProductName = product?.Nom || `Produit ${id}`;
-    this.confirmAction = 'archive';
-    this.showConfirmModal = true;
-  }
-
-onActivate(id: number): void {
-    console.log('🚀 [DEBUG] onActivate CLICKED! ID:', id);
-    const product = this.products.find(p => p.Id_Produit === id);
-    this.confirmProductId = id;
-    this.confirmProductName = product?.Nom || `Produit ${id}`;
-    this.confirmAction = 'activate';
-    this.showConfirmModal = true;
-console.log('🚀 [DEBUG] Modal should show. Token:', this.authService.getToken() || 'NO TOKEN FUNC');
-  }
-
-confirmAction_execute(): void {
-    console.log('🚀 [DEBUG] confirmAction_execute CLICKED! Action:', this.confirmAction, 'ID:', this.confirmProductId);
-    console.log('🚀 [DEBUG] Token before API:', this.authService.getToken());
-    
-if (this.confirmProductId === null) return;
-    this.loading = true;
-    let action$: Observable<any>;
-
-    if (this.confirmAction === 'deactivate') {
-      action$ = this.productService.deleteProduct(this.confirmProductId.toString());
-    } else if (this.confirmAction === 'archive') {
-      action$ = this.productService.archiveProduct(this.confirmProductId.toString());
-    } else if (this.confirmAction === 'activate') {
-      action$ = this.productService.activateProduct(this.confirmProductId.toString());
-    } else {
-      return;
+      });
     }
 
-    action$.subscribe({
-      next: (response: any) => {
-        console.log(`${this.confirmAction} response:`, response);
-        if (response && response.IsSuccess !== false) {
-          const messages = {
-            deactivate: 'Produit désactivé avec succès',
-            archive: 'Produit archivé avec succès',
-            activate: 'Produit activé avec succès'
-          };
-          this.successMessage = messages[this.confirmAction as keyof typeof messages];
-          this.showConfirmModal = false;
-          setTimeout(() => this.loadProducts(), 500);
-        } else {
-          this.error = response?.Message || `Erreur lors de l'opération`;
-          this.loading = false;
-        }
-      },
-      error: (err) => {
-        console.error(`${this.confirmAction} error:`, err);
-        this.error = `Erreur ${err.status}: ${err.message || 'Serveur indisponible'}`;
-        this.loading = false;
+    const term = this.searchTerm.trim().toLowerCase();
+    // ✅ La recherche ne commence qu'à partir de 3 caractères
+    if (term.length >= 3) {
+      result = result.filter(p =>
+        p.Nom?.toLowerCase().includes(term) ||
+        p.Description?.toLowerCase().includes(term)
+      );
+    } else if (term.length > 0 && term.length < 3) {
+      // Si l'utilisateur a saisi 1 ou 2 caractères, afficher tous les produits
+      result = [...this.products];
+      if (this.statusFilter !== 'all') {
+        result = result.filter(p => {
+          switch (this.statusFilter) {
+            case 'active':   return p.IsActive && !p.IsArchived;
+            case 'inactive': return !p.IsActive && !p.IsArchived;
+            case 'archived': return p.IsArchived;
+          }
+        });
       }
-    });
+    }
+
+    this.filteredProducts = result;
+    this.totalPages = Math.ceil(result.length / this.pageSize);
+    if (this.currentPage > this.totalPages) this.currentPage = 1;
+  }
+
+  onSearch(): void            { this.currentPage = 1; this.applyFilters(); }
+  onStatusFilterChange(): void { this.currentPage = 1; this.applyFilters(); }
+  onPageSizeChange(): void    { this.currentPage = 1; this.applyFilters(); }
+
+  // ── Pagination ───────────────────────────────────────
+
+  get paginatedProducts(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredProducts.slice(start, start + this.pageSize);
+  }
+
+  get pageNumbers(): number[] {
+    const maxVisible = 5;
+    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    const end = Math.min(this.totalPages, start + maxVisible - 1);
+    start = Math.max(1, end - maxVisible + 1);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
+
+  onPageChange(page: number): void {
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+  }
+
+  // ── Navigation ───────────────────────────────────────
+
+  onView(id: number): void { this.router.navigate(['/products', id]); }
+  onEdit(id: number): void { this.router.navigate(['/products', id, 'edit']); }
+
+  // ── Actions avec confirmation ─────────────────────────
+
+  onDelete(id: number):    void { this.openConfirm(id, 'deactivate'); }
+  onArchive(id: number):   void { this.openConfirm(id, 'archive'); }
+  onActivate(id: number):  void { this.openConfirm(id, 'activate'); }
+
+  onUnarchive(id: number): void { this.openConfirm(id, 'unarchive'); }
+  private openConfirm(id: number, action: ConfirmAction): void {
+    const product = this.products.find(p => p.Id_Produit === id);
+    this.confirmProductId   = id;
+    this.confirmProductName = product?.Nom || `Produit ${id}`;
+    this.confirmAction      = action;
+    this.showConfirmModal   = true;
   }
 
   cancelAction(): void {
-    this.showConfirmModal = false;
-    this.confirmProductId = null;
+    this.showConfirmModal   = false;
+    this.confirmProductId   = null;
     this.confirmProductName = '';
-    this.confirmAction = '';
+    this.confirmAction      = '';
   }
 
-  formatPrice(price: number): string {
-    return new Intl.NumberFormat('fr-FR', { 
-      style: 'currency', 
-      currency: 'TND' 
-    }).format(price);
-  }
+  confirmAction_execute(): void {
+  if (this.confirmProductId === null || !this.confirmAction) return;
 
-  getActionText(): string {
-    const texts = {
-      deactivate: 'désactiver',
-      archive: 'archiver',
-      activate: 'activer'
-    };
-    return texts[this.confirmAction as keyof typeof texts] || '';
-  }
+  const actionMap: Record<ConfirmAction, Observable<any>> = {
+    deactivate: this.productService.deleteProduct(String(this.confirmProductId)),
+    archive:    this.productService.archiveProduct(String(this.confirmProductId)),
+    unarchive:  this.productService.unarchiveProduct(String(this.confirmProductId)),
+    activate:   this.productService.activateProduct(String(this.confirmProductId)),
+  };
 
-  getConfirmMessage(): string {
-    const messages = {
-      deactivate: `Êtes-vous sûr de vouloir désactiver le produit "${this.confirmProductName}" ?`,
-      archive: `Êtes-vous sûr de vouloir archiver le produit "${this.confirmProductName}" ?`,
-      activate: `Êtes-vous sûr de vouloir activer le produit "${this.confirmProductName}" ?`
-    };
-    return messages[this.confirmAction as keyof typeof messages] || '';
-  }
+  this.loading = true;
+
+  actionMap[this.confirmAction]
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: () => {
+        // ✅ 1. Fermer la modale COMME Annuler
+        this.cancelAction();
+
+        // ✅ 2. Rafraîchir la liste
+        this.loadProducts();
+
+        this.successMessage = 'Action effectuée avec succès.';
+        this.loading = false;
+      },
+      error: (err: any) => {
+        console.error('[ProductList] Action failed:', err);
+        this.error = this.resolveErrorMessage(err);
+        this.cancelAction();  // Fermer la modal même sur erreur
+        this.loading = false;
+      }
+    });
+}
+
+  // ── Helpers template ─────────────────────────────────
 
   getStatusText(product: any): string {
-    if (product.IsArchived) {
-      return 'Archivé';
-    }
+    if (product.IsArchived) return 'Archivé';
     return product.IsActive ? 'Actif' : 'Inactif';
   }
 
-  getStatusClass(product: any): string {
-    if (product.IsArchived) {
-      return 'status-archived';
-    }
-    return product.IsActive ? 'status-active' : 'status-inactive';
+  getActionText(): string {
+    const map: Partial<Record<ConfirmAction, string>> = {
+      deactivate: 'désactiver',
+      archive:    'archiver',
+      unarchive:  'désarchiver',
+      activate:   'activer',
+    };
+    return map[this.confirmAction as ConfirmAction] ?? '';
   }
 
-/**
-   * Normalize product property names from API snake_case to PascalCase
-   * API returns: id_Produit, nom, prix_Vente, tva, isActive, isArchived
-   * Component expects: Id_Produit, Nom, Prix_Vente, TVA, IsActive, IsArchived
-   * NOTE: Spread FIRST to preserve original values, then override with normalized keys
-   */
-  private normalizeProduct(product: any): any {
+  getConfirmMessage(): string {
+    const name = this.confirmProductName;
+    const map: Partial<Record<ConfirmAction, string>> = {
+      deactivate: `Désactiver le produit "${name}" ?`,
+      unarchive:  `Désarchiver le produit "${name}" ?`,
+      archive:    `Archiver le produit "${name}" ?`,
+      activate:   `Activer le produit "${name}" ?`,
+    };
+    return map[this.confirmAction as ConfirmAction] ?? '';
+  }
+
+  // ── Utilitaires privés ───────────────────────────────
+
+  private normalizeProduct(p: any): any {
     return {
-      ...product,
-      Id_Produit: product.id_Produit ?? product.Id_Produit,
-      Nom: product.nom ?? product.Nom ?? '',
-      Description: product.description ?? product.Description ?? '',
-      Prix_Vente: product.prix_Vente ?? product.Prix_Vente ?? 0,
-      Prix_Creation: product.prix_Creation ?? product.Prix_Creation ?? 0,
-      TVA: product.tVA ?? product.tva ?? product.TVA ?? 0,
-      IsActive: product.isActive ?? product.IsActive ?? false,
-      IsArchived: product.isArchived ?? product.IsArchived ?? false
+      Id_Produit:    p.Id_Produit    ?? p.id_Produit    ?? null,
+      Nom:           p.Nom           ?? p.nom           ?? '',
+      Description:   p.Description   ?? p.description   ?? '',
+      Prix_Vente:    p.Prix_Vente    ?? p.prix_Vente    ?? 0,
+      Prix_Creation: p.Prix_Creation ?? p.prix_Creation ?? 0,
+      TVA:           p.TVA           ?? p.tVA           ?? p.tva ?? 0,
+      IsActive:      p.IsActive      ?? p.isActive      ?? false,
+      IsArchived:    p.IsArchived    ?? p.isArchived    ?? false,
     };
   }
+
+  private resolveErrorMessage(err: any): string {
+    const statusMessages: Record<number, string> = {
+      0:   'Serveur inaccessible — vérifiez la connexion.',
+      401: 'Session expirée — veuillez vous reconnecter.',
+      403: 'Accès refusé — droits insuffisants.',
+      404: 'Ressource introuvable.',
+      500: 'Erreur interne du serveur.',
+    };
+    return statusMessages[err.status] ?? err.message ?? 'Une erreur inattendue s\'est produite.';
+  }
+  
 }

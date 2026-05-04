@@ -330,6 +330,33 @@ Inner: {ex.InnerException?.Message}";
             _response.Message = "Utilisateur supprimé.";
             return Ok(_response);
         }
+[HttpGet("users/{id}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            try
+            {
+                var user = await _authService.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Utilisateur non trouvé.";
+                    return NotFound(_response);
+                }
+
+                _response.IsSuccess = true;
+                _response.Result = user;
+                _response.Message = "Détails de l'utilisateur récupérés.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = $"Erreur: {ex.Message}";
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpGet("disabled-users")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetDisabledUsers()

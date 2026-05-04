@@ -147,6 +147,31 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                 return StatusCode(515, _response);
             }
         }
+        [HttpPut("{productId:int}/unarchive")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> UnarchiveProduct(int productId)
+        {
+            try
+            {
+                var result = await _productService.UnarchiveProductAsync(productId);
+
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Produit introuvable ou non désarchivable.";
+                    return BadRequest(_response);
+                }
+
+                _response.Message = "Produit désarchivé avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
         [HttpPut("{productId:int}/activate")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> ActivateProduct(int productId)

@@ -1,46 +1,346 @@
 <div class="product-detail-container">
-  <h1>Product Details</h1>
 
-  <div *ngIf="!loading && product" class="detail-view">
-    <app-card [title]="product.name">
-      <div class="detail-content">
-        <div class="detail-row">
-          <label>ID:</label>
-          <span>{{ product.id }}</span>
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button class="back-btn" routerLink="/products" aria-label="Retour à la liste">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Produits
+      </button>
+      <h1>{{ product?.Nom || 'Détail produit' }}</h1>
+    </div>
+
+    @if (product) {
+      <div class="header-right">
+        <span class="status-badge" [ngClass]="getStatusClass(product)">
+          {{ getStatusText(product) }}
+        </span>
+        <button
+          class="btn-outline"
+          [class.disabled]="!canEditProduct()"
+          [disabled]="!canEditProduct()"
+          (click)="onEdit()"
+          [title]="isProductArchived() ? 'Produit archivé — non modifiable' : 'Modifier le produit'">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Modifier
+        </button>
+
+        <!-- Actions contextuelles selon le statut -->
+        @if (!isProductArchived()) {
+          @if (isProductActive()) {
+            <button class="btn-outline secondary" (click)="onDeactivate()" title="Désactiver le produit">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3l18 18M11.5 5C7 7 4 11 4 15a8 8 0 0 0 14.5 5"/>
+              </svg>
+              Désactiver
+            </button>
+          } @else {
+            <button class="btn-outline success" (click)="onActivate()" title="Activer le produit">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 4v6h6M23 20v-6h-6"/>
+              </svg>
+              Activer
+            </button>
+          }
+          <button class="btn-outline danger" (click)="onArchive()" title="Archiver le produit">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+              <line x1="10" y1="12" x2="14" y2="12"/>
+            </svg>
+            Archiver
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Alertes ────────────────────────────────────────── -->
+  @if (error) {
+    <div class="alert alert-danger" role="alert">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error }}
+    </div>
+  }
+
+  <!-- Loading ─────────────────────────────────────────── -->
+  @if (loading) {
+    <div class="state-block">
+      <div class="spinner"></div>
+      <p>Chargement du produit…</p>
+    </div>
+  }
+
+  <!-- Contenu principal ───────────────────────────────── -->
+  @if (!loading && product) {
+
+    <!-- Onglets navigation -->
+    <div class="tabs-nav" role="tablist">
+      @for (tab of tabs; track tab.id) {
+        <button
+          class="tab-btn"
+          role="tab"
+          [class.active]="activeTab === tab.id"
+          [attr.aria-selected]="activeTab === tab.id"
+          (click)="setActiveTab(tab.id)">
+          {{ tab.label }}
+          @if (tab.count !== undefined) {
+            <span class="tab-count">{{ tab.count() }}</span>
+          }
+        </button>
+      }
+    </div>
+
+    <!-- Onglet : Informations -->
+    @if (activeTab === 'info') {
+      <div class="tab-panel" role="tabpanel">
+        <div class="info-card">
+          <div class="info-grid">
+            <div class="info-field">
+              <span class="field-label">Nom</span>
+              <span class="field-value">{{ product.Nom || '—' }}</span>
+            </div>
+            <div class="info-field">
+              <span class="field-label">ID</span>
+              <span class="field-value id-value">{{ product.Id_Produit }}</span>
+            </div>
+            <div class="info-field full">
+              <span class="field-label">Description</span>
+              <span class="field-value">{{ product.Description || '—' }}</span>
+            </div>
+            <div class="info-field">
+              <span class="field-label">Prix de vente</span>
+              <span class="field-value price">{{ product.Prix_Vente | currencyTND }}</span>
+            </div>
+            <div class="info-field">
+              <span class="field-label">Prix de création</span>
+              <span class="field-value price">{{ product.Prix_Creation | currencyTND }}</span>
+            </div>
+            <div class="info-field">
+              <span class="field-label">TVA</span>
+              <span class="field-value">{{ product.TVA ?? 0 }} %</span>
+            </div>
+            <div class="info-field">
+              <span class="field-label">Statut</span>
+              <span class="status-badge sm" [ngClass]="getStatusClass(product)">
+                {{ getStatusText(product) }}
+              </span>
+            </div>
+          </div>
         </div>
-        <div class="detail-row">
-          <label>Name:</label>
-          <span>{{ product.name }}</span>
-        </div>
-        <div class="detail-row">
-          <label>Price:</label>
-          <span>{{ product.price }}</span>
-        </div>
-        <div class="detail-row">
-          <label>Quantity:</label>
-          <span>{{ product.quantity }}</span>
-        </div>
-        <div class="detail-row">
-          <label>Description:</label>
-          <span>{{ product.description }}</span>
+
+        <div class="quick-actions">
+          <button class="action-card" (click)="goToLots()">
+            <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+            </svg>
+            <span>Gérer les lots</span>
+          </button>
+          <button class="action-card" (click)="goToMarketing()">
+            <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            <span>Marketing</span>
+          </button>
         </div>
       </div>
-      
-      <div class="action-buttons">
-        <a routerLink="/products">
-          <app-button label="Back" variant="secondary"></app-button>
-        </a>
-        <app-button label="Edit" variant="primary" (clicked)="onEdit()"></app-button>
-        <app-button label="Delete" variant="danger" (clicked)="onDelete()"></app-button>
+    }
+
+    <!-- Onglet : Stock -->
+    @if (activeTab === 'stock') {
+      <div class="tab-panel" role="tabpanel">
+        <div class="info-card">
+          <div class="stock-hero">
+            <span class="stock-number">{{ stock }}</span>
+            <span class="stock-label">unité(s) en stock</span>
+          </div>
+          @if (stock === 0) {
+            <div class="stock-warning">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              Stock épuisé — pensez à créer un nouveau lot.
+            </div>
+          }
+          <div class="stock-action">
+            <a class="btn-primary-link" [routerLink]="['/lots/new']" [queryParams]="{ productId: productId }">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Nouveau lot
+            </a>
+          </div>
+        </div>
       </div>
-    </app-card>
-  </div>
+    }
 
-  <div *ngIf="loading" class="loading">
-    <p>Loading product details...</p>
-  </div>
+    <!-- Onglet : Lots -->
+    @if (activeTab === 'lots') {
+      <div class="tab-panel" role="tabpanel">
+        <div class="info-card">
+          <div class="card-toolbar">
+            <span class="toolbar-title">{{ lots.length }} lot(s) associé(s)</span>
+            <a class="btn-sm-primary" [routerLink]="['/lots/new']" [queryParams]="{ productId: productId }">
+              + Nouveau lot
+            </a>
+          </div>
 
-  <div *ngIf="error" class="error">
-    <p>{{ error }}</p>
-  </div>
+          @if (lots.length === 0) {
+            <div class="empty-state">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+              </svg>
+              <p>Aucun lot trouvé pour ce produit.</p>
+            </div>
+          } @else {
+            <div class="lot-list">
+              @for (lot of lots; track lot.Numero ?? lot.numero) {
+                <div class="lot-row" [class.lot-expired]="(lot | lotStatus) === 'Expiré'">
+                  <div class="lot-left">
+                    <span class="lot-num">{{ lot.Numero ?? lot.numero ?? 'N/A' }}</span>
+                    <span class="lot-qty">
+                      <strong>{{ lot.Quantite ?? lot.quantite ?? 0 }}</strong> unité(s)
+                    </span>
+                  </div>
+                  <div class="lot-middle">
+                    <span class="lot-exp">
+                      Exp. {{ (lot.DateExpiration ?? lot.dateExpiration) | date:'dd/MM/yyyy' }}
+                    </span>
+                    @if (getLotExpirationWarning(lot)) {
+                      <span class="lot-warning" [title]="getLotExpirationWarning(lot)">
+                        ⚠ {{ getLotExpirationWarning(lot) }}
+                      </span>
+                    }
+                  </div>
+                  <div class="lot-right">
+                    <span class="lot-status-badge" [ngClass]="'badge-' + (lot | lotStatus | lowercase)">
+                      {{ lot | lotStatus }}
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Onglet : Supports Marketing -->
+    @if (activeTab === 'supports') {
+      <div class="tab-panel" role="tabpanel">
+        <div class="info-card">
+          <div class="card-toolbar">
+            <span class="toolbar-title">{{ supports.length }} support(s) marketing</span>
+            <a class="btn-sm-primary" [routerLink]="['/marketing/supports/new']" [queryParams]="{ productId: productId }">
+              + Nouveau support
+            </a>
+          </div>
+
+          @if (supports.length === 0) {
+            <div class="empty-state">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
+              <p>Aucun support marketing associé à ce produit.</p>
+            </div>
+          } @else {
+            <div class="supports-list">
+              <div class="supports-table">
+                <div class="supports-header">
+                  <div class="supports-col type">Type</div>
+                  <div class="supports-col name">Nom campagne</div>
+                  <div class="supports-col status">Statut</div>
+                  <div class="supports-col files">Fichiers</div>
+                </div>
+                @for (support of supports; track support.Id_SupportMarketting ?? support.idSupportMarketting) {
+                  <div class="supports-row">
+                    <div class="supports-col type">
+                      <span class="support-type-badge">{{ support.Type ?? support.type ?? 'N/A' }}</span>
+                    </div>
+                    <div class="supports-col name">
+                      {{ support.CampaignName ?? support.campaignName ?? '—' }}
+                    </div>
+                    <div class="supports-col status">
+                      <span class="status-badge sm" [ngClass]="support.IsActive ?? support.isActive ? 'badge-active' : 'badge-inactive'">
+                        {{ (support.IsActive ?? support.isActive) ? 'Actif' : 'Inactif' }}
+                      </span>
+                    </div>
+                    <div class="supports-col files">
+                      <span class="file-count">
+                        {{ (support.Fichiers ?? support.fichiers)?.length ?? 0 }} fichier(s)
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Onglet : Promotions -->
+    @if (activeTab === 'promotions') {
+      <div class="tab-panel" role="tabpanel">
+        <div class="info-card">
+          @if (promotions.length === 0) {
+            <div class="empty-state">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
+              <p>Aucune promotion active pour ce produit.</p>
+            </div>
+          } @else {
+            <div class="promo-list">
+              @for (promo of promotions; track promo.Id_Promotion) {
+                <div class="promo-row">
+                  <div class="promo-info">
+                    <span class="promo-name">{{ promo.Nom }}</span>
+                    <span class="promo-dates">
+                      {{ promo.DateDebut | date:'dd/MM/yy' }} → {{ promo.DateFin | date:'dd/MM/yy' }}
+                    </span>
+                  </div>
+                  <span class="promo-pct">-{{ promo.Pourcentage }} %</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Onglet : Dashboard -->
+    @if (activeTab === 'dashboard') {
+      <div class="tab-panel" role="tabpanel">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Stock total</span>
+            <span class="metric-value">{{ stock }}</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Statut</span>
+            <span class="metric-value sm">{{ getStatusText(product) }}</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Lots actifs</span>
+            <span class="metric-value">{{ lots.length }}</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Promotions</span>
+            <span class="metric-value">{{ promotions.length }}</span>
+          </div>
+        </div>
+      </div>
+    }
+  }
 </div>

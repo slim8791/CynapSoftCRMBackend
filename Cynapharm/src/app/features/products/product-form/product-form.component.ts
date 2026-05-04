@@ -1,130 +1,156 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ToastService } from '../../../shared/services/toast.service';
 import { ProductService } from '../product.service';
-import { CardComponent } from '../../../shared/components/card/card.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, CardComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './product-form.component.html',
-  styleUrls: ['./product-form.component.css']
+  styleUrls: ['./product-form.component.scss']
 })
 export class ProductFormComponent implements OnInit {
+
   productForm: FormGroup;
-  isEditMode: boolean = false;
-  loading: boolean = false;
-  error: string = '';
-  success: boolean = false;
-  private productId: string = '';
+  isEditMode = false;
+  loading = false;
+  error = '';
+  success = false;
 
-  formatDecimal(event: any, controlName: string) {
-    let value = event.target.value.replace(',', '.');
-    // Only allow digits, dot, and limit to 2 decimals
-    value = value.replace(/[^\d.]/g, '').replace(/\.+/g, '.');
-    if (value.split('.').length > 2) {
-      value = value.replace(/\.+$/, '');
-    }
-    this.productForm.get(controlName)?.setValue(value, {emitEvent: false});
-  }
+  private productId = '';
+  private readonly destroyRef  = inject(DestroyRef);
+  private readonly cdr         = inject(ChangeDetectorRef);
+  private readonly toastService   = inject(ToastService);
+  private readonly fb             = inject(FormBuilder);
+  private readonly route          = inject(ActivatedRoute);
+  private readonly router         = inject(Router);
+  private readonly productService = inject(ProductService);
 
-  constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private productService: ProductService
-  ) {
-    // Match fields to backend DTO: ProduitDto
-    // { Id_Produit, Nom, Description, Prix_Vente, Prix_Creation, TVA, IsActive, IsArchived, Lots, Supports }
+  constructor() {
     this.productForm = this.fb.group({
-      nom: ['', [Validators.required]],
-      description: [''],
-      prix_Vente: ['', [Validators.required, Validators.min(0)]],
-      prix_Creation: ['', [Validators.required, Validators.min(0)]],
-      tVA: [19, [Validators.required, Validators.min(0), Validators.max(100)]],
-      isActive: [true]
+      Nom:           ['', [Validators.required, Validators.maxLength(200)]],
+      Description:   ['', [Validators.maxLength(1000)]],
+      Prix_Vente:    ['', [Validators.required, Validators.min(0)]],
+      Prix_Creation: ['', [Validators.required, Validators.min(0)]],
+      TVA:           [19, [Validators.required, Validators.min(0), Validators.max(100)]],
+      IsActive:      [true]
     });
   }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      if (params['id']) {
-        this.isEditMode = true;
-        this.productId = params['id'];
-        this.loadProductData();
-      }
-    });
+    this.route.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        if (params['id'] && params['id'] !== 'new') {
+          this.isEditMode = true;
+          this.productId  = params['id'];
+          this.loadProductData();
+        } else {
+          this.isEditMode = false;
+        }
+        this.cdr.detectChanges(); // ← force le template à relire isEditMode
+      });
   }
+
+  // ── Helpers template ────────────────────────────────
+
+  isInvalid(field: string): boolean {
+    const ctrl = this.productForm.get(field);
+    return !!(ctrl?.invalid && ctrl?.touched);
+  }
+
+  ctrl(field: string): AbstractControl {
+    return this.productForm.get(field)!;
+  }
+
+  formatDecimal(event: Event, controlName: string): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value.replace(',', '.');
+    value = value.replace(/[^\d.]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) value = parts[0] + '.' + parts.slice(1).join('');
+    if (parts[1]?.length > 3) value = parts[0] + '.' + parts[1].slice(0, 3);
+    this.productForm.get(controlName)?.setValue(value, { emitEvent: false });
+  }
+
+  // ── Chargement (mode édition) ────────────────────────
 
   private loadProductData(): void {
-    console.log('[ProductForm] Loading product ID:', this.productId);
     this.loading = true;
-    this.productService.getProductById(this.productId).subscribe({
-      next: (data: any) => {
-        console.log('[ProductForm] RAW API response:', data);
-        console.log('[ProductForm] Unwrapped product:', data.Result || data);
-        // Handle both direct DTO and wrapped response
-        const product = data.Result || data;
-        
-        this.productForm.patchValue({
-          nom: product.Nom || product.nom || '',
-          description: product.Description || product.description || '',
-          prix_Vente: product.Prix_Vente || product.prix_Vente || 0,
-          prix_Creation: product.Prix_Creation || product.prix_Creation || 0,
-          tVA: product.TVA || product.tVA || product.tva || 19,
-          isActive: product.IsActive !== false || product.isActive !== false
-        });
-        console.log('[ProductForm] Form patched with:', this.productForm.value);
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('[ProductForm] API Error:', err);
-        this.error = `Erreur lors du chargement du produit ${this.productId}: ${err.status || err.message}`;
-        this.loading = false;
-      }
-    });
+    this.error   = '';
+
+    this.productService.getProductById(this.productId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data: any) => {
+          const raw = data?.Result ?? data;
+
+          this.productForm.patchValue({
+            Nom:           raw.Nom           ?? raw.nom           ?? '',
+            Description:   raw.Description   ?? raw.description   ?? '',
+            Prix_Vente:    raw.Prix_Vente     ?? raw.prix_Vente    ?? 0,
+            Prix_Creation: raw.Prix_Creation  ?? raw.prix_Creation ?? 0,
+            TVA:           raw.TVA            ?? raw.tva           ?? 19,
+            IsActive:      raw.IsActive       ?? raw.isActive      ?? true
+          });
+
+          this.loading = false;
+          this.cdr.detectChanges(); // ← le bouton affiche "Mettre à jour" immédiatement
+        },
+        error: (err) => {
+          this.error   = `Impossible de charger le produit (${err.status ?? err.message}).`;
+          this.loading = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
+  // ── Soumission ───────────────────────────────────────
+
   onSubmit(): void {
-    if (!this.productForm.valid) return;
+    if (this.productForm.invalid) {
+      this.productForm.markAllAsTouched();
+      return;
+    }
 
     this.loading = true;
-    this.error = '';
+    this.error   = '';
     this.success = false;
 
-    const formValue = this.productForm.value;
-    
-    // Match backend DTO: ProduitDto
+    const v = this.productForm.value;
+
     const productData = {
-      Id_Produit: this.isEditMode ? parseInt(this.productId) : 0,
-      Nom: formValue.nom,
-      Description: formValue.description || '',
-      Prix_Vente: parseFloat(formValue.prix_Vente.toString().replace(',', '.')),
-      Prix_Creation: parseFloat(formValue.prix_Creation.toString().replace(',', '.')),
-      TVA: parseInt(formValue.tVA),
-      IsActive: formValue.isActive !== false,
-      IsArchived: false
+      Id_Produit:    this.isEditMode ? parseInt(this.productId, 10) : 0,
+      Nom:           v.Nom,
+      Description:   v.Description ?? '',
+      Prix_Vente:    parseFloat(String(v.Prix_Vente).replace(',', '.')),
+      Prix_Creation: parseFloat(String(v.Prix_Creation).replace(',', '.')),
+      TVA:           Number(v.TVA),
+      IsActive:      v.IsActive ?? true,
+      IsArchived:    false
     };
 
-    // Backend uses POST for both create and update
-    const request = this.productService.createProduct(productData);
+    const request = this.isEditMode
+      ? this.productService.updateProduct(this.productId, productData)
+      : this.productService.createProduct(productData);
 
-    request.subscribe({
-      next: (response: any) => {
-        console.log('[ProductForm] Response:', response);
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
         this.success = true;
         this.loading = false;
-        setTimeout(() => {
-          this.router.navigate(['/products']);
-        }, 1500);
+        this.toastService.showSuccess(
+          this.isEditMode ? 'Produit mis à jour avec succès.' : 'Produit créé avec succès.'
+        );
+        setTimeout(() => this.router.navigate(['/products']), 1200);
       },
       error: (err) => {
-        console.error('[ProductForm] Error:', err);
-        this.error = `Erreur lors de ${this.isEditMode ? 'la mise à jour' : 'la création'} du produit`;
+        this.error   = `Erreur lors de ${this.isEditMode ? 'la mise à jour' : 'la création'} du produit.`;
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

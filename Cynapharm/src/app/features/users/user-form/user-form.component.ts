@@ -22,7 +22,6 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
   styleUrls: ['./user-form.component.css']
 })
 export class UserFormComponent implements OnInit, AfterViewInit {
-export class UserFormComponent implements OnInit, AfterViewInit {
 
   userForm: FormGroup;
   isEditMode = false;
@@ -71,6 +70,7 @@ export class UserFormComponent implements OnInit, AfterViewInit {
     } else {
       // ✅ création → mot de passe obligatoire
       this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+      this.userForm.get('password')?.updateValueAndValidity();
     }
   }
 

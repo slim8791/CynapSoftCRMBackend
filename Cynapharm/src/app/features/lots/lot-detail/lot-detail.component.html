@@ -1,0 +1,49 @@
+<div class="lot-detail-container">
+  <h1>Lot Details</h1>
+
+  <div *ngIf="loading" class="loading">
+    Loading lot details...
+  </div>
+
+  <div *ngIf="error" class="error">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && lot" class="detail-card">
+    <app-card [title]="'Lot ' + lot.numero">
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Lot Number:</label>
+          <span>{{ lot.numero }}</span>
+        </div>
+
+        <div class="detail-item">
+          <label>Quantity:</label>
+          <span>{{ lot.quantite }}</span>
+        </div>
+
+        <div class="detail-item">
+          <label>Expiration Date:</label>
+          <span>{{ lot.dateExpiration | date: 'short' }}</span>
+        </div>
+
+        <div class="detail-item status-item">
+          <label>Status:</label>
+          <span [class]="(lot.isExpired ? 'status-expired' : (lot.isOutOfStock ? 'status-low-stock' : 'status-active'))">
+            {{ lot.isExpired ? 'Expired' : (lot.isOutOfStock ? 'Out of Stock' : 'Active') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button (click)="onBackToList()" class="btn btn-secondary">
+          Back to List
+        </button>
+        <app-button label="Edit" variant="primary" (clicked)="onEdit()"></app-button>
+        <app-button label="Delete" variant="danger" (clicked)="onDelete()"></app-button>
+      </div>
+
+    </app-card>
+  </div>
+</div>

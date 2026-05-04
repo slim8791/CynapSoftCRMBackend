@@ -1,97 +1,202 @@
 <div class="product-form-container">
-  <h1>{{ isEditMode ? 'Modifier le produit' : 'Ajouter un produit' }}</h1>
 
-  <app-card [title]="isEditMode ? 'Modifier le produit' : 'Nouveau produit'">
-    <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
-      <!-- Nom du produit -->
+  <!-- Breadcrumb -->
+  <div class="page-header">
+    <button class="back-btn" routerLink="/products" aria-label="Retour aux produits">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Produits
+    </button>
+    <span class="breadcrumb-sep">/</span>
+    <h1>{{ isEditMode ? 'Modifier le produit' : 'Ajouter un produit' }}</h1>
+  </div>
+
+  <div class="form-card">
+    <div class="card-header">
+      <span class="card-title">Informations du produit</span>
+      <span class="mode-badge" [class.edit]="isEditMode">
+        {{ isEditMode ? 'Modification' : 'Nouveau' }}
+      </span>
+    </div>
+
+    <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="card-body" novalidate>
+
+      <!-- Alertes globales -->
+      @if (error) {
+        <div class="alert alert-danger" role="alert">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {{ error }}
+        </div>
+      }
+      @if (success) {
+        <div class="alert alert-success" role="alert">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Produit {{ isEditMode ? 'mis à jour' : 'créé' }} avec succès.
+        </div>
+      }
+
+      <!-- Nom -->
       <div class="form-group">
-        <label for="nom">Nom du produit:</label>
-        <input 
-          type="text" 
-          id="nom" 
-          formControlName="nom" 
+        <label for="Nom">Nom du produit <span class="required">*</span></label>
+        <input
+          type="text"
+          id="Nom"
+          formControlName="Nom"
           class="form-control"
-          placeholder="Entrez le nom du produit">
+          [class.is-invalid]="isInvalid('Nom')"
+          placeholder="Ex. Huile d'olive BIO 500ml"
+          autocomplete="off" />
+        <span class="field-hint">Maximum 200 caractères</span>
+        @if (isInvalid('Nom')) {
+          <div class="field-error">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Le nom est requis (max 200 caractères).
+          </div>
+        }
       </div>
 
       <!-- Description -->
       <div class="form-group">
-        <label for="description">Description:</label>
-        <textarea 
-          id="description" 
-          formControlName="description" 
+        <label for="Description">Description</label>
+        <textarea
+          id="Description"
+          formControlName="Description"
           class="form-control"
           rows="4"
-          placeholder="Entrez la description du produit"></textarea>
+          placeholder="Décrivez le produit, ses caractéristiques, son usage…">
+        </textarea>
       </div>
 
-      <!-- Prix de vente -->
-      <div class="form-group">
-        <label for="prix_Vente">Prix de vente :</label>
-        <input 
-          type="text" 
-          inputmode="decimal"
-          id="prix_Vente" 
-          formControlName="prix_Vente" 
-          class="form-control"
-          placeholder="0.00"
-          (input)="formatDecimal($event, 'prix_Vente')">
+      <hr class="section-divider" />
+
+      <!-- Prix — grille 2 colonnes -->
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="Prix_Vente">Prix de vente <span class="required">*</span></label>
+          <div class="input-prefix-wrap">
+            <span class="input-prefix">TND</span>
+            <input
+              type="text"
+              inputmode="decimal"
+              id="Prix_Vente"
+              formControlName="Prix_Vente"
+              class="form-control has-prefix"
+              [class.is-invalid]="isInvalid('Prix_Vente')"
+              placeholder="0.000"
+              (input)="formatDecimal($event, 'Prix_Vente')" />
+          </div>
+          @if (isInvalid('Prix_Vente')) {
+            <div class="field-error">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Prix requis et positif.
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="Prix_Creation">Prix de création <span class="required">*</span></label>
+          <div class="input-prefix-wrap">
+            <span class="input-prefix">TND</span>
+            <input
+              type="text"
+              inputmode="decimal"
+              id="Prix_Creation"
+              formControlName="Prix_Creation"
+              class="form-control has-prefix"
+              [class.is-invalid]="isInvalid('Prix_Creation')"
+              placeholder="0.000"
+              (input)="formatDecimal($event, 'Prix_Creation')" />
+          </div>
+          @if (isInvalid('Prix_Creation')) {
+            <div class="field-error">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Prix requis et positif.
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="TVA">TVA (%)</label>
+          <div class="input-suffix-wrap">
+            <input
+              type="number"
+              id="TVA"
+              formControlName="TVA"
+              class="form-control has-suffix"
+              [class.is-invalid]="isInvalid('TVA')"
+              placeholder="0"
+              min="0"
+              max="100" />
+            <span class="input-suffix">%</span>
+          </div>
+          @if (isInvalid('TVA')) {
+            <div class="field-error">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              TVA entre 0 et 100 %.
+            </div>
+          }
+        </div>
+
       </div>
 
-      <!-- Prix de création -->
-      <div class="form-group">
-        <label for="prix_Creation">Prix de création :</label>
-        <input 
-          type="text" 
-          inputmode="decimal"
-          id="prix_Creation" 
-          formControlName="prix_Creation" 
-          class="form-control"
-          placeholder="0.00"
-          (input)="formatDecimal($event, 'prix_Creation')">
-      </div>
+      <hr class="section-divider" />
 
-      <!-- TVA -->
-      <div class="form-group">
-        <label for="tVA">TVA (%):</label>
-        <input 
-          type="number" 
-          id="tVA" 
-          formControlName="tVA" 
-          class="form-control"
-          placeholder="Entrez le taux de TVA"
-          min="0"
-          max="100">
-      </div>
-
-      <!-- Statut -->
-      <div class="form-group checkbox-group">
-        <label>
-          <input 
-            type="checkbox" 
-            formControlName="isActive">
-          <span>Produit actif</span>
+      <!-- Toggle statut -->
+      <div class="toggle-row">
+        <label class="toggle-switch" for="isActive" aria-label="Activer le produit">
+          <input type="checkbox" id="isActive" formControlName="isActive" />
+          <span class="toggle-track"></span>
         </label>
+        <div class="toggle-info">
+          <p>Produit actif</p>
+          <span>Le produit sera visible et disponible à la vente</span>
+        </div>
+        <span class="toggle-status" [class.active]="productForm.get('isActive')?.value">
+          {{ productForm.get('isActive')?.value ? 'Actif' : 'Inactif' }}
+        </span>
       </div>
 
-      <div class="action-buttons">
-        <a routerLink="/products">
-          <app-button label="Annuler" variant="secondary"></app-button>
-        </a>
-        <app-button 
-          [label]="isEditMode ? 'Mettre à jour' : 'Créer'" 
-          variant="primary" 
-          [disabled]="!productForm.valid || loading"
-          (clicked)="onSubmit()"></app-button>
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" routerLink="/products">Annuler</button>
+        <button
+  type="submit"
+  class="btn-submit"
+  [disabled]="!productForm.valid || loading">
+
+  @if (loading) {
+    <span class="spinner-sm"></span>
+  } @else {
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  }
+
+  {{ isEditMode ? 'Mettre à jour' : 'Créer le produit' }}
+
+</button>
+
       </div>
 
-      <div *ngIf="error" class="error">
-        <p>{{ error }}</p>
-      </div>
-
-      <div *ngIf="success" class="success">
-        <p>Produit {{ isEditMode ? 'mis à jour' : 'créé' }} avec succès!</p>
-      </div>
     </form>
-  </app-card>
-</div>
+  </div>
+<!-- </div> -->

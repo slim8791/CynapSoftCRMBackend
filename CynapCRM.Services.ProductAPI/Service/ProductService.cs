@@ -91,6 +91,16 @@ namespace CynapCRM.Services.ProductAPI.Service
             return true;
 
         }
+        public async Task<bool> UnarchiveProductAsync(int produitId)
+        {
+            var product = await _db.Produits.FindAsync(produitId);
+            if (product == null) return false;
+
+            product.IsArchived = false;
+
+            await _db.SaveChangesAsync();
+            return true;
+        }
         public async Task<bool> ActivateProductAsync(int produitId)
         {
             var produit = await _db.Produits.FindAsync(produitId);
@@ -183,9 +193,10 @@ namespace CynapCRM.Services.ProductAPI.Service
 
         public async Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10)
         {
-            if (string.IsNullOrWhiteSpace(keyword))
-                return Enumerable.Empty<ProduitDto>();
 
+            if (string.IsNullOrWhiteSpace(keyword) || keyword.Length < 3)
+                return Enumerable.Empty<ProduitDto>();
+            
             keyword = keyword.ToLower();
 
             var produits = await _db.Produits
@@ -248,6 +259,8 @@ namespace CynapCRM.Services.ProductAPI.Service
         {
             return await _db.Produits.AnyAsync(p => p.Nom == productName);
         }
+
+        
 
         public async Task<bool> IsProductValidAsync(int productId)
         {

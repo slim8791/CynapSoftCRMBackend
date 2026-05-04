@@ -58,6 +58,28 @@ export const routes: Routes = [
   },
 
   {
+    path: 'lots',
+    loadChildren: () =>
+      import('./features/lots/lots.module')
+        .then(m => m.LotsModule),
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: [UserRole.ADMIN, UserRole.SUPERVISEUR, UserRole.DELEGUE]
+    }
+  },
+
+  {
+    path: 'marketing',
+    loadChildren: () =>
+      import('./features/marketing/marketing.module')
+        .then(m => m.MarketingModule),
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: [UserRole.ADMIN, UserRole.SUPERVISEUR, UserRole.DELEGUE]
+    }
+  },
+
+  {
     path: 'orders',
     loadChildren: () =>
       import('./features/orders/orders.module')

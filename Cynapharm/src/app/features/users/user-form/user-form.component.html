@@ -58,6 +58,7 @@
         <app-button
           [label]="isEditMode ? 'Update Role' : 'Create User'"
           variant="primary"
+          [type]="'submit'"
           [disabled]="userForm.invalid || loading">
         </app-button>
       </div>

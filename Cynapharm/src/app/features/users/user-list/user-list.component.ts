@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { UserService } from '../user.service';
-import { TableComponent } from '../../../shared/components/table/table.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { CardComponent } from '../../../shared/components/card/card.component';
 
@@ -12,7 +11,6 @@ import { CardComponent } from '../../../shared/components/card/card.component';
   imports: [
     CommonModule,
     RouterLink,
-    TableComponent,
     ButtonComponent,
     CardComponent
   ],
@@ -25,7 +23,6 @@ export class UserListComponent implements OnInit {
   loading = false;
   error = '';
 
-// ✅ FIXED : columns as {key, label} array like products
   columns = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: 'Name' },
@@ -33,6 +30,15 @@ export class UserListComponent implements OnInit {
     { key: 'role', label: 'Role' },
     { key: 'isDeleted', label: 'Status' }
   ];
+
+  constructor(
+    private userService: UserService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
 
   getStatusText(isDeleted: boolean): string {
     return isDeleted ? 'Disabled' : 'Active';
@@ -49,15 +55,6 @@ export class UserListComponent implements OnInit {
     return user[key] || '';
   }
 
-  constructor(
-    private userService: UserService,
-    private router: Router
-  ) {}
-
-  ngOnInit(): void {
-    this.loadUsers();
-  }
-
   private loadUsers(): void {
     this.loading = true;
     this.error = '';
@@ -72,7 +69,8 @@ export class UserListComponent implements OnInit {
           usersData = response.result || response.Result;
         }
         console.log('Parsed users:', usersData);
-        this.users = usersData.map(u => this.normalizeUser(u));
+        this.users = usersData.map((u: any) => this.normalizeUser(u));
+        console.log('Normalized users:', this.users);
         this.loading = false;
       },
       error: (err: any) => {
@@ -87,8 +85,7 @@ export class UserListComponent implements OnInit {
           errorMsg = 'Gateway not running - check localhost:5555';
         }
         this.error = errorMsg;
-      },
-      complete: () => console.log('Users API complete')
+      }
     });
   }
 
@@ -103,7 +100,6 @@ export class UserListComponent implements OnInit {
     };
   }
 
-  // ✅ MODIF : suppression = DISABLE via email
   onDelete(user: any): void {
     if (!user?.email) return;
 

@@ -168,7 +168,16 @@ namespace CynapCRM.Services.ProductAPI.Service
             await _db.SaveChangesAsync();
             return _mapper.Map<LotDto>(lot);
         }
-        
-        
+
+        public async Task<IEnumerable<LotDto>> GetAllLotsAsync()
+        {
+            var lots = await _db.Lots
+                .Include(l => l.Promotions)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<LotDto>>(lots);
+        }
+
+
     }
 }

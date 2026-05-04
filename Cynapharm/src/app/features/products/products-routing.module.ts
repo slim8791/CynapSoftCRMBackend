@@ -14,12 +14,12 @@ const routes: Routes = [
     component: ProductFormComponent
   },
   {
-    path: ':id',
-    component: ProductDetailComponent
-  },
-  {
     path: ':id/edit',
     component: ProductFormComponent
+  },
+  {
+    path: ':id',
+    component: ProductDetailComponent
   }
 ];
 

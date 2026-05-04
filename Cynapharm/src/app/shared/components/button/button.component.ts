@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 export class ButtonComponent {
   @Input() label: string = 'Click me';
-  @Input() variant: 'primary' | 'secondary' | 'success' | 'danger' = 'primary';
+  @Input() variant: 'primary' | 'secondary' | 'success' | 'danger' | 'info' = 'primary';
   @Input() type: 'button' | 'submit' | 'reset' = 'button';
   @Input() disabled: boolean = false;
   @Output() clicked = new EventEmitter<void>();

@@ -17,6 +17,7 @@ Task<ResponseDto> GeneratePasswordResetToken(string email);
         Task<LoginResponseDto> ChangeRole(ChangeRoleDto model);
         Task<bool> EnableUser(string email);
         Task<bool> DisableUser(string email);
+        Task<UserDto?> GetUserByIdAsync(int id);
         Task<IEnumerable<UserDto>> GetDisabledUsersAsync();
     }
 

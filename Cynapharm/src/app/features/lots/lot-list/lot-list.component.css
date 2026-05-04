@@ -1,0 +1,162 @@
+.lot-list-container {
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.action-bar {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #f5f5f3;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  color: #185FA5;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-link:hover {
+  background: #E6F1FB;
+  border-color: #185FA5;
+}
+
+.loading, .error {
+  padding: 20px;
+  border-radius: 4px;
+}
+
+.loading {
+  background-color: #f8f9fa;
+  color: #666;
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.no-data {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.lot-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lot-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+
+.lot-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.lot-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.action-btn {
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: #f5f5f3;
+  color: #666;
+  padding: 0;
+}
+
+.action-btn:hover {
+  background: #e8e8e6;
+  color: #1a1a1a;
+}
+
+.action-btn .icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+.view-btn {
+  color: #185FA5;
+}
+
+.view-btn:hover {
+  background: #E6F1FB;
+}
+
+.edit-btn {
+  color: #4a5568;
+}
+
+.edit-btn:hover {
+  background: #f0f0ee;
+}
+
+.delete-btn {
+  color: #A32D2D;
+}
+
+.delete-btn:hover {
+  background: #FCEBEB;
+}
+
+.status-active {
+  color: #28a745;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.status-expired {
+  color: #dc3545;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.status-low-stock {
+  color: #ffc107;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 193, 7, 0.1);
+}

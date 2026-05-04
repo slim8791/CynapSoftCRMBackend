@@ -38,6 +38,8 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         Task<IEnumerable<LotDto>> GetLotsNearExpirationAsync(int daysThreshold);
         // recupérer les lots expirés 
         Task<IEnumerable<LotDto>> GetExpiredLotsAsync();
+        // recupérer tous les lots
+        Task<IEnumerable<LotDto>> GetAllLotsAsync();
 
     }
 }

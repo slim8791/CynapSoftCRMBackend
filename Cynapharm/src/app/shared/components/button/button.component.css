@@ -1,60 +1,105 @@
+/* ======================================================
+   BASE BUTTON
+====================================================== */
 .btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+
+  font-size: 0.875rem;
   font-weight: 500;
+  line-height: 1.4;
+
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease,
+              color 0.2s ease,
+              border-color 0.2s ease,
+              opacity 0.2s ease;
 }
 
+/* ======================================================
+   VARIANTS (STYLE PRO)
+====================================================== */
+
+/* Primary = action principale */
 .btn-primary {
   background-color: #007bff;
-  color: white;
+  border-color: #007bff;
+  color: #ffffff;
 }
 
 .btn-primary:hover:not(.btn-disabled) {
-  background-color: #0056b3;
+  background-color: #0069d9;
+  border-color: #0062cc;
 }
 
+/* Secondary = action neutre */
 .btn-secondary {
-  background-color: #6c757d;
-  color: white;
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+  color: #343a40;
 }
 
 .btn-secondary:hover:not(.btn-disabled) {
-  background-color: #545b62;
+  background-color: #e9ecef;
 }
 
+/* Success = action positive / validation */
 .btn-success {
-  background-color: #28a745;
-  color: white;
+  background-color: #e6f6ec;
+  border-color: #b7ebc6;
+  color: #1e7e34;
 }
 
 .btn-success:hover:not(.btn-disabled) {
-  background-color: #1e7e34;
+  background-color: #d4edda;
 }
 
+/* Danger = action destructive */
 .btn-danger {
-  background-color: #dc3545;
-  color: white;
+  background-color: #fdecea;
+  border-color: #f5c6cb;
+  color: #721c24;
 }
 
 .btn-danger:hover:not(.btn-disabled) {
-  background-color: #bb2d3b;
+  background-color: #f8d7da;
 }
 
-.btn-disabled {
-  opacity: 0.5;
+/* Info = action secondaire informative */
+.btn-info {
+  background-color: #e7f5ff;
+  border-color: #bee5eb;
+  color: #0c5460;
+}
+
+.btn-info:hover:not(.btn-disabled) {
+  background-color: #d1ecf1;
+}
+
+/* ======================================================
+   DISABLED
+====================================================== */
+.btn-disabled,
+.btn:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
+/* ======================================================
+   OPTIONAL: FULL WIDTH SUPPORT
+====================================================== */
 :host {
-  display: block;
-  width: 100%;
+  display: inline-block;
 }
 
-button {
+:host(.full-width) .btn {
   width: 100%;
 }
-

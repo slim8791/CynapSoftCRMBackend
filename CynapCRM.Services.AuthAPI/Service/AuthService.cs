@@ -5,9 +5,6 @@ using CynapCRM.Services.AuthAPI.Models.Dto;
 using CynapCRM.Services.AuthAPI.Service.IService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Crypto;
-using System.Data;
-
 
 namespace CynapCRM.Services.AuthAPI.Service
 {
@@ -172,6 +169,27 @@ namespace CynapCRM.Services.AuthAPI.Service
             {
                 User = userDto,
                 Token = token
+            };
+        }
+
+        public async Task<UserDto?> GetUserByIdAsync(int id)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null || user.IsDeleted)
+                return null;
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var role = roles.FirstOrDefault() ?? "";
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber ?? "",
+                Adresse = user.Adresse ?? "",
+                Role = role,
+                IsDeleted = user.IsDeleted
             };
         }
 
@@ -376,6 +394,7 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
 
             return result.Succeeded;
         }
+
         public async Task<IEnumerable<UserDto>> GetDisabledUsersAsync()
         {
             var users = await _userManager.Users

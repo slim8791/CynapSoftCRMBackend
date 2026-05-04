@@ -6,7 +6,7 @@ import { Observable, map } from 'rxjs';
   providedIn: 'root'
 })
 export class ProductService {
-  private endpoint = '/products';
+private endpoint = '/products';
 
   constructor(private apiService: ApiService) { }
 
@@ -80,5 +80,12 @@ export class ProductService {
    */
   archiveProduct(id: string): Observable<any> {
     return this.apiService.put<any>(`${this.endpoint}/${id}/archive`, {});
+  }
+
+  /**
+   * Unarchive a product (désarchiver)
+   */
+  unarchiveProduct(id: string): Observable<any> {
+    return this.apiService.put<any>(`${this.endpoint}/${id}/unarchive`, {});
   }
 }
