@@ -23,6 +23,7 @@ namespace CynapCRM.Services.ProductAPI.Service
         {
 
             var products = await _db.Produits
+                    .Where(p => !p.IsArchived)
                     .Include(p => p.Lots)
                         .ThenInclude(l => l.Promotions)
                     .Include(p => p.Supports)
@@ -40,7 +41,9 @@ namespace CynapCRM.Services.ProductAPI.Service
                         .ThenInclude(l => l.Promotions)
                     .Include(p => p.Supports)
                         .ThenInclude(s => s.Fichiers)
-                    .FirstOrDefaultAsync(p => p.Id_Produit == produitId);
+                    .FirstOrDefaultAsync(p =>
+                        p.Id_Produit == produitId &&
+                        !p.IsArchived);
 
             return product == null ? null : _mapper.Map<ProduitDto>(product);
 
@@ -90,16 +93,6 @@ namespace CynapCRM.Services.ProductAPI.Service
             await _db.SaveChangesAsync();
             return true;
 
-        }
-        public async Task<bool> UnarchiveProductAsync(int produitId)
-        {
-            var product = await _db.Produits.FindAsync(produitId);
-            if (product == null) return false;
-
-            product.IsArchived = false;
-
-            await _db.SaveChangesAsync();
-            return true;
         }
         public async Task<bool> ActivateProductAsync(int produitId)
         {
@@ -191,19 +184,18 @@ namespace CynapCRM.Services.ProductAPI.Service
 
         //  Recherche et navigation
 
-        public async Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10)
+        public async Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, bool isActive, bool allowArchived, int limit = 10)
         {
-
             if (string.IsNullOrWhiteSpace(keyword) || keyword.Length < 3)
                 return Enumerable.Empty<ProduitDto>();
-            
+
             keyword = keyword.ToLower();
 
             var produits = await _db.Produits
                 .AsNoTracking()
-                .Where(p => p.Nom.ToLower().Contains(keyword) && !p.IsArchived) // 🔥 exclure archivés
+                .Where(p => (p.Nom.ToLower().Contains(keyword) || p.Description.ToLower().Contains(keyword) || p.PrixVente.ToString().ToLower().Contains(keyword) || p.Prix_Creation.ToString().ToLower().Contains(keyword)) && p.IsArchived == allowArchived && p.IsActive == isActive) // 🔥 exclure archivés
                 .OrderBy(p => p.Nom)
-                .Take(limit) 
+                .Take(limit)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<ProduitDto>>(produits);
@@ -211,18 +203,16 @@ namespace CynapCRM.Services.ProductAPI.Service
 
         public async Task<IEnumerable<ProduitDto>> FilterProductsAsync(
                     string? keyword,
+                    bool? isActive,
+                    bool? allowArchived,
                     string? category,
-                    bool? onlyAvailable,
                     int page,
                     int pageSize)
         {
             var query = _db.Produits.AsQueryable();
 
             if (!string.IsNullOrEmpty(keyword))
-                query = query.Where(p => p.Nom.Contains(keyword));
-
-            if (onlyAvailable == true)
-                query = query.Where(p => p.IsActive && !p.IsArchived);
+                query = query.Where(p => (p.Nom.ToLower().Contains(keyword) || p.Description.ToLower().Contains(keyword) || p.PrixVente.ToString().ToLower().Contains(keyword) || p.Prix_Creation.ToString().ToLower().Contains(keyword)) && p.IsArchived == allowArchived && p.IsActive == isActive); // 🔥 exclure archivés
 
             var products = await query
                 .Skip((page - 1) * pageSize)
@@ -232,7 +222,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return _mapper.Map<IEnumerable<ProduitDto>>(products);
         }
 
-        
+
 
         //  Catégories
 
@@ -260,7 +250,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return await _db.Produits.AnyAsync(p => p.Nom == productName);
         }
 
-        
+
 
         public async Task<bool> IsProductValidAsync(int productId)
         {

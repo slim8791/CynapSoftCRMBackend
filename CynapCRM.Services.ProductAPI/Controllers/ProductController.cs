@@ -147,31 +147,6 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                 return StatusCode(515, _response);
             }
         }
-        [HttpPut("{productId:int}/unarchive")]
-        [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> UnarchiveProduct(int productId)
-        {
-            try
-            {
-                var result = await _productService.UnarchiveProductAsync(productId);
-
-                if (!result)
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "Produit introuvable ou non désarchivable.";
-                    return BadRequest(_response);
-                }
-
-                _response.Message = "Produit désarchivé avec succès.";
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.Message = ex.Message;
-                return StatusCode(515, _response);
-            }
-        }
         [HttpPut("{productId:int}/activate")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> ActivateProduct(int productId)
@@ -365,12 +340,12 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
         [HttpGet("search")]
-        public async Task<IActionResult> SearchProducts([FromQuery] string keyword)
+        public async Task<IActionResult> SearchProducts([FromQuery] string keyword, [FromQuery] bool isActive = true, [FromQuery] bool allowArchived = false, [FromQuery] int limit = 10)
         {
             try
             {
                 // On récupère les 10 meilleurs résultats
-                var results = await _productService.SearchProductsAsync(keyword);
+                var results = await _productService.SearchProductsAsync(keyword, isActive, allowArchived, limit);
 
                 _response.Result = results;
                 _response.IsSuccess = true;
@@ -393,7 +368,8 @@ namespace CynapCRM.Services.ProductAPI.Controllers
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> FilterProducts([FromQuery] string? keyword,
                                                         [FromQuery] string? category,
-                                                        [FromQuery] bool? onlyAvailable,
+                                                        [FromQuery] bool? allowArchived,
+                                                        [FromQuery] bool? isActive,
                                                         [FromQuery] int page = 1,
                                                         [FromQuery] int pageSize = 20)
         {
@@ -408,8 +384,9 @@ namespace CynapCRM.Services.ProductAPI.Controllers
 
                 var result = await _productService.FilterProductsAsync(
                     keyword,
+                    isActive,
+                    allowArchived,
                     category,
-                    onlyAvailable,
                     page,
                     pageSize);
 
