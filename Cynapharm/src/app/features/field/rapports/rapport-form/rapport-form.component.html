@@ -1,0 +1,52 @@
+<div class="page">
+      <div class="page-header">
+        <a routerLink="/field/rapports" class="back-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Retour
+        </a>
+        <h1>{{ isEdit ? 'Modifier le rapport' : 'Nouveau rapport' }}</h1>
+      </div>
+
+      <div *ngIf="loadingData" class="loading-wrap">
+        <div class="spinner"></div><span>Chargement...</span>
+      </div>
+
+      <div *ngIf="fetchError" class="error-banner">{{ fetchError }}</div>
+
+      <form *ngIf="!loadingData" [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+        <div class="form-row">
+          <div class="field">
+            <label>Visite (ID) *</label>
+            <input type="number" formControlName="id_Visite" placeholder="ID de la visite" />
+            <span *ngIf="f['id_Visite'].touched && f['id_Visite'].invalid" class="field-error">Champ requis</span>
+          </div>
+          <div class="field">
+            <label>Délégué (ID) *</label>
+            <input type="number" formControlName="id_User_Delegue" placeholder="ID du délégué" />
+            <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Champ requis</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Commentaire *</label>
+          <textarea formControlName="commentaire" rows="4" placeholder="Saisissez votre commentaire..."></textarea>
+          <span *ngIf="f['commentaire'].touched && f['commentaire'].invalid" class="field-error">Champ requis</span>
+        </div>
+        <div class="field">
+          <label>Résultat *</label>
+          <textarea formControlName="resultat" rows="4" placeholder="Décrivez le résultat de la visite..."></textarea>
+          <span *ngIf="f['resultat'].touched && f['resultat'].invalid" class="field-error">Champ requis</span>
+        </div>
+
+        <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
+        <div *ngIf="successMsg" class="success-banner">{{ successMsg }}</div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="saving">
+            <span *ngIf="saving" class="btn-spinner"></span>
+            {{ saving ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+          </button>
+          <a routerLink="/field/rapports" class="btn btn-secondary">Annuler</a>
+        </div>
+      </form>
+    </div>
+  

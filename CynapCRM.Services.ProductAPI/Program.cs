@@ -5,11 +5,14 @@ using CynapCRM.Services.ProductAPI.Service;
 using CynapCRM.Services.ProductAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-
+// Si vous avez cette ligne :
+builder.Services.AddControllers().AddJsonOptions(options => {
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
 builder.Services.AddSwaggerGen(option =>
 {
     option.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme
@@ -44,7 +47,16 @@ builder.Services.AddScoped<ILotService, LotService>();
 builder.Services.AddScoped<IMarkettingService, MarkettingService>();
 builder.Services.AddScoped<IPromoService, PromoService>();
 
-
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 builder.AddAppAuthentication();
 
@@ -56,6 +68,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Use CORS
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();  
@@ -76,7 +91,7 @@ void applyMigrations()
             if (dbContext.Database.GetPendingMigrations().Any())
             {
                 dbContext.Database.Migrate();
-                Console.WriteLine(">>> Migration appliquée avec succès !");
+                Console.WriteLine(">>> Migration appliquï¿½e avec succï¿½s !");
             }
         }
         catch (Exception ex)

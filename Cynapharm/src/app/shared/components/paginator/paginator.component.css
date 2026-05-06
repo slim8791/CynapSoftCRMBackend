@@ -1,0 +1,8 @@
+.pag-bar { display:flex;align-items:center;justify-content:space-between;padding:12px 0;flex-wrap:wrap;gap:8px }
+    .pag-info { font-size:12px;color:#888 }
+    .pag-controls { display:flex;gap:4px }
+    .pag-btn { min-width:32px;height:32px;padding:0 8px;border:1px solid #e0e0e0;background:#fff;border-radius:6px;font-size:13px;cursor:pointer }
+    .pag-btn:hover:not(:disabled) { border-color:#185FA5;color:#185FA5 }
+    .pag-btn.active { background:#185FA5;color:#fff;border-color:#185FA5 }
+    .pag-btn:disabled { opacity:.4;cursor:not-allowed }
+  

@@ -1,0 +1,62 @@
+<div class="page">
+      <div class="page-header">
+        <div>
+          <h1>Plannings</h1>
+          <p class="subtitle">Plannings des délégués</p>
+        </div>
+        <a routerLink="/field/plannings/new" class="btn btn-primary">+ Nouveau planning</a>
+      </div>
+
+      <div class="filter-bar">
+        <label>ID Délégué</label>
+        <input type="number" [(ngModel)]="delegueId" placeholder="Ex: 3" (keyup.enter)="load()" />
+        <button class="btn btn-outline" (click)="load()" [disabled]="!delegueId || loading">Rechercher</button>
+      </div>
+
+      <div *ngIf="loading" class="loading-wrap">
+        <div class="spinner"></div><span>Chargement...</span>
+      </div>
+
+      <div *ngIf="error && !loading" class="error-banner">{{ error }}</div>
+
+      <div *ngIf="!loading && !error && plannings.length === 0 && searched">
+        <app-empty-state title="Aucun planning" message="Aucun planning trouvé pour ce délégué."></app-empty-state>
+      </div>
+
+      <div *ngIf="!loading && plannings.length > 0" class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Délégué</th>
+              <th>Date</th>
+              <th>Heure début</th>
+              <th>Heure fin</th>
+              <th>État</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of plannings">
+              <td class="mono">{{ p.idPlanning }}</td>
+              <td>{{ p.id_User_Delegue }}</td>
+              <td>{{ p.date | date:'dd/MM/yyyy' }}</td>
+              <td>{{ p.heureDebut }}</td>
+              <td>{{ p.heureFin }}</td>
+              <td>
+                <span class="status-badge"
+                      [class.badge-pending]="p.etatPlanning === EtatPlanning.EnAttente"
+                      [class.badge-confirmed]="p.etatPlanning === EtatPlanning.Confirme"
+                      [class.badge-cancelled]="p.etatPlanning === EtatPlanning.Annule">
+                  {{ statusLabel(p.etatPlanning) }}
+                </span>
+              </td>
+              <td>
+                <a [routerLink]="['/field/plannings/edit', p.idPlanning]" class="link-btn">Modifier</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  

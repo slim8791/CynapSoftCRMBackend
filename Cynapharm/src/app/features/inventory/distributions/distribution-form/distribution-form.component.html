@@ -1,0 +1,54 @@
+<div class="page">
+      <div class="page-header">
+        <a routerLink="/inventory/distributions" class="back-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Retour
+        </a>
+        <h1>Nouvelle distribution</h1>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+        <div class="form-grid">
+          <div class="field">
+            <label>Délégué (ID) *</label>
+            <input type="number" formControlName="id_Delegue" placeholder="ID du délégué" />
+            <span *ngIf="f['id_Delegue'].touched && f['id_Delegue'].invalid" class="field-error">Champ requis</span>
+          </div>
+          <div class="field">
+            <label>Stock (ID) *</label>
+            <input type="number" formControlName="id_Stock" placeholder="ID du stock" />
+            <span *ngIf="f['id_Stock'].touched && f['id_Stock'].invalid" class="field-error">Champ requis</span>
+          </div>
+          <div class="field">
+            <label>Quantité *</label>
+            <input type="number" formControlName="qte" placeholder="0" min="1" />
+            <span *ngIf="f['qte'].touched && f['qte'].invalid" class="field-error">Valeur invalide (min 1)</span>
+          </div>
+          <div class="field">
+            <label>Numéro de lot *</label>
+            <input type="text" formControlName="numeroLot" placeholder="Ex: LOT-2024-001" />
+            <span *ngIf="f['numeroLot'].touched && f['numeroLot'].invalid" class="field-error">Champ requis</span>
+          </div>
+          <div class="field">
+            <label>Médecin (ID) <span class="opt">optionnel</span></label>
+            <input type="number" formControlName="id_Medecin" placeholder="ID médecin" />
+          </div>
+          <div class="field">
+            <label>Pharmacien (ID) <span class="opt">optionnel</span></label>
+            <input type="number" formControlName="id_Pharmacien" placeholder="ID pharmacien" />
+          </div>
+        </div>
+
+        <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
+        <div *ngIf="successMsg" class="success-banner">{{ successMsg }}</div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="saving">
+            <span *ngIf="saving" class="btn-spinner"></span>
+            {{ saving ? 'Enregistrement...' : 'Créer' }}
+          </button>
+          <a routerLink="/inventory/distributions" class="btn btn-secondary">Annuler</a>
+        </div>
+      </form>
+    </div>
+  

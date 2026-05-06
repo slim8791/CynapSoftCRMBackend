@@ -1,0 +1,165 @@
+<div class="dashboard-wrapper">
+
+  <!-- ── En-tête ──────────────────────────────────────── -->
+  <div class="dash-header">
+    <div>
+      <h1 class="dash-title">Tableau de bord</h1>
+      <p class="dash-subtitle">Vue temps réel — commandes &amp; chiffre d'affaires</p>
+    </div>
+    <button class="btn-refresh" (click)="reload()" [disabled]="loading" title="Actualiser">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.spinning]="loading">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Actualiser
+    </button>
+  </div>
+
+  <!-- ── Erreur globale ─────────────────────────────────  -->
+  <div *ngIf="error && !loading" class="dash-error">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error }}
+  </div>
+
+  <!-- ── Skeleton loader ───────────────────────────────── -->
+  <div *ngIf="loading" class="skeleton-grid">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4]"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ── KPI Cards ──────────────────────────────────── -->
+    <div class="kpi-grid">
+
+      <!-- Commandes aujourd'hui -->
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Commandes aujourd'hui</span>
+          <span class="kpi-value">{{ commandesAujourdhui }}</span>
+        </div>
+      </div>
+
+      <!-- Commandes en attente -->
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Commandes en attente</span>
+          <span class="kpi-value">{{ commandesEnAttente }}</span>
+        </div>
+      </div>
+
+      <!-- CA total -->
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Chiffre d'affaires total</span>
+          <span class="kpi-value">{{ caTotal | currencyTND }}</span>
+        </div>
+      </div>
+
+      <!-- Taux de livraison -->
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Taux de livraison</span>
+          <span class="kpi-value">{{ tauxLivraison }}%</span>
+        </div>
+        <div class="kpi-progress">
+          <div class="kpi-bar" [style.width.%]="tauxLivraison"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Graphiques ligne 1 ─────────────────────────── -->
+    <div class="charts-row">
+
+      <!-- Chart 1 : Barres horizontales — commandes par statut -->
+      <div class="chart-card">
+        <div *ngIf="statutBarSeries.length === 0 || statutBarSeries[0]?.data?.length === 0" class="chart-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18M9 21V9"/>
+          </svg>
+          <p>Aucune donnée de commandes disponible.</p>
+        </div>
+        <apx-chart
+          *ngIf="statutBarSeries.length > 0 && statutBarSeries[0]?.data?.length > 0"
+          [series]="statutBarSeries"
+          [chart]="statutBarOptions.chart"
+          [plotOptions]="statutBarOptions.plotOptions"
+          [dataLabels]="statutBarOptions.dataLabels"
+          [xaxis]="statutBarOptions.xaxis"
+          [colors]="statutBarOptions.colors"
+          [title]="statutBarOptions.title">
+        </apx-chart>
+      </div>
+
+      <!-- Chart 2 : Donut commandes par statut -->
+      <div class="chart-card chart-card--small">
+        <div *ngIf="statutChartSeries.length === 0" class="chart-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4M12 16h.01"/>
+          </svg>
+          <p>Aucune commande disponible.</p>
+        </div>
+        <apx-chart
+          *ngIf="statutChartSeries.length > 0"
+          [series]="statutChartSeries"
+          [chart]="statutChartOptions.chart"
+          [labels]="statutChartLabels"
+          [colors]="statutChartOptions.colors"
+          [dataLabels]="statutChartOptions.dataLabels"
+          [legend]="statutChartOptions.legend"
+          [tooltip]="statutChartOptions.tooltip"
+          [title]="statutChartOptions.title">
+        </apx-chart>
+      </div>
+
+    </div>
+
+    <!-- ── Graphique ligne 2 : Volume 7 jours ───────────  -->
+    <div class="chart-card chart-card--full">
+      <div *ngIf="volumeChartSeries.length === 0 || volumeChartSeries[0]?.data?.length === 0" class="chart-empty">
+        <p>Aucune donnée de commandes sur 7 jours.</p>
+      </div>
+      <apx-chart
+        *ngIf="volumeChartSeries.length > 0 && volumeChartSeries[0]?.data?.length > 0"
+        [series]="volumeChartSeries"
+        [chart]="volumeChartOptions.chart"
+        [stroke]="volumeChartOptions.stroke"
+        [fill]="volumeChartOptions.fill"
+        [dataLabels]="volumeChartOptions.dataLabels"
+        [xaxis]="volumeChartOptions.xaxis"
+        [colors]="volumeChartOptions.colors"
+        [tooltip]="volumeChartOptions.tooltip"
+        [title]="volumeChartOptions.title">
+      </apx-chart>
+    </div>
+
+  </ng-container>
+</div>

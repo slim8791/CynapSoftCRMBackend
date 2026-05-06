@@ -87,8 +87,37 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             _response.Result = loginResponse;
             return Ok(_response);
         }
+        [HttpGet("users/search")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> SearchUsers(
+            [FromQuery] string keyword,
+            [FromQuery] bool? isActive = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(keyword) || keyword.Trim().Length < 3)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Le mot-clé doit contenir au moins 3 caractères.";
+                    return BadRequest(_response);
+                }
+
+                var users = await _authService.SearchUsersAsync(keyword.Trim(), isActive);
+                _response.IsSuccess = true;
+                _response.Result = users.ToList();
+                _response.Message = $"{users.Count()} utilisateur(s) trouvé(s).";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = $"Erreur de recherche : {ex.Message}";
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpGet("users")]
-        [Authorize(Roles = "ADMIN")] 
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetAllUsers()
         {
             try
@@ -103,15 +132,25 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                 }
 
                 _response.IsSuccess = true;
-                _response.Result = users;
+                _response.Result = users.ToList();
                 _response.Message = "Liste de tous les utilisateurs.";
 
                 return Ok(_response);
             }
             catch (Exception ex)
             {
+                // FULL DEBUG
+                var errorDetails = $@"
+GetAllUsers EXCEPTION:
+Type: {ex.GetType().Name}
+Message: {ex.Message}
+Stack: {ex.StackTrace}
+Inner: {ex.InnerException?.Message}";
+                
+                Console.WriteLine(errorDetails);
+                
                 _response.IsSuccess = false;
-                _response.Message = "Erreur lors de la récupération des utilisateurs.";
+                _response.Message = $"Server error: {ex.Message}";
                 return StatusCode(515, _response);
             }
 
@@ -209,7 +248,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             }
 
         }
-        [HttpPost("forgot-password")]
+[HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
         {
             if (!ModelState.IsValid)
@@ -227,8 +266,8 @@ namespace CynapCRM.Services.AuthAPI.Controllers
 
             var encodedToken = System.Web.HttpUtility.UrlEncode(token);
 
-            // to frontend            
-            string resetLink = $"https://localhost:7000/api/auth/reset-password?email={model.Email}&token={encodedToken}";
+            // ✅ MODIF: lien vers FRONTEND Angular
+            string resetLink = $"http://localhost:4200/reset-password?email={model.Email}&token={encodedToken}";
 
             string subject = "Réinitialisation de mot de passe - CynapCRM";
             string message = $@"
@@ -253,6 +292,24 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             return Ok(response);
         }
 
+[HttpPut("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _authService.ResetPassword(model);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
         [HttpPut("change-role")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> ChangeRole([FromBody] ChangeRoleDto model)
@@ -272,7 +329,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         }
         [HttpPut("enable-user/{email}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> EnableUser([FromBody] string email)
+        public async Task<IActionResult> EnableUser(string email)
         {
             var result = await _authService.EnableUser(email);
             if (!result)
@@ -288,7 +345,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         }
         [HttpPut("delete-user/{email}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> DeleteUser([FromBody] string email)
+        public async Task<IActionResult> DeleteUser(string email)
         {
             var result = await _authService.DisableUser(email);
             if (!result)
@@ -302,6 +359,33 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             _response.Message = "Utilisateur supprimé.";
             return Ok(_response);
         }
+        [HttpGet("users/{id}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            try
+            {
+                var user = await _authService.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Utilisateur non trouvé.";
+                    return NotFound(_response);
+                }
+
+                _response.IsSuccess = true;
+                _response.Result = user;
+                _response.Message = "Détails de l'utilisateur récupérés.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = $"Erreur: {ex.Message}";
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpGet("disabled-users")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetDisabledUsers()

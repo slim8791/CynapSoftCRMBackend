@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\benjd\\\\Desktop\\\\BackendPFE\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(npm install *)",
+      "Bash(node -e \"require\\('./node_modules/apexcharts/package.json'\\).version |> console.log\")",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/apexcharts/package.json'\\).version\\)\")",
+      "Bash(npx ng *)",
+      "Bash(node -e \"const j=require\\('./angular.json'\\); console.log\\(JSON.stringify\\(j.projects?.Cynapharm?.architect?.build?.configurations?.production?.budgets || j.projects?.Cynapharm?.architect?.build?.options?.budgets, null,2\\)\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\benjd\\\\Desktop\\\\BackendPFE\\\\CynapSoftCRMBackend\" -Directory)"
+    ]
+  }
+}

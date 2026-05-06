@@ -31,6 +31,11 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         Task<bool> ArchiveProductAsync(int productId);
 
         /// <summary>
+        /// Désarchive un produit (inverse de ArchiveProductAsync)
+        /// </summary>
+        Task<bool> UnarchiveProductAsync(int productId);
+
+        /// <summary>
         /// Active un produit (visible et vendable)
         /// </summary>
         Task<bool> ActivateProductAsync(int productId);
@@ -66,13 +71,14 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         Task<IEnumerable<ProduitDto>> GetLowStockProductsAsync(int threshold);
 
         //  Recherche et navigation
-    
-        Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, int limit = 10);
+
+        Task<IEnumerable<ProduitDto>> SearchProductsAsync(string keyword, bool isActive, bool allowArchived, int limit = 10);
 
         Task<IEnumerable<ProduitDto>> FilterProductsAsync(
             string? keyword,
+            bool? isActive,
+            bool? allowArchived,
             string? category,
-            bool? onlyAvailable,
             int page,
             int pageSize
         );

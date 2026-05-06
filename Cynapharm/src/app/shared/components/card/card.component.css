@@ -1,0 +1,29 @@
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.card-footer {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #ddd;
+}

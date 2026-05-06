@@ -1,0 +1,58 @@
+<div class="support-detail-container">
+  <h1>Marketing Support Details</h1>
+
+  <div *ngIf="!loading && !error && support" class="detail-view">
+    <app-card [title]="getValue(support, 'CampaignName') || 'Support Details'">
+      <div class="detail-content">
+        <div class="detail-row">
+          <label>ID:</label>
+          <span>{{ getValue(support, 'Id') }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Type:</label>
+          <span>{{ getValue(support, 'Type') }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Campaign Name:</label>
+          <span>{{ getValue(support, 'CampaignName') || 'N/A' }}</span>
+        </div>
+        <div class="detail-row">
+          <label>Status:</label>
+          <span [class]="getValue(support, 'IsActive') ? 'status-active' : 'status-inactive'">
+            {{ getValue(support, 'IsActive') ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="files-section" *ngIf="getValue(support, 'Fichiers')?.length > 0">
+        <h3>Associated Files</h3>
+        <div class="files-list">
+          <div *ngFor="let file of getValue(support, 'Fichiers')" class="file-item">
+            <span class="file-name">{{ getValue(file, 'NomFichier') }}</span>
+            <span class="file-extension">{{ getValue(file, 'Extension') }}</span>
+            <span class="file-size">{{ getValue(file, 'Taille') }} bytes</span>
+            <a *ngIf="getValue(file, 'Url')" [href]="getValue(file, 'Url')" target="_blank" class="download-link">
+              Download
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button (click)="onBack()" class="btn btn-secondary">
+          Back to Supports
+        </button>
+        <app-button label="Edit" variant="primary" (clicked)="onEdit()"></app-button>
+        <app-button label="Delete" variant="danger" (clicked)="onDelete()"></app-button>
+      </div>
+    </app-card>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading support details...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+  </div>
+</div>

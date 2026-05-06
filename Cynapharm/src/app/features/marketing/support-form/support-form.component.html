@@ -1,0 +1,52 @@
+<div class="support-form-container">
+  <h1>{{ isEditMode ? 'Edit Support' : 'Add Marketing Support' }}</h1>
+
+  <app-card [title]="isEditMode ? 'Edit Support' : 'Add New Support'">
+
+    <form [formGroup]="supportForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+        <label>Support Type</label>
+        <select class="form-control" formControlName="type" [class.is-invalid]="supportForm.get('type')?.invalid && supportForm.get('type')?.touched">
+          <option value="">Select a type</option>
+          <option *ngFor="let type of supportTypes" [value]="type">{{ type }}</option>
+        </select>
+        <div *ngIf="supportForm.get('type')?.invalid && supportForm.get('type')?.touched" class="invalid-feedback">
+          <div *ngIf="supportForm.get('type')?.hasError('required')">Type is required</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Campaign Name (Optional)</label>
+        <input type="text" class="form-control" formControlName="campaignName" [class.is-invalid]="supportForm.get('campaignName')?.invalid && supportForm.get('campaignName')?.touched">
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" formControlName="isActive">
+          Active
+        </label>
+      </div>
+
+      <div class="action-buttons">
+        <button type="button" (click)="onCancel()" class="btn btn-secondary">
+          Cancel
+        </button>
+
+        <app-button
+          [label]="isEditMode ? 'Update Support' : 'Create Support'"
+          variant="primary"
+          [type]="'submit'"
+          [disabled]="supportForm.invalid || loading">
+        </app-button>
+      </div>
+
+      <div *ngIf="error" class="error">{{ error }}</div>
+      <div *ngIf="success" class="success">
+        Support {{ isEditMode ? 'updated' : 'created' }} successfully ✅
+      </div>
+
+    </form>
+
+  </app-card>
+</div>

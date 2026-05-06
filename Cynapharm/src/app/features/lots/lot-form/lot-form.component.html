@@ -1,0 +1,170 @@
+<!-- lot-form.component.html ─────────────────────────────────────────────── -->
+<!-- Syntaxe Angular 17+ (@if / @for) unifiée                                  -->
+<!-- Champs : numero | idProduit | dateExpiration | quantite                    -->
+<!-- isExpired / isOutOfStock absents : champs calculés backend                 -->
+
+<div class="lot-form-container">
+
+  <div class="page-header">
+    <h1>{{ isEditMode ? 'Modifier le lot' : 'Ajouter un lot' }}</h1>
+    @if (isEditMode && numeroLot) {
+      <span class="lot-badge">{{ numeroLot }}</span>
+    }
+  </div>
+
+  <app-card [title]="isEditMode ? 'Modifier le lot' : 'Nouveau lot'">
+
+    @if (loading && isEditMode) {
+      <div class="state-loading" aria-busy="true">
+        <div class="spinner"></div>
+        <span>Chargement du lot…</span>
+      </div>
+    }
+
+    <form [formGroup]="lotForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- ── N° de lot ────────────────────────────────────────────────────── -->
+      <div class="form-group">
+        <label for="numero">
+          Numéro du lot
+          @if (!isEditMode) { <span class="required" aria-hidden="true">*</span> }
+        </label>
+
+        @if (isEditMode) {
+          <!-- En mode édition : le numéro est la clé métier — lecture seule -->
+          <div class="readonly-field" aria-label="Numéro de lot (non modifiable)">
+            {{ numeroLot }}
+            <span class="readonly-hint">Clé métier — non modifiable</span>
+          </div>
+        } @else {
+          <input id="numero"
+                 type="text"
+                 class="form-control"
+                 formControlName="numero"
+                 placeholder="Ex: LOT-2025-001"
+                 autocomplete="off"
+                 [class.is-invalid]="isInvalid('numero')"
+                 aria-describedby="numero-error" />
+          @if (isInvalid('numero')) {
+            <div id="numero-error" class="invalid-feedback" role="alert">
+              @if (ctrl('numero').errors?.['required'])  { Numéro du lot requis. }
+              @if (ctrl('numero').errors?.['minlength']) { Minimum 3 caractères. }
+              @if (ctrl('numero').errors?.['maxlength']) { Maximum 50 caractères. }
+              @if (ctrl('numero').errors?.['pattern'])   { Alphanumérique, tirets et underscores uniquement. }
+            </div>
+          }
+        }
+      </div>
+
+      <!-- ── ID Produit ────────────────────────────────────────────────────── -->
+      <div class="form-group">
+        <label for="idProduit">
+          ID Produit <span class="required" aria-hidden="true">*</span>
+        </label>
+        <input id="idProduit"
+               type="number"
+               class="form-control"
+               formControlName="idProduit"
+               placeholder="Identifiant numérique du produit"
+               min="1"
+               [class.is-invalid]="isInvalid('idProduit')"
+               aria-describedby="idProduit-error" />
+        @if (isInvalid('idProduit')) {
+          <div id="idProduit-error" class="invalid-feedback" role="alert">
+            ID Produit obligatoire.
+          </div>
+        }
+        @if (productId) {
+          <span class="field-hint">Pré-rempli depuis le contexte produit ({{ productId }})</span>
+        }
+      </div>
+
+      <!-- ── Date d'expiration ─────────────────────────────────────────────── -->
+      <div class="form-group">
+        <label for="dateExpiration">
+          Date d'expiration <span class="required" aria-hidden="true">*</span>
+        </label>
+        <input id="dateExpiration"
+               type="date"
+               class="form-control"
+               formControlName="dateExpiration"
+               [class.is-invalid]="isInvalid('dateExpiration')"
+               aria-describedby="dateExpiration-error" />
+        @if (isInvalid('dateExpiration')) {
+          <div id="dateExpiration-error" class="invalid-feedback" role="alert">
+            @if (ctrl('dateExpiration').errors?.['required']) { Date d'expiration obligatoire. }
+            @if (ctrl('dateExpiration').errors?.['pastDate']) {
+              La date doit être égale ou postérieure à aujourd'hui.
+            }
+          </div>
+        }
+        @if (isEditMode && originalExpirationDate) {
+          <span class="field-hint">
+            Date originale : {{ originalExpirationDate | date:'dd/MM/yyyy' }} —
+            modifiable uniquement vers une date future.
+          </span>
+        }
+      </div>
+
+      <!-- ── Quantité ──────────────────────────────────────────────────────── -->
+      <div class="form-group">
+        <label for="quantite">
+          Quantité <span class="required" aria-hidden="true">*</span>
+        </label>
+        <input id="quantite"
+               type="number"
+               class="form-control"
+               formControlName="quantite"
+               placeholder="1 – 999 999"
+               min="1"
+               max="999999"
+               [class.is-invalid]="isInvalid('quantite')"
+               aria-describedby="quantite-error" />
+        @if (isInvalid('quantite')) {
+          <div id="quantite-error" class="invalid-feedback" role="alert">
+            @if (ctrl('quantite').errors?.['required']) { Quantité obligatoire. }
+            @if (ctrl('quantite').errors?.['min'])      { Quantité minimale : 1. }
+            @if (ctrl('quantite').errors?.['max'])      { Quantité maximale : 999 999. }
+          </div>
+        }
+      </div>
+
+      <!-- ── Note informative : isExpired / isOutOfStock ───────────────────── -->
+      <div class="info-note" aria-label="Information logique métier">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             aria-hidden="true" width="15" height="15">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Le statut (<em>expiré</em>, <em>rupture de stock</em>) est calculé automatiquement
+        par le backend à partir de la date et de la quantité.
+      </div>
+
+      <!-- ── Actions ───────────────────────────────────────────────────────── -->
+      <div class="action-buttons">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">
+          Annuler
+        </button>
+        <app-button
+          [label]="isEditMode ? 'Mettre à jour' : 'Créer le lot'"
+          variant="primary"
+          type="submit"
+          [disabled]="lotForm.invalid || loading">
+        </app-button>
+      </div>
+
+      <!-- ── Feedback ──────────────────────────────────────────────────────── -->
+      @if (error) {
+        <div class="feedback-msg feedback-error" role="alert">{{ error }}</div>
+      }
+      @if (success) {
+        <div class="feedback-msg feedback-success" role="status">
+          Lot {{ isEditMode ? 'mis à jour' : 'créé' }} avec succès ✓
+        </div>
+      }
+
+    </form>
+
+  </app-card>
+</div>

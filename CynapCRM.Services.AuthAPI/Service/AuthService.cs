@@ -5,9 +5,6 @@ using CynapCRM.Services.AuthAPI.Models.Dto;
 using CynapCRM.Services.AuthAPI.Service.IService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Crypto;
-using System.Data;
-
 
 namespace CynapCRM.Services.AuthAPI.Service
 {
@@ -175,6 +172,27 @@ namespace CynapCRM.Services.AuthAPI.Service
             };
         }
 
+        public async Task<UserDto?> GetUserByIdAsync(int id)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null || user.IsDeleted)
+                return null;
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var role = roles.FirstOrDefault() ?? "";
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber ?? "",
+                Adresse = user.Adresse ?? "",
+                Role = role,
+                IsDeleted = user.IsDeleted
+            };
+        }
+
         public async Task<bool> AssignRole(string email, UserRole role)
         {
 
@@ -291,7 +309,7 @@ namespace CynapCRM.Services.AuthAPI.Service
         }
 
         
-        public async Task<ResponseDto> GeneratePasswordResetToken(string email)
+public async Task<ResponseDto> GeneratePasswordResetToken(string email)
         {
             var normalizedEmail = _userManager.NormalizeEmail(email);
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
@@ -310,6 +328,46 @@ namespace CynapCRM.Services.AuthAPI.Service
             {
                 IsSuccess = true,
                 Result = token
+            };
+        }
+
+        public async Task<ResponseDto> ResetPassword(ResetPasswordDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || user.IsDeleted)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Lien de réinitialisation invalide ou expiré."
+                };
+            }
+
+            // ✅ NOUVEAU: Vérifier si le nouveau mot de passe est différent de l'ancien
+            var isSameAsOld = await _userManager.CheckPasswordAsync(user, model.NewPassword);
+            if (isSameAsOld)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Le nouveau mot de passe doit être différent de l'ancien mot de passe."
+                };
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Lien de réinitialisation invalide ou expiré."
+                };
+            }
+
+            return new ResponseDto
+            {
+                IsSuccess = true,
+                Message = "Mot de passe réinitialisé avec succès."
             };
         }
         public async Task<bool> EnableUser(string email)
@@ -336,6 +394,7 @@ namespace CynapCRM.Services.AuthAPI.Service
 
             return result.Succeeded;
         }
+
         public async Task<IEnumerable<UserDto>> GetDisabledUsersAsync()
         {
             var users = await _userManager.Users
@@ -353,12 +412,49 @@ namespace CynapCRM.Services.AuthAPI.Service
                 Role = "" 
             });
         }
+        public async Task<IEnumerable<UserDto>> SearchUsersAsync(string keyword, bool? isActive = null)
+        {
+            var lower = keyword?.Trim().ToLower() ?? string.Empty;
+
+            var query = _userManager.Users.AsQueryable();
+
+            if (!string.IsNullOrEmpty(lower))
+            {
+                query = query.Where(u =>
+                    u.Name.ToLower().Contains(lower) ||
+                    u.Email.ToLower().Contains(lower) ||
+                    (u.PhoneNumber != null && u.PhoneNumber.Contains(lower)));
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(u => u.IsDeleted == !isActive.Value);
+            }
+
+            var users = await query.AsNoTracking().ToListAsync();
+            var result = new List<UserDto>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                result.Add(new UserDto
+                {
+                    Id        = user.Id,
+                    Email     = user.Email,
+                    Name      = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Adresse   = user.Adresse,
+                    Role      = roles.FirstOrDefault() ?? "",
+                    IsDeleted = user.IsDeleted
+                });
+            }
+            return result;
+        }
+
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
             // Get all users
-            var users = await _userManager.Users
-                .AsNoTracking()
-                .ToListAsync();
+            var users = await _userManager.Users.ToListAsync();
 
             var result = new List<UserDto>();
 
@@ -374,7 +470,9 @@ namespace CynapCRM.Services.AuthAPI.Service
                     Name = user.Name,
                     PhoneNumber = user.PhoneNumber,
                     Adresse = user.Adresse,
-                    Role = roles.FirstOrDefault() ?? "" 
+                    Role = roles.FirstOrDefault() ?? "" ,
+                    IsDeleted = user.IsDeleted
+
                 });
             }
             return result;

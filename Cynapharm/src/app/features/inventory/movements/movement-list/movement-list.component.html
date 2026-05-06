@@ -1,0 +1,67 @@
+<div class="page">
+      <div class="page-header">
+        <h1>Mouvements de stock</h1>
+        <p class="subtitle">Historique des mouvements</p>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-field">
+          <label>ID Stock</label>
+          <input type="number" [(ngModel)]="filterStockId" placeholder="Ex: 12" (keyup.enter)="applyFilter()" />
+        </div>
+        <button class="btn btn-primary" (click)="applyFilter()" [disabled]="!filterStockId">Filtrer</button>
+        <button class="btn btn-secondary" (click)="clearFilter()" *ngIf="activeStockId">Effacer</button>
+      </div>
+
+      <div *ngIf="loading" class="loading-wrap">
+        <div class="spinner"></div><span>Chargement...</span>
+      </div>
+
+      <div *ngIf="error && !loading" class="error-banner">{{ error }}</div>
+
+      <div *ngIf="!loading && !error && movements.length === 0 && activeStockId">
+        <app-empty-state title="Aucun mouvement" message="Aucun mouvement trouvé pour ce stock."></app-empty-state>
+      </div>
+
+      <div *ngIf="!loading && !error && !activeStockId && movements.length === 0" class="hint-panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p>Entrez un ID de stock et cliquez sur <strong>Filtrer</strong> pour voir les mouvements.</p>
+      </div>
+
+      <div *ngIf="!loading && movements.length > 0" class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>ID Stock</th>
+              <th>Quantité</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of movements">
+              <td class="mono">{{ m.id_Movement }}</td>
+              <td>{{ m.id_Stock }}</td>
+              <td>
+                <span class="qty-badge" [class.positive]="m.typeMovement?.toLowerCase() === 'increment'"
+                      [class.negative]="m.typeMovement?.toLowerCase() === 'decrement'">
+                  {{ m.quantite }}
+                </span>
+              </td>
+              <td>
+                <span class="type-chip" [class.chip-in]="m.typeMovement?.toLowerCase() === 'increment'"
+                      [class.chip-out]="m.typeMovement?.toLowerCase() === 'decrement'"
+                      [class.chip-other]="m.typeMovement?.toLowerCase() === 'transfer'">
+                  {{ m.typeMovement }}
+                </span>
+              </td>
+              <td>{{ m.dateMovement | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="desc">{{ m.description ?? '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  

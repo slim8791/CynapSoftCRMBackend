@@ -1,0 +1,217 @@
+<div class="od-wrapper">
+
+  <!-- ═══ BACK + TITRE ════════════════════════════════ -->
+  <div class="od-header">
+    <div class="od-back-row">
+      <a routerLink="/orders" class="back-link">← Commandes</a>
+    </div>
+
+    @if (order) {
+      <div class="od-title-row">
+        <div>
+          <h1 class="od-title">Commande <span class="od-id">#{{ order.Id_Commande }}</span></h1>
+          <p class="od-sub">{{ order.DateCommande | date:'dd/MM/yyyy à HH:mm' }} · Client #{{ order.Id_Client }}</p>
+        </div>
+        <div class="od-actions">
+          <span class="chip chip-lg" [ngClass]="getEtatClass(order.Statut)">{{ getEtatLabel(order.Statut) }}</span>
+          @if (canChangeStatus()) {
+            <button class="btn-primary" (click)="openStatusModal()">
+              Changer le statut
+            </button>
+          }
+          @if (isAdmin) {
+            <button class="btn-danger" (click)="openDeleteModal()">Supprimer</button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Alertes -->
+  @if (error)   { <div class="alert-danger">{{ error }}</div> }
+  @if (loading) { <div class="od-loading"><div class="spinner"></div> Chargement…</div> }
+
+  @if (!loading && order) {
+
+    <!-- ═══ KPI ROW ═══════════════════════════════════════ -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <span class="kpi-val">{{ order.MontantTotalHT | number:'1.2-2' }}</span>
+        <span class="kpi-lbl">Total HT (TND)</span>
+      </div>
+      <div class="kpi-card kpi-blue">
+        <span class="kpi-val">{{ order.MontantTTC | number:'1.2-2' }}</span>
+        <span class="kpi-lbl">Total TTC (TND)</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-val">{{ getTotalLignes() }}</span>
+        <span class="kpi-lbl">Ligne(s)</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-val">{{ reclamations.length }}</span>
+        <span class="kpi-lbl">Réclamation(s)</span>
+      </div>
+    </div>
+
+    <!-- ═══ ONGLETS ════════════════════════════════════════ -->
+    <div class="tabs-nav">
+      <button class="tab-btn" [class.active]="activeTab==='info'"       (click)="setTab('info')">Informations</button>
+      <button class="tab-btn" [class.active]="activeTab==='lignes'"     (click)="setTab('lignes')">
+        Lignes <span class="tab-count">{{ getTotalLignes() }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab==='reclamations'" (click)="setTab('reclamations')">
+        Réclamations <span class="tab-count">{{ reclamations.length }}</span>
+      </button>
+    </div>
+
+    <!-- ── Onglet : Informations ─────────────────────── -->
+    @if (activeTab === 'info') {
+      <div class="panel">
+        <div class="info-grid">
+          <div class="info-row"><span class="il">N° Commande</span><span class="iv">#{{ order.Id_Commande }}</span></div>
+          <div class="info-row"><span class="il">Date</span><span class="iv">{{ order.DateCommande | date:'dd/MM/yyyy HH:mm' }}</span></div>
+          <div class="info-row"><span class="il">Client (ID)</span><span class="iv">#{{ order.Id_Client }}</span></div>
+          <div class="info-row"><span class="il">Statut</span>
+            <span class="chip" [ngClass]="getEtatClass(order.Statut)">{{ getEtatLabel(order.Statut) }}</span>
+          </div>
+          <div class="info-row"><span class="il">Montant HT</span><span class="iv">{{ order.MontantTotalHT | number:'1.2-2' }} TND</span></div>
+          <div class="info-row"><span class="il">Montant TTC</span><span class="iv fw">{{ order.MontantTTC | number:'1.2-2' }} TND</span></div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Onglet : Lignes ───────────────────────────── -->
+    @if (activeTab === 'lignes') {
+      <div class="panel">
+        @if (!order.Lignes || order.Lignes.length === 0) {
+          <div class="empty"><p>Aucune ligne de commande.</p></div>
+        } @else {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#Ligne</th>
+                <th>Produit</th>
+                <th>N° Lot</th>
+                <th class="col-right">Qté</th>
+                <th class="col-right">Prix unitaire</th>
+                <th class="col-right">Remise</th>
+                <th class="col-right">Sous-total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of order.Lignes; track l.Id_Ligne) {
+                <tr>
+                  <td class="col-id">#{{ l.Id_Ligne }}</td>
+                  <td>Produit #{{ l.Id_Produit }}</td>
+                  <td>{{ l.NumeroLot || '—' }}</td>
+                  <td class="col-right"><strong>{{ l.Quantite }}</strong></td>
+                  <td class="col-right">{{ l.PrixUnitaire | number:'1.2-2' }} TND</td>
+                  <td class="col-right">{{ l.Remise | number:'1.2-2' }}%</td>
+                  <td class="col-right fw">
+                    {{ (l.PrixUnitaire * l.Quantite * (1 - l.Remise / 100)) | number:'1.2-2' }} TND
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    }
+
+    <!-- ── Onglet : Réclamations ─────────────────────── -->
+    @if (activeTab === 'reclamations') {
+      <div class="panel">
+        <div class="panel-toolbar">
+          <span class="toolbar-title">{{ reclamations.length }} réclamation(s)</span>
+          <a [routerLink]="['/orders/reclamations']" [queryParams]="{orderId: order.Id_Commande}"
+             class="btn-sm-primary">Voir toutes</a>
+        </div>
+
+        @if (loadingRec) { <div class="od-loading"><div class="spinner-sm"></div> Chargement…</div> }
+
+        @if (!loadingRec && reclamations.length === 0) {
+          <div class="empty"><p>Aucune réclamation pour cette commande.</p></div>
+        }
+
+        @if (!loadingRec && reclamations.length > 0) {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#Rec</th>
+                <th>Message</th>
+                <th>Date</th>
+                <th>Ligne</th>
+                <th>Statut</th>
+                @if (isAdmin) { <th></th> }
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of reclamations; track r.Id_Rec) {
+                <tr>
+                  <td class="col-id">#{{ r.Id_Rec }}</td>
+                  <td class="col-msg">{{ r.Message }}</td>
+                  <td>{{ r.DateReclamation | date:'dd/MM/yy' }}</td>
+                  <td>#{{ r.Id_Ligne }}</td>
+                  <td>
+                    <span class="chip" [ngClass]="getRecClass(r.Statut)">{{ getRecLabel(r.Statut) }}</span>
+                  </td>
+                  @if (isAdmin) {
+                    <td>
+                      <button class="act-btn delete" (click)="onDeleteRec(r.Id_Rec)" title="Supprimer">🗑</button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    }
+
+  }
+</div>
+
+<!-- ═══ MODAL : Confirmer la suppression ══════════════════ -->
+@if (showDeleteModal && order) {
+  <div class="modal-overlay" (click)="cancelDeleteOrder()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon-danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </div>
+      <h3 class="modal-box-title">Supprimer la commande ?</h3>
+      <p class="modal-box-body">
+        La commande <strong>#{{ order.Id_Commande }}</strong> sera définitivement supprimée.
+        Cette action est irréversible.
+      </p>
+      <div class="modal-box-actions">
+        <button class="btn-cancel-sm" (click)="cancelDeleteOrder()" [disabled]="deleting">Annuler</button>
+        <button class="btn-confirm-danger-sm" (click)="confirmDeleteOrder()" [disabled]="deleting">
+          @if (deleting) { <span class="spinner-sm"></span> } @else { Supprimer }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══ MODAL : Changer le statut ═══════════════════════ -->
+@if (showStatusModal && order) {
+  <div class="modal-overlay" (click)="showStatusModal = false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <h3>Faire avancer la commande</h3>
+      <p class="modal-sub">Commande <strong>#{{ order.Id_Commande }}</strong> — actuellement
+        <span class="chip" [ngClass]="getEtatClass(order.Statut)">{{ getEtatLabel(order.Statut) }}</span>
+      </p>
+      <div class="status-options">
+        @for (opt of statusOptions; track opt.value) {
+          <button class="status-opt-btn" (click)="applyStatus(opt.value)">
+            → {{ opt.label }}
+          </button>
+        }
+      </div>
+      <button class="btn-cancel" (click)="showStatusModal = false">Annuler</button>
+    </div>
+  </div>
+}

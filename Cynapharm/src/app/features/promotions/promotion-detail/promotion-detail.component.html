@@ -1,0 +1,29 @@
+<div class="page-wrapper">
+      <a routerLink="/promotions" class="back-link">← Promotions</a>
+      <h1>Promotion — {{ promo?.codePromo }}</h1>
+
+      @if (loading) { <div class="loading-block"><div class="spinner"></div></div> }
+      @if (error) { <div class="alert-danger">{{ error }}</div> }
+
+      @if (promo && !loading) {
+        <div class="detail-card">
+          <div class="detail-grid">
+            <div class="detail-row"><span class="dl">Code</span><span class="dv font-mono">{{ promo.codePromo }}</span></div>
+            <div class="detail-row"><span class="dl">Réduction</span><span class="dv text-red">-{{ promo.pourcentage }}%</span></div>
+            <div class="detail-row"><span class="dl">N° Lot</span><span class="dv">{{ promo.numeroLot }}</span></div>
+            <div class="detail-row"><span class="dl">Début</span><span class="dv">{{ promo.dateDebut | date:'dd/MM/yyyy' }}</span></div>
+            <div class="detail-row"><span class="dl">Expiration</span><span class="dv">{{ promo.dateExpiration | date:'dd/MM/yyyy' }}</span></div>
+            <div class="detail-row"><span class="dl">Statut</span>
+              <span class="chip" [class.chip-active]="promo.estActive" [class.chip-inactive]="!promo.estActive">
+                {{ promo.estActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+          </div>
+          <div class="detail-actions">
+            <a routerLink="/promotions" class="btn-cancel">← Retour</a>
+            <a [routerLink]="['/promotions', promo.id_Promo, 'edit']" class="btn-submit">Modifier</a>
+          </div>
+        </div>
+      }
+    </div>
+  

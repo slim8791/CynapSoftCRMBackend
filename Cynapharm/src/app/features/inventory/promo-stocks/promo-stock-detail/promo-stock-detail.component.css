@@ -1,0 +1,48 @@
+.page { max-width: 1080px; margin: 0 auto; padding: 24px 16px; }
+    .page-header { margin-bottom: 24px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #6366f1; text-decoration: none; margin-bottom: 12px; }
+    .back-link svg { width: 16px; height: 16px; }
+    .back-link:hover { text-decoration: underline; }
+    h1 { font-size: 22px; font-weight: 600; color: #111; margin: 0; }
+    .lookup-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .lookup-bar label { font-size: 13px; font-weight: 500; color: #374151; }
+    .lookup-bar input { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; width: 160px; }
+    .lookup-bar input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+    .error-banner { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
+    .error-banner-sm { background: #fef2f2; color: #dc2626; padding: 8px 12px; border-radius: 6px; font-size: 12px; margin: 8px 0; }
+    .success-banner { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; padding: 8px 12px; border-radius: 6px; font-size: 12px; margin: 8px 0; }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 24px; }
+    .promo-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .card-badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-purple { background: #ede9fe; color: #6d28d9; }
+    .badge-teal { background: #ccfbf1; color: #0f766e; }
+    h2 { font-size: 16px; font-weight: 600; color: #111; margin: 0; }
+    h3 { font-size: 14px; font-weight: 600; color: #374151; margin: 16px 0 12px; }
+    hr { border: none; border-top: 1px solid #f3f4f6; margin: 16px 0; }
+    .info-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    .info-row span { color: #6b7280; }
+    .info-row strong { color: #111; }
+    .info-row strong.mono { font-family: monospace; font-size: 12px; }
+    .info-row strong.highlight { color: #6366f1; font-size: 15px; }
+    .no-data { font-size: 13px; color: #9ca3af; margin-bottom: 16px; }
+    .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    label { font-size: 12px; font-weight: 500; color: #374151; }
+    input { width: 100%; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
+    input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,.1); }
+    .btn { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+    .btn-primary { background: #6366f1; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #4f46e5; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-teal { background: #0f766e; color: #fff; }
+    .btn-teal:hover:not(:disabled) { background: #0d9488; }
+    .btn-teal:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-sm { margin-top: 12px; padding: 7px 14px; font-size: 13px; }
+    .btn-spinner { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hint-panel { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 16px; color: #9ca3af; text-align: center; }
+    .hint-panel svg { width: 40px; height: 40px; opacity: .4; }
+    .hint-panel p { font-size: 14px; margin: 0; }
+  

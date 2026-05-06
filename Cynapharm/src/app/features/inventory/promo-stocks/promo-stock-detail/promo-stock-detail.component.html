@@ -1,0 +1,98 @@
+<div class="page">
+      <div class="page-header">
+        <a routerLink="/inventory/promo-stocks" class="back-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Retour
+        </a>
+        <h1>Stocks promotionnels</h1>
+      </div>
+
+      <div class="lookup-bar">
+        <label>ID du stock</label>
+        <input type="number" [(ngModel)]="stockId" placeholder="Ex: 5" (keyup.enter)="lookup()" />
+        <button class="btn btn-primary" (click)="lookup()" [disabled]="!stockId || loadingLookup">
+          <span *ngIf="loadingLookup" class="btn-spinner"></span>
+          Rechercher
+        </button>
+      </div>
+
+      <div *ngIf="lookupError" class="error-banner">{{ lookupError }}</div>
+
+      <div class="cards-grid" *ngIf="gratuiteData || echantillonData">
+        <!-- Gratuite card -->
+        <div class="promo-card">
+          <div class="card-header">
+            <span class="card-badge badge-purple">Gratuite</span>
+            <h2>Stock gratuite</h2>
+          </div>
+          <div *ngIf="gratuiteData" class="info-list">
+            <div class="info-row"><span>Délégué (ID)</span><strong>{{ gratuiteData.id_User_Delegue }}</strong></div>
+            <div class="info-row"><span>Produit (ID)</span><strong>{{ gratuiteData.id_Produit }}</strong></div>
+            <div class="info-row"><span>N° lot</span><strong class="mono">{{ gratuiteData.numeroLot }}</strong></div>
+            <div class="info-row"><span>Qté disponible</span><strong>{{ gratuiteData.qteDisponible }}</strong></div>
+            <div class="info-row"><span>Qté réservée</span><strong>{{ gratuiteData.qteReservee }}</strong></div>
+            <div class="info-row"><span>Qté gratuite</span><strong class="highlight">{{ gratuiteData.qteGratuite }}</strong></div>
+            <div class="info-row"><span>Type promo</span><strong>{{ gratuiteData.typePromotion }}</strong></div>
+          </div>
+          <div *ngIf="!gratuiteData && searched" class="no-data">Aucune donnée gratuite</div>
+          <hr *ngIf="gratuiteData" />
+          <h3>Mettre à jour</h3>
+          <form [formGroup]="gratuiteForm" (ngSubmit)="saveGratuite()" novalidate>
+            <div class="mini-grid">
+              <div class="field"><label>Délégué (ID)*</label><input type="number" formControlName="id_User_Delegue" /></div>
+              <div class="field"><label>Produit (ID)*</label><input type="number" formControlName="id_Produit" /></div>
+              <div class="field"><label>N° lot*</label><input type="text" formControlName="numeroLot" /></div>
+              <div class="field"><label>Qté disponible*</label><input type="number" formControlName="qteDisponible" min="0" /></div>
+              <div class="field"><label>Qté réservée*</label><input type="number" formControlName="qteReservee" min="0" /></div>
+              <div class="field"><label>Qté gratuite*</label><input type="number" formControlName="qteGratuite" min="0" /></div>
+              <div class="field"><label>Type promo*</label><input type="text" formControlName="typePromotion" /></div>
+            </div>
+            <div *ngIf="gratuiteSuccess" class="success-banner">{{ gratuiteSuccess }}</div>
+            <div *ngIf="gratuiteError" class="error-banner-sm">{{ gratuiteError }}</div>
+            <button type="submit" class="btn btn-primary btn-sm" [disabled]="savingGratuite">
+              {{ savingGratuite ? 'Enregistrement...' : 'Enregistrer gratuite' }}
+            </button>
+          </form>
+        </div>
+
+        <!-- Echantillon card -->
+        <div class="promo-card">
+          <div class="card-header">
+            <span class="card-badge badge-teal">Echantillon</span>
+            <h2>Stock échantillon</h2>
+          </div>
+          <div *ngIf="echantillonData" class="info-list">
+            <div class="info-row"><span>Délégué (ID)</span><strong>{{ echantillonData.id_User_Delegue }}</strong></div>
+            <div class="info-row"><span>Produit (ID)</span><strong>{{ echantillonData.id_Produit }}</strong></div>
+            <div class="info-row"><span>N° lot</span><strong class="mono">{{ echantillonData.numeroLot }}</strong></div>
+            <div class="info-row"><span>Qté disponible</span><strong>{{ echantillonData.qteDisponible }}</strong></div>
+            <div class="info-row"><span>Qté réservée</span><strong>{{ echantillonData.qteReservee }}</strong></div>
+            <div class="info-row"><span>Qté échantillon</span><strong class="highlight">{{ echantillonData.qteEchantillon }}</strong></div>
+          </div>
+          <div *ngIf="!echantillonData && searched" class="no-data">Aucune donnée échantillon</div>
+          <hr *ngIf="echantillonData" />
+          <h3>Mettre à jour</h3>
+          <form [formGroup]="echantillonForm" (ngSubmit)="saveEchantillon()" novalidate>
+            <div class="mini-grid">
+              <div class="field"><label>Délégué (ID)*</label><input type="number" formControlName="id_User_Delegue" /></div>
+              <div class="field"><label>Produit (ID)*</label><input type="number" formControlName="id_Produit" /></div>
+              <div class="field"><label>N° lot*</label><input type="text" formControlName="numeroLot" /></div>
+              <div class="field"><label>Qté disponible*</label><input type="number" formControlName="qteDisponible" min="0" /></div>
+              <div class="field"><label>Qté réservée*</label><input type="number" formControlName="qteReservee" min="0" /></div>
+              <div class="field"><label>Qté échantillon*</label><input type="number" formControlName="qteEchantillon" min="0" /></div>
+            </div>
+            <div *ngIf="echantillonSuccess" class="success-banner">{{ echantillonSuccess }}</div>
+            <div *ngIf="echantillonError" class="error-banner-sm">{{ echantillonError }}</div>
+            <button type="submit" class="btn btn-teal btn-sm" [disabled]="savingEchantillon">
+              {{ savingEchantillon ? 'Enregistrement...' : 'Enregistrer échantillon' }}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div *ngIf="!searched" class="hint-panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg>
+        <p>Entrez un ID de stock pour voir et gérer ses données promotionnelles.</p>
+      </div>
+    </div>
+  

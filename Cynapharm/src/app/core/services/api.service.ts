@@ -1,0 +1,61 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private apiUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient) { }
+
+  /**
+   * Generic GET request
+   */
+  get<T>(endpoint: string, params?: HttpParams): Observable<T> {
+    return this.http.get<T>(`${this.apiUrl}${endpoint}`, { params }).pipe(
+      catchError((err: HttpErrorResponse) => {
+        console.error('API GET error', endpoint, err.status, err.error);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  unwrapResponse<T>(response: any): T {
+    if (response?.IsSuccess !== false && response?.Result !== undefined) {
+      return response.Result;
+    }
+    return response;
+  }
+
+  /**
+   * Generic POST request
+   */
+  post<T>(endpoint: string, data: any): Observable<T> {
+    return this.http.post<T>(`${this.apiUrl}${endpoint}`, data);
+  }
+
+  /**
+   * Generic PUT request
+   */
+  put<T>(endpoint: string, data: any): Observable<T> {
+    return this.http.put<T>(`${this.apiUrl}${endpoint}`, data);
+  }
+
+  /**
+   * Generic DELETE request
+   */
+  delete<T>(endpoint: string): Observable<T> {
+    return this.http.delete<T>(`${this.apiUrl}${endpoint}`);
+  }
+
+  /**
+   * Generic PATCH request
+   */
+  patch<T>(endpoint: string, data: any): Observable<T> {
+    return this.http.patch<T>(`${this.apiUrl}${endpoint}`, data);
+  }
+}

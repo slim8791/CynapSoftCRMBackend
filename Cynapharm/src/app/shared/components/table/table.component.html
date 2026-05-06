@@ -1,0 +1,14 @@
+<div class="table-container">
+  <table class="table">
+    <thead>
+      <tr>
+        <th *ngFor="let column of columns">{{ getColumnLabel(column) }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of data">
+        <td *ngFor="let column of columns">{{ getColumnValue(row, column) }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

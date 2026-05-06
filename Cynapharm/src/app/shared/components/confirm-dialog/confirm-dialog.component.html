@@ -1,0 +1,13 @@
+@if (visible) {
+      <div class="cd-overlay" (click)="onCancel()">
+        <div class="cd-box" (click)="$event.stopPropagation()">
+          <h3 class="cd-title">{{ title }}</h3>
+          <p class="cd-msg">{{ message }}</p>
+          <div class="cd-actions">
+            <button class="cd-btn cd-cancel" (click)="onCancel()">{{ cancelLabel }}</button>
+            <button class="cd-btn cd-confirm" [class]="confirmClass" (click)="onConfirm()">{{ confirmLabel }}</button>
+          </div>
+        </div>
+      </div>
+    }
+  

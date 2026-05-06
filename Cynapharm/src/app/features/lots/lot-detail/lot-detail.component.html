@@ -1,0 +1,246 @@
+<!-- lot-detail.component.html ───────────────────────────────────────────── -->
+<!-- Syntaxe unifiée Angular 17+ : @if / @for                                  -->
+<!-- *ngIf / *ngFor / [ngClass] remplacés                                       -->
+
+<div class="lot-detail-container">
+
+  <!-- ═══ CHARGEMENT ══════════════════════════════════════════════════════ -->
+  @if (loading) {
+    <div class="state-block state-loading" aria-busy="true">
+      <div class="spinner"></div>
+      <span>Chargement du lot…</span>
+    </div>
+  }
+
+  <!-- ═══ ERREUR ══════════════════════════════════════════════════════════ -->
+  @if (error && !loading) {
+    <div class="alert alert-danger" role="alert">{{ error }}</div>
+  }
+
+  <!-- ═══ CONTENU PRINCIPAL ═══════════════════════════════════════════════ -->
+  @if (!loading && !error && lot) {
+
+    <div class="page-header">
+      <h1>Lot <span class="lot-num">{{ lot.numero }}</span></h1>
+      <span [class]="'badge ' + getStatusClass()">{{ getStatusText() }}</span>
+    </div>
+
+    <app-card title="Informations du lot">
+
+      <!-- ── Grille des champs LotDto ──────────────────────────────────── -->
+      <div class="detail-grid">
+
+        <div class="detail-item">
+          <span class="detail-label">N° de lot</span>
+          <span class="detail-val">{{ lot.numero }}</span>
+        </div>
+
+        <div class="detail-item">
+          <span class="detail-label">Quantité (ProductAPI)</span>
+          <span class="detail-val">{{ lot.quantite }}</span>
+        </div>
+
+        <div class="detail-item">
+          <span class="detail-label">Date d'expiration</span>
+          <span class="detail-val">{{ lot.dateExpiration | date:'dd/MM/yyyy' }}</span>
+        </div>
+
+        <div class="detail-item">
+          <span class="detail-label">ID Produit</span>
+          <span class="detail-val">{{ lot.idProduit }}</span>
+        </div>
+
+        <!-- Champs calculés backend : affichage uniquement, jamais modifiables -->
+        <div class="detail-item">
+          <span class="detail-label">
+            Expiré
+            <span class="computed-tag" title="Calculé par le backend">backend</span>
+          </span>
+          <span [class]="lot.isExpired ? 'flag-true' : 'flag-false'">
+            {{ lot.isExpired ? 'Oui' : 'Non' }}
+          </span>
+        </div>
+
+        <div class="detail-item">
+          <span class="detail-label">
+            Rupture de stock
+            <span class="computed-tag" title="Calculé par le backend">backend</span>
+          </span>
+          <span [class]="lot.isOutOfStock ? 'flag-true' : 'flag-false'">
+            {{ lot.isOutOfStock ? 'Oui' : 'Non' }}
+          </span>
+        </div>
+
+        <!-- Affichage de la promotion -->
+        <div class="detail-item">
+          <span class="detail-label">Promotion</span>
+          <span class="detail-val">{{ getFormattedPromotion() }}</span>
+        </div>
+
+      </div>
+
+
+      <!-- ── Stock InventoryAPI ────────────────────────────────────────── -->
+      <div class="inv-section">
+        <h3 class="section-title">Stock InventoryAPI (temps réel)</h3>
+
+        @if (loadingInventory) {
+          <div class="inv-loading" aria-busy="true">
+            <span class="spinner-sm"></span>
+            Chargement du stock InventoryAPI…
+          </div>
+        }
+
+        @if (!loadingInventory && !inventoryStock) {
+          <div class="inv-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                 aria-hidden="true" width="20" height="20">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            </svg>
+            <span>Aucun stock assigné pour ce lot dans l'InventoryAPI.</span>
+          </div>
+        }
+
+        @if (!loadingInventory && inventoryStock) {
+          <div class="inv-cards">
+            <div class="inv-kpi">
+              <span class="inv-kpi-label">Qté disponible</span>
+              <span class="inv-kpi-val" [class.zero]="inventoryStock.qteDisponible === 0">
+                {{ inventoryStock.qteDisponible }}
+              </span>
+            </div>
+            <div class="inv-kpi">
+              <span class="inv-kpi-label">Qté réservée</span>
+              <span class="inv-kpi-val reserved">{{ inventoryStock.qteReservee }}</span>
+            </div>
+            <div class="inv-kpi">
+              <span class="inv-kpi-label">Délégué (ID)</span>
+              <span class="inv-kpi-val">{{ inventoryStock.id_User_Delegue }}</span>
+            </div>
+            <div class="inv-kpi">
+              <span class="inv-kpi-label">Statut stock</span>
+              <span class="inv-badge inv-badge--{{ getInvStatus(inventoryStock.qteDisponible) }}">
+                {{ getInvStatusLabel(inventoryStock.qteDisponible) }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- ── Actions ───────────────────────────────────────────────────── -->
+      <div class="action-buttons">
+        <button class="btn btn-secondary" (click)="onBackToList()">
+          ← Retour à la liste
+        </button>
+        <app-button label="Modifier"  variant="primary" (clicked)="onEdit()"></app-button>
+        <app-button label="Supprimer" variant="danger"  (clicked)="onDelete()"></app-button>
+
+        @if (canManagePromo) {
+          <button class="btn btn-promo" (click)="openPromoModal()"
+                  aria-label="Ajouter une promotion à ce lot">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" aria-hidden="true" width="15" height="15">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+              <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            Ajouter une promotion
+          </button>
+        }
+      </div>
+
+    </app-card>
+  }
+
+</div>
+
+<!-- ═══ MODALE SUPPRESSION ══════════════════════════════════════════════ -->
+@if (showDeleteModal) {
+  <div class="modal-overlay" role="dialog" aria-modal="true"
+       aria-labelledby="modal-delete-title" (click)="cancelDelete()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <h3 id="modal-delete-title">Confirmer la suppression</h3>
+      <p>
+        Supprimer le lot <strong>{{ lot?.numero }}</strong> ?
+        Cette action est <strong>irréversible</strong>.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="cancelDelete()">Annuler</button>
+        <button class="btn-danger"    (click)="confirmDelete()">Supprimer</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══ MODALE PROMOTION (ADMIN / SUPERVISEUR) ═══════════════════════════ -->
+@if (showPromoModal) {
+  <div class="modal-overlay" role="dialog" aria-modal="true"
+       aria-labelledby="modal-promo-title" (click)="cancelPromo()">
+    <div class="modal-box modal-box--lg" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h3 id="modal-promo-title">Ajouter une promotion — Lot {{ lot?.numero }}</h3>
+        <button class="modal-close" (click)="cancelPromo()" aria-label="Fermer">✕</button>
+      </div>
+
+      <form [formGroup]="promoForm" (ngSubmit)="submitPromo()" novalidate>
+
+        <div class="form-field">
+          <label for="promoCode">Code promotion <span class="required">*</span></label>
+          <input id="promoCode" type="text" formControlName="codePromo"
+                 class="field-input" [class.invalid]="isPromoFieldInvalid('codePromo')"
+                 placeholder="Ex : PROMO2025" />
+          @if (isPromoFieldInvalid('codePromo')) {
+            <span class="field-error" role="alert">Champ obligatoire (50 caractères max).</span>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="promoDebut">Date de début <span class="required">*</span></label>
+            <input id="promoDebut" type="date" formControlName="dateDebut"
+                   class="field-input" [class.invalid]="isPromoFieldInvalid('dateDebut')" />
+          </div>
+          <div class="form-field">
+            <label for="promoExp">Date d'expiration <span class="required">*</span></label>
+            <input id="promoExp" type="date" formControlName="dateExpiration"
+                   class="field-input" [class.invalid]="isPromoFieldInvalid('dateExpiration')" />
+            @if (isPromoFieldInvalid('dateExpiration')) {
+              <span class="field-error" role="alert">Date d'expiration obligatoire.</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="promoPct">Réduction (%) <span class="required">*</span></label>
+          <input id="promoPct" type="number" formControlName="pourcentage"
+                 class="field-input" [class.invalid]="isPromoFieldInvalid('pourcentage')"
+                 placeholder="Ex : 15" min="1" max="100" />
+          @if (isPromoFieldInvalid('pourcentage')) {
+            <span class="field-error" role="alert">Valeur entre 1 et 100.</span>
+          }
+        </div>
+
+        <div class="form-field form-field--check">
+          <label>
+            <input type="checkbox" formControlName="estActive" />
+            Promotion active immédiatement
+          </label>
+        </div>
+
+        @if (promoError) {
+          <div class="promo-error" role="alert">{{ promoError }}</div>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="cancelPromo()">Annuler</button>
+          <button type="submit" class="btn-promo-submit" [disabled]="promoLoading">
+            @if (!promoLoading) { Enregistrer la promotion }
+            @if (promoLoading)  { <span class="spinner-sm spinner-sm--white"></span> }
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}

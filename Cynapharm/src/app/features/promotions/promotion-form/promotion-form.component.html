@@ -1,0 +1,51 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <a routerLink="/promotions" class="back-link">← Promotions</a>
+    <h1>{{ isEdit ? 'Modifier' : 'Nouvelle' }} promotion</h1>
+  </div>
+
+  <div class="form-card">
+    @if (loading) { <div class="loading-block"><div class="spinner"></div></div> }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <div class="form-grid">
+        <div class="field">
+          <label>Code promo *</label>
+          <input type="text" formControlName="codePromo" class="input" [class.invalid]="isInvalid('codePromo')" placeholder="EX: PROMO25">
+          @if (isInvalid('codePromo')) { <span class="err">Code obligatoire.</span> }
+        </div>
+        <div class="field">
+          <label>Réduction (%) *</label>
+          <input type="number" formControlName="pourcentage" class="input" [class.invalid]="isInvalid('pourcentage')" min="1" max="100">
+          @if (isInvalid('pourcentage')) { <span class="err">Entre 1 et 100.</span> }
+        </div>
+        <div class="field">
+          <label>N° de lot *</label>
+          <input type="text" formControlName="numeroLot" class="input" [class.invalid]="isInvalid('numeroLot')" placeholder="LOT-001">
+          @if (isInvalid('numeroLot')) { <span class="err">N° de lot obligatoire.</span> }
+        </div>
+        <div class="field">
+          <label>Date de début *</label>
+          <input type="date" formControlName="dateDebut" class="input" [class.invalid]="isInvalid('dateDebut')">
+        </div>
+        <div class="field">
+          <label>Date d'expiration *</label>
+          <input type="date" formControlName="dateExpiration" class="input" [class.invalid]="isInvalid('dateExpiration')">
+          @if (isInvalid('dateExpiration')) { <span class="err">Date obligatoire.</span> }
+        </div>
+        <div class="field field-check">
+          <label><input type="checkbox" formControlName="estActive"> Promotion active</label>
+        </div>
+      </div>
+
+      @if (error) { <div class="alert-danger">{{ error }}</div> }
+
+      <div class="form-actions">
+        <a routerLink="/promotions" class="btn-cancel">Annuler</a>
+        <button type="submit" class="btn-submit" [disabled]="loading">
+          {{ loading ? '…' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

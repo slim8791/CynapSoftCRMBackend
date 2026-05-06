@@ -1,0 +1,25 @@
+.rf-wrapper  { padding: 28px 32px; background: #f0f4f9; min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; }
+.rf-back-row { margin-bottom: 16px; }
+.back-link   { font-size: 13px; color: #0077b6; text-decoration: none; font-weight: 600; }
+.back-link:hover { text-decoration: underline; }
+.rf-card     { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); padding: 28px 32px; max-width: 560px; }
+.rf-title    { font-size: 20px; font-weight: 700; color: #0a1628; margin: 0 0 24px; }
+.rf-loading  { display: flex; align-items: center; gap: 10px; padding: 16px 0; color: #6b7280; }
+.spinner     { width: 18px; height: 18px; border: 2px solid #e5e7eb; border-top-color: #0077b6; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.field  { margin-bottom: 18px; }
+.label  { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+.req    { color: #dc2626; }
+.input  { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 9px; font-size: 13px; font-family: inherit; box-sizing: border-box; outline: none; transition: border-color 0.15s; }
+.input:focus   { border-color: #0077b6; box-shadow: 0 0 0 3px rgba(0,119,182,0.1); }
+.input.invalid { border-color: #dc2626; }
+.textarea { resize: vertical; min-height: 100px; }
+.err    { font-size: 11px; color: #dc2626; margin-top: 4px; display: block; }
+.notice { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 9px; padding: 10px 14px; display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #1e40af; margin-bottom: 18px; }
+.notice svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+.alert-danger { background: #fee2e2; color: #991b1b; padding: 10px 14px; border-radius: 9px; font-size: 13px; margin-bottom: 14px; }
+.form-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.btn-cancel   { padding: 9px 20px; border: 1px solid #d1d5db; border-radius: 9px; background: white; font-size: 13px; font-weight: 600; text-decoration: none; color: #374151; }
+.btn-submit   { padding: 9px 22px; background: #0077b6; color: white; border: none; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-submit:hover:not(:disabled) { background: #005f93; }

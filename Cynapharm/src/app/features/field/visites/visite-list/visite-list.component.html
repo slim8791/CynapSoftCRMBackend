@@ -1,0 +1,62 @@
+<div class="page">
+      <div class="page-header">
+        <div>
+          <h1>Visites</h1>
+          <p class="subtitle">Historique des visites des délégués</p>
+        </div>
+        <a routerLink="/field/visites/new" class="btn btn-primary">+ Nouvelle visite</a>
+      </div>
+
+      <div class="filter-bar">
+        <label>ID Délégué</label>
+        <input type="number" [(ngModel)]="delegueId" placeholder="Ex: 3" (keyup.enter)="load()" />
+        <button class="btn btn-outline" (click)="load()" [disabled]="!delegueId || loading">Rechercher</button>
+      </div>
+
+      <div *ngIf="loading" class="loading-wrap">
+        <div class="spinner"></div><span>Chargement...</span>
+      </div>
+
+      <div *ngIf="error && !loading" class="error-banner">{{ error }}</div>
+
+      <div *ngIf="!loading && !error && visites.length === 0 && searched">
+        <app-empty-state title="Aucune visite" message="Aucune visite trouvée pour ce délégué."></app-empty-state>
+      </div>
+
+      <div *ngIf="!loading && visites.length > 0" class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Délégué</th>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Médecin (ID)</th>
+              <th>Pharmacien (ID)</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of visites">
+              <td class="mono">{{ v.idVisite }}</td>
+              <td>{{ v.id_User_Delegue }}</td>
+              <td>{{ v.date | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <span class="type-chip"
+                      [class.chip-med]="v.type === VisiteType.Medecin"
+                      [class.chip-ph]="v.type === VisiteType.Pharmacien"
+                      [class.chip-other]="v.type === VisiteType.Autre">
+                  {{ visiteTypeLabel(v.type) }}
+                </span>
+              </td>
+              <td>{{ v.id_Medecin ?? '—' }}</td>
+              <td>{{ v.id_Pharmacien ?? '—' }}</td>
+              <td>
+                <a [routerLink]="['/field/visites/edit', v.idVisite]" class="link-btn">Modifier</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  

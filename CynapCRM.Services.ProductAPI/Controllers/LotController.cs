@@ -11,49 +11,46 @@ namespace CynapCRM.Services.ProductAPI.Controllers
     public class LotController : ControllerBase
     {
         private readonly ILotService _lotService;
+        private readonly IProductService _productService;
 
         protected ResponseDto _response;
-        public LotController(ILotService lotService)
+        public LotController(ILotService lotService, IProductService productService)
 
         {
             _lotService = lotService;
 
             _response = new();
+            _productService = productService;
         }
 
         [HttpGet("{id:int}/lots")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
-
         public async Task<IActionResult> GetLotsByIdProduct(int id)
         {
-            try
-            {
-                if (id <= 0)
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "ID de produit invalide.";
-                    return BadRequest(_response);
-                }
-
-                var result = await _lotService.GetLotsByProductIdAsync(id);
-                if (result == null || !result.Any())
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "Aucun lot trouvé pour ce produit.";
-                    return NotFound(_response);
-                }
-                _response.Result = result;
-                _response.IsSuccess = true;
-                return Ok(_response);
-
-
-            }
-            catch (Exception ex)
+            if (id <= 0)
             {
                 _response.IsSuccess = false;
-                _response.Message = ex.Message;
-                return StatusCode(515, _response);
+                _response.Message = "ID de produit invalide.";
+                return BadRequest(_response);
             }
+
+            // Vérifier si le produit existe réellement
+            var productExists = await _productService.IsProductValidAsync(id);
+            if (!productExists)
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Produit introuvable.";
+                return NotFound(_response);
+            }
+
+            // Produit existe → récupérer les lots (même s’il n’y en a aucun)
+            var result = await _lotService.GetLotsByProductIdAsync(id);
+
+            _response.Result = result;   // [] si vide
+            _response.IsSuccess = true;
+            _response.Message = "Lots récupérés avec succès.";
+
+            return Ok(_response);
         }
 
         [HttpPost("lot")]
@@ -75,6 +72,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                     _response.Message = "Erreur, vérifier les références.";
                     return BadRequest(_response);
                 }
+                _response.Result = result;  // ✅ Retourner les données
                 _response.Message = lotDto.Numero == null ? "Lot créé avec succès." : "Lot mis à jour avec succès.";
                 return Ok(_response);
             }
@@ -116,6 +114,26 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                 _response.Message = ex.Message;
                 return StatusCode(515, _response);
 
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetAllLots()
+        {
+            try
+            {
+                var result = await _lotService.GetAllLotsAsync();
+                _response.Result = result;
+                _response.IsSuccess = true;
+                _response.Message = "Tous les lots récupérés avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
             }
         }
 

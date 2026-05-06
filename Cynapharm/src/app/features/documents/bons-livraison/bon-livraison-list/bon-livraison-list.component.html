@@ -1,0 +1,33 @@
+<div class="pw">
+      <div class="ph">
+        <div><h1 class="pt">Bons de livraison</h1><p class="ps">{{ bons.length }} bon(s)</p></div>
+        <a routerLink="/documents/bons-livraison/new" class="btn-p">+ Nouveau BL</a>
+      </div>
+      @if (error)   { <div class="ae">{{ error }}</div> }
+      @if (loading) { <div class="lb"><div class="sp"></div> Chargement…</div> }
+      @else if (bons.length === 0) {
+        <app-empty-state title="Aucun bon de livraison"></app-empty-state>
+      } @else {
+        <div class="tc">
+          <table class="dt">
+            <thead><tr><th>ID</th><th>Client</th><th>Date livraison</th><th>Adresse</th><th>Actions</th></tr></thead>
+            <tbody>
+              @for (b of bons; track b.id) {
+                <tr>
+                  <td>#{{ b.id }}</td>
+                  <td>#{{ b.id_Client }}</td>
+                  <td>{{ b.dateLivraison | date:'dd/MM/yy' }}</td>
+                  <td class="trunc">{{ b.adresseLivraison }}</td>
+                  <td class="ac">
+                    <a [routerLink]="['/documents/bons-livraison', b.id]" class="ab view">👁</a>
+                    <a [routerLink]="['/documents/bons-livraison', b.id, 'edit']" class="ab edit">✏</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <app-paginator [page]="page" [pageSize]="pageSize" [total]="total" (pageChange)="onPage($event)"></app-paginator>
+        </div>
+      }
+    </div>
+  
