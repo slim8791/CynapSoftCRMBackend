@@ -1,58 +1,101 @@
+// ── lot.service.ts ───────────────────────────────────────────────────────────
 import { Injectable } from '@angular/core';
-import { ApiService } from '../../core/services/api.service';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
-export interface LotDto {
-  numero: string;
-  dateExpiration: string; // ISO 8601 format
-  quantite: number;
-  idProduit: number;
-  isExpired?: boolean;
-  isOutOfStock?: boolean;
-  promotions?: any[];
+import { ApiService } from '../../core/services/api.service';
+import { LotDto, LotPayload } from './lot.model';
+
+/** Wrapper générique retourné par l'API */
+interface ApiResponse<T> {
+  Result?: T;
+  result?: T;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class LotService {
 
-  private baseUrl = '/products/lots';
+  private readonly baseUrl = '/products/lots';
 
   constructor(private apiService: ApiService) {}
 
-  /**
-   * Get all lots (GetAllLotsAsync backend)
-   */
-  getAllLots(): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}`);
+  // ── Lecture ────────────────────────────────────────────────────────────────
+
+  /** Récupère tous les lots (GetAllLotsAsync) */
+  getAllLots(): Observable<LotDto[]> {
+    return this.apiService
+      .get<ApiResponse<LotDto[]>>(this.baseUrl)
+      .pipe(map(res => this.unwrap(res)));
   }
 
-  /**
-   * Get all lots by product ID
-   */
-  getLotsByProductId(productId: number): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/${productId}/lots`);
+  /** Récupère les lots d'un produit donné */
+  getLotsByProductId(productId: number): Observable<LotDto[]> {
+    return this.apiService
+      .get<ApiResponse<LotDto[]>>(`${this.baseUrl}/${productId}/lots`)
+      .pipe(map(res => this.unwrap(res)));
   }
 
-  /**
-   * Create or update a lot
-   */
-  createOrUpdateLot(payload: LotDto): Observable<any> {
-    return this.apiService.post<any>(`${this.baseUrl}/lot`, payload);
+  /** Récupère un lot par son numéro (normalise PascalCase → camelCase) */
+  getLotByNumero(numeroLot: string): Observable<LotDto> {
+    return this.apiService
+      .get<ApiResponse<LotDto>>(`${this.baseUrl}/lot/${numeroLot}`)
+      .pipe(map(res => {
+        const raw: any = res?.Result ?? res?.result ?? res;
+        return {
+          numero:         raw.numero         ?? raw.Numero         ?? '',
+          quantite:       raw.quantite       ?? raw.Quantite       ?? 0,
+          dateExpiration: raw.dateExpiration ?? raw.DateExpiration ?? null,
+          idProduit:      raw.idProduit      ?? raw.IdProduit      ?? (raw as any).id_Produit ?? 0,
+          isExpired:      raw.isExpired      ?? raw.IsExpired      ?? false,
+          isOutOfStock:   raw.isOutOfStock   ?? raw.IsOutOfStock   ?? false,
+          promotions:     raw.promotions     ?? raw.Promotions     ?? [],
+        } as LotDto;
+      }));
   }
 
-  /**
-   * Delete a lot
-   */
-  deleteLot(numeroLot: string): Observable<any> {
-    return this.apiService.delete<any>(`${this.baseUrl}/lot/${numeroLot}`);
-  }
+  // ── Écriture ───────────────────────────────────────────────────────────────
 
   /**
-   * Get single lot by numero (new endpoint)
+   * Crée ou met à jour un lot.
+   * Transforme le LotDto (camelCase) en LotPayload (id_Produit) pour le backend.
    */
-  getLotByNumero(numeroLot: string): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/lot/${numeroLot}`);
+  createOrUpdateLot(lot: LotDto): Observable<LotDto> {
+    const payload: LotPayload = {
+      numero:          lot.numero,
+      dateExpiration:  lot.dateExpiration,
+      quantite:        lot.quantite,
+      id_Produit:      lot.idProduit,   // nom exact attendu par l'API C#
+    };
+    return this.apiService.post<LotDto>(`${this.baseUrl}/lot`, payload);
+  }
+
+  /** Supprime un lot par son numéro */
+  deleteLot(numeroLot: string): Observable<void> {
+    return this.apiService.delete<void>(`${this.baseUrl}/lot/${numeroLot}`);
+  }
+
+  // ── Helpers privés ─────────────────────────────────────────────────────────
+
+  /**
+   * Désemballe la réponse API (gère Result / result / tableau direct).
+   * Normalise également le casing Pascal→camel pour idProduit.
+   */
+  private unwrap(res: ApiResponse<LotDto[]> | LotDto[]): LotDto[] {
+    const raw = (res as ApiResponse<LotDto[]>)?.Result
+             ?? (res as ApiResponse<LotDto[]>)?.result
+             ?? res as LotDto[];
+
+    if (!Array.isArray(raw)) return [];
+
+    return raw.map(lot => ({
+      ...lot,
+      // Normalisation défensive : le backend peut renvoyer PascalCase
+      numero:         lot.numero         ?? (lot as any).Numero         ?? '',
+      dateExpiration: lot.dateExpiration ?? (lot as any).DateExpiration ?? '',
+      quantite:       lot.quantite       ?? (lot as any).Quantite       ?? 0,
+      idProduit:      lot.idProduit      ?? (lot as any).Id_Produit     ?? 0,
+      isExpired:      lot.isExpired      ?? false,
+      isOutOfStock:   lot.isOutOfStock   ?? false,
+    }));
   }
 }

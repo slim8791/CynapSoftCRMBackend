@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, catchError, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 import { CurrencyTNDPipe } from '../../../shared/pipes/currency-tnd.pipe';
 import { ProductService } from '../product.service';
@@ -27,7 +28,11 @@ export class ProductListComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
   successMessage = '';
-
+  // ── Compteurs KPI ────────────────────────────────
+  totalProducts = 0;
+  totalActive = 0;
+  totalInactive = 0;
+  totalArchived = 0;
   // ── Filtres & pagination ─────────────────────────────
   searchTerm = '';
   statusFilter: StatusFilter = 'all';
@@ -77,12 +82,18 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.error = '';
     this.successMessage = '';
 
-    this.productService.getProducts()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
+    this.productService.getProductsAll().pipe(
+      catchError(err => {
+        // DELEGUE/MEDECIN/CLIENT may get 403 — fall back to basic list (no archived)
+        if (err.status === 403 || err.status === 404) return this.productService.getProducts();
+        throw err;
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe({
         next: (response: any) => {
           const raw: any[] = Array.isArray(response) ? response : response ? [response] : [];
           this.products = raw.map(p => this.normalizeProduct(p));
+          this.updateKPIs();
           this.applyFilters();
           this.loading = false;
           this.cdr.markForCheck();
@@ -96,56 +107,65 @@ export class ProductListComponent implements OnInit, OnDestroy {
       });
   }
 
+  private updateKPIs(): void {
+    this.totalProducts = this.products.length;
+    this.totalActive = this.products.filter(p => p.IsActive && !p.IsArchived).length;
+    this.totalInactive = this.products.filter(p => !p.IsActive && !p.IsArchived).length;
+    this.totalArchived = this.products.filter(p => p.IsArchived).length;
+  }
+
   // ── Filtres ──────────────────────────────────────────
 
+  /**
+   * Filtre entièrement côté client depuis le tableau `products` déjà chargé.
+   * Évite tout appel backend supplémentaire après le chargement initial.
+   */
   applyFilters(): void {
     let result = [...this.products];
 
-    if (this.statusFilter !== 'all') {
-      result = result.filter(p => {
-        switch (this.statusFilter) {
-          case 'active':   return p.IsActive && !p.IsArchived;
-          case 'inactive': return !p.IsActive && !p.IsArchived;
-          case 'archived': return p.IsArchived;
-        }
-      });
+    // Filtre par statut
+    switch (this.statusFilter) {
+      case 'active':
+        result = result.filter(p => p.IsActive && !p.IsArchived);
+        break;
+      case 'inactive':
+        result = result.filter(p => !p.IsActive && !p.IsArchived);
+        break;
+      case 'archived':
+        result = result.filter(p => p.IsArchived);
+        break;
     }
 
+    // Filtre par mot-clé (dès 3 caractères, client-side)
     const term = this.searchTerm.trim().toLowerCase();
-    // ✅ La recherche ne commence qu'à partir de 3 caractères
     if (term.length >= 3) {
       result = result.filter(p =>
-        p.Nom?.toLowerCase().includes(term) ||
-        p.Description?.toLowerCase().includes(term)
+        (p.Nom          ?? '').toLowerCase().includes(term) ||
+        (p.Description  ?? '').toLowerCase().includes(term)
       );
-    } else if (term.length > 0 && term.length < 3) {
-      // Si l'utilisateur a saisi 1 ou 2 caractères, afficher tous les produits
-      result = [...this.products];
-      if (this.statusFilter !== 'all') {
-        result = result.filter(p => {
-          switch (this.statusFilter) {
-            case 'active':   return p.IsActive && !p.IsArchived;
-            case 'inactive': return !p.IsActive && !p.IsArchived;
-            case 'archived': return p.IsArchived;
-          }
-        });
-      }
     }
 
     this.filteredProducts = result;
     this.totalPages = Math.ceil(result.length / this.pageSize);
-    if (this.currentPage > this.totalPages) this.currentPage = 1;
+    this.cdr.markForCheck();
   }
 
-  onSearch(): void            { this.currentPage = 1; this.applyFilters(); }
+  onSearch(): void             { this.currentPage = 1; this.applyFilters(); }
   onStatusFilterChange(): void { this.currentPage = 1; this.applyFilters(); }
-  onPageSizeChange(): void    { this.currentPage = 1; this.applyFilters(); }
+  onPageSizeChange(): void     { this.currentPage = 1; this.applyFilters(); }
+
+  // ── Gestion des clics KPI ────────────────────────────
+  onKPIClick(filter: StatusFilter): void {
+    this.statusFilter = filter;
+    this.currentPage = 1;
+    this.applyFilters();
+    this.cdr.markForCheck();
+  }
 
   // ── Pagination ───────────────────────────────────────
 
   get paginatedProducts(): any[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.filteredProducts.slice(start, start + this.pageSize);
+    return this.filteredProducts;
   }
 
   get pageNumbers(): number[] {
@@ -157,7 +177,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   onPageChange(page: number): void {
-    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.applyFilters();
+    }
   }
 
   // ── Navigation ───────────────────────────────────────

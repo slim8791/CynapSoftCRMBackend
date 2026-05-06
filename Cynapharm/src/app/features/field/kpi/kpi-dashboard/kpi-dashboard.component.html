@@ -1,0 +1,49 @@
+<div class="pw">
+      <a routerLink="/field" class="back">← Field</a>
+      <h1>KPI Délégués</h1>
+
+      <div class="filters">
+        <div class="field">
+          <label>ID Délégué</label>
+          <input type="number" [(ngModel)]="idDelegue" class="inp" placeholder="Ex: 1" min="1">
+        </div>
+        <div class="field">
+          <label>Date début</label>
+          <input type="date" [(ngModel)]="dateDebut" class="inp">
+        </div>
+        <div class="field">
+          <label>Date fin</label>
+          <input type="date" [(ngModel)]="dateFin" class="inp">
+        </div>
+        <button class="btn-load" (click)="load()" [disabled]="loading || !idDelegue">
+          {{ loading ? '…' : 'Charger' }}
+        </button>
+      </div>
+
+      @if (error) { <div class="err-box">{{ error }}</div> }
+
+      @if (loaded) {
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <span class="kv">{{ visitesCount }}</span>
+            <span class="kl">Visites</span>
+          </div>
+          <div class="kpi-card kpi-blue">
+            <span class="kv">{{ performanceRate | number:'1.0-1' }}%</span>
+            <span class="kl">Performance</span>
+          </div>
+        </div>
+
+        @if (historique.length > 0) {
+          <div class="hist-card">
+            <h3>Historique</h3>
+            <div class="hist-list">
+              @for (h of historique; track $index) {
+                <div class="hist-row">{{ h | json }}</div>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  

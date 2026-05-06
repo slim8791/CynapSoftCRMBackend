@@ -1,0 +1,86 @@
+<div class="rl-wrapper">
+
+  <div class="rl-header">
+    <div>
+      <h1 class="rl-title">Réclamations</h1>
+      @if (orderId) { <p class="rl-sub">Commande #{{ orderId }}</p> }
+      @else if (clientId) { <p class="rl-sub">Client #{{ clientId }}</p> }
+      @else { <p class="rl-sub">{{ reclamations.length }} réclamation(s)</p> }
+    </div>
+    <div class="rl-actions">
+      <a routerLink="/orders" class="btn-outline-link">← Commandes</a>
+    </div>
+  </div>
+
+  @if (error) {
+    <div class="alert-danger">
+      {{ error }}
+      <button class="retry-btn" (click)="load()">Réessayer</button>
+    </div>
+  }
+  @if (loading) { <div class="rl-loading"><div class="spinner"></div> Chargement…</div> }
+
+  @if (!loading && !error) {
+    @if (reclamations.length === 0) {
+      <div class="rl-empty">
+        <p>Aucune réclamation trouvée.</p>
+      </div>
+    } @else {
+      <div class="rl-table-card">
+        <table class="rl-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Message</th>
+              <th>Commande</th>
+              <th>Ligne</th>
+              <th>Client</th>
+              <th>Date</th>
+              <th>Statut</th>
+              @if (canManageStatus()) { <th>Changer statut</th> }
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of reclamations; track r.Id_Rec) {
+              <tr>
+                <td class="col-id">#{{ r.Id_Rec }}</td>
+                <td class="col-msg" [title]="r.Message">{{ r.Message }}</td>
+                <td><a [routerLink]="['/orders', r.Id_Commande]" class="link">#{{ r.Id_Commande }}</a></td>
+                <td>#{{ r.Id_Ligne }}</td>
+                <td>#{{ r.Id_Client }}</td>
+                <td>{{ r.DateReclamation | date:'dd/MM/yy' }}</td>
+                <td>
+                  <span class="chip" [ngClass]="getStatutClass(r.Statut)">{{ getStatutLabel(r.Statut) }}</span>
+                </td>
+                @if (canManageStatus()) {
+                  <td>
+                    <select class="status-select" [disabled]="updatingId === r.Id_Rec"
+                            (change)="onUpdateStatus(r.Id_Rec, +$any($event.target).value)">
+                      @for (s of statuts; track s.value) {
+                        <option [value]="s.value" [selected]="svc.statutToNumber(r.Statut) === s.value">
+                          {{ s.label }}
+                        </option>
+                      }
+                    </select>
+                  </td>
+                }
+                <td class="col-actions">
+                  <a [routerLink]="['/orders/reclamations', r.Id_Rec]" class="act-btn view" title="Voir le détail">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </a>
+                  @if (isAdmin) {
+                    <button class="act-btn delete" (click)="onDelete(r.Id_Rec)" title="Supprimer">🗑</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

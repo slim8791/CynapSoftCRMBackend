@@ -1,0 +1,54 @@
+<div class="rd-wrapper">
+
+  <div class="rd-back-row">
+    <a routerLink="/orders/reclamations" class="back-link">← Réclamations</a>
+  </div>
+
+  @if (loading) { <div class="rd-loading"><div class="spinner"></div> Chargement…</div> }
+  @if (error)   { <div class="alert-danger">{{ error }}</div> }
+
+  @if (rec && !loading) {
+    <div class="rd-card">
+
+      <div class="rd-header">
+        <div>
+          <h1 class="rd-title">Réclamation <span class="rd-id">#{{ rec.Id_Rec }}</span></h1>
+          <p class="rd-sub">{{ rec.DateReclamation | date:'dd/MM/yyyy à HH:mm' }}</p>
+        </div>
+        <span class="chip chip-lg" [ngClass]="getStatutClass(rec.Statut)">
+          {{ getStatutLabel(rec.Statut) }}
+        </span>
+      </div>
+
+      <div class="rd-message">
+        <span class="rd-label">Message</span>
+        <p class="rd-msg-text">{{ rec.Message }}</p>
+      </div>
+
+      <div class="rd-grid">
+        <div class="rd-row">
+          <span class="rdl">Commande</span>
+          <a [routerLink]="['/orders', rec.Id_Commande]" class="link">#{{ rec.Id_Commande }}</a>
+        </div>
+        <div class="rd-row">
+          <span class="rdl">Ligne commande</span>
+          <span class="rdv">#{{ rec.Id_Ligne }}</span>
+        </div>
+        <div class="rd-row">
+          <span class="rdl">Client (ID)</span>
+          <span class="rdv">#{{ rec.Id_Client }}</span>
+        </div>
+        <div class="rd-row">
+          <span class="rdl">Date réclamation</span>
+          <span class="rdv">{{ rec.DateReclamation | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+
+      <div class="rd-actions">
+        <a routerLink="/orders/reclamations" class="btn-outline">← Retour</a>
+        <a [routerLink]="['/orders', rec.Id_Commande]" class="btn-primary">Voir la commande</a>
+      </div>
+
+    </div>
+  }
+</div>

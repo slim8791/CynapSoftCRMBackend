@@ -1,75 +1,72 @@
-<div class="order-form-container">
-  <h1>{{ isEditMode ? 'Edit Order' : 'Create Order' }}</h1>
+<div class="of-wrapper">
+  <div class="of-back-row"><a routerLink="/orders" class="back-link">← Commandes</a></div>
 
-  <app-card [title]="isEditMode ? 'Update Order' : 'New Order'">
-    <form [formGroup]="orderForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="orderNumber">Order Number:</label>
-        <input
-          type="text"
-          id="orderNumber"
-          formControlName="orderNumber"
-          class="form-control"
-          placeholder="Enter order number">
+  <div class="of-card">
+    <h1 class="of-title">Nouvelle commande</h1>
+    <p class="of-notice">Le client est identifié automatiquement via votre token JWT.</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Lignes de commande -->
+      <div class="lignes-section">
+        <div class="lignes-header">
+          <span class="section-title">Lignes de commande</span>
+          <button type="button" class="btn-add-ligne" (click)="addLigne()">+ Ajouter une ligne</button>
+        </div>
+
+        <div formArrayName="Lignes">
+          @for (ligne of lignes.controls; track $index; let i = $index) {
+            <div class="ligne-row" [formGroupName]="i">
+              <div class="ligne-num">#{{ i + 1 }}</div>
+
+              <div class="ligne-fields">
+                <div class="field-sm">
+                  <label class="label">ID Produit *</label>
+                  <input type="number" formControlName="Id_Produit" class="input"
+                         [class.invalid]="inv($any(ligne), 'Id_Produit')" min="1" placeholder="Ex: 5">
+                </div>
+                <div class="field-sm">
+                  <label class="label">Quantité *</label>
+                  <input type="number" formControlName="Quantite" class="input"
+                         [class.invalid]="inv($any(ligne), 'Quantite')" min="1">
+                </div>
+                <div class="field-sm">
+                  <label class="label">Prix unitaire *</label>
+                  <input type="number" formControlName="PrixUnitaire" class="input"
+                         [class.invalid]="inv($any(ligne), 'PrixUnitaire')" min="0" step="0.01" placeholder="TND">
+                </div>
+                <div class="field-sm">
+                  <label class="label">Remise (%)</label>
+                  <input type="number" formControlName="Remise" class="input" min="0" max="100" step="0.1">
+                </div>
+              </div>
+
+              @if (lignes.length > 1) {
+                <button type="button" class="btn-remove" (click)="removeLigne(i)" title="Supprimer">✕</button>
+              }
+            </div>
+          }
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="status">Status:</label>
-        <select id="status" formControlName="status" class="form-control">
-          <option value="">Select order status</option>
-          <option value="pending">Pending</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
+      <!-- Validation finale -->
+      <div class="field check-field">
+        <label class="check-label">
+          <input type="checkbox" formControlName="IsFinalValidation">
+          Validation finale (passe en statut "En attente")
+        </label>
+        <p class="check-hint">Laissez décoché pour enregistrer en brouillon.</p>
       </div>
 
-      <div class="form-group">
-        <label for="totalAmount">Total Amount:</label>
-        <input
-          type="number"
-          id="totalAmount"
-          formControlName="totalAmount"
-          class="form-control"
-          placeholder="Enter total amount">
+      @if (error) { <div class="alert-danger">{{ error }}</div> }
+
+      <div class="form-actions">
+        <a routerLink="/orders" class="btn-cancel">Annuler</a>
+        <button type="submit" class="btn-submit" [disabled]="loading">
+          {{ loading ? 'Envoi…' : 'Créer la commande' }}
+        </button>
       </div>
 
-      <div class="form-group">
-        <label for="createdDate">Order Date:</label>
-        <input
-          type="date"
-          id="createdDate"
-          formControlName="createdDate"
-          class="form-control">
-      </div>
-
-      <div class="form-group">
-        <label for="items">Items (JSON):</label>
-        <textarea
-          id="items"
-          formControlName="items"
-          class="form-control"
-          rows="4"
-          placeholder='[{"productId":"1","quantity":2}]'></textarea>
-      </div>
-
-      <div class="action-buttons">
-        <a routerLink="/orders">
-          <app-button label="Cancel" variant="secondary"></app-button>
-        </a>
-        <app-button
-          [label]="isEditMode ? 'Update' : 'Create'"
-          variant="primary"
-          [disabled]="!orderForm.valid || loading"
-          (clicked)="onSubmit()"></app-button>
-      </div>
-
-      <div *ngIf="error" class="error">
-        <p>{{ error }}</p>
-      </div>
-
-      <div *ngIf="success" class="success">
-        <p>Order {{ isEditMode ? 'updated' : 'created' }} successfully!</p>
-      </div>
     </form>
-  </app-card>
+  </div>
 </div>

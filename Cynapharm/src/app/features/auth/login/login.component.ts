@@ -26,6 +26,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   loading = false;
   error = '';
+  showPassword = false;
 
   // ✅ MODIF : fallback si pas de returnUrl
   private defaultRoute = '/dashboard';

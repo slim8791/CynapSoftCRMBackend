@@ -412,6 +412,45 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                 Role = "" 
             });
         }
+        public async Task<IEnumerable<UserDto>> SearchUsersAsync(string keyword, bool? isActive = null)
+        {
+            var lower = keyword?.Trim().ToLower() ?? string.Empty;
+
+            var query = _userManager.Users.AsQueryable();
+
+            if (!string.IsNullOrEmpty(lower))
+            {
+                query = query.Where(u =>
+                    u.Name.ToLower().Contains(lower) ||
+                    u.Email.ToLower().Contains(lower) ||
+                    (u.PhoneNumber != null && u.PhoneNumber.Contains(lower)));
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(u => u.IsDeleted == !isActive.Value);
+            }
+
+            var users = await query.AsNoTracking().ToListAsync();
+            var result = new List<UserDto>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                result.Add(new UserDto
+                {
+                    Id        = user.Id,
+                    Email     = user.Email,
+                    Name      = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Adresse   = user.Adresse,
+                    Role      = roles.FirstOrDefault() ?? "",
+                    IsDeleted = user.IsDeleted
+                });
+            }
+            return result;
+        }
+
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
             // Get all users

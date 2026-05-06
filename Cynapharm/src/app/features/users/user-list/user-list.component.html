@@ -1,82 +1,252 @@
+<div class="ul-wrapper">
 
-<div class="user-list-container">
-  <h1>Users</h1>
-
-  <div class="action-bar">
-    <a routerLink="/users/new">
-      <app-button label="Add User" variant="primary"></app-button>
+  <!-- ═══ EN-TÊTE ═══════════════════════════════════ -->
+  <div class="ul-header">
+    <div>
+      <h1 class="ul-title">Gestion des utilisateurs</h1>
+      <p class="ul-subtitle">{{ allUsers.length }} utilisateur(s) au total</p>
+    </div>
+    <a routerLink="/users/new" class="btn-add">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Nouvel utilisateur
     </a>
   </div>
 
-  <app-card title="User List">
+  <!-- ═══ CARTES KPI ══════════════════════════════════ -->
+  <div class="kpi-row">
+    <div class="kpi-card" (click)="statusFilter='all'; onStatusFilterChange()" [class.kpi-active]="statusFilter==='all'">
+      <span class="kpi-val">{{ allUsers.length }}</span>
+      <span class="kpi-lbl">Total</span>
+    </div>
+    <div class="kpi-card kpi-green" (click)="statusFilter='active'; onStatusFilterChange()" [class.kpi-active]="statusFilter==='active'">
+      <span class="kpi-val">{{ totalActive }}</span>
+      <span class="kpi-lbl">Actifs</span>
+    </div>
+    <div class="kpi-card kpi-red" (click)="statusFilter='disabled'; onStatusFilterChange()" [class.kpi-active]="statusFilter==='disabled'">
+      <span class="kpi-val">{{ totalDisabled }}</span>
+      <span class="kpi-lbl">Désactivés</span>
+    </div>
+  </div>
 
-    <div *ngIf="!loading">
+  <!-- ═══ BARRE D'OUTILS ══════════════════════════════ -->
+  <div class="toolbar">
 
-      <!-- ✅ Custom table with actions like products -->
-      <div *ngIf="!loading && users.length === 0" class="no-data">
-        <p>Aucun utilisateur trouvé.</p>
-      </div>
-
-      <!-- DEBUG users array -->
-      <div *ngIf="!loading" class="debug-users">
-        <strong>DEBUG: users.length = {{ users.length }}</strong>
-        <pre *ngIf="users.length > 0" style="background:#e8f5e8; padding:10px; font-size:11px; max-height:150px;overflow:auto;">{{ users[0] | json }}</pre>
-      </div>
-
-      <div *ngIf="!loading && users.length > 0" class="table-responsive">
-        <table class="user-table">
-          <thead>
-            <tr>
-              <th *ngFor="let col of columns">{{ col.label }}</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let user of users">
-              <td *ngFor="let col of columns">
-                {{ getValue(user, col.key) }}
-
-              </td>
-              <td class="actions-cell">
-                <button class="action-btn view-btn" (click)="onView(user.id)" title="View">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </button>
-                <button class="action-btn edit-btn" (click)="onEdit(user.id)" title="Edit">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                  </svg>
-                </button>
-                <button class="action-btn delete-btn" *ngIf="!user.isDeleted" (click)="onDelete(user)" title="Disable">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="15" y1="9" x2="9" y2="15"></line>
-                    <line x1="9" y1="9" x2="15" y2="15"></line>
-                  </svg>
-                </button>
-                <button class="action-btn enable-btn" *ngIf="user.isDeleted" (click)="onEnable(user)" title="Enable">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+    <!-- Recherche -->
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Rechercher (nom, email, téléphone)…"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchInput($event)"
+        autocomplete="off">
+      <button *ngIf="searchTerm" class="search-clear" (click)="clearSearch()" aria-label="Effacer">✕</button>
+      <span *ngIf="searchTerm.length > 0 && searchTerm.length < 3" class="search-hint">
+        3 caractères min.
+      </span>
     </div>
 
-    <div *ngIf="loading" class="loading">
-      Loading users...
+    <!-- Filtre statut -->
+    <div class="filter-wrap">
+      <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange()">
+        <option value="all">Tous les statuts</option>
+        <option value="active">Actifs</option>
+        <option value="disabled">Désactivés</option>
+      </select>
     </div>
 
-    <div *ngIf="error" class="error">
-      {{ error }}
+    <!-- Filtre rôle -->
+    <div class="filter-wrap">
+      <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <select class="filter-select" [(ngModel)]="roleFilter" (ngModelChange)="onRoleFilterChange()">
+        <option value="all">Tous les rôles</option>
+        <option *ngFor="let r of ROLES" [value]="r">{{ r }} ({{ countByRole(r) }})</option>
+      </select>
     </div>
 
-  </app-card>
+    <!-- Compteur résultats -->
+    <span class="results-count">
+      {{ filteredUsers.length }} résultat(s)
+      <ng-container *ngIf="searchTerm.length >= 3"> pour « {{ searchTerm }} »</ng-container>
+      <ng-container *ngIf="roleFilter !== 'all'"> · rôle {{ roleFilter }}</ng-container>
+    </span>
+
+  </div>
+
+  <!-- ═══ ERREUR ══════════════════════════════════════ -->
+  <div *ngIf="error && !loading" class="ul-error">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error }}
+  </div>
+
+  <!-- ═══ LOADING ══════════════════════════════════════ -->
+  <div *ngIf="loading" class="ul-loading">
+    <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]"></div>
+  </div>
+
+  <!-- ═══ TABLEAU ═════════════════════════════════════ -->
+  <div *ngIf="!loading" class="ul-table-wrap">
+
+    <!-- Vide -->
+    <div *ngIf="filteredUsers.length === 0" class="ul-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <p *ngIf="searchTerm.length >= 3">Aucun utilisateur trouvé pour « {{ searchTerm }} ».</p>
+      <p *ngIf="searchTerm.length < 3">Aucun utilisateur dans cette catégorie.</p>
+    </div>
+
+    <table *ngIf="filteredUsers.length > 0" class="ul-table">
+      <thead>
+        <tr>
+          <th class="col-user">Utilisateur</th>
+          <th class="col-email">Email</th>
+          <th class="col-phone">Téléphone</th>
+          <th class="col-role">Rôle</th>
+          <th class="col-status">Statut</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of paginatedUsers" [class.row-disabled]="user.isDeleted">
+
+          <!-- Utilisateur (avatar + nom) -->
+          <td class="col-user">
+            <div class="user-cell">
+              <div class="avatar" [ngClass]="getRoleClass(user.role)">
+                {{ getInitials(user.name) }}
+              </div>
+              <div class="user-info">
+                <span class="user-name">{{ user.name }}</span>
+                <span class="user-id">#{{ user.id }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Email -->
+          <td class="col-email">
+            <a [href]="'mailto:' + user.email" class="email-link">{{ user.email }}</a>
+          </td>
+
+          <!-- Téléphone -->
+          <td class="col-phone">{{ user.phoneNumber || '—' }}</td>
+
+          <!-- Rôle -->
+          <td class="col-role">
+            <span class="role-badge" [ngClass]="getRoleClass(user.role)">
+              {{ user.role || '—' }}
+            </span>
+          </td>
+
+          <!-- Statut -->
+          <td class="col-status">
+            <span class="status-badge" [class.active]="!user.isDeleted" [class.disabled]="user.isDeleted">
+              <span class="status-dot"></span>
+              {{ user.isDeleted ? 'Désactivé' : 'Actif' }}
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td class="col-actions">
+            <div class="actions-wrap">
+              <button class="act-btn view" (click)="onView(user.id)" title="Voir le profil">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+              <button class="act-btn edit" (click)="onEdit(user.id)" title="Modifier">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button *ngIf="!user.isDeleted" class="act-btn disable" (click)="onDisable(user)" title="Désactiver">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                </svg>
+              </button>
+              <button *ngIf="user.isDeleted" class="act-btn enable" (click)="onEnable(user)" title="Réactiver">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ═══ PAGINATION ═══════════════════════════════════ -->
+    <div *ngIf="filteredUsers.length > pageSize" class="ul-pagination">
+      <span class="pag-info">
+        {{ (currentPage - 1) * pageSize + 1 }}–{{ currentPage * pageSize > filteredUsers.length ? filteredUsers.length : currentPage * pageSize }}
+        sur {{ filteredUsers.length }}
+      </span>
+      <div class="pag-controls">
+        <button class="pag-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">‹</button>
+        <button *ngFor="let p of pageNumbers" class="pag-btn" [class.pag-active]="p === currentPage" (click)="onPageChange(p)">{{ p }}</button>
+        <button class="pag-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">›</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ MODAL DE CONFIRMATION ════════════════════════ -->
+<div *ngIf="showConfirmModal" class="modal-overlay" (click)="onCancelAction()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-icon" [class.icon-warn]="confirmAction==='disable'" [class.icon-ok]="confirmAction==='enable'">
+      <svg *ngIf="confirmAction==='disable'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+      </svg>
+      <svg *ngIf="confirmAction==='enable'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+
+    <h3>{{ confirmAction === 'disable' ? 'Désactiver l\'utilisateur' : 'Réactiver l\'utilisateur' }}</h3>
+    <p>
+      {{ confirmAction === 'disable'
+        ? 'L\'utilisateur ne pourra plus se connecter.'
+        : 'L\'utilisateur pourra à nouveau se connecter.' }}
+      <br>
+      <strong>{{ confirmUser?.name }}</strong> ({{ confirmUser?.email }})
+    </p>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="onCancelAction()" [disabled]="isProcessing">
+        Annuler
+      </button>
+      <button
+        [class]="confirmAction === 'disable' ? 'btn-confirm-danger' : 'btn-confirm-ok'"
+        (click)="onConfirmAction()"
+        [disabled]="isProcessing">
+        <span *ngIf="!isProcessing">
+          {{ confirmAction === 'disable' ? 'Désactiver' : 'Réactiver' }}
+        </span>
+        <span *ngIf="isProcessing" class="spinner-sm"></span>
+      </button>
+    </div>
+
+  </div>
 </div>

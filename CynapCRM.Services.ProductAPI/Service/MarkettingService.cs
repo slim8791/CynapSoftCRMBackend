@@ -50,8 +50,12 @@ namespace CynapCRM.Services.ProductAPI.Service
             }
             else
             {
-                _mapper.Map(supportDto, support);
+                support.Type = supportDto.Type;
+                support.CampaignName = supportDto.CampaignName;
+                support.IsActive = supportDto.IsActive;
+                support.Id_Produit = supportDto.Id_Produit;
             }
+
 
             await _db.SaveChangesAsync();
             return _mapper.Map<SupportMarketingDto>(support);
@@ -75,13 +79,23 @@ namespace CynapCRM.Services.ProductAPI.Service
 
         public async Task<FichierDto> AddFileToSupportAsync(FichierDto fichierDto)
         {
+            if (fichierDto.Id_Support <= 0)
+                throw new Exception("Id_Support invalide.");
+
             var supportExists = await _db.Support_Markettings
                 .AnyAsync(s => s.Id_SupportMarketting == fichierDto.Id_Support);
 
             if (!supportExists)
                 throw new Exception("Support marketing introuvable.");
 
-            var fichier = _mapper.Map<Fichier>(fichierDto);
+            var fichier = new Fichier
+            {
+                NomFichier = fichierDto.NomFichier,
+                Url = fichierDto.Url,
+                Extension = fichierDto.Extension,
+                Taille = fichierDto.Taille,
+                Id_Support = fichierDto.Id_Support
+            };
             _db.Fichiers.Add(fichier);
 
             await _db.SaveChangesAsync();

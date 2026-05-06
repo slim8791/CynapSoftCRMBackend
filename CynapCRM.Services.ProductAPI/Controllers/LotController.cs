@@ -72,6 +72,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                     _response.Message = "Erreur, vérifier les références.";
                     return BadRequest(_response);
                 }
+                _response.Result = result;  // ✅ Retourner les données
                 _response.Message = lotDto.Numero == null ? "Lot créé avec succès." : "Lot mis à jour avec succès.";
                 return Ok(_response);
             }

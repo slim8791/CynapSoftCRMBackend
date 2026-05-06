@@ -1,74 +1,243 @@
-<div class="user-form-container">
-  <h1>{{ isEditMode ? 'Edit User' : 'Add User' }}</h1>
+<div class="uf-wrapper">
 
-  <app-card [title]="isEditMode ? 'Edit User' : 'Add New User'">
+  <!-- ── En-tête ──────────────────────────────────────── -->
+  <div class="uf-header">
+    <a routerLink="/users" class="back-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Utilisateurs
+    </a>
+    <h1>{{ isEditMode ? 'Modifier le rôle' : 'Nouvel utilisateur' }}</h1>
+  </div>
 
-    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+  <!-- ── Carte formulaire ──────────────────────────────── -->
+  <div class="uf-card">
 
-<div class="form-group">
-        <label>Name</label>
-        <input class="form-control" formControlName="name">
-        <div *ngIf="userForm.get('name')?.invalid && userForm.get('name')?.touched" class="invalid-feedback">
-          <div *ngIf="userForm.get('name')?.hasError('required')">Name is required</div>
+    <!-- Badge mode -->
+    <div class="uf-mode-badge" [class.edit]="isEditMode">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path *ngIf="!isEditMode" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle *ngIf="!isEditMode" cx="12" cy="7" r="4"/>
+        <path *ngIf="isEditMode" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path *ngIf="isEditMode" d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      {{ isEditMode ? 'Modification du rôle uniquement' : 'Création d\'un nouveau compte' }}
+    </div>
+
+    <!-- Chargement -->
+    <div *ngIf="loading && isEditMode" class="uf-loading">
+      <div class="spinner"></div>
+      <span>Chargement…</span>
+    </div>
+
+    <form *ngIf="!loading || !isEditMode" [formGroup]="userForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Section : Identité -->
+      <div class="uf-section">
+        <h3 class="uf-section-title">Identité</h3>
+
+        <div class="uf-grid">
+
+          <div class="uf-field">
+            <label for="name">Nom complet *</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <input
+                id="name"
+                type="text"
+                formControlName="name"
+                class="uf-input"
+                [class.uf-invalid]="userForm.get('name')?.invalid && userForm.get('name')?.touched"
+                [readonly]="isEditMode"
+                placeholder="Prénom Nom">
+            </div>
+            <span class="field-err" *ngIf="userForm.get('name')?.invalid && userForm.get('name')?.touched">
+              Nom obligatoire.
+            </span>
+          </div>
+
+          <div class="uf-field">
+            <label for="email">Adresse email *</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                class="uf-input"
+                [class.uf-invalid]="userForm.get('email')?.invalid && userForm.get('email')?.touched"
+                [readonly]="isEditMode"
+                placeholder="utilisateur@exemple.com">
+            </div>
+            <span class="field-err" *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+              Adresse email valide obligatoire.
+            </span>
+          </div>
+
         </div>
       </div>
 
-<div class="form-group">
-        <label>Email</label>
-        <input class="form-control" formControlName="email" [readonly]="isEditMode">
-        <div *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched" class="invalid-feedback">
-          <div *ngIf="userForm.get('email')?.hasError('required')">Email is required</div>
-          <div *ngIf="userForm.get('email')?.hasError('email')">Valid email required</div>
+      <!-- Section : Coordonnées -->
+      <div class="uf-section" *ngIf="!isEditMode">
+        <h3 class="uf-section-title">Coordonnées</h3>
+
+        <div class="uf-grid">
+
+          <div class="uf-field">
+            <label for="phone">Téléphone</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.92 17h-.04l.04-.08z"/>
+              </svg>
+              <input
+                id="phone"
+                type="tel"
+                formControlName="phoneNumber"
+                class="uf-input"
+                placeholder="+216 XX XXX XXX">
+            </div>
+          </div>
+
+          <div class="uf-field">
+            <label for="adresse">Adresse *</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <input
+                id="adresse"
+                type="text"
+                formControlName="adresse"
+                class="uf-input"
+                [class.uf-invalid]="userForm.get('adresse')?.invalid && userForm.get('adresse')?.touched"
+                placeholder="Ville, Pays">
+            </div>
+            <span class="field-err" *ngIf="userForm.get('adresse')?.invalid && userForm.get('adresse')?.touched">
+              Adresse obligatoire.
+            </span>
+          </div>
+
         </div>
       </div>
 
-<div class="form-group">
-        <label>Adresse</label>
-        <input class="form-control" formControlName="adresse" [class.is-invalid]="userForm.get('adresse')?.invalid && userForm.get('adresse')?.touched">
-        <div *ngIf="userForm.get('adresse')?.invalid && userForm.get('adresse')?.touched" class="invalid-feedback">
-          <div *ngIf="userForm.get('adresse')?.hasError('required')">Adresse is required</div>
+      <!-- Section : Rôle & Accès -->
+      <div class="uf-section">
+        <h3 class="uf-section-title">Rôle &amp; Accès</h3>
+
+        <div class="uf-grid">
+
+          <div class="uf-field">
+            <label for="role">Rôle *</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <select
+                id="role"
+                formControlName="role"
+                class="uf-input uf-select"
+                [class.uf-invalid]="userForm.get('role')?.invalid && userForm.get('role')?.touched">
+                <option value="" disabled>-- Sélectionner un rôle --</option>
+                <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+              </select>
+            </div>
+            <span class="field-err" *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched">
+              Rôle obligatoire.
+            </span>
+          </div>
+
+          <!-- UserType (création + rôle CLIENT uniquement) -->
+          <div class="uf-field" *ngIf="!isEditMode">
+            <label for="userType">Type d'utilisateur</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+              </svg>
+              <select id="userType" formControlName="userType" class="uf-input uf-select">
+                <option *ngFor="let t of userTypes" [value]="t">{{ t }}</option>
+              </select>
+            </div>
+          </div>
+
         </div>
       </div>
 
-<div class="form-group">
-        <label>Role</label>
-        <select class="form-control" formControlName="role" [class.is-invalid]="userForm.get('role')?.invalid && userForm.get('role')?.touched">
-          <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
-        </select>
-        <div *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched" class="invalid-feedback">
-          <div *ngIf="userForm.get('role')?.hasError('required')">Role is required</div>
+      <!-- Section : Sécurité (création uniquement) -->
+      <div class="uf-section" *ngIf="!isEditMode">
+        <h3 class="uf-section-title">Sécurité</h3>
+
+        <div class="uf-field" style="max-width:340px">
+          <label for="password">Mot de passe *</label>
+          <div class="input-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              class="uf-input"
+              [class.uf-invalid]="userForm.get('password')?.invalid && userForm.get('password')?.touched"
+              placeholder="6 caractères minimum">
+          </div>
+          <span class="field-err" *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched">
+            <span *ngIf="userForm.get('password')?.hasError('required')">Mot de passe obligatoire.</span>
+            <span *ngIf="userForm.get('password')?.hasError('minlength')">Au moins 6 caractères.</span>
+          </span>
         </div>
       </div>
 
-      <!-- ✅ Création uniquement -->
-      <div class="form-group" *ngIf="!isEditMode">
-        <label>Password</label>
-        <input type="password" class="form-control" formControlName="password" [class.is-invalid]="userForm.get('password')?.invalid && userForm.get('password')?.touched">
-        <div *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched" class="invalid-feedback">
-          <div *ngIf="userForm.get('password')?.hasError('required')">Password is required</div>
-          <div *ngIf="userForm.get('password')?.hasError('minlength')">Password must be at least 6 characters</div>
-        </div>
+      <!-- Note d'édition -->
+      <div *ngIf="isEditMode" class="uf-info-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        En mode édition, seul le <strong>rôle</strong> peut être modifié.
       </div>
 
-      <div class="action-buttons">
-        <a routerLink="/users">
-          <app-button label="Cancel" variant="secondary"></app-button>
-        </a>
+      <!-- Messages -->
+      <div *ngIf="error" class="uf-error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        {{ error }}
+      </div>
 
-        <app-button
-          [label]="isEditMode ? 'Update Role' : 'Create User'"
-          variant="primary"
-          [type]="'submit'"
+      <div *ngIf="success" class="uf-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Utilisateur {{ isEditMode ? 'mis à jour' : 'créé' }} avec succès.
+      </div>
+
+      <!-- Boutons -->
+      <div class="uf-actions">
+        <a routerLink="/users" class="btn-cancel">Annuler</a>
+        <button
+          type="submit"
+          class="btn-submit"
           [disabled]="userForm.invalid || loading">
-        </app-button>
-      </div>
-
-      <div *ngIf="error" class="error">{{ error }}</div>
-      <div *ngIf="success" class="success">
-        User {{ isEditMode ? 'updated' : 'created' }} successfully ✅
+          <span *ngIf="!loading">
+            {{ isEditMode ? 'Mettre à jour le rôle' : 'Créer l\'utilisateur' }}
+          </span>
+          <span *ngIf="loading" class="spinner-sm"></span>
+        </button>
       </div>
 
     </form>
-
-  </app-card>
+  </div>
 </div>

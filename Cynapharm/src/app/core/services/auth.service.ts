@@ -170,4 +170,16 @@ export class AuthService {
       NewPassword: newPassword
     });
   }
+
+  /**
+   * Changement de mot de passe — l'utilisateur doit être connecté.
+   * PUT /auth/change-password
+   */
+  changePassword(email: string, currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/change-password`, {
+      Email: email,
+      CurrentPassword: currentPassword,
+      NewPassword: newPassword
+    });
+  }
 }

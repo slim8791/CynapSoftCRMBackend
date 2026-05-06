@@ -31,6 +31,11 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         Task<bool> ArchiveProductAsync(int productId);
 
         /// <summary>
+        /// Désarchive un produit (inverse de ArchiveProductAsync)
+        /// </summary>
+        Task<bool> UnarchiveProductAsync(int productId);
+
+        /// <summary>
         /// Active un produit (visible et vendable)
         /// </summary>
         Task<bool> ActivateProductAsync(int productId);

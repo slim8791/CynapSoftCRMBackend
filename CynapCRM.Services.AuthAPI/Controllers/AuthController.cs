@@ -87,8 +87,37 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             _response.Result = loginResponse;
             return Ok(_response);
         }
+        [HttpGet("users/search")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> SearchUsers(
+            [FromQuery] string keyword,
+            [FromQuery] bool? isActive = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(keyword) || keyword.Trim().Length < 3)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Le mot-clé doit contenir au moins 3 caractères.";
+                    return BadRequest(_response);
+                }
+
+                var users = await _authService.SearchUsersAsync(keyword.Trim(), isActive);
+                _response.IsSuccess = true;
+                _response.Result = users.ToList();
+                _response.Message = $"{users.Count()} utilisateur(s) trouvé(s).";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = $"Erreur de recherche : {ex.Message}";
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpGet("users")]
-        [Authorize(Roles = "ADMIN")] 
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetAllUsers()
         {
             try
@@ -300,7 +329,7 @@ Inner: {ex.InnerException?.Message}";
         }
         [HttpPut("enable-user/{email}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> EnableUser([FromBody] string email)
+        public async Task<IActionResult> EnableUser(string email)
         {
             var result = await _authService.EnableUser(email);
             if (!result)
@@ -316,7 +345,7 @@ Inner: {ex.InnerException?.Message}";
         }
         [HttpPut("delete-user/{email}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> DeleteUser([FromBody] string email)
+        public async Task<IActionResult> DeleteUser(string email)
         {
             var result = await _authService.DisableUser(email);
             if (!result)
@@ -330,7 +359,7 @@ Inner: {ex.InnerException?.Message}";
             _response.Message = "Utilisateur supprimé.";
             return Ok(_response);
         }
-[HttpGet("users/{id}")]
+        [HttpGet("users/{id}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> GetUserById(int id)
         {

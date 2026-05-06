@@ -22,6 +22,7 @@ export class ProductFormComponent implements OnInit {
   success = false;
 
   private productId = '';
+  private loadedIsArchived = false;
   private readonly destroyRef  = inject(DestroyRef);
   private readonly cdr         = inject(ChangeDetectorRef);
   private readonly toastService   = inject(ToastService);
@@ -37,7 +38,7 @@ export class ProductFormComponent implements OnInit {
       Prix_Vente:    ['', [Validators.required, Validators.min(0)]],
       Prix_Creation: ['', [Validators.required, Validators.min(0)]],
       TVA:           [19, [Validators.required, Validators.min(0), Validators.max(100)]],
-      IsActive:      [true]
+      isActive:      [true]
     });
   }
 
@@ -89,13 +90,14 @@ export class ProductFormComponent implements OnInit {
         next: (data: any) => {
           const raw = data?.Result ?? data;
 
+          this.loadedIsArchived = raw.IsArchived ?? raw.isArchived ?? false;
           this.productForm.patchValue({
             Nom:           raw.Nom           ?? raw.nom           ?? '',
             Description:   raw.Description   ?? raw.description   ?? '',
             Prix_Vente:    raw.Prix_Vente     ?? raw.prix_Vente    ?? 0,
             Prix_Creation: raw.Prix_Creation  ?? raw.prix_Creation ?? 0,
             TVA:           raw.TVA            ?? raw.tva           ?? 19,
-            IsActive:      raw.IsActive       ?? raw.isActive      ?? true
+            isActive:      raw.IsActive       ?? raw.isActive      ?? true
           });
 
           this.loading = false;
@@ -130,8 +132,8 @@ export class ProductFormComponent implements OnInit {
       Prix_Vente:    parseFloat(String(v.Prix_Vente).replace(',', '.')),
       Prix_Creation: parseFloat(String(v.Prix_Creation).replace(',', '.')),
       TVA:           Number(v.TVA),
-      IsActive:      v.IsActive ?? true,
-      IsArchived:    false
+      IsActive:      v.isActive ?? true,
+      IsArchived:    this.loadedIsArchived
     };
 
     const request = this.isEditMode
@@ -147,7 +149,7 @@ export class ProductFormComponent implements OnInit {
         );
         setTimeout(() => this.router.navigate(['/products']), 1200);
       },
-      error: (err) => {
+      error: () => {
         this.error   = `Erreur lors de ${this.isEditMode ? 'la mise à jour' : 'la création'} du produit.`;
         this.loading = false;
         this.cdr.detectChanges();

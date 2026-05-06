@@ -1,0 +1,57 @@
+<div class="page">
+      <div class="page-header">
+        <div>
+          <h1>Objectifs</h1>
+          <p class="subtitle">Suivi des objectifs commerciaux</p>
+        </div>
+        <a routerLink="/field/objectifs/new" class="btn btn-primary">+ Nouvel objectif</a>
+      </div>
+
+      <div *ngIf="loading" class="loading-wrap">
+        <div class="spinner"></div><span>Chargement...</span>
+      </div>
+
+      <div *ngIf="error && !loading" class="error-banner">
+        {{ error }}
+        <button class="retry-btn" (click)="load()">Réessayer</button>
+      </div>
+
+      <div *ngIf="!loading && !error && objectifs.length === 0">
+        <app-empty-state title="Aucun objectif" message="Commencez par créer un objectif.">
+          <a routerLink="/field/objectifs/new" class="btn btn-primary">Créer un objectif</a>
+        </app-empty-state>
+      </div>
+
+      <div *ngIf="!loading && objectifs.length > 0" class="cards-grid">
+        <div *ngFor="let o of objectifs" class="obj-card">
+          <div class="obj-top">
+            <div class="obj-info">
+              <span class="obj-type">{{ o.type }}</span>
+              <span class="obj-periode badge">{{ o.periode }}</span>
+            </div>
+            <span class="obj-id mono">#{{ o.idObjectif }}</span>
+          </div>
+          <div class="obj-dates">
+            {{ o.dateDebut | date:'dd/MM/yyyy' }} — {{ o.dateFin | date:'dd/MM/yyyy' }}
+          </div>
+          <div class="progress-section">
+            <div class="progress-header">
+              <span>Progression</span>
+              <span class="progress-values">{{ o.valeurRealisee }} / {{ o.valeurCible }}</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill"
+                   [style.width.%]="progressPct(o.valeurRealisee, o.valeurCible)"
+                   [class.complete]="o.valeurRealisee >= o.valeurCible">
+              </div>
+            </div>
+            <span class="progress-pct">{{ progressPct(o.valeurRealisee, o.valeurCible) }}%</span>
+          </div>
+          <div class="obj-footer">
+            <span class="delegue-tag">Délégué #{{ o.id_User_Delegue }}</span>
+            <a [routerLink]="['/field/objectifs/edit', o.idObjectif]" class="link-btn">Modifier</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  

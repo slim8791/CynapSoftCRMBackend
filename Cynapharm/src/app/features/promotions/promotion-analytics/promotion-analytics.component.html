@@ -1,0 +1,20 @@
+<div class="page-wrapper">
+      <a routerLink="/promotions" class="back-link">← Promotions</a>
+      <h1>Analytics promotions</h1>
+
+      @if (loading) { <div class="loading-block"><div class="spinner"></div></div> }
+
+      @if (!loading) {
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <span class="kpi-val">{{ activeCount }}</span>
+            <span class="kpi-lbl">Promotions actives</span>
+          </div>
+          <div class="kpi-card kpi-blue">
+            <span class="kpi-val">{{ coverageRate | number:'1.0-1' }}%</span>
+            <span class="kpi-lbl">Taux de couverture</span>
+          </div>
+        </div>
+      }
+    </div>
+  

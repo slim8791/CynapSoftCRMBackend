@@ -1,0 +1,13 @@
+@if (totalPages > 1) {
+      <div class="pag-bar">
+        <span class="pag-info">{{ from }}–{{ to }} sur {{ total }}</span>
+        <div class="pag-controls">
+          <button class="pag-btn" [disabled]="page === 1" (click)="go(page - 1)">‹</button>
+          @for (n of pages; track n) {
+            <button class="pag-btn" [class.active]="n === page" (click)="go(n)">{{ n }}</button>
+          }
+          <button class="pag-btn" [disabled]="page === totalPages" (click)="go(page + 1)">›</button>
+        </div>
+      </div>
+    }
+  

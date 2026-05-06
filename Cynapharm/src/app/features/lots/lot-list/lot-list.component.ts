@@ -1,168 +1,223 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+// ── lot-list.component.ts ────────────────────────────────────────────────────
+import {
+  Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef
+} from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
 import { LotService } from '../lot.service';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { CardComponent } from '../../../shared/components/card/card.component';
+import { ToastService } from '../../../shared/services/toast.service';
+import {
+  LotDto, LotStatus,
+  getLotStatus, STATUS_LABEL, STATUS_CSS_CLASS
+} from '../lot.model';
+
+interface Column {
+  key: keyof LotDto | 'status';
+  label: string;
+}
+
+type StatusFilter = 'all' | LotStatus;
 
 @Component({
   selector: 'app-lot-list',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    ButtonComponent,
-    CardComponent
-  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, FormsModule, RouterLink, DatePipe],
   templateUrl: './lot-list.component.html',
-  styleUrls: ['./lot-list.component.css']
+  styleUrls: ['./lot-list.component.scss'],
 })
+export class LotListComponent implements OnInit, OnDestroy {
 
-export class LotListComponent implements OnInit {
+  // ── État ──────────────────────────────────────────────────────────────────
+  lots: LotDto[]         = [];
+  filteredLots: LotDto[] = [];
+  loading  = true;
+  error    = '';
 
-  lots: any[] = [];
-  loading = true;
-  error = '';
-  productId: number | null = null;
-  productName: string = '';
+  // ── Contexte produit (optionnel) ──────────────────────────────────────────
+  productId:   number | null = null;
+  productName  = '';
 
-  columns = [
-    { key: 'numero', label: 'Lot #' },
-    { key: 'quantite', label: 'Quantité' },
+  // ── Filtres ───────────────────────────────────────────────────────────────
+  searchTerm:   string       = '';
+  statusFilter: StatusFilter = 'all';
+
+  // ── KPI (calculés une seule fois après chaque chargement) ─────────────────
+  totalLots     = 0;
+  totalActive   = 0;
+  totalLowStock = 0;
+  totalExpired  = 0;
+
+  // ── Modal suppression ─────────────────────────────────────────────────────
+  showDeleteModal = false;
+  lotToDelete: LotDto | null = null;
+
+  // ── Configuration colonnes ────────────────────────────────────────────────
+  readonly columns: Column[] = [
+    { key: 'numero',         label: 'N° Lot'     },
+    { key: 'quantite',       label: 'Quantité'   },
     { key: 'dateExpiration', label: 'Expiration' },
-    { key: 'status', label: 'Status' }
+    { key: 'status',         label: 'Statut'     },
   ];
 
+  private readonly destroy$ = new Subject<void>();
+
   constructor(
-    private lotService: LotService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private readonly lotService:   LotService,
+    private readonly router:       Router,
+    private readonly route:        ActivatedRoute,
+    private readonly cdr:          ChangeDetectorRef,
+    private readonly toastService: ToastService,
   ) {}
 
+  // ── Cycle de vie ──────────────────────────────────────────────────────────
+
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      this.productId = params['productId'] ? Number(params['productId']) : null;
-      this.productName = params['productName'] ?? '';
-      this.loadLots();
-    });
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        this.productId   = params['productId'] ? Number(params['productId']) : null;
+        this.productName = params['productName'] ?? '';
+        this.loadLots();
+      });
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ── Chargement ────────────────────────────────────────────────────────────
 
   private loadLots(): void {
     this.loading = true;
-    this.error = '';
+    this.error   = '';
 
-    if (this.productId) {
-      console.log('[LotList] Loading lots for product ID:', this.productId);
-      this.lotService.getLotsByProductId(this.productId).subscribe({
-        next: (response: any) => {
-          console.log('[LotList] GetLotsByProductId response:', response);
-          
-          const data = response?.Result ?? response?.result ?? response ?? [];
-          console.log('[LotList] Extracted data:', data, 'Type:', typeof data, 'IsArray:', Array.isArray(data));
+    const source$ = this.productId
+      ? this.lotService.getLotsByProductId(this.productId)
+      : this.lotService.getAllLots();
 
-          if (Array.isArray(data)) {
-            this.lots = data.map(l => this.normalizeLot(l));
-            console.log('[LotList] Loaded', this.lots.length, 'lots for product', this.productId);
-          } else {
-            console.warn('[LotList] Data is not an array:', data);
-            this.lots = [];
-          }
+    source$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (lots: LotDto[]) => {
+        this.lots    = lots;
+        this.loading = false;
+        this.updateKPIs();
+        this.applyFilters();
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.error   = err?.error?.message ?? 'Erreur lors du chargement des lots.';
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
 
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
-        error: (err: any) => {
-          console.error('[LotList] GetLotsByProductId error:', err);
-          this.loading = false;
-          this.error = err.error?.message || 'Erreur lors du chargement des lots';
-          this.cdr.markForCheck();
-        }
-      });
-    } else {
-      console.log('[LotList] Loading all lots');
-      this.lotService.getAllLots().subscribe({
-        next: (response: any) => {
-          console.log('[LotList] GetAllLots response:', response);
-          
-          const data = response?.Result ?? response?.result ?? response ?? [];
-          console.log('[LotList] Extracted data:', data, 'Type:', typeof data, 'IsArray:', Array.isArray(data));
+  // ── KPI ───────────────────────────────────────────────────────────────────
 
-          if (Array.isArray(data)) {
-            this.lots = data.map(l => this.normalizeLot(l));
-            console.log('[LotList] Loaded', this.lots.length, 'lots');
-          } else {
-            console.warn('[LotList] Data is not an array:', data);
-            this.lots = [];
-          }
+  private updateKPIs(): void {
+    this.totalLots     = this.lots.length;
+    this.totalActive   = this.lots.filter(l => getLotStatus(l) === 'active').length;
+    this.totalLowStock = this.lots.filter(l => getLotStatus(l) === 'low-stock').length;
+    this.totalExpired  = this.lots.filter(l => getLotStatus(l) === 'expired').length;
+  }
 
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
-        error: (err: any) => {
-          console.error('[LotList] GetAllLots error:', err);
-          this.loading = false;
-          this.error = err.error?.message || 'Erreur lors du chargement des lots';
-          this.cdr.markForCheck();
-        }
-      });
+  // ── Filtres ───────────────────────────────────────────────────────────────
+
+  applyFilters(): void {
+    let result = this.lots;
+
+    if (this.statusFilter !== 'all') {
+      result = result.filter(l => getLotStatus(l) === this.statusFilter);
     }
+
+    const term = this.searchTerm.trim().toLowerCase();
+    if (term.length >= 2) {
+      result = result.filter(l => l.numero.toLowerCase().includes(term));
+    }
+
+    this.filteredLots = result;
   }
 
-  private normalizeLot(lot: any): any {
-    return {
-      ...lot,
-      numero: lot.numero ?? lot.Numero,
-      quantite: lot.quantite ?? lot.Quantite,
-      dateExpiration: lot.dateExpiration ?? lot.DateExpiration,
-      isExpired: lot.isExpired ?? lot.IsExpired ?? false,
-      isOutOfStock: lot.isOutOfStock ?? lot.IsOutOfStock ?? false
-    };
+  onSearch(): void          { this.applyFilters(); }
+  onStatusFilterChange(): void { this.applyFilters(); }
+
+  onKPIClick(filter: StatusFilter): void {
+    this.statusFilter = filter;
+    this.applyFilters();
+    this.cdr.markForCheck();
   }
 
-  getStatusText(lot: any): string {
-    if (lot.isExpired) return 'Expired';
-    if (lot.isOutOfStock) return 'Out of stock';
-    return 'Active';
-  }
+  // ── Helpers template ──────────────────────────────────────────────────────
 
-  getStatusClass(lot: any): string {
-    if (lot.isExpired) return 'status-expired';
-    if (lot.isOutOfStock) return 'status-low-stock';
-    return 'status-active';
-  }
-
-  getValue(lot: any, key: string): any {
+  /** Renvoie la valeur affichable d'une cellule (hors colonne 'status') */
+  getCellValue(lot: LotDto, key: keyof LotDto | 'status'): string {
+    if (key === 'status')         return ''; // géré séparément
     if (key === 'dateExpiration') {
       return lot.dateExpiration
-        ? new Date(lot.dateExpiration).toLocaleDateString()
+        ? new Date(lot.dateExpiration).toLocaleDateString('fr-FR')
         : 'N/A';
     }
-    return lot[key] ?? '';
+    return String(lot[key as keyof LotDto] ?? '');
   }
 
-  onView(lot: any): void {
-    const extras = { queryParams: this.productId ? {productId: this.productId} : {} };
-    this.router.navigate(['/lots', lot.numero], extras);
+  getStatusText(lot: LotDto): string {
+    return STATUS_LABEL[getLotStatus(lot)];
   }
 
-  onEdit(lot: any): void {
-    const extras = { queryParams: this.productId ? {productId: this.productId} : {} };
-    this.router.navigate(['/lots', lot.numero, 'edit'], extras);
+  getStatusClass(lot: LotDto): string {
+    return STATUS_CSS_CLASS[getLotStatus(lot)];
   }
 
-  onDelete(lot: any): void {
-    if (!confirm(`Supprimer le lot ${lot.numero}?`)) return;
+  // ── Navigation ────────────────────────────────────────────────────────────
 
-    this.lotService.deleteLot(lot.numero).subscribe({
-      next: () => {
-        console.log('[LotList] Lot deleted successfully');
-        this.loadLots();
-      },
-      error: (err) => {
-        console.error('[LotList] Error deleting lot:', err);
-        alert('Erreur lors de la suppression du lot');
-      }
+  onView(lot: LotDto): void {
+    this.router.navigate(['/lots', lot.numero], {
+      queryParams: this.productId ? { productId: this.productId } : {},
     });
+  }
+
+  onEdit(lot: LotDto): void {
+    this.router.navigate(['/lots', lot.numero, 'edit'], {
+      queryParams: this.productId ? { productId: this.productId } : {},
+    });
+  }
+
+  // ── Suppression ───────────────────────────────────────────────────────────
+
+  onDelete(lot: LotDto): void {
+    this.lotToDelete    = lot;
+    this.showDeleteModal = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal = false;
+    this.lotToDelete    = null;
+  }
+
+  confirmDelete(): void {
+    if (!this.lotToDelete) return;
+    const { numero } = this.lotToDelete;
+    this.showDeleteModal = false;
+
+    this.lotService.deleteLot(numero)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess(`Lot ${numero} supprimé avec succès.`);
+          this.lotToDelete = null;
+          this.loadLots();
+        },
+        error: (err: any) => {
+          this.toastService.showError(
+            err?.error?.message ?? 'Erreur lors de la suppression du lot.'
+          );
+          this.lotToDelete = null;
+        },
+      });
   }
 }

@@ -1,0 +1,62 @@
+<div class="page">
+      <div class="page-header">
+        <a routerLink="/inventory/stocks" class="back-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Retour
+        </a>
+        <h1>{{ isEdit ? 'Modifier le stock' : 'Nouveau stock' }}</h1>
+      </div>
+
+      <div *ngIf="loadingData" class="loading-wrap">
+        <div class="spinner"></div><span>Chargement...</span>
+      </div>
+
+      <div *ngIf="fetchError" class="error-banner">{{ fetchError }}</div>
+
+      <form *ngIf="!loadingData" [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+        <div class="form-grid">
+          <div class="field">
+            <label>Délégué (ID) *</label>
+            <input type="number" formControlName="id_User_Delegue" placeholder="ID du délégué" />
+            <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Champ requis</span>
+          </div>
+          <div class="field">
+            <label>Produit (ID) *</label>
+            <input type="number" formControlName="id_Produit" placeholder="ID du produit" />
+            <span *ngIf="f['id_Produit'].touched && f['id_Produit'].invalid" class="field-error">Champ requis</span>
+          </div>
+          <div class="field">
+            <label>Numéro de lot *</label>
+            <input type="text" formControlName="numeroLot" placeholder="Ex: LOT-2024-001" />
+            <span *ngIf="f['numeroLot'].touched && f['numeroLot'].invalid" class="field-error">Champ requis</span>
+          </div>
+          <div class="field">
+            <label>Date d'expiration *</label>
+            <input type="date" formControlName="dateExpiration" />
+            <span *ngIf="f['dateExpiration'].touched && f['dateExpiration'].invalid" class="field-error">Champ requis</span>
+          </div>
+          <div class="field">
+            <label>Qté disponible *</label>
+            <input type="number" formControlName="qteDisponible" min="0" placeholder="0" />
+            <span *ngIf="f['qteDisponible'].touched && f['qteDisponible'].invalid" class="field-error">Valeur invalide (min 0)</span>
+          </div>
+          <div class="field">
+            <label>Qté réservée</label>
+            <input type="number" formControlName="qteReservee" min="0" placeholder="0" />
+            <span *ngIf="f['qteReservee'].touched && f['qteReservee'].invalid" class="field-error">Valeur invalide (min 0)</span>
+          </div>
+        </div>
+
+        <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
+        <div *ngIf="successMsg" class="success-banner">{{ successMsg }}</div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="saving">
+            <span *ngIf="saving" class="btn-spinner"></span>
+            {{ saving ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+          </button>
+          <a routerLink="/inventory/stocks" class="btn btn-secondary">Annuler</a>
+        </div>
+      </form>
+    </div>
+  

@@ -1,10 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-export type LotStatusType = 'active' | 'expired' | 'low-stock';
+export type LotStatusType = 'active' | 'expired' | 'low-stock' | 'out-of-stock';
 
 /**
- * Pipe to compute lot status based on expiration date and quantity
- * Returns: 'En stock', 'Expiré', or 'Faible'
+ * Calcule le statut d'un lot à partir de la date d'expiration et de la quantité.
+ * Retourne : 'Expiré', 'Rupture', 'Faible' ou 'En stock'
  */
 @Pipe({
   name: 'lotStatus',
@@ -17,10 +17,10 @@ export class LotStatusPipe implements PipeTransform {
     const dateExp = lot.DateExpiration ?? lot.dateExpiration;
     if (!dateExp) return 'Inconnu';
 
-    const isExpired = new Date(dateExp) < new Date();
-    if (isExpired) return 'Expiré';
+    if (new Date(dateExp) < new Date()) return 'Expiré';
 
     const quantity = lot.Quantite ?? lot.quantite ?? 0;
+    if (quantity === 0) return 'Rupture';
     if (quantity <= threshold) return 'Faible';
 
     return 'En stock';
@@ -28,8 +28,7 @@ export class LotStatusPipe implements PipeTransform {
 }
 
 /**
- * Pipe to get CSS class for lot status badge
- * Returns: 'badge-active', 'badge-expired', or 'badge-low-stock'
+ * Retourne la classe CSS du badge de statut d'un lot.
  */
 @Pipe({
   name: 'lotStatusClass',
@@ -42,10 +41,10 @@ export class LotStatusClassPipe implements PipeTransform {
     const dateExp = lot.DateExpiration ?? lot.dateExpiration;
     if (!dateExp) return 'badge-unknown';
 
-    const isExpired = new Date(dateExp) < new Date();
-    if (isExpired) return 'badge-expired';
+    if (new Date(dateExp) < new Date()) return 'badge-expired';
 
     const quantity = lot.Quantite ?? lot.quantite ?? 0;
+    if (quantity === 0) return 'badge-out-of-stock';
     if (quantity <= threshold) return 'badge-low-stock';
 
     return 'badge-active';
@@ -53,8 +52,7 @@ export class LotStatusClassPipe implements PipeTransform {
 }
 
 /**
- * Pipe to get icon code for lot status
- * Returns: SVG icon class or code
+ * Retourne le code icône du statut d'un lot.
  */
 @Pipe({
   name: 'lotStatusIcon',
@@ -67,10 +65,10 @@ export class LotStatusIconPipe implements PipeTransform {
     const dateExp = lot.DateExpiration ?? lot.dateExpiration;
     if (!dateExp) return 'unknown';
 
-    const isExpired = new Date(dateExp) < new Date();
-    if (isExpired) return 'expired';
+    if (new Date(dateExp) < new Date()) return 'expired';
 
     const quantity = lot.Quantite ?? lot.quantite ?? 0;
+    if (quantity === 0) return 'out-of-stock';
     if (quantity <= threshold) return 'low-stock';
 
     return 'active';

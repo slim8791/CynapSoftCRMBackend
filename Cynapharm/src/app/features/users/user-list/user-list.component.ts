@@ -1,130 +1,320 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink, NavigationEnd } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil, filter, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
 import { UserService } from '../user.service';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
-import { CardComponent } from '../../../shared/components/card/card.component';
+
+type StatusFilter = 'all' | 'active' | 'disabled';
+type RoleFilter   = 'all' | 'ADMIN' | 'SUPERVISEUR' | 'DELEGUE' | 'MEDECIN' | 'CLIENT';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    ButtonComponent,
-    CardComponent
-  ],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.css']
 })
-export class UserListComponent implements OnInit {
+export class UserListComponent implements OnInit, OnDestroy {
 
-  users: any[] = [];
-  loading = false;
-  error = '';
+  // ── Données ──────────────────────────────────────────
+  allUsers:      any[] = [];
+  filteredUsers: any[] = [];
+  loading  = false;
+  error    = '';
 
-  columns = [
-    { key: 'id', label: 'ID' },
-    { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email' },
-    { key: 'role', label: 'Role' },
-    { key: 'isDeleted', label: 'Status' }
-  ];
+  // ── Recherche & filtres ──────────────────────────────
+  searchTerm:   string       = '';
+  statusFilter: StatusFilter = 'all';
+  roleFilter:   RoleFilter   = 'all';
+
+  readonly ROLES: RoleFilter[] = ['ADMIN', 'SUPERVISEUR', 'DELEGUE', 'MEDECIN', 'CLIENT'];
+
+  // ── Pagination ───────────────────────────────────────
+  currentPage = 1;
+  readonly pageSize = 10;
+
+  // ── Modal de confirmation ────────────────────────────
+  showConfirmModal = false;
+  confirmAction: 'enable' | 'disable' | '' = '';
+  confirmUser: any = null;
+  isProcessing = false;
+
+  private readonly destroy$      = new Subject<void>();
+  private readonly searchSubject = new Subject<string>();
 
   constructor(
     private userService: UserService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      filter((e: any) => e.url === '/users'),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.loadUsers());
+  }
 
   ngOnInit(): void {
+    // Debounce recherche : déclenche à partir du 3ème caractère
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(term => {
+      if (term.length >= 3) {
+        this.performSearch(term);
+      } else {
+        this.applyStatusFilter();
+      }
+    });
+
     this.loadUsers();
   }
 
-  getStatusText(isDeleted: boolean): string {
-    return isDeleted ? 'Disabled' : 'Active';
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  getStatusClass(isDeleted: boolean): string {
-    return isDeleted ? 'status-disabled' : 'status-active';
-  }
-
-  getValue(user: any, key: string): any {
-    if (key === 'isDeleted') {
-      return this.getStatusText(user.isDeleted);
-    }
-    return user[key] || '';
-  }
+  // ── Chargement initial ───────────────────────────────
 
   private loadUsers(): void {
     this.loading = true;
-    this.error = '';
+    this.error   = '';
+    this.cdr.markForCheck();
 
-    this.userService.getUsers().subscribe({
-      next: (response: any) => {
-        console.log('Users API response:', response);
-        let usersData = [];
-        if (Array.isArray(response)) {
-          usersData = response;
-        } else if (response && (response.result || response.Result)) {
-          usersData = response.result || response.Result;
+    this.userService.getUsers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          const raw = Array.isArray(response)
+            ? response
+            : response?.result ?? response?.Result ?? [];
+          this.allUsers = raw.map((u: any) => this.normalizeUser(u));
+          this.applyStatusFilter();
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          this.error   = this.resolveError(err);
+          this.loading = false;
+          this.cdr.markForCheck();
         }
-        console.log('Parsed users:', usersData);
-        this.users = usersData.map((u: any) => this.normalizeUser(u));
-        console.log('Normalized users:', this.users);
-        this.loading = false;
+      });
+  }
+
+  // ── Filtres combinés : statut + rôle (frontend) ──────
+
+  applyStatusFilter(): void {
+    let result = [...this.allUsers];
+
+    // Filtre par statut
+    if (this.statusFilter === 'active')   result = result.filter(u => !u.isDeleted);
+    if (this.statusFilter === 'disabled') result = result.filter(u =>  u.isDeleted);
+
+    // Filtre par rôle
+    if (this.roleFilter !== 'all') {
+      result = result.filter(u => (u.role ?? '').toUpperCase() === this.roleFilter);
+    }
+
+    this.filteredUsers = result;
+    this.currentPage   = 1;
+    this.cdr.markForCheck();
+  }
+
+  onRoleFilterChange(): void {
+    if (this.searchTerm.length >= 3) {
+      this.applyRoleFilterOnSearchResults();
+    } else {
+      this.applyStatusFilter();
+    }
+  }
+
+  // Applique le filtre rôle sur les résultats de recherche déjà affichés
+  private applyRoleFilterOnSearchResults(): void {
+    if (this.roleFilter === 'all') return;
+    this.filteredUsers = this.filteredUsers.filter(
+      u => (u.role ?? '').toUpperCase() === this.roleFilter
+    );
+    this.currentPage = 1;
+    this.cdr.markForCheck();
+  }
+
+  // ── Pagination ────────────────────────────────────────
+
+  get totalPages(): number { return Math.ceil(this.filteredUsers.length / this.pageSize) || 1; }
+
+  get paginatedUsers(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredUsers.slice(start, start + this.pageSize);
+  }
+
+  get pageNumbers(): number[] {
+    const maxVisible = 5;
+    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    const end = Math.min(this.totalPages, start + maxVisible - 1);
+    start = Math.max(1, end - maxVisible + 1);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
+
+  onPageChange(page: number): void {
+    if (page >= 1 && page <= this.totalPages) { this.currentPage = page; this.cdr.markForCheck(); }
+  }
+
+  onStatusFilterChange(): void {
+    if (this.searchTerm.length >= 3) {
+      this.performSearch(this.searchTerm);
+    } else {
+      this.applyStatusFilter();
+    }
+  }
+
+  // ── Recherche backend (>= 3 chars) ───────────────────
+
+  onSearchInput(term: string): void {
+    this.searchSubject.next(term);
+  }
+
+  private performSearch(keyword: string): void {
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    const isActive = this.statusFilter === 'active'
+      ? true
+      : this.statusFilter === 'disabled'
+        ? false
+        : undefined;
+
+    this.userService.searchUsers(keyword, isActive)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          const raw = Array.isArray(response)
+            ? response
+            : response?.result ?? response?.Result ?? [];
+          let results = raw.map((u: any) => this.normalizeUser(u));
+          // Filtre rôle côté client sur les résultats backend
+          if (this.roleFilter !== 'all') {
+            results = results.filter((u: any) => (u.role ?? '').toUpperCase() === this.roleFilter);
+          }
+          this.filteredUsers = results;
+          this.currentPage   = 1;
+          this.loading       = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.applyStatusFilter();
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.applyStatusFilter();  // roleFilter remains active
+  }
+
+  // ── Helpers ──────────────────────────────────────────
+
+  private normalizeUser(u: any): any {
+    return {
+      ...u,
+      id:        u.id        ?? u.Id        ?? u.userId,
+      name:      u.name      ?? u.Name      ?? u.nom      ?? '',
+      email:     u.email     ?? u.Email     ?? '',
+      role:      u.role      ?? u.Role      ?? '',
+      phoneNumber: u.phoneNumber ?? u.PhoneNumber ?? '',
+      adresse:   u.adresse   ?? u.Adresse   ?? '',
+      isDeleted: u.isDeleted ?? u.IsDeleted ?? false
+    };
+  }
+
+  getInitials(name: string): string {
+    if (!name) return '?';
+    return name.split(' ')
+      .slice(0, 2)
+      .map(w => w[0]?.toUpperCase() ?? '')
+      .join('');
+  }
+
+  getRoleClass(role: string): string {
+    switch ((role || '').toUpperCase()) {
+      case 'ADMIN':       return 'role-admin';
+      case 'SUPERVISEUR': return 'role-superviseur';
+      case 'DELEGUE':     return 'role-delegue';
+      case 'MEDECIN':     return 'role-medecin';
+      case 'CLIENT':      return 'role-client';
+      default:            return 'role-default';
+    }
+  }
+
+  private resolveError(err: any): string {
+    if (err.status === 515 || err.status === 500) return 'Erreur serveur — vérifiez l\'AuthAPI.';
+    if (err.status === 403) return 'Accès refusé — rôle ADMIN requis.';
+    if (err.status === 0)   return 'Passerelle inaccessible — vérifiez localhost:5555.';
+    return err.error?.message ?? 'Erreur lors du chargement des utilisateurs.';
+  }
+
+  // ── Compteurs ─────────────────────────────────────────
+
+  get totalActive():   number { return this.allUsers.filter(u => !u.isDeleted).length; }
+  get totalDisabled(): number { return this.allUsers.filter(u =>  u.isDeleted).length; }
+
+  countByRole(role: string): number {
+    return this.allUsers.filter(u => (u.role ?? '').toUpperCase() === role).length;
+  }
+
+  // ── Navigation ────────────────────────────────────────
+
+  onView(id: number):  void { this.router.navigate(['/users', id]); }
+  onEdit(id: number):  void { this.router.navigate(['/users', id, 'edit']); }
+
+  // ── Actions avec confirmation ─────────────────────────
+
+  onDisable(user: any): void {
+    this.confirmUser   = user;
+    this.confirmAction = 'disable';
+    this.showConfirmModal = true;
+  }
+
+  onEnable(user: any): void {
+    this.confirmUser   = user;
+    this.confirmAction = 'enable';
+    this.showConfirmModal = true;
+  }
+
+  onConfirmAction(): void {
+    if (!this.confirmUser || !this.confirmAction) return;
+    this.isProcessing = true;
+
+    const req$ = this.confirmAction === 'disable'
+      ? this.userService.disableUser(this.confirmUser.email)
+      : this.userService.enableUser(this.confirmUser.email);
+
+    req$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.isProcessing = false;
+        this.closeModal();
+        this.loadUsers();
       },
       error: (err: any) => {
-        console.error('Users load error:', err);
-        this.loading = false;
-        let errorMsg = 'Failed to load users';
-        if (err.status === 515) {
-          errorMsg = 'Backend error (515) - Service crash. Check AuthAPI logs/DB.';
-        } else if (err.status === 403) {
-          errorMsg = 'Access denied - ADMIN role required.';
-        } else if (err.status === 0) {
-          errorMsg = 'Gateway not running - check localhost:5555';
-        }
-        this.error = errorMsg;
+        this.error        = this.resolveError(err);
+        this.isProcessing = false;
+        this.closeModal();
+        this.cdr.markForCheck();
       }
     });
   }
 
-  private normalizeUser(user: any): any {
-    return {
-      ...user,
-      id: user.id ?? user.Id ?? user.userId,
-      name: user.name ?? user.Name ?? user.nom,
-      email: user.email ?? user.Email,
-      role: user.role ?? user.Role,
-      isDeleted: user.isDeleted ?? user.IsDeleted ?? false
-    };
-  }
+  onCancelAction(): void { this.closeModal(); }
 
-  onDelete(user: any): void {
-    if (!user?.email) return;
-
-    if (confirm(`Disable user ${user.email}?`)) {
-      this.userService.disableUser(user.email).subscribe({
-        next: () => this.loadUsers(),
-        error: err => console.error(err)
-      });
-    }
-  }
-
-  onView(id: number): void {
-    this.router.navigate(['/users', id]);
-  }
-
-  onEdit(id: number): void {
-    this.router.navigate(['/users', id, 'edit']);
-  }
-
-  onEnable(user: any): void {
-    if (confirm(`Enable user ${user.email}?`)) {
-      this.userService.enableUser(user.email).subscribe({
-        next: () => this.loadUsers(),
-        error: err => console.error(err)
-      });
-    }
+  private closeModal(): void {
+    this.showConfirmModal = false;
+    this.confirmAction    = '';
+    this.confirmUser      = null;
   }
 }

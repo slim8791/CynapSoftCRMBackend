@@ -1,30 +1,143 @@
-<div class="order-list-container">
-  <h1>Orders</h1>
+<div class="ol-wrapper">
 
-  <div class="action-bar">
-    <a routerLink="/orders/new">
-      <app-button label="Create Order" variant="primary"></app-button>
-    </a>
+  <!-- ═══ EN-TÊTE ══════════════════════════════════════════ -->
+  <div class="ol-header">
+    <div>
+      <h1 class="ol-title">Commandes</h1>
+      <p class="ol-sub">Gestion des commandes clients</p>
+    </div>
+    <div class="ol-actions">
+      <a routerLink="/orders/reclamations" class="btn-outline-link">Réclamations</a>
+    </div>
   </div>
 
-  <app-card title="Order List">
-    <div *ngIf="!loading">
-      <app-table [columns]="columns" [data]="orders"></app-table>
-      <div class="table-actions" *ngFor="let order of orders">
-        <a [routerLink]="['/orders', order.id]">
-          <app-button label="View" variant="secondary" (clicked)="onView(order.id)"></app-button>
-        </a>
-        <app-button label="Edit" variant="secondary" (clicked)="onEdit(order.id)"></app-button>
-        <app-button label="Delete" variant="danger" (clicked)="onDelete(order.id)"></app-button>
+  <!-- ═══ ERREUR ═══════════════════════════════════════════ -->
+  @if (error) {
+    <div class="alert-danger">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error }}
+      <button class="retry-btn" (click)="load()">Réessayer</button>
+    </div>
+  }
+
+  <!-- ═══ LOADING ══════════════════════════════════════════ -->
+  @if (loading) {
+    <div class="ol-loading">
+      <div class="spinner"></div>
+      <span>Chargement des commandes…</span>
+    </div>
+  }
+
+  <!-- ═══ CONTENU ══════════════════════════════════════════ -->
+  @if (!loading && !error) {
+
+    @if (orders.length === 0) {
+      <div class="ol-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+        <p>Aucune commande trouvée.</p>
       </div>
-    </div>
+    } @else {
 
-    <div *ngIf="loading" class="loading">
-      <p>Loading orders...</p>
-    </div>
+      <div class="ol-table-card">
+        <table class="ol-table">
+          <thead>
+            <tr>
+              <th>N° Commande</th>
+              <th>Date</th>
+              <th>Client</th>
+              <th class="col-center">Lignes</th>
+              <th class="col-right">HT (TND)</th>
+              <th class="col-right">TTC (TND)</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of orders; track order.Id_Commande) {
+              <tr>
+                <td class="col-id">#{{ order.Id_Commande }}</td>
+                <td>{{ order.DateCommande | date:'dd/MM/yyyy' }}</td>
+                <td class="col-gray">Client #{{ order.Id_Client }}</td>
+                <td class="col-center">
+                  <span class="badge-count">{{ getLignesCount(order) }}</span>
+                </td>
+                <td class="col-right">{{ order.MontantTotalHT | number:'1.2-2' }}</td>
+                <td class="col-right fw-bold">{{ order.MontantTTC | number:'1.2-2' }}</td>
+                <td>
+                  <span class="chip" [ngClass]="getEtatClass(order.Statut)">
+                    {{ getEtatLabel(order.Statut) }}
+                  </span>
+                </td>
+                <td class="col-actions">
+                  <button class="act-btn view" (click)="onView(order.Id_Commande)" title="Voir le détail">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                  @if (isAdmin) {
+                    <button class="act-btn delete" (click)="openDeleteModal(order)" title="Supprimer">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
-    <div *ngIf="error" class="error">
-      <p>{{ error }}</p>
-    </div>
-  </app-card>
+      <!-- Pagination -->
+      <div class="ol-pagination">
+        <button class="pag-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+          ‹ Précédent
+        </button>
+        <span class="pag-page">Page {{ currentPage }}</span>
+        <button class="pag-btn" [disabled]="!hasMore" (click)="onPageChange(currentPage + 1)">
+          Suivant ›
+        </button>
+      </div>
+    }
+  }
 </div>
+
+<!-- ═══ MODAL : Confirmer la suppression ═══════════════════ -->
+@if (showDeleteModal && deletingOrder) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+
+      <div class="modal-icon-danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </div>
+
+      <h3 class="modal-title">Supprimer la commande ?</h3>
+      <p class="modal-body">
+        La commande <strong>#{{ deletingOrder.Id_Commande }}</strong>
+        ({{ getEtatLabel(deletingOrder.Statut) }} — {{ deletingOrder.MontantTTC | number:'1.2-2' }} TND TTC)
+        sera supprimée définitivement. Cette action est irréversible.
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelDelete()" [disabled]="deleting">
+          Annuler
+        </button>
+        <button class="btn-confirm-danger" (click)="confirmDelete()" [disabled]="deleting">
+          @if (deleting) { <span class="spinner-sm"></span> }
+          @else          { Supprimer }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

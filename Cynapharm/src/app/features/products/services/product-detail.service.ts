@@ -10,9 +10,7 @@ export class ProductDetailService {
   private readonly productAdvanced = inject(ProductAdvancedService);
 
   getProductDashboard(productId: number): Observable<any> {
-    // BUG ORIGINAL : productId ignoré — appelait /api/products/dashboard
-    // sans le passer à getProductDashboard(), retournant un dashboard global
-    return this.productAdvanced.getProductDashboard();
+    return this.api.get<any>(`/products/${productId}/dashboard`);
   }
 
   getStock(productId: number): Observable<number> {

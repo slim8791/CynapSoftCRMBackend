@@ -1,10 +1,10 @@
 <div class="product-list-container">
 
-  <!-- Header -->
+  <!-- ═══ EN-TÊTE ═══════════════════════════════════ -->
   <div class="header-section">
     <div>
       <h1>Gestion des produits</h1>
-      <span class="count-badge">{{ filteredProducts.length }} produit(s) affiché(s)</span>
+      <p class="subtitle">{{ totalProducts }} produit(s) au total</p>
     </div>
     <button routerLink="/products/new" class="btn-primary" aria-label="Créer un nouveau produit">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -12,6 +12,26 @@
       </svg>
       Nouveau produit
     </button>
+  </div>
+
+  <!-- ═══ CARTES KPI ══════════════════════════════════ -->
+  <div class="kpi-row">
+    <div class="kpi-card" (click)="onKPIClick('all')" [class.kpi-active]="statusFilter==='all'">
+      <span class="kpi-val">{{ totalProducts }}</span>
+      <span class="kpi-lbl">Total</span>
+    </div>
+    <div class="kpi-card kpi-green" (click)="onKPIClick('active')" [class.kpi-active]="statusFilter==='active'">
+      <span class="kpi-val">{{ totalActive }}</span>
+      <span class="kpi-lbl">Actifs</span>
+    </div>
+    <div class="kpi-card kpi-orange" (click)="onKPIClick('inactive')" [class.kpi-active]="statusFilter==='inactive'">
+      <span class="kpi-val">{{ totalInactive }}</span>
+      <span class="kpi-lbl">Inactifs</span>
+    </div>
+    <div class="kpi-card kpi-red" (click)="onKPIClick('archived')" [class.kpi-active]="statusFilter==='archived'">
+      <span class="kpi-val">{{ totalArchived }}</span>
+      <span class="kpi-lbl">Archivés</span>
+    </div>
   </div>
 
   <!-- Alertes -->
@@ -32,34 +52,57 @@
     </div>
   }
 
-  <!-- Filtres -->
+  <!-- ═══ BARRE D'OUTILS ══════════════════════════════ -->
   <div class="filters-bar">
+
+    <!-- Recherche -->
     <div class="search-wrap">
-      <svg class="icon search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <input
         type="text"
         [(ngModel)]="searchTerm"
         (input)="onSearch()"
-        placeholder="Rechercher par nom ou description (min. 3 caractères)…"
-        class="form-control"
+        placeholder="Rechercher (nom, description)…"
+        class="form-control search-input"
+        autocomplete="off"
         aria-label="Recherche produit" />
+      <button *ngIf="searchTerm" class="search-clear" (click)="searchTerm = ''; onSearch()" aria-label="Effacer">✕</button>
+      <span *ngIf="searchTerm.length > 0 && searchTerm.length < 3" class="search-hint">
+        3 caractères min.
+      </span>
     </div>
 
-    <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange()" class="form-select" aria-label="Filtre statut">
-      <option value="all">Tous les statuts</option>
-      <option value="active">Actifs uniquement</option>
-      <option value="inactive">Inactifs uniquement</option>
-      <option value="archived">Archivés uniquement</option>
+    <!-- Filtre statut -->
+    <div class="filter-wrap">
+      <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      <select
+        [(ngModel)]="statusFilter"
+        (ngModelChange)="onStatusFilterChange()"
+        class="form-select filter-select"
+        aria-label="Filtre par statut">
+        <option value="all">Tous les produits</option>
+        <option value="active">Actifs uniquement</option>
+        <option value="inactive">Inactifs uniquement</option>
+        <option value="archived">Archivés uniquement</option>
+      </select>
+    </div>
+
+    <!-- Taille de page -->
+    <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="form-select" aria-label="Taille de page">
+      <option value="5">5 / page</option>
+      <option value="10">10 / page</option>
+      <option value="20">20 / page</option>
+      <option value="50">50 / page</option>
     </select>
 
-    <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="form-select" aria-label="Taille de page">
-      <option value="5">5 par page</option>
-      <option value="10">10 par page</option>
-      <option value="20">20 par page</option>
-      <option value="50">50 par page</option>
-    </select>
+    <span class="results-count">
+      {{ filteredProducts.length }} résultat(s)
+      <ng-container *ngIf="searchTerm.length >= 3"> pour « {{ searchTerm }} »</ng-container>
+    </span>
   </div>
 
   <!-- Loading -->

@@ -26,7 +26,7 @@ export class PromotionAdvancedService {
    * Récupère toutes les promotions
    */
   getAllPromotions(): Observable<any[]> {
-    return this.api.get('/product/promos').pipe(
+    return this.api.get('/products/promos').pipe(
       map((response: any) => response.result ?? [])
     );
   }
@@ -35,7 +35,7 @@ export class PromotionAdvancedService {
    * Récupère une promotion par ID
    */
   getPromotionById(promotionId: number): Observable<any> {
-    return this.api.get(`/product/promos/${promotionId}`).pipe(
+    return this.api.get(`/products/promos/${promotionId}`).pipe(
       map((response: any) => response.result)
     );
   }
@@ -44,7 +44,7 @@ export class PromotionAdvancedService {
    * Récupère les promotions pour un produit
    */
   getPromotionsByProduct(productId: number): Observable<any[]> {
-    return this.api.get(`/product/promos/product/${productId}`).pipe(
+    return this.api.get(`/products/promos/product/${productId}`).pipe(
       map((response: any) => response.result ?? [])
     );
   }
@@ -53,7 +53,7 @@ export class PromotionAdvancedService {
    * Récupère les promotions pour un lot
    */
   getPromotionsByLot(numeroLot: string): Observable<any[]> {
-    return this.api.get(`/product/promos/lot/${numeroLot}`).pipe(
+    return this.api.get(`/products/promos/lot/${numeroLot}`).pipe(
       map((response: any) => response.result ?? [])
     );
   }
@@ -62,7 +62,7 @@ export class PromotionAdvancedService {
    * Applique la meilleure promotion pour un produit
    */
   applyBestPromotion(productId: number, initialPrice: number): Observable<number> {
-    return this.api.get(`/product/promos/product/${productId}/apply?initialPrice=${initialPrice}`).pipe(
+    return this.api.get(`/products/promos/product/${productId}/apply?initialPrice=${initialPrice}`).pipe(
       map((response: any) => response.result ?? initialPrice)
     );
   }
@@ -71,7 +71,7 @@ export class PromotionAdvancedService {
    * Vérifie si un produit est en promotion
    */
   isProductInPromotion(productId: number): Observable<boolean> {
-    return this.api.get(`/product/promos/product/${productId}/in-promotion`).pipe(
+    return this.api.get(`/products/promos/product/${productId}/in-promotion`).pipe(
       map((response: any) => response.result ?? false)
     );
   }
@@ -80,7 +80,7 @@ export class PromotionAdvancedService {
    * Crée ou met à jour une promotion
    */
   createOrUpdatePromotion(promotionData: any): Observable<any> {
-    return this.api.post('/product/promos', promotionData).pipe(
+    return this.api.post('/products/promos', promotionData).pipe(
       map((response: any) => response.result)
     );
   }
@@ -89,7 +89,7 @@ export class PromotionAdvancedService {
    * Supprime une promotion
    */
   deletePromotion(promotionId: number): Observable<any> {
-    return this.api.delete(`/product/promos/${promotionId}`);
+    return this.api.delete(`/products/promos/${promotionId}`);
   }
 
   /**

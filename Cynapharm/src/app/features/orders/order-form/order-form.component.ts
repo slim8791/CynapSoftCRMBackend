@@ -1,114 +1,77 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { OrderService } from '../order.service';
-import { CardComponent } from '../../../shared/components/card/card.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-order-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, CardComponent, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './order-form.component.html',
-  styleUrls: ['./order-form.component.css']
+  styleUrls: ['./order-form.component.css'],
 })
-export class OrderFormComponent implements OnInit {
-  orderForm: FormGroup;
-  isEditMode = false;
-  loading = false;
-  error = '';
-  success = false;
-  private orderId = '';
+export class OrderFormComponent implements OnInit, OnDestroy {
+
+  form!:   FormGroup;
+  loading  = false;
+  error    = '';
+  private destroy$ = new Subject<void>();
 
   constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
+    private fb:     FormBuilder,
     private router: Router,
-    private orderService: OrderService
-  ) {
-    this.orderForm = this.fb.group({
-      orderNumber: ['', Validators.required],
-      status: ['', Validators.required],
-      totalAmount: [0, [Validators.required, Validators.min(0)]],
-      createdDate: ['', Validators.required],
-      items: ['[]', Validators.required]
-    });
-  }
+    private svc:    OrderService,
+    private toast:  ToastService,
+  ) {}
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      if (params['id']) {
-        this.isEditMode = true;
-        this.orderId = params['id'];
-        this.loadOrderData();
-      }
+    this.form = this.fb.group({
+      IsFinalValidation: [false],
+      Lignes: this.fb.array([this.newLigne()]),
     });
   }
 
-  private loadOrderData(): void {
-    this.orderService.getOrderById(this.orderId).subscribe({
-      next: (data) => {
-        this.orderForm.patchValue({
-          orderNumber: data.orderNumber,
-          status: data.status,
-          totalAmount: data.totalAmount,
-          createdDate: data.createdDate?.split('T')[0] || data.createdDate,
-          items: JSON.stringify(data.items || [])
-        });
-      },
-      error: (err) => {
-        this.error = 'Failed to load order data';
-        console.error(err);
-      }
+  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
+
+  get lignes(): FormArray { return this.form.get('Lignes') as FormArray; }
+
+  newLigne(): FormGroup {
+    return this.fb.group({
+      Id_Produit:   ['', [Validators.required, Validators.min(1)]],
+      Quantite:     [1,  [Validators.required, Validators.min(1)]],
+      PrixUnitaire: ['', [Validators.required, Validators.min(0)]],
+      Remise:       [0,  [Validators.min(0), Validators.max(100)]],
     });
   }
+
+  addLigne():       void { this.lignes.push(this.newLigne()); }
+  removeLigne(i: number): void { if (this.lignes.length > 1) this.lignes.removeAt(i); }
 
   onSubmit(): void {
-    if (!this.orderForm.valid) {
-      return;
-    }
-
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.loading = true;
-    this.error = '';
-    this.success = false;
-
-    const rawData = this.orderForm.value;
-    let items = [];
-
-    try {
-      items = JSON.parse(rawData.items || '[]');
-    } catch {
-      this.error = 'Items must be valid JSON.';
-      this.loading = false;
-      return;
-    }
-
-    const orderData = {
-      orderNumber: rawData.orderNumber,
-      status: rawData.status,
-      totalAmount: rawData.totalAmount,
-      createdDate: rawData.createdDate,
-      items
+    const v = this.form.value;
+    const dto = {
+      Id_Client: 0,   // filled from JWT server-side
+      IsFinalValidation: v.IsFinalValidation,
+      Lignes: (v.Lignes as any[]).map((l: any) => ({
+        Id_Commande:  0,
+        Id_Ligne:     0,
+        Id_Produit:   Number(l.Id_Produit),
+        Quantite:     Number(l.Quantite),
+        PrixUnitaire: Number(l.PrixUnitaire),
+        Remise:       Number(l.Remise),
+      })),
     };
-
-    const request = this.isEditMode
-      ? this.orderService.updateOrder(this.orderId, orderData)
-      : this.orderService.createOrder(orderData);
-
-    request.subscribe({
-      next: () => {
-        this.loading = false;
-        this.success = true;
-        setTimeout(() => {
-          this.router.navigate(['/orders']);
-        }, 1200);
-      },
-      error: (err) => {
-        this.error = `Failed to ${this.isEditMode ? 'update' : 'create'} order`;
-        this.loading = false;
-        console.error(err);
-      }
+    this.svc.createOrder(dto).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => { this.toast.showSuccess('Commande créée avec succès.'); this.router.navigate(['/orders']); },
+      error: err => { this.error = err?.error?.Message ?? 'Erreur lors de la création.'; this.loading = false; },
     });
   }
+
+  inv(g: FormGroup, f: string): boolean { const c = g.get(f); return !!(c?.invalid && c?.touched); }
 }

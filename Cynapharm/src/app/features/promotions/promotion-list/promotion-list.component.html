@@ -1,0 +1,67 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Promotions</h1>
+      <p class="page-sub">{{ promotions.length }} promotion(s)</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/promotions/analytics" class="btn-secondary-link">📊 Analytics</a>
+      <a routerLink="/promotions/new" class="btn-primary-link">+ Nouvelle promotion</a>
+    </div>
+  </div>
+
+  @if (error) { <div class="alert-danger">{{ error }}</div> }
+
+  @if (loading) {
+    <div class="loading-block"><div class="spinner"></div> Chargement…</div>
+  } @else if (promotions.length === 0) {
+    <app-empty-state title="Aucune promotion" message="Créez votre première promotion.">
+      <a routerLink="/promotions/new" class="btn-primary-link">+ Créer</a>
+    </app-empty-state>
+  } @else {
+    <div class="table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>% Réduction</th>
+            <th>N° Lot</th>
+            <th>Début</th>
+            <th>Expiration</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of promotions; track p.id_Promo) {
+            <tr [class.row-expired]="isExpired(p)">
+              <td class="font-mono">{{ p.codePromo }}</td>
+              <td class="text-center"><strong class="text-danger">-{{ p.pourcentage }}%</strong></td>
+              <td>{{ p.numeroLot || '—' }}</td>
+              <td>{{ p.dateDebut | date:'dd/MM/yy' }}</td>
+              <td>{{ p.dateExpiration | date:'dd/MM/yy' }}</td>
+              <td>
+                <span class="chip" [class.chip-active]="p.estActive && !isExpired(p)" [class.chip-inactive]="!p.estActive || isExpired(p)">
+                  {{ p.estActive && !isExpired(p) ? 'Active' : isExpired(p) ? 'Expirée' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <a [routerLink]="['/promotions', p.id_Promo]" class="act-btn view">👁</a>
+                <a [routerLink]="['/promotions', p.id_Promo, 'edit']" class="act-btn edit">✏</a>
+                <button class="act-btn delete" (click)="openDelete(p)">🗑</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-confirm-dialog
+  [visible]="showConfirm"
+  title="Supprimer la promotion"
+  [message]="'Supprimer la promotion « ' + deletingCode + ' » ?'"
+  (confirmed)="confirmDelete()"
+  (cancelled)="showConfirm = false">
+</app-confirm-dialog>

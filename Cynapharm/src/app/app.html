@@ -1,35 +1,142 @@
 <div class="app-container">
-  <nav class="navbar" *ngIf="showNavbar()">
-    <div class="navbar-brand">
-      <h1>Cynapharm CRM</h1>
+
+  <!-- ── Sidebar ────────────────────────────────── -->
+  <aside class="sidebar-nav" *ngIf="showNavbar()">
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <span class="brand-icon">⊕</span>
+      <span class="brand-name">Cynap<strong>Soft</strong></span>
     </div>
 
-    <ul class="nav-menu">
-      <li>
-        <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-      </li>
-      <li>
-        <a routerLink="/products" routerLinkActive="active">Products</a>
-      </li>
-      <li>
-        <a routerLink="/lots" routerLinkActive="active">Lots</a>
-      </li>
-      <li>
-        <a routerLink="/marketing/supports" routerLinkActive="active">Marketing</a>
-      </li>
-      <li>
-        <a routerLink="/orders" routerLinkActive="active">Orders</a>
-      </li>
-      <li>
-        <a routerLink="/users" routerLinkActive="active">Users</a>
-      </li>
-      <li>
-        <a href="#" (click)="logout(); $event.preventDefault()">Logout</a>
-      </li>
-    </ul>
-  </nav>
+    <!-- Navigation -->
+    <nav class="sidebar-body">
 
+      <!-- Dashboard -->
+      <a routerLink="/dashboard" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+
+      <!-- ── Catalogue ── -->
+      <div class="nav-section-title">Catalogue</div>
+
+      <a routerLink="/products" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">💊</span>
+        <span class="nav-label">Produits</span>
+      </a>
+      <a routerLink="/lots" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">📦</span>
+        <span class="nav-label">Lots</span>
+      </a>
+      <a routerLink="/promotions" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">🏷</span>
+        <span class="nav-label">Promotions</span>
+      </a>
+
+      <!-- ── Commandes ── -->
+      <div class="nav-section-title">Commandes</div>
+
+      <a routerLink="/orders" routerLinkActive="nav-active" [routerLinkActiveOptions]="{exact:true}" class="nav-item">
+        <span class="nav-icon">🛒</span>
+        <span class="nav-label">Commandes</span>
+      </a>
+      <a routerLink="/orders/reclamations" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">⚠</span>
+        <span class="nav-label">Réclamations</span>
+      </a>
+
+      <!-- ── Inventaire ── -->
+      <div class="nav-section-title">Inventaire</div>
+
+      <a routerLink="/inventory/stocks" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">🏪</span>
+        <span class="nav-label">Stocks délégués</span>
+      </a>
+      <a routerLink="/inventory/movements" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">↔</span>
+        <span class="nav-label">Mouvements</span>
+      </a>
+      <a routerLink="/inventory/distributions" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">🧪</span>
+        <span class="nav-label">Distributions</span>
+      </a>
+      <a routerLink="/inventory/promo-stocks" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">🎁</span>
+        <span class="nav-label">Promo-stocks</span>
+      </a>
+
+      <!-- ── Terrain ── -->
+      <div class="nav-section-title">Terrain</div>
+
+      <a routerLink="/field/visites" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">👣</span>
+        <span class="nav-label">Visites</span>
+      </a>
+      <a routerLink="/field/plannings" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Plannings</span>
+      </a>
+      <a routerLink="/field/rapports" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">📝</span>
+        <span class="nav-label">Rapports</span>
+      </a>
+      <a routerLink="/field/objectifs" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">🎯</span>
+        <span class="nav-label">Objectifs</span>
+      </a>
+      <a routerLink="/field/regions" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">🗺</span>
+        <span class="nav-label">Régions</span>
+      </a>
+      <a routerLink="/field/kpi" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">📈</span>
+        <span class="nav-label">KPI</span>
+      </a>
+
+      <!-- ── Documents ── -->
+      <div class="nav-section-title">Documents</div>
+
+      <a routerLink="/documents/bons-commandes" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Bons commande</span>
+      </a>
+      <a routerLink="/documents/bons-livraison" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">🚚</span>
+        <span class="nav-label">Bons livraison</span>
+      </a>
+      <a routerLink="/documents/factures" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">🧾</span>
+        <span class="nav-label">Factures</span>
+      </a>
+
+      <!-- ── Admin ── -->
+      <div class="nav-section-title">Admin</div>
+
+      <a routerLink="/users" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Utilisateurs</span>
+      </a>
+
+      <!-- ── Paramètres + Déconnexion ── -->
+      <div class="nav-spacer"></div>
+
+      <a routerLink="/settings" routerLinkActive="nav-active" class="nav-item">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-label">Paramètres</span>
+      </a>
+
+      <a href="#" class="nav-item nav-logout" (click)="logout(); $event.preventDefault()">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-label">Déconnexion</span>
+      </a>
+
+    </nav>
+  </aside>
+
+  <!-- ── Main ──────────────────────────────────── -->
   <main class="main-content">
     <router-outlet></router-outlet>
   </main>
+
 </div>

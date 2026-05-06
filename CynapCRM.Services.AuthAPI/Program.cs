@@ -1,11 +1,12 @@
 ﻿using CynapCRM.Services.AuthAPI.Data;
+using CynapCRM.Services.AuthAPI.Extensions; 
 using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Service;
 using CynapCRM.Services.AuthAPI.Service.IService;
-using CynapCRM.Services.AuthAPI.Extensions; 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("ApiSettings:JwtOptions"));
 
-builder.Services.AddControllers();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
+    );
 builder.Services.AddEndpointsApiExplorer();
 
 // Add CORS

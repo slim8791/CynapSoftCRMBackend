@@ -15,7 +15,12 @@ export class ProductAdvancedService {
   }
 
   getPromotionsByProduct(productId: number): Observable<any[]> {
-    return this.api.get(`/api/promos/product/${productId}`);
+    return this.api.get<any>(`/products/promos/product/${productId}`).pipe(
+      map((r: any) => {
+        const raw = r?.result ?? r?.Result ?? r;
+        return Array.isArray(raw) ? raw : [];
+      })
+    );
   }
 
   getTotalStock(productId: number): Observable<number> {

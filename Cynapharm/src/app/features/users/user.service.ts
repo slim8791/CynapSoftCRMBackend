@@ -37,18 +37,33 @@ export class UserService {
     return this.apiService.put<any>(`${this.baseUrl}/change-role`, payload);
   }
 
+  
   disableUser(email: string): Observable<any> {
+    // ✅ Email encodé dans l'URL
+    const encodedEmail = encodeURIComponent(email);
     return this.apiService.put<any>(
-      `${this.baseUrl}/delete-user/${email}`,
+      `${this.baseUrl}/delete-user/${encodedEmail}`,
       {}
     );
   }
 
   enableUser(email: string): Observable<any> {
+    const encodedEmail = encodeURIComponent(email);
     return this.apiService.put<any>(
-      `${this.baseUrl}/enable-user/${email}`,
+      `${this.baseUrl}/enable-user/${encodedEmail}`,
       {}
     );
+  }
+
+  /** Recherche backend (keyword >= 3 chars). isActive=true→actifs, false→désactivés, undefined→tous */
+  searchUsers(keyword: string, isActive?: boolean): Observable<any> {
+    let url = `${this.baseUrl}/users/search?keyword=${encodeURIComponent(keyword)}`;
+    if (isActive !== undefined) url += `&isActive=${isActive}`;
+    return this.apiService.get<any>(url);
+  }
+
+  getDisabledUsers(): Observable<any> {
+    return this.apiService.get<any>(`${this.baseUrl}/disabled-users`);
   }
 }
 

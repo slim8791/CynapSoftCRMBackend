@@ -1,0 +1,30 @@
+.page { max-width: 1060px; margin: 0 auto; padding: 24px 16px; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    h1 { font-size: 22px; font-weight: 600; color: #111; margin: 0; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; }
+    .tab { padding: 9px 18px; border: none; background: transparent; font-size: 14px; font-weight: 500; color: #6b7280; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
+    .tab.active { color: #6366f1; border-bottom-color: #6366f1; }
+    .tab:hover:not(.active) { color: #374151; }
+    .filter-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-row label { font-size: 13px; font-weight: 500; color: #374151; white-space: nowrap; }
+    .filter-row input { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; width: 160px; }
+    .filter-row input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+    .btn { padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-primary { background: #6366f1; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #4f46e5; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .loading-wrap { display: flex; align-items: center; gap: 10px; padding: 48px; justify-content: center; color: #6b7280; }
+    .spinner { width: 22px; height: 22px; border: 3px solid #e5e7eb; border-top-color: #6366f1; border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-banner { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 8px; font-size: 14px; }
+    .table-wrap { overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead { background: #f9fafb; }
+    th { padding: 11px 14px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+    td { padding: 12px 14px; border-top: 1px solid #f3f4f6; color: #374151; vertical-align: middle; }
+    tr:hover td { background: #fafafa; }
+    .mono { font-family: monospace; font-size: 13px; }
+    .qty { font-weight: 600; color: #6366f1; }
+    .link-btn { font-size: 13px; color: #6366f1; text-decoration: none; font-weight: 500; }
+    .link-btn:hover { text-decoration: underline; }
+  

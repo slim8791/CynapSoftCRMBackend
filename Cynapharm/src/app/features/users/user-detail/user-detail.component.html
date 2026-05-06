@@ -1,70 +1,207 @@
-<div class="user-detail-container">
-  <h1>User Details</h1>
+<div class="ud-wrapper">
 
-  <!-- DEBUG INFO (optional - can be removed in production) -->
-  <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
-    loading={{ loading }} | error={{ error }} | user={{ user ? 'present' : 'null' }}
+  <!-- ── En-tête ─────────────────────────────────────── -->
+  <div class="ud-header">
+    <a routerLink="/users" class="back-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Utilisateurs
+    </a>
+    <h1>Profil utilisateur</h1>
   </div>
 
-  <div *ngIf="loading && !user" class="loading">
-    Loading user details...
+  <!-- Chargement -->
+  <div *ngIf="loading" class="ud-loading">
+    <div class="spinner"></div>
+    <span>Chargement du profil…</span>
   </div>
 
-  <div *ngIf="error" class="error">
+  <!-- Erreur -->
+  <div *ngIf="error && !loading" class="ud-error">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
     {{ error }}
   </div>
 
-  <div *ngIf="!loading && !error && user" class="detail-card">
-    <app-card [title]="user.Name || 'User'">
-      
-      <div class="detail-grid">
-        <div class="detail-item">
-          <label>ID:</label>
-          <span>{{ user.Id }}</span>
+  <!-- Contenu -->
+  <div *ngIf="!loading && !error && user" class="ud-body">
+
+    <!-- ── Carte identité ──────────────────────────── -->
+    <div class="ud-card identity-card">
+      <div class="identity-top">
+        <div class="big-avatar" [ngClass]="getRoleClass(user.role)">
+          {{ getInitials(user.name) }}
+        </div>
+        <div class="identity-info">
+          <h2 class="user-name">{{ user.name }}</h2>
+          <span class="user-email">{{ user.email }}</span>
+          <div class="identity-badges">
+            <span class="role-badge" [ngClass]="getRoleClass(user.role)">{{ user.role || '—' }}</span>
+            <span class="status-badge" [class.active]="!user.isDeleted" [class.disabled]="user.isDeleted">
+              <span class="status-dot"></span>
+              {{ user.isDeleted ? 'Désactivé' : 'Actif' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="ud-actions">
+        <a routerLink="/users" class="btn-back">
+          ← Retour à la liste
+        </a>
+        <button class="btn-edit" (click)="onEdit()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Modifier le rôle
+        </button>
+        <button *ngIf="!user.isDeleted" class="btn-disable" (click)="openDisable()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+          Désactiver
+        </button>
+        <button *ngIf="user.isDeleted" class="btn-enable" (click)="openEnable()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Réactiver
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Carte détails ───────────────────────────── -->
+    <div class="ud-card details-card">
+      <h3 class="details-title">Informations détaillées</h3>
+
+      <div class="details-grid">
+
+        <div class="detail-row">
+          <span class="detail-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/>
+              <line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>
+            </svg>
+            ID
+          </span>
+          <span class="detail-val id-val">#{{ user.id }}</span>
         </div>
 
-        <div class="detail-item">
-          <label>Name:</label>
-          <span>{{ user.Name }}</span>
+        <div class="detail-row">
+          <span class="detail-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Nom complet
+          </span>
+          <span class="detail-val">{{ user.name || '—' }}</span>
         </div>
 
-        <div class="detail-item">
-          <label>Email:</label>
-          <span>{{ user.Email }}</span>
+        <div class="detail-row">
+          <span class="detail-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Email
+          </span>
+          <a [href]="'mailto:' + user.email" class="detail-val email-link">{{ user.email }}</a>
         </div>
 
-        <div class="detail-item">
-          <label>Phone Number:</label>
-          <span>{{ user.PhoneNumber || 'N/A' }}</span>
+        <div class="detail-row">
+          <span class="detail-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.92 17z"/>
+            </svg>
+            Téléphone
+          </span>
+          <span class="detail-val">{{ user.phoneNumber || '—' }}</span>
         </div>
 
-        <div class="detail-item">
-          <label>Adresse:</label>
-          <span>{{ user.Adresse }}</span>
+        <div class="detail-row">
+          <span class="detail-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            Adresse
+          </span>
+          <span class="detail-val">{{ user.adresse || '—' }}</span>
         </div>
 
-        <div class="detail-item">
-          <label>Role:</label>
-          <span>{{ user.Role }}</span>
-        </div>
-
-        <div class="detail-item status-item">
-          <label>Status:</label>
-          <span [class]="(user.IsDeleted ? 'status-disabled' : 'status-active')">
-            {{ user.IsDeleted ? 'Disabled' : 'Active' }}
+        <div class="detail-row">
+          <span class="detail-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Rôle
+          </span>
+          <span class="role-badge detail-val-badge" [ngClass]="getRoleClass(user.role)">
+            {{ user.role || '—' }}
           </span>
         </div>
-      </div>
 
-      <div class="action-buttons">
-        <a routerLink="/users">
-          <app-button label="Back to List" variant="secondary"></app-button>
-        </a>
-        <app-button label="Edit" variant="primary" (clicked)="onEdit()"></app-button>
-        <app-button *ngIf="!user.IsDeleted" label="Disable" variant="danger" (clicked)="onDelete()"></app-button>
-        <app-button *ngIf="user.IsDeleted" label="Enable" variant="success" (clicked)="onEnable()"></app-button>
-      </div>
+        <div class="detail-row">
+          <span class="detail-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Statut
+          </span>
+          <span class="status-badge" [class.active]="!user.isDeleted" [class.disabled]="user.isDeleted">
+            <span class="status-dot"></span>
+            {{ user.isDeleted ? 'Désactivé' : 'Actif' }}
+          </span>
+        </div>
 
-    </app-card>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ MODAL D'ACTION ═══════════════════════════════ -->
+<div *ngIf="showActionModal" class="modal-overlay" (click)="cancelAction()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-icon" [class.icon-warn]="modalAction==='disable'" [class.icon-ok]="modalAction==='enable'">
+      <svg *ngIf="modalAction==='disable'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+      </svg>
+      <svg *ngIf="modalAction==='enable'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+
+    <h3>{{ modalAction === 'disable' ? 'Désactiver l\'utilisateur' : 'Réactiver l\'utilisateur' }}</h3>
+    <p>
+      <strong>{{ user?.name }}</strong> ({{ user?.email }}) —
+      {{ modalAction === 'disable'
+        ? 'ne pourra plus se connecter.'
+        : 'pourra à nouveau se connecter.' }}
+    </p>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="cancelAction()" [disabled]="isProcessing">Annuler</button>
+      <button
+        [class]="modalAction === 'disable' ? 'btn-danger' : 'btn-success'"
+        (click)="confirmAction()"
+        [disabled]="isProcessing">
+        <span *ngIf="!isProcessing">
+          {{ modalAction === 'disable' ? 'Désactiver' : 'Réactiver' }}
+        </span>
+        <span *ngIf="isProcessing" class="spinner-sm"></span>
+      </button>
+    </div>
+
   </div>
 </div>

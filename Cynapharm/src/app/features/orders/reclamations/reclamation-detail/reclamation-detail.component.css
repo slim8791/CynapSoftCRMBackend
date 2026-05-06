@@ -1,0 +1,30 @@
+.rd-wrapper { padding: 28px 32px; background: #f0f4f9; min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; }
+.rd-back-row { margin-bottom: 16px; }
+.back-link   { font-size: 13px; color: #0077b6; text-decoration: none; font-weight: 600; }
+.back-link:hover { text-decoration: underline; }
+.rd-loading  { display: flex; align-items: center; gap: 10px; padding: 30px; color: #6b7280; }
+.spinner     { width: 20px; height: 20px; border: 2.5px solid #e5e7eb; border-top-color: #0077b6; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.alert-danger { background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; }
+.rd-card { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); padding: 24px 28px; max-width: 680px; }
+.rd-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+.rd-title  { font-size: 20px; font-weight: 700; color: #0a1628; margin: 0; }
+.rd-id     { color: #0077b6; }
+.rd-sub    { font-size: 13px; color: #6b7280; margin: 4px 0 0; }
+.rd-message { background: #f8fafc; border-left: 3px solid #0077b6; border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 20px; }
+.rd-label  { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+.rd-msg-text { font-size: 14px; color: #1f2937; margin: 0; line-height: 1.6; }
+.rd-grid   { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 24px; }
+.rd-row    { background: #f8fafc; border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
+.rdl       { font-size: 11px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.rdv       { font-size: 14px; color: #0a1628; font-weight: 500; }
+.link      { color: #0077b6; text-decoration: none; font-weight: 600; font-size: 14px; }
+.link:hover { text-decoration: underline; }
+.rd-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-outline { padding: 8px 18px; border: 1px solid #d1d5db; border-radius: 9px; background: white; font-size: 13px; font-weight: 600; text-decoration: none; color: #374151; }
+.btn-primary { padding: 8px 18px; background: #0077b6; color: white; border-radius: 9px; font-size: 13px; font-weight: 600; text-decoration: none; }
+.chip    { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.chip-lg { padding: 5px 14px; font-size: 12px; }
+.chip-warning { background: #fef3c7; color: #92400e; }
+.chip-info    { background: #dbeafe; color: #1e40af; }
+.chip-success { background: #d1fae5; color: #065f46; }

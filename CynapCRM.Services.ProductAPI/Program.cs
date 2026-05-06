@@ -5,11 +5,14 @@ using CynapCRM.Services.ProductAPI.Service;
 using CynapCRM.Services.ProductAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-
+// Si vous avez cette ligne :
+builder.Services.AddControllers().AddJsonOptions(options => {
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
 builder.Services.AddSwaggerGen(option =>
 {
     option.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme
