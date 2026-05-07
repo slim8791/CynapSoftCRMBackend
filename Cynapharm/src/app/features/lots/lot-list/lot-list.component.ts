@@ -183,8 +183,9 @@ export class LotListComponent implements OnInit, OnDestroy {
   // ── Helpers template ──────────────────────────────────────────────────────
 
   /** Retourne le nom du produit pour un id donné */
-  getProductName(productId: number): string {
-    return this.productNameMap.get(productId) ?? `Product ${productId}`;
+  getProductName(productId: number | undefined): string {
+    if (!productId) return 'Unknown Product';
+    return this.productNameMap.get(productId) || 'Unknown Product';
   }
 
   /** Renvoie la valeur affichable d'une cellule (hors colonne 'status') */

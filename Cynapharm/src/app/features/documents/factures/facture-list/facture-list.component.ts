@@ -7,6 +7,7 @@ import { FactureService, FactureDto } from '../services/facture.service';
 import { CurrencyTNDPipe } from '../../../../shared/pipes/currency-tnd.pipe';
 import { PaginatorComponent } from '../../../../shared/components/paginator/paginator.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { PdfService } from '../../../../shared/services/pdf.service';
 
 @Component({
   selector: 'app-facture-list',
@@ -19,7 +20,7 @@ export class FactureListComponent implements OnInit, OnDestroy {
   factures: FactureDto[] = [];
   loading = false; error = ''; page = 1; pageSize = 20; total = 0;
   private d$ = new Subject<void>();
-  constructor(private svc: FactureService, private cdr: ChangeDetectorRef) {}
+  constructor(private svc: FactureService, private cdr: ChangeDetectorRef, private pdf: PdfService) {}
   ngOnInit() { this.load(); }
   ngOnDestroy() { this.d$.next(); this.d$.complete(); }
   load() {
@@ -30,4 +31,5 @@ export class FactureListComponent implements OnInit, OnDestroy {
     });
   }
   onPage(p: number) { this.page = p; this.load(); }
+  downloadPdf(facture: FactureDto) { this.pdf.downloadFacture(facture); }
 }
