@@ -19,4 +19,8 @@
     .detail-actions{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #f3f4f6}
     .btn-cancel{padding:9px 18px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;color:#374151;text-decoration:none}
     .btn-submit{padding:9px 18px;background:#0077b6;color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none}
+.type-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.type-gift{background:#f0fdf4;color:#065f46}
+.type-pct{background:#eff6ff;color:#1e40af}
+.text-red{color:#dc2626;font-weight:700}
   

@@ -131,6 +131,7 @@
         <table class="product-table">
           <thead>
             <tr>
+              <th class="col-toggle"></th>
               <th class="col-id">#</th>
               <th class="col-name">Nom</th>
               <th>Description</th>
@@ -142,7 +143,19 @@
           </thead>
           <tbody>
             @for (product of paginatedProducts; track product.Id_Produit) {
-              <tr>
+              <!-- Main row -->
+              <tr [class.row-open]="isExpanded(product.Id_Produit)">
+                <td class="toggle-cell">
+                  <button class="toggle-btn"
+                          (click)="toggleRow(product.Id_Produit)"
+                          [attr.aria-expanded]="isExpanded(product.Id_Produit)"
+                          [title]="isExpanded(product.Id_Produit) ? 'Hide lots' : 'Show lots'">
+                    <svg class="toggle-icon" [class.open]="isExpanded(product.Id_Produit)"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </button>
+                </td>
                 <td class="id-cell">{{ product.Id_Produit }}</td>
                 <td class="name-cell">{{ product.Nom || '—' }}</td>
                 <td class="desc-cell">{{ product.Description || '—' }}</td>
@@ -155,7 +168,7 @@
                     'badge-archived': product.IsArchived
                   }">{{ getStatusText(product) }}</span>
                 </td>
-                
+
 <td class="actions-cell">
 
   <!-- VOIR (toujours autorisé) -->
@@ -239,6 +252,82 @@
  
 
               </tr>
+
+              <!-- Detail row: lots ↓ -->
+              @if (isExpanded(product.Id_Produit)) {
+                <tr class="detail-row">
+                  <td colspan="8" class="detail-cell">
+
+                    @if (isLoadingLots(product.Id_Produit)) {
+                      <div class="detail-loading">
+                        <div class="detail-spinner"></div>
+                        <span>Loading lots…</span>
+                      </div>
+
+                    } @else if (getLots(product.Id_Produit).length === 0) {
+                      <div class="detail-empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                          <rect x="2" y="7" width="20" height="14" rx="2"/>
+                          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                        </svg>
+                        <span>No lots associated with this product.</span>
+                        <a [routerLink]="['/lots/new']"
+                           [queryParams]="{ productId: product.Id_Produit }"
+                           class="detail-add-link">+ Add first lot</a>
+                      </div>
+
+                    } @else {
+                      <div class="detail-body">
+                        <div class="detail-toolbar">
+                          <span class="detail-title">
+                            Lots ({{ getLots(product.Id_Produit).length }})
+                          </span>
+                          <a [routerLink]="['/lots/new']"
+                             [queryParams]="{ productId: product.Id_Produit }"
+                             class="detail-add-btn">+ Add lot</a>
+                        </div>
+                        <table class="lots-table">
+                          <thead>
+                            <tr>
+                              <th>Lot #</th>
+                              <th class="text-right">Qty</th>
+                              <th>Expiry</th>
+                              <th>Status</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (lot of getLots(product.Id_Produit); track lot.numero) {
+                              <tr>
+                                <td class="lot-num-cell">{{ lot.numero }}</td>
+                                <td class="text-right"><strong>{{ lot.quantite }}</strong></td>
+                                <td>{{ lot.dateExpiration | date:'dd/MM/yyyy' }}</td>
+                                <td>
+                                  <span class="lot-status-badge"
+                                        [ngClass]="lotStatusClass(lot)">
+                                    {{ lotStatusText(lot) }}
+                                  </span>
+                                </td>
+                                <td>
+                                  <a [routerLink]="['/lots', lot.numero]"
+                                     [queryParams]="{ productId: product.Id_Produit }"
+                                     class="lot-view-link" title="View lot">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                      <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                  </a>
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    }
+
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>

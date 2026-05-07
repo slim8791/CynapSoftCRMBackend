@@ -59,23 +59,36 @@
       <!-- ── ID Produit ────────────────────────────────────────────────────── -->
       <div class="form-group">
         <label for="idProduit">
-          ID Produit <span class="required" aria-hidden="true">*</span>
+          Produit <span class="required" aria-hidden="true">*</span>
         </label>
-        <input id="idProduit"
-               type="number"
-               class="form-control"
-               formControlName="idProduit"
-               placeholder="Identifiant numérique du produit"
-               min="1"
-               [class.is-invalid]="isInvalid('idProduit')"
-               aria-describedby="idProduit-error" />
+        
+        @if (loadingProducts) {
+          <div class="loading-indicator" aria-busy="true">
+            <div class="spinner-sm"></div>
+            <span>Chargement des produits…</span>
+          </div>
+        } @else {
+          <select id="idProduit"
+                  class="form-control"
+                  formControlName="idProduit"
+                  [class.is-invalid]="isInvalid('idProduit')"
+                  aria-describedby="idProduit-error">
+            <option value="" disabled>— Sélectionner un produit —</option>
+            @for (product of products; track product.idProduit) {
+              <option [value]="product.idProduit">
+                {{ product.nom }}
+              </option>
+            }
+          </select>
+        }
+        
         @if (isInvalid('idProduit')) {
           <div id="idProduit-error" class="invalid-feedback" role="alert">
-            ID Produit obligatoire.
+            Produit obligatoire.
           </div>
         }
-        @if (productId) {
-          <span class="field-hint">Pré-rempli depuis le contexte produit ({{ productId }})</span>
+        @if (productId && !loadingProducts) {
+          <span class="field-hint">Pré-sélectionné depuis le contexte produit</span>
         }
       </div>
 

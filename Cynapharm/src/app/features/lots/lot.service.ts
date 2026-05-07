@@ -58,13 +58,14 @@ export class LotService {
   /**
    * Crée ou met à jour un lot.
    * Transforme le LotDto (camelCase) en LotPayload (id_Produit) pour le backend.
+   * Exclut les champs calculés (isExpired, isOutOfStock) qui sont recalculés côté backend.
    */
   createOrUpdateLot(lot: LotDto): Observable<LotDto> {
     const payload: LotPayload = {
-      numero:          lot.numero,
-      dateExpiration:  lot.dateExpiration,
-      quantite:        lot.quantite,
-      id_Produit:      lot.idProduit,   // nom exact attendu par l'API C#
+      numero:          (lot.numero || '').trim(),
+      dateExpiration:  lot.dateExpiration || '',
+      quantite:        Number(lot.quantite) || 0,
+      id_Produit:      Number(lot.idProduit) || 0,   // S'assurer que c'est un nombre
     };
     return this.apiService.post<LotDto>(`${this.baseUrl}/lot`, payload);
   }
@@ -89,13 +90,13 @@ export class LotService {
 
     return raw.map(lot => ({
       ...lot,
-      // Normalisation défensive : le backend peut renvoyer PascalCase
+      // CamelCase policy: Id_Produit → id_Produit, Numero → numero, etc.
       numero:         lot.numero         ?? (lot as any).Numero         ?? '',
       dateExpiration: lot.dateExpiration ?? (lot as any).DateExpiration ?? '',
       quantite:       lot.quantite       ?? (lot as any).Quantite       ?? 0,
-      idProduit:      lot.idProduit      ?? (lot as any).Id_Produit     ?? 0,
-      isExpired:      lot.isExpired      ?? false,
-      isOutOfStock:   lot.isOutOfStock   ?? false,
+      idProduit:      (lot as any)['id_Produit'] ?? lot.idProduit ?? (lot as any).Id_Produit ?? 0,
+      isExpired:      lot.isExpired      ?? (lot as any).IsExpired      ?? false,
+      isOutOfStock:   lot.isOutOfStock   ?? (lot as any).IsOutOfStock   ?? false,
     }));
   }
 }

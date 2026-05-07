@@ -9,6 +9,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { LotService } from '../lot.service';
+import { ProductService } from '../../products/product.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import {
   LotDto, LotStatus,
@@ -64,10 +65,14 @@ export class LotListComponent implements OnInit, OnDestroy {
     { key: 'status',         label: 'Statut'     },
   ];
 
+  // ── Map pour stocker les noms des produits ────────────────────────────────
+  productNameMap: Map<number, string> = new Map();
+
   private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly lotService:   LotService,
+    private readonly productService: ProductService,
     private readonly router:       Router,
     private readonly route:        ActivatedRoute,
     private readonly cdr:          ChangeDetectorRef,
@@ -77,6 +82,9 @@ export class LotListComponent implements OnInit, OnDestroy {
   // ── Cycle de vie ──────────────────────────────────────────────────────────
 
   ngOnInit(): void {
+    // Charger les produits en premier
+    this.loadProductNames();
+
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
@@ -89,6 +97,26 @@ export class LotListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  // ── Chargement des noms de produits ───────────────────────────────────────
+
+  private loadProductNames(): void {
+    this.productService.getProducts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (products: any[]) => {
+          this.productNameMap.clear();
+          products.forEach((p: any) => {
+            // ProductAPI uses CamelCase policy: Id_Produit → id_Produit
+            const id: number = p['id_Produit'] ?? p.Id_Produit ?? p.idProduit ?? p.id ?? 0;
+            const name: string = p.nom ?? p.Nom ?? p.name ?? `Product ${id}`;
+            if (id) this.productNameMap.set(id, name);
+          });
+          this.cdr.markForCheck();
+        },
+        error: () => { /* silently ignore — product names degrade to ID */ },
+      });
   }
 
   // ── Chargement ────────────────────────────────────────────────────────────
@@ -153,6 +181,11 @@ export class LotListComponent implements OnInit, OnDestroy {
   }
 
   // ── Helpers template ──────────────────────────────────────────────────────
+
+  /** Retourne le nom du produit pour un id donné */
+  getProductName(productId: number): string {
+    return this.productNameMap.get(productId) ?? `Product ${productId}`;
+  }
 
   /** Renvoie la valeur affichable d'une cellule (hors colonne 'status') */
   getCellValue(lot: LotDto, key: keyof LotDto | 'status'): string {
