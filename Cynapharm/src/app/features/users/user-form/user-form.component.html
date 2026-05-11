@@ -155,7 +155,7 @@
           </div>
 
           <!-- UserType (création + rôle CLIENT uniquement) -->
-          <div class="uf-field" *ngIf="!isEditMode">
+          <div class="uf-field" *ngIf="!isEditMode && userForm.get('role')?.value === 'CLIENT'">
             <label for="userType">Type d'utilisateur</label>
             <div class="input-wrap">
               <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
