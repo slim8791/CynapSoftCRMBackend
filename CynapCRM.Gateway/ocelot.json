@@ -1,6 +1,5 @@
 {
   "Routes": [
-
     {
       "UpstreamPathTemplate": "/auth/login",
       "UpstreamHttpMethod": [ "POST" ],
@@ -26,19 +25,6 @@
       ]
     },
     {
-      "UpstreamPathTemplate": "/auth/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/auth/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmauth.runasp.net",
-          "Port": 80
-        }
-      ]
-    },
-
-    {
       "UpstreamPathTemplate": "/auth/reset-password",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/auth/reset-password",
@@ -57,11 +43,10 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
+      ]
     },
     {
       "UpstreamPathTemplate": "/auth/stats",
@@ -70,8 +55,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -83,8 +68,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -96,8 +81,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -109,8 +94,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -122,8 +107,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -135,8 +120,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -148,8 +133,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -161,8 +146,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -174,8 +159,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -187,8 +172,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -200,8 +185,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -213,8 +198,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -226,8 +211,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -239,13 +224,25 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
-
+    {
+      "UpstreamPathTemplate": "/auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
+        }
+      ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
+    },
     {
       "UpstreamPathTemplate": "/products/visible",
       "UpstreamHttpMethod": [ "GET" ],
@@ -253,8 +250,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -266,8 +263,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -279,8 +276,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -292,8 +289,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -305,8 +302,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -318,8 +315,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -331,8 +328,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -344,8 +341,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -357,8 +354,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -370,8 +367,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -383,8 +380,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -396,8 +393,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -409,8 +406,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -422,8 +419,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -435,8 +432,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -448,8 +445,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -461,8 +458,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -474,8 +471,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -487,8 +484,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -497,279 +494,6 @@
       "UpstreamPathTemplate": "/products/lots",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamPathTemplate": "/api/lots",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/promos/coverage",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/promos/coverage",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/promos/product/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/promos/product/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/promos/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/promos/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/promos",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/promos",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/marketting/product/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/marketting/product/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/marketting/visible/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/marketting/visible/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/marketting/{id}/disable",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/marketting/{id}/disable",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/marketting/{id}/activate",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/marketting/{id}/activate",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/marketting/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/marketting/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/marketting",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/marketting",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/fichiers/{id}",
-      "UpstreamHttpMethod": [ "DELETE" ],
-      "DownstreamPathTemplate": "/api/fichiers/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/fichiers",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/fichiers",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/{id}/stock",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/products/{id}/stock",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/{id}/available",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/products/{id}/available",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/{id}/valid",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/products/{id}/valid",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/{id}/can-archive",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/products/{id}/can-archive",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/{id}/archive",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/products/{id}/archive",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/{id}/unarchive",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/products/{id}/unarchive",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/{id}/activate",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/products/{id}/activate",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7005
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/marketting/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/marketting/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmproducts.runasp.net",
-          "Port": 80
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/products/lots/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/lots/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -783,6 +507,19 @@
       "UpstreamPathTemplate": "/products/promos/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
       "DownstreamPathTemplate": "/api/promos/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
+        }
+      ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
+    },
+    {
+      "UpstreamPathTemplate": "/products/marketting/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/marketting/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -818,7 +555,6 @@
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
-
     {
       "UpstreamPathTemplate": "/documents/factures/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
@@ -950,437 +686,6 @@
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/fields/kpi/taux-conversion/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/kpi/taux-conversion/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/kpi/historique/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/kpi/historique/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/kpi/client-fidelite/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/kpi/client-fidelite/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/regions/all",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/regions/all",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/regions/by-delegue/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/regions/by-delegue/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/regions/count/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/regions/count/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/regions/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/regions/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/regions",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/regions",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-
-    {
-      "UpstreamPathTemplate": "/documents/factures/createUpdate",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/factures/createUpdate",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/factures/by-date",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/factures/by-date",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/factures/commande/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/factures/commande/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/factures/client/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/factures/client/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/factures/{id}",
-      "UpstreamHttpMethod": [ "GET", "DELETE" ],
-      "DownstreamPathTemplate": "/api/factures/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/factures",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/factures",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-livraison/createUpdate",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/bons-livraison/createUpdate",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-livraison/by-date",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/bons-livraison/by-date",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-livraison/commande/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/bons-livraison/commande/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-livraison/client/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/bons-livraison/client/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-livraison/{id}",
-      "UpstreamHttpMethod": [ "GET", "DELETE" ],
-      "DownstreamPathTemplate": "/api/bons-livraison/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-livraison",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/bons-livraison",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-commandes/createUpdate",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/bons-commandes/createUpdate",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-commandes/by-date",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/bons-commandes/by-date",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-commandes/commande/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/bons-commandes/commande/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-commandes/client/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/bons-commandes/client/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-commandes/{id}",
-      "UpstreamHttpMethod": [ "GET", "DELETE" ],
-      "DownstreamPathTemplate": "/api/bons-commandes/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/bons-commandes",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/bons-commandes",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/createUpdate",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/documents/createUpdate",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/type/{type}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/documents/type/{type}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/commande/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/documents/commande/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/client/{id}/type/{type}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/documents/client/{id}/type/{type}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/client/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/documents/client/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents/{id}",
-      "UpstreamHttpMethod": [ "GET", "DELETE" ],
-      "DownstreamPathTemplate": "/api/documents/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/documents",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/documents",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 7001
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-
-    {
       "UpstreamPathTemplate": "/inventory/distributions/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
       "DownstreamPathTemplate": "/api/distributions/{everything}",
@@ -1471,67 +776,27 @@
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
-
     {
-      "UpstreamPathTemplate": "/orders/by-status",
+      "UpstreamPathTemplate": "/orders",
       "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/orders/by-status",
+      "DownstreamPathTemplate": "/api/orders",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
+          "Host": "cynapharmorders.tryasp.net",
           "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/orders/by-date",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/orders/by-date",
+      "UpstreamPathTemplate": "/orders/reclamations",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamPathTemplate": "/api/reclamations",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 80
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/orders/dashboard",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/orders/dashboard",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 80
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/orders/status",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/orders/status",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
-          "Port": 80
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/orders/by-client/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/orders/by-client/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
+          "Host": "cynapharmorders.tryasp.net",
           "Port": 80
         }
       ],
@@ -1539,12 +804,12 @@
     },
     {
       "UpstreamPathTemplate": "/orders/lignes/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
+      "UpstreamHttpMethod": [ "GET", "DELETE" ],
       "DownstreamPathTemplate": "/api/lignes/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
+          "Host": "cynapharmorders.tryasp.net",
           "Port": 80
         }
       ],
@@ -1557,7 +822,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
+          "Host": "cynapharmorders.tryasp.net",
           "Port": 80
         }
       ],
@@ -1570,7 +835,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
+          "Host": "cynapharmorders.tryasp.net",
           "Port": 80
         }
       ],
@@ -1579,26 +844,13 @@
     {
       "UpstreamPathTemplate": "/orders/reclamations/by-client/{id}",
       "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/orders",
+      "DownstreamPathTemplate": "/api/reclamations/by-client/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net", 
-          "Port": 80 
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/orders/reclamations",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/reclamations",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "cynapharmorders.runasp.net",
+          "Host": "cynapharmorders.tryasp.net",
           "Port": 80
-        { "Host": "cynapharmorders.runasp.net", "Port": 80 }
+        }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
@@ -1609,7 +861,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
+          "Host": "cynapharmorders.tryasp.net",
           "Port": 80
         }
       ],
@@ -1622,7 +874,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
+          "Host": "cynapharmorders.tryasp.net",
           "Port": 80
         }
       ],
@@ -1635,13 +887,12 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "cynapharmorders.runasp.net",
+          "Host": "cynapharmorders.tryasp.net",
           "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     }
-
   ],
   "GlobalConfiguration": {
     "BaseUrl": "https://localhost:7777",
