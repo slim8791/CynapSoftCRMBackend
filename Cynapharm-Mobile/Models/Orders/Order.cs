@@ -18,5 +18,8 @@ public class Order
     public int ClientId { get; set; }
 
     public string? Notes { get; set; }
-    public List<LigneCommande> Lignes { get; set; } = new();
+    public string? MotifAnnulation { get; set; }
+    public bool IsDeleted { get; set; }
+    public List<LigneCommande>  Lignes       { get; set; } = new();
+    public List<Reclamation>?   Reclamations { get; set; }
 }

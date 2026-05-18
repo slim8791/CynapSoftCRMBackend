@@ -10,7 +10,7 @@ public class Product
     public string Reference { get; set; } = string.Empty;
     public string Nom { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public string? Categorie { get; set; }
+    public string Categorie { get; set; } = string.Empty;
 
     [JsonPropertyName("prix_Vente")]
     public decimal PrixUnitaire { get; set; }

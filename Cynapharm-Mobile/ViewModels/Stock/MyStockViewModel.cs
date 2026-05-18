@@ -18,12 +18,19 @@ public partial class MyStockViewModel : BaseViewModel
     private const string CacheKeyPromo       = "stock:promo";
     private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(5);
 
-    private List<StockDelegue> _echantillonStock = new();
-    private List<StockPromo>   _promoStock       = new();
+    private List<StockDelegue>  _echantillonStock = new();
+    private List<StockPromo>    _promoStock       = new();
 
-    public ObservableCollection<StockDisplayItem> StockLines { get; } = new();
+    public ObservableCollection<StockDisplayItem> StockLines     { get; } = new();
+    public ObservableCollection<StockMouvement>   StockMovements { get; } = new();
 
-    [ObservableProperty] private int _activeSegment;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsStockSegment))]
+    [NotifyPropertyChangedFor(nameof(IsHistorySegment))]
+    private int _activeSegment;
+
+    public bool IsStockSegment   => ActiveSegment <= 1;
+    public bool IsHistorySegment => ActiveSegment == 2;
 
     public MyStockViewModel(
         InventoryService inventoryService,
@@ -59,8 +66,16 @@ public partial class MyStockViewModel : BaseViewModel
                 async () => await _inventoryService.GetStockPromoAsync(),
                 CacheTtl) ?? new();
 
-            // Seed SQLite for offline distribution
             await _localDb.SeedStockAsync(_echantillonStock);
+
+            var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+            if (int.TryParse(userIdStr, out var userId))
+            {
+                var movements = await _inventoryService.GetMovementsByDelegueAsync(userId);
+                StockMovements.Clear();
+                if (movements != null)
+                    foreach (var m in movements) StockMovements.Add(m);
+            }
 
             RefreshDisplayedList();
         });
@@ -107,7 +122,6 @@ public partial class MyStockViewModel : BaseViewModel
 
         RefreshDisplayedList();
 
-        // Best-effort backend sync
         if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
         {
             _ = Task.Run(async () =>
@@ -150,7 +164,7 @@ public partial class MyStockViewModel : BaseViewModel
                     IsEchantillon    = true
                 });
         }
-        else
+        else if (ActiveSegment == 1)
         {
             foreach (var s in _promoStock)
                 StockLines.Add(new StockDisplayItem

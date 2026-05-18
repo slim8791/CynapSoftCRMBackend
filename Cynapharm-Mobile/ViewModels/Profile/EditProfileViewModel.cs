@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Cynapharm_Mobile.Models.Auth;
 using Cynapharm_Mobile.Services;
 using Cynapharm_Mobile.ViewModels.Base;
 
@@ -51,11 +52,29 @@ public partial class EditProfileViewModel : BaseViewModel
             ErrorMessage = "Le nom est requis.";
             return;
         }
-        var userId = await SecureStorage.GetAsync(StorageKeys.UserId) ?? "0";
-        await SecureStorage.SetAsync(StorageKeys.UserName,              Name.Trim());
-        await SecureStorage.SetAsync(StorageKeys.UserTelephone(userId), Telephone.Trim());
-        await SecureStorage.SetAsync(StorageKeys.UserAdresse(userId),   Adresse.Trim());
-        await Shell.Current.GoToAsync("..");
+
+        var request = new UpdateProfileDto
+        {
+            Email       = await SecureStorage.GetAsync(StorageKeys.UserEmail),
+            Name        = Name.Trim(),
+            PhoneNumber = Telephone.Trim(),
+            Adresse     = Adresse.Trim()
+        };
+
+        var response = await _authService.UpdateProfileAsync(request);
+
+        if (response.IsSuccess)
+        {
+            var userId = await SecureStorage.GetAsync(StorageKeys.UserId) ?? "0";
+            await SecureStorage.SetAsync(StorageKeys.UserName,              Name.Trim());
+            await SecureStorage.SetAsync(StorageKeys.UserTelephone(userId), Telephone.Trim());
+            await SecureStorage.SetAsync(StorageKeys.UserAdresse(userId),   Adresse.Trim());
+            await Shell.Current.GoToAsync("..");
+        }
+        else
+        {
+            ErrorMessage = response.Message ?? "Échec de la mise à jour du profil.";
+        }
     });
 
     [RelayCommand]

@@ -219,6 +219,27 @@ public partial class CreateOrderViewModel : BaseViewModel
     private async Task SubmitOrderAsync()
     {
         ClearError();
+
+        // Client-side validation matching backend rules
+        foreach (var line in CartLines)
+        {
+            if (line.Quantite < 1 || line.Quantite > 9999)
+            {
+                ErrorMessage = $"La quantité de « {line.ProductNom} » doit être entre 1 et 9 999.";
+                return;
+            }
+            if (line.RemisePourcentage < 0 || line.RemisePourcentage > 100)
+            {
+                ErrorMessage = $"La remise de « {line.ProductNom} » doit être entre 0 et 100 %.";
+                return;
+            }
+            if (line.PrixUnitaire <= 0)
+            {
+                ErrorMessage = $"Le prix unitaire de « {line.ProductNom} » doit être supérieur à 0.";
+                return;
+            }
+        }
+
         if (!await CheckConnectivityAsync()) return;
         SetBusy(true);
         try

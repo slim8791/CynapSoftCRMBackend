@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Cynapharm_Mobile.Models.Auth;
 using Cynapharm_Mobile.Models.Common;
 
+
 namespace Cynapharm_Mobile.Services;
 
 public class AuthService
@@ -48,6 +49,19 @@ public class AuthService
 
     public async Task ChangePasswordAsync(ChangePasswordRequest request)
         => await _api.PutAsync<object>("auth/change-password", request);
+
+    public async Task<ApiResponse<object>> UpdateProfileAsync(UpdateProfileDto request)
+    {
+        try
+        {
+            await _api.PutAsync<object>(ApiRoutes.Auth.UpdateProfile, request);
+            return new ApiResponse<object> { IsSuccess = true };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<object> { IsSuccess = false, Message = ex.Message };
+        }
+    }
 
     public async Task<UserInfo?> GetCurrentUserAsync()
     {

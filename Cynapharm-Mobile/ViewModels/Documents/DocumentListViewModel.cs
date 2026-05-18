@@ -15,8 +15,16 @@ public partial class DocumentListViewModel : BaseViewModel
     public List<string> TypeOptions { get; } = new() { "facture", "bon-commande", "bon-livraison" };
     public List<string> TypeLabels  { get; } = new() { "Factures", "Bons de commande", "Bons de livraison" };
 
-    [ObservableProperty] private string _documentType     = "facture";
+    [ObservableProperty] private string _documentType    = "facture";
     [ObservableProperty] private int    _selectedTypeIndex;
+
+    // Maps UI type keys to the unified API type parameter
+    private static readonly Dictionary<string, string> _apiTypeMap = new()
+    {
+        { "facture",        "FACTURE" },
+        { "bon-commande",   "BC"      },
+        { "bon-livraison",  "BL"      },
+    };
 
     public DocumentListViewModel(DocumentService documentService)
     {
@@ -37,53 +45,17 @@ public partial class DocumentListViewModel : BaseViewModel
     private Task LoadAsync() => ExecuteAsync(async () =>
     {
         if (!await CheckConnectivityAsync()) return;
+
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        if (!int.TryParse(userIdStr, out var clientId)) return;
+
+        if (!_apiTypeMap.TryGetValue(DocumentType, out var apiType)) return;
+
+        var docs = await _documentService.GetDocumentsByClientAndTypeAsync(clientId, apiType);
         Documents.Clear();
-        switch (DocumentType)
-        {
-            case "facture":
-                var factures = await _documentService.GetFacturesAsync();
-                if (factures != null)
-                    foreach (var f in factures)
-                        Documents.Add(new DocumentSummary
-                        {
-                            Id     = f.Id,
-                            Numero = f.NumeroFacture,
-                            Date   = f.DateFacture,
-                            Type   = "facture",
-                            Statut = f.Statut,
-                            Montant = f.MontantTTC
-                        });
-                break;
-
-            case "bon-commande":
-                var bons = await _documentService.GetBonsCommandeAsync();
-                if (bons != null)
-                    foreach (var b in bons)
-                        Documents.Add(new DocumentSummary
-                        {
-                            Id      = b.Id,
-                            Numero  = b.NumeroBon,
-                            Date    = b.DateEmission,
-                            Type    = "bon-commande",
-                            Statut  = b.Statut,
-                            Montant = b.MontantTotal
-                        });
-                break;
-
-            case "bon-livraison":
-                var bls = await _documentService.GetBonsLivraisonAsync();
-                if (bls != null)
-                    foreach (var bl in bls)
-                        Documents.Add(new DocumentSummary
-                        {
-                            Id     = bl.Id,
-                            Numero = bl.NumeroBon,
-                            Date   = bl.DateLivraison,
-                            Type   = "bon-livraison",
-                            Statut = bl.Statut
-                        });
-                break;
-        }
+        if (docs != null)
+            foreach (var d in docs)
+                Documents.Add(d);
     });
 
     protected override Task RetryAsync() => LoadAsync();

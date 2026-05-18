@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Stock"
              xmlns:models="clr-namespace:Cynapharm_Mobile.Models.Inventory"
+             xmlns:inv="clr-namespace:Cynapharm_Mobile.Models.Inventory"
              xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
              x:Class="Cynapharm_Mobile.Views.Stock.MyStockPage"
              x:DataType="vm:MyStockViewModel"
@@ -29,7 +30,7 @@
 
         <!-- ── Tab bar ───────────────────────────────────────────────────── -->
         <Grid Grid.Row="2"
-              ColumnDefinitions="*,*"
+              ColumnDefinitions="*,*,*"
               BackgroundColor="{StaticResource CardBackground}"
               Padding="0,0,0,0">
             <!-- Tab 1: Échantillons -->
@@ -54,6 +55,9 @@
                             <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
                         </DataTrigger>
                         <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="1">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="2">
                             <Setter Property="BackgroundColor" Value="Transparent" />
                         </DataTrigger>
                     </BoxView.Triggers>
@@ -84,6 +88,40 @@
                         <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="0">
                             <Setter Property="BackgroundColor" Value="Transparent" />
                         </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+            </VerticalStackLayout>
+
+            <!-- Tab 3: Historique -->
+            <VerticalStackLayout Grid.Column="2" Spacing="0">
+                <Button Text="Historique"
+                        Command="{Binding SetSegmentCommand}" CommandParameter="2"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource TextSecondary}"
+                        HeightRequest="48"
+                        FontSize="14"
+                        Margin="0">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="TextColor"     Value="{StaticResource Primary}" />
+                            <Setter Property="FontAttributes" Value="Bold" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <BoxView HeightRequest="2" CornerRadius="1">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="0">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="1">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
                     </BoxView.Triggers>
                 </BoxView>
             </VerticalStackLayout>
@@ -96,10 +134,11 @@
                            HorizontalOptions="Center"
                            Margin="8" />
 
-        <!-- ── Stock list ─────────────────────────────────────────────────── -->
+        <!-- ── Stock list (segments 0 & 1) ──────────────────────────────── -->
         <RefreshView Grid.Row="4"
                      Command="{Binding RefreshCommand}"
-                     IsRefreshing="{Binding IsRefreshing}">
+                     IsRefreshing="{Binding IsRefreshing}"
+                     IsVisible="{Binding IsStockSegment}">
             <CollectionView ItemsSource="{Binding StockLines}">
                 <CollectionView.EmptyView>
                     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
@@ -206,6 +245,87 @@
                                     </Button>
                                 </Grid>
                             </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- ── History list (segment 2) ──────────────────────────────────── -->
+        <RefreshView Grid.Row="4"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     IsVisible="{Binding IsHistorySegment}">
+            <CollectionView ItemsSource="{Binding StockMovements}">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                         Spacing="12" Padding="32">
+                        <Label Text="📋" FontSize="48" HorizontalOptions="Center" />
+                        <Label Text="Aucun mouvement de stock"
+                               Style="{StaticResource EmptyStateStyle}" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="inv:StockMouvement">
+                        <Border Margin="16,6" Style="{StaticResource CardStyle}">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+
+                                <!-- Date -->
+                                <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center"
+                                                     MinimumWidthRequest="52">
+                                    <Label Text="{Binding DateMouvement, StringFormat='{0:dd/MM}'}"
+                                           FontSize="13" FontAttributes="Bold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           HorizontalOptions="Center" />
+                                    <Label Text="{Binding DateMouvement, StringFormat='{0:yyyy}'}"
+                                           FontSize="10"
+                                           TextColor="{StaticResource TextMuted}"
+                                           HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+
+                                <!-- Description -->
+                                <Label Grid.Column="1"
+                                       Text="{Binding ProductNom}"
+                                       FontSize="13"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       VerticalOptions="Center"
+                                       LineBreakMode="TailTruncation" />
+
+                                <!-- Type badge -->
+                                <Border Grid.Column="2"
+                                        Padding="8,4"
+                                        StrokeShape="RoundRectangle 8"
+                                        Stroke="Transparent"
+                                        VerticalOptions="Center">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding TypeMouvement}" Value="Increment">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding TypeMouvement}" Value="Decrement">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource SecondaryLight}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding TypeMouvement}" Value="Transfer-In">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource AccentLight}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding TypeMouvement}" Value="Transfer-Out">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource DangerLight}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="{Binding TypeMouvement}"
+                                           FontSize="10" FontAttributes="Bold"
+                                           TextColor="{StaticResource TextPrimary}" />
+                                </Border>
+
+                                <!-- Quantity -->
+                                <Label Grid.Column="3"
+                                       Text="{Binding Quantite}"
+                                       FontSize="16" FontAttributes="Bold"
+                                       TextColor="{StaticResource Primary}"
+                                       VerticalOptions="Center"
+                                       MinimumWidthRequest="30"
+                                       HorizontalOptions="End" />
+
+                            </Grid>
                         </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

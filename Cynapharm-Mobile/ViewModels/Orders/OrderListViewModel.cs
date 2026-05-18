@@ -12,12 +12,19 @@ public partial class OrderListViewModel : BaseViewModel
     private readonly OrderService _orderService;
 
     public ObservableCollection<Order> Orders { get; } = new();
-    public List<string> StatusOptions { get; } = new() { "Tous", "EN_ATTENTE", "CONFIRMEE", "LIVREE", "ANNULEE" };
+
+    public List<string> StatusOptions { get; } = new()
+    {
+        "Tous", "EN_ATTENTE", "CONFIRMEE", "EN_PREPARATION", "EXPEDIEE", "LIVREE", "ANNULEE"
+    };
 
     [ObservableProperty] private string _statusFilter = "Tous";
     [ObservableProperty] private bool   _isGrossiste;
 
-    private int _currentPage = 1;
+    private int  _currentPage = 1;
+    private bool _isClient;
+    private int  _clientId;
+
     [ObservableProperty] private bool _hasMore;
 
     public OrderListViewModel(OrderService orderService)
@@ -33,12 +40,16 @@ public partial class OrderListViewModel : BaseViewModel
     {
         var role = await SecureStorage.GetAsync(StorageKeys.UserRole) ?? string.Empty;
         IsGrossiste = role is "GROSSISTE";
+        _isClient   = role is "PHARMACIEN" or "GROSSISTE";
+
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        int.TryParse(userIdStr, out _clientId);
 
         if (!await CheckConnectivityAsync()) return;
         _currentPage = 1;
         Orders.Clear();
-        var status = StatusFilter == "Tous" ? null : StatusFilter;
-        var result = await _orderService.GetOrdersAsync(status, _currentPage, 20);
+
+        var result = await FetchPageAsync(_currentPage);
         if (result != null)
         {
             foreach (var o in result) Orders.Add(o);
@@ -53,14 +64,21 @@ public partial class OrderListViewModel : BaseViewModel
         _currentPage++;
         return ExecuteUncheckedAsync(async () =>
         {
-            var status = StatusFilter == "Tous" ? null : StatusFilter;
-            var result = await _orderService.GetOrdersAsync(status, _currentPage, 20);
+            var result = await FetchPageAsync(_currentPage);
             if (result != null)
             {
                 foreach (var o in result) Orders.Add(o);
                 HasMore = result.Count == 20;
             }
         });
+    }
+
+    private Task<List<Order>?> FetchPageAsync(int page)
+    {
+        var status = StatusFilter == "Tous" ? null : StatusFilter;
+        if (_isClient && _clientId > 0)
+            return _orderService.GetOrdersByClientAsync(_clientId, page, 20);
+        return _orderService.GetOrdersByStatusAsync(status, page, 20);
     }
 
     [RelayCommand]

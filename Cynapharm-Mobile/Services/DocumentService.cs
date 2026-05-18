@@ -24,4 +24,25 @@ public class DocumentService
 
     public Task<BonLivraison?> GetBonLivraisonByIdAsync(int id)
         => _api.GetAsync<BonLivraison>($"documents/bons-livraison/{id}");
+
+    // ── Unified client+type endpoint (replaces 3 separate per-type calls) ────
+
+    /// <summary>
+    /// GET documents/client/{idClient}/type/{type}
+    /// type: "FACTURE", "BC", or "BL"
+    /// </summary>
+    public Task<List<DocumentSummary>?> GetDocumentsByClientAndTypeAsync(int idClient, string type)
+        => _api.GetAsync<List<DocumentSummary>>(
+            string.Format(ApiRoutes.Documents.DocumentsByClientAndType, idClient, type));
+
+    // ── Documents linked to a specific order ─────────────────────────────────
+
+    public Task<List<Facture>?> GetFacturesByCommandeAsync(int idCommande)
+        => _api.GetAsync<List<Facture>>($"{ApiRoutes.Documents.FacturesByCommande}/{idCommande}");
+
+    public Task<List<BonCommande>?> GetBCByCommandeAsync(int idCommande)
+        => _api.GetAsync<List<BonCommande>>($"{ApiRoutes.Documents.BCByCommande}/{idCommande}");
+
+    public Task<List<BonLivraison>?> GetBLByCommandeAsync(int idCommande)
+        => _api.GetAsync<List<BonLivraison>>($"{ApiRoutes.Documents.BLByCommande}/{idCommande}");
 }

@@ -27,8 +27,6 @@ public class InventoryService
     /// <summary>
     /// Records a sample distribution on the backend.
     /// Gateway: POST /inventory/distributions → InventoryAPI POST /api/distributions
-    /// The payload matches the expected DistributionDto on the server.
-    /// Coordinates are optional (present when GPS was available during distribution).
     /// </summary>
     public Task<object?> PostDistributionAsync(
         int productId,
@@ -46,4 +44,20 @@ public class InventoryService
         };
         return _api.PostAsync<object>("inventory/distributions", payload);
     }
+
+    // ── New endpoints ─────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// GET inventory/inventory-business/summary/{idDelegue}
+    /// Returns stock KPIs for the delegate's dashboard.
+    /// </summary>
+    public Task<StockSummaryDto?> GetStockSummaryAsync(int idDelegue)
+        => _api.GetAsync<StockSummaryDto>($"{ApiRoutes.Inventory.StockSummary}/{idDelegue}");
+
+    /// <summary>
+    /// GET inventory/stock-movements/by-delegue/{idDelegue}
+    /// Returns all stock movements for the delegate's History tab.
+    /// </summary>
+    public Task<List<StockMouvement>?> GetMovementsByDelegueAsync(int idDelegue)
+        => _api.GetAsync<List<StockMouvement>>($"{ApiRoutes.Inventory.MovementsByDelegue}/{idDelegue}");
 }

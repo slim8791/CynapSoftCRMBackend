@@ -69,9 +69,10 @@
                     <controls:ErrorBanner Message="{Binding ErrorMessage}" />
 
                     <!-- ── KPI cards — overlap header by 28 px ─────────────── -->
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,-28,0,0">
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                          ColumnSpacing="12" RowSpacing="12" Margin="0,-28,0,0">
 
-                        <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0">
+                        <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0">
                             <VerticalStackLayout Spacing="4">
                                 <Label Text="Visites aujourd'hui"
                                        FontSize="12"
@@ -82,7 +83,7 @@
                             </VerticalStackLayout>
                         </Border>
 
-                        <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="0">
+                        <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource CardStyle}" Margin="0">
                             <VerticalStackLayout Spacing="4">
                                 <Label Text="Visites réalisées"
                                        FontSize="12"
@@ -92,7 +93,103 @@
                                        TextColor="{StaticResource Secondary}" />
                             </VerticalStackLayout>
                         </Border>
+
+                        <!-- Taux de conversion — DELEGUE only -->
+                        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                Style="{StaticResource CardStyle}" Margin="0"
+                                IsVisible="{Binding IsDelegue}">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                <Border Grid.Column="0"
+                                        BackgroundColor="{StaticResource AccentLight}"
+                                        StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                        HeightRequest="44" WidthRequest="44"
+                                        VerticalOptions="Center">
+                                    <Label FontFamily="Tabler" Text="&#xea9d;"
+                                           FontSize="22"
+                                           TextColor="{StaticResource Accent}"
+                                           HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                    <Label Text="Taux de conversion"
+                                           FontSize="12"
+                                           TextColor="{StaticResource TextSecondary}" />
+                                    <Label Text="{Binding TauxConversion, StringFormat='{0:N1}%'}"
+                                           FontSize="28" FontAttributes="Bold"
+                                           TextColor="{StaticResource Accent}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
                     </Grid>
+
+                    <!-- ── Stock summary — DELEGUE only ──────────────────── -->
+                    <Border Style="{StaticResource CardStyle}"
+                            IsVisible="{Binding StockSummary, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                        <VerticalStackLayout Spacing="12">
+
+                            <Label Text="Mon Stock"
+                                   FontSize="13" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextMuted}"
+                                   CharacterSpacing="0.5" />
+                            <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
+
+                            <!-- Row 1: total products + available qty -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                    <Label Text="Produits"
+                                           FontSize="11" TextColor="{StaticResource TextSecondary}" />
+                                    <Label Text="{Binding StockSummary.TotalProduits}"
+                                           FontSize="22" FontAttributes="Bold"
+                                           TextColor="{StaticResource Primary}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                    <Label Text="Qté disponible"
+                                           FontSize="11" TextColor="{StaticResource TextSecondary}" />
+                                    <Label Text="{Binding StockSummary.TotalQteDisponible}"
+                                           FontSize="22" FontAttributes="Bold"
+                                           TextColor="{StaticResource Secondary}" />
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <!-- Row 2: distributions -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                    <Label Text="Distributions"
+                                           FontSize="11" TextColor="{StaticResource TextSecondary}" />
+                                    <Label Text="{Binding StockSummary.TotalDistributions}"
+                                           FontSize="22" FontAttributes="Bold"
+                                           TextColor="{StaticResource Accent}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                    <Label Text="Qté distribuée"
+                                           FontSize="11" TextColor="{StaticResource TextSecondary}" />
+                                    <Label Text="{Binding StockSummary.TotalQteDistribuee}"
+                                           FontSize="22" FontAttributes="Bold"
+                                           TextColor="{StaticResource TextPrimary}" />
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <!-- Warning: low stock -->
+                            <Border BackgroundColor="{StaticResource SecondaryLight}"
+                                    StrokeShape="RoundRectangle 8" Stroke="Transparent"
+                                    Padding="12,8"
+                                    IsVisible="{Binding StockSummary.StocksFaibles, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                                <Label Text="{Binding StockSummary.StocksFaibles, StringFormat='⚠️ {0} produit(s) en stock faible'}"
+                                       FontSize="12" FontAttributes="Bold"
+                                       TextColor="{StaticResource SecondaryText}" />
+                            </Border>
+
+                            <!-- Warning: out of stock -->
+                            <Border BackgroundColor="{StaticResource DangerLight}"
+                                    StrokeShape="RoundRectangle 8" Stroke="Transparent"
+                                    Padding="12,8"
+                                    IsVisible="{Binding StockSummary.StocksVides, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                                <Label Text="{Binding StockSummary.StocksVides, StringFormat='⚠️ {0} produit(s) en rupture de stock'}"
+                                       FontSize="12" FontAttributes="Bold"
+                                       TextColor="{StaticResource DangerText}" />
+                            </Border>
+
+                        </VerticalStackLayout>
+                    </Border>
 
                     <!-- ── Quick access ───────────────────────────────────── -->
                     <VerticalStackLayout Spacing="10">
