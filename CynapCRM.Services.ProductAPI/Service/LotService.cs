@@ -90,7 +90,7 @@ namespace CynapCRM.Services.ProductAPI.Service
 
             var lot = await _db.Lots
                             .Include(l => l.Promotions)
-                            .FirstOrDefaultAsync(l => l.Numero == numeroLot);
+                            .FirstOrDefaultAsync(l => l.NumeroLot == numeroLot);
 
             return lot == null ? null : _mapper.Map<LotDto>(lot);
         }
@@ -154,7 +154,7 @@ namespace CynapCRM.Services.ProductAPI.Service
 
             var lot = await _db.Lots
                             .Include(l => l.Promotions)
-                            .FirstOrDefaultAsync(l => l.Numero == lotDto.Numero);
+                            .FirstOrDefaultAsync(l => l.NumeroLot == lotDto.Numero);
             if (lot == null)
             {
                 lot = _mapper.Map<Lot>(lotDto);

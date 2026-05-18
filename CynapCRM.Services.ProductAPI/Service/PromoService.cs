@@ -45,7 +45,7 @@ namespace CynapCRM.Services.ProductAPI.Service
         {
             // Vérifier que le lot existe avant de créer/modifier
             var lotExists = await _db.Lots
-                .AnyAsync(l => l.Numero == promotionDto.NumeroLot);
+                .AnyAsync(l => l.NumeroLot == promotionDto.NumeroLot);
 
             if (!lotExists) return null;
 
@@ -54,16 +54,16 @@ namespace CynapCRM.Services.ProductAPI.Service
 
             if (promo == null)
             {
-                promo = _mapper.Map<Promotion>(dto);
+                promo = _mapper.Map<Promotion>(promotionDto);
                 _db.Promotions.Add(promo);
             }
             else
             {
-                _mapper.Map(dto, promo);
+                _mapper.Map(promotionDto, promo);
             }
 
             await _db.SaveChangesAsync();
-            return promo;
+            return promotionDto;
         }
 
         public async Task<bool> DeletePromotionAsync(int promotionId)

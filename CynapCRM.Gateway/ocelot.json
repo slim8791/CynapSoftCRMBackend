@@ -54,10 +54,10 @@
       "UpstreamPathTemplate": "/auth/register",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/auth/register",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -67,10 +67,10 @@
       "UpstreamPathTemplate": "/auth/stats",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/auth/stats",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -80,10 +80,10 @@
       "UpstreamPathTemplate": "/auth/update-profile",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/auth/update-profile",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -93,10 +93,10 @@
       "UpstreamPathTemplate": "/auth/change-password",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/auth/change-password",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -106,10 +106,10 @@
       "UpstreamPathTemplate": "/auth/assign-role",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/auth/assign-role",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -119,10 +119,10 @@
       "UpstreamPathTemplate": "/auth/change-role",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/auth/change-role",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -132,10 +132,10 @@
       "UpstreamPathTemplate": "/auth/disable",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/auth/disable",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -145,10 +145,10 @@
       "UpstreamPathTemplate": "/auth/enable",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/auth/enable",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -158,10 +158,10 @@
       "UpstreamPathTemplate": "/auth/delete",
       "UpstreamHttpMethod": [ "DELETE" ],
       "DownstreamPathTemplate": "/api/auth/delete",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -171,10 +171,10 @@
       "UpstreamPathTemplate": "/auth/admin/update-password",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/auth/admin/update-password",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -184,10 +184,10 @@
       "UpstreamPathTemplate": "/auth/users/disabled",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/auth/users/disabled",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -197,10 +197,10 @@
       "UpstreamPathTemplate": "/auth/users/search",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/auth/users/search",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -210,10 +210,10 @@
       "UpstreamPathTemplate": "/auth/users/role/{role}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/auth/users/role/{role}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -223,10 +223,10 @@
       "UpstreamPathTemplate": "/auth/users/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/auth/users/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -236,10 +236,10 @@
       "UpstreamPathTemplate": "/auth/users",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/auth/users",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7000
         }
       ],
@@ -250,10 +250,10 @@
       "UpstreamPathTemplate": "/products/visible",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/visible",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -263,10 +263,10 @@
       "UpstreamPathTemplate": "/products/filter",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/filter",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -276,10 +276,10 @@
       "UpstreamPathTemplate": "/products/search",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/search",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -289,10 +289,10 @@
       "UpstreamPathTemplate": "/products/categories",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/categories",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -302,10 +302,10 @@
       "UpstreamPathTemplate": "/products/available",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/available",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -315,10 +315,10 @@
       "UpstreamPathTemplate": "/products/unavailable",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/unavailable",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -328,10 +328,10 @@
       "UpstreamPathTemplate": "/products/low-stock",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/low-stock",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -341,10 +341,10 @@
       "UpstreamPathTemplate": "/products/stock-status",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/stock-status",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -354,10 +354,10 @@
       "UpstreamPathTemplate": "/products/with-promotions",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/with-promotions",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -367,10 +367,10 @@
       "UpstreamPathTemplate": "/products/expiring-lots",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/expiring-lots",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -380,10 +380,10 @@
       "UpstreamPathTemplate": "/products/top",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/top",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -393,10 +393,10 @@
       "UpstreamPathTemplate": "/products/dashboard",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/dashboard",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -406,10 +406,10 @@
       "UpstreamPathTemplate": "/products/exists",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/exists",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -419,10 +419,10 @@
       "UpstreamPathTemplate": "/products/category/{cat}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/category/{cat}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -432,10 +432,10 @@
       "UpstreamPathTemplate": "/products/lots/lot",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamPathTemplate": "/api/lots/lot",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -445,10 +445,10 @@
       "UpstreamPathTemplate": "/products/lots/expiring",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/lots/expiring",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -458,10 +458,10 @@
       "UpstreamPathTemplate": "/products/lots/product/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/lots/product/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -471,10 +471,10 @@
       "UpstreamPathTemplate": "/products/lots/available/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/lots/available/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -484,10 +484,10 @@
       "UpstreamPathTemplate": "/products/lots/{numero}",
       "UpstreamHttpMethod": [ "GET", "DELETE" ],
       "DownstreamPathTemplate": "/api/lots/{numero}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -497,10 +497,10 @@
       "UpstreamPathTemplate": "/products/lots",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamPathTemplate": "/api/lots",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -510,10 +510,10 @@
       "UpstreamPathTemplate": "/products/promos/coverage",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/promos/coverage",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -523,10 +523,10 @@
       "UpstreamPathTemplate": "/products/promos/product/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/promos/product/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -536,10 +536,10 @@
       "UpstreamPathTemplate": "/products/promos/{id}",
       "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
       "DownstreamPathTemplate": "/api/promos/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -549,10 +549,10 @@
       "UpstreamPathTemplate": "/products/promos",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamPathTemplate": "/api/promos",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -562,10 +562,10 @@
       "UpstreamPathTemplate": "/products/marketting/product/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/marketting/product/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -575,10 +575,10 @@
       "UpstreamPathTemplate": "/products/marketting/visible/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/marketting/visible/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -588,10 +588,10 @@
       "UpstreamPathTemplate": "/products/marketting/{id}/disable",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/marketting/{id}/disable",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -601,10 +601,10 @@
       "UpstreamPathTemplate": "/products/marketting/{id}/activate",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/marketting/{id}/activate",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -614,10 +614,10 @@
       "UpstreamPathTemplate": "/products/marketting/{id}",
       "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
       "DownstreamPathTemplate": "/api/marketting/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -627,10 +627,10 @@
       "UpstreamPathTemplate": "/products/marketting",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamPathTemplate": "/api/marketting",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -640,10 +640,10 @@
       "UpstreamPathTemplate": "/products/fichiers/{id}",
       "UpstreamHttpMethod": [ "DELETE" ],
       "DownstreamPathTemplate": "/api/fichiers/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -653,10 +653,10 @@
       "UpstreamPathTemplate": "/products/fichiers",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/fichiers",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -666,10 +666,10 @@
       "UpstreamPathTemplate": "/products/{id}/stock",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/{id}/stock",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -679,10 +679,10 @@
       "UpstreamPathTemplate": "/products/{id}/available",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/{id}/available",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -692,10 +692,10 @@
       "UpstreamPathTemplate": "/products/{id}/valid",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/{id}/valid",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -705,10 +705,10 @@
       "UpstreamPathTemplate": "/products/{id}/can-archive",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/products/{id}/can-archive",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -718,10 +718,10 @@
       "UpstreamPathTemplate": "/products/{id}/archive",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/products/{id}/archive",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -731,10 +731,10 @@
       "UpstreamPathTemplate": "/products/{id}/unarchive",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/products/{id}/unarchive",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -744,10 +744,10 @@
       "UpstreamPathTemplate": "/products/{id}/activate",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/products/{id}/activate",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7005
         }
       ],
@@ -953,10 +953,10 @@
       "UpstreamPathTemplate": "/fields/kpi/taux-conversion/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/kpi/taux-conversion/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7002
         }
       ],
@@ -966,10 +966,10 @@
       "UpstreamPathTemplate": "/fields/kpi/historique/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/kpi/historique/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7002
         }
       ],
@@ -979,10 +979,10 @@
       "UpstreamPathTemplate": "/fields/kpi/client-fidelite/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/kpi/client-fidelite/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7002
         }
       ],
@@ -992,10 +992,10 @@
       "UpstreamPathTemplate": "/fields/regions/all",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/regions/all",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7002
         }
       ],
@@ -1005,10 +1005,10 @@
       "UpstreamPathTemplate": "/fields/regions/by-delegue/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/regions/by-delegue/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7002
         }
       ],
@@ -1018,10 +1018,10 @@
       "UpstreamPathTemplate": "/fields/regions/count/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/regions/count/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7002
         }
       ],
@@ -1031,10 +1031,10 @@
       "UpstreamPathTemplate": "/fields/regions/{id}",
       "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
       "DownstreamPathTemplate": "/api/regions/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7002
         }
       ],
@@ -1044,10 +1044,10 @@
       "UpstreamPathTemplate": "/fields/regions",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamPathTemplate": "/api/regions",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7002
         }
       ],
@@ -1058,10 +1058,10 @@
       "UpstreamPathTemplate": "/documents/factures/createUpdate",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/factures/createUpdate",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1071,10 +1071,10 @@
       "UpstreamPathTemplate": "/documents/factures/by-date",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/factures/by-date",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1084,10 +1084,10 @@
       "UpstreamPathTemplate": "/documents/factures/commande/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/factures/commande/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1097,10 +1097,10 @@
       "UpstreamPathTemplate": "/documents/factures/client/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/factures/client/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1110,10 +1110,10 @@
       "UpstreamPathTemplate": "/documents/factures/{id}",
       "UpstreamHttpMethod": [ "GET", "DELETE" ],
       "DownstreamPathTemplate": "/api/factures/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1123,10 +1123,10 @@
       "UpstreamPathTemplate": "/documents/factures",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/factures",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1136,10 +1136,10 @@
       "UpstreamPathTemplate": "/documents/bons-livraison/createUpdate",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/bons-livraison/createUpdate",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1149,10 +1149,10 @@
       "UpstreamPathTemplate": "/documents/bons-livraison/by-date",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/bons-livraison/by-date",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1162,10 +1162,10 @@
       "UpstreamPathTemplate": "/documents/bons-livraison/commande/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/bons-livraison/commande/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1175,10 +1175,10 @@
       "UpstreamPathTemplate": "/documents/bons-livraison/client/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/bons-livraison/client/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1188,10 +1188,10 @@
       "UpstreamPathTemplate": "/documents/bons-livraison/{id}",
       "UpstreamHttpMethod": [ "GET", "DELETE" ],
       "DownstreamPathTemplate": "/api/bons-livraison/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1201,10 +1201,10 @@
       "UpstreamPathTemplate": "/documents/bons-livraison",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/bons-livraison",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1214,10 +1214,10 @@
       "UpstreamPathTemplate": "/documents/bons-commandes/createUpdate",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/bons-commandes/createUpdate",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1227,10 +1227,10 @@
       "UpstreamPathTemplate": "/documents/bons-commandes/by-date",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/bons-commandes/by-date",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1240,10 +1240,10 @@
       "UpstreamPathTemplate": "/documents/bons-commandes/commande/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/bons-commandes/commande/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1253,10 +1253,10 @@
       "UpstreamPathTemplate": "/documents/bons-commandes/client/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/bons-commandes/client/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1266,10 +1266,10 @@
       "UpstreamPathTemplate": "/documents/bons-commandes/{id}",
       "UpstreamHttpMethod": [ "GET", "DELETE" ],
       "DownstreamPathTemplate": "/api/bons-commandes/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1279,10 +1279,10 @@
       "UpstreamPathTemplate": "/documents/bons-commandes",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/bons-commandes",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1292,10 +1292,10 @@
       "UpstreamPathTemplate": "/documents/createUpdate",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/documents/createUpdate",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1305,10 +1305,10 @@
       "UpstreamPathTemplate": "/documents/type/{type}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/documents/type/{type}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1318,10 +1318,10 @@
       "UpstreamPathTemplate": "/documents/commande/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/documents/commande/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1331,10 +1331,10 @@
       "UpstreamPathTemplate": "/documents/client/{id}/type/{type}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/documents/client/{id}/type/{type}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1344,10 +1344,10 @@
       "UpstreamPathTemplate": "/documents/client/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/documents/client/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1357,10 +1357,10 @@
       "UpstreamPathTemplate": "/documents/{id}",
       "UpstreamHttpMethod": [ "GET", "DELETE" ],
       "DownstreamPathTemplate": "/api/documents/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1370,10 +1370,10 @@
       "UpstreamPathTemplate": "/documents",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/documents",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
+          "Host": "cynapharmorders.runasp.net",
           "Port": 7001
         }
       ],
@@ -1476,11 +1476,11 @@
       "UpstreamPathTemplate": "/orders/by-status",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/orders/by-status",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -1489,11 +1489,11 @@
       "UpstreamPathTemplate": "/orders/by-date",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/orders/by-date",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -1502,11 +1502,11 @@
       "UpstreamPathTemplate": "/orders/dashboard",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/orders/dashboard",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -1515,11 +1515,11 @@
       "UpstreamPathTemplate": "/orders/status",
       "UpstreamHttpMethod": [ "PUT" ],
       "DownstreamPathTemplate": "/api/orders/status",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -1528,11 +1528,11 @@
       "UpstreamPathTemplate": "/orders/by-client/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/orders/by-client/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -1541,11 +1541,11 @@
       "UpstreamPathTemplate": "/orders/lignes/{id}",
       "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
       "DownstreamPathTemplate": "/api/lignes/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -1554,11 +1554,11 @@
       "UpstreamPathTemplate": "/orders/lignes",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamPathTemplate": "/api/lignes",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -1567,11 +1567,11 @@
       "UpstreamPathTemplate": "/orders/reclamations/by-commande/{id}",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/api/reclamations/by-commande/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -1582,9 +1582,9 @@
       "DownstreamPathTemplate": "/api/orders",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "cynapharmorders.runasp.net", "Port": 80 }
-          "Host": "localhost",
-          "Port": 7004
+        {
+          "Host": "cynapharmorders.runasp.net", 
+          "Port": 80 
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -1596,8 +1596,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         { "Host": "cynapharmorders.runasp.net", "Port": 80 }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }

@@ -5,6 +5,7 @@ namespace CynapCRM.Services.ProductAPI.Models.Dto
         public int Id_Promo { get; set; }
 
         public string CodePromo { get; set; } = string.Empty;
+        public TypePromotion TypePromotion { get; set; }
 
         public float? Pourcentage { get; set; }
 
@@ -14,5 +15,6 @@ namespace CynapCRM.Services.ProductAPI.Models.Dto
 
         // Calculated
         public bool IsValid { get; set; }
+        public string? NumeroLot { get; set; } = string.Empty;
     }
 }

@@ -34,7 +34,7 @@ namespace CynapCRM.Services.ProductAPI.Data
                 .HasOne(p => p.Lot)
                 .WithMany(l => l.Promotions)
                 .HasForeignKey(p => p.NumeroLot)
-                .HasPrincipalKey(l => l.Numero)
+                .HasPrincipalKey(l => l.NumeroLot)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
