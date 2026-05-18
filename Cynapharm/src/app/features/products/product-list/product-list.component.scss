@@ -587,3 +587,125 @@
 .modal-overlay { pointer-events: auto; }
 .modal-dialog { pointer-events: auto; z-index: 2000; }
 
+// ── Row-detail: lots ─────────────────────────────────
+
+.col-toggle   { width: 36px; padding: 0 !important; }
+.toggle-cell  { padding: 0 4px !important; text-align: center; vertical-align: middle; }
+
+.toggle-btn {
+  background: none; border: none; cursor: pointer;
+  padding: 5px; border-radius: var(--radius-sm);
+  display: inline-flex; align-items: center;
+  color: #9ca3af;
+  transition: background 0.15s, color 0.15s;
+  &:hover { background: #f0f4f9; color: #374151; }
+}
+
+.toggle-icon {
+  width: 15px; height: 15px;
+  transition: transform 0.2s ease;
+  &.open { transform: rotate(180deg); }   // ∧ when expanded
+}
+
+.row-open > td { background: #f7faff !important; }
+
+.detail-row > .detail-cell {
+  padding: 0 !important;
+  border-top: none !important;
+}
+
+.detail-loading {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 52px;
+  color: #6b7280; font-size: 13px;
+}
+
+.detail-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid #e5e7eb; border-top-color: #0077b6;
+  border-radius: 50%;
+  animation: lot-spin 0.7s linear infinite;
+  display: inline-block; flex-shrink: 0;
+}
+@keyframes lot-spin { to { transform: rotate(360deg); } }
+
+.detail-empty {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 52px;
+  color: #9ca3af; font-size: 13px;
+  svg { width: 18px; height: 18px; flex-shrink: 0; }
+}
+
+.detail-add-link {
+  margin-left: 10px; color: #0077b6; font-weight: 600;
+  font-size: 12px; text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+.detail-body {
+  padding: 12px 52px 16px;
+  background: #f4f8ff;
+  border-top: 1px solid #dbeafe;
+}
+
+.detail-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.detail-title {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.7px;
+  color: #374151;
+}
+
+.detail-add-btn {
+  font-size: 12px; font-weight: 600; color: #0077b6;
+  text-decoration: none; padding: 4px 10px;
+  border: 1px solid #bfdbfe; border-radius: 6px;
+  background: white;
+  &:hover { background: #eff6ff; }
+}
+
+.lots-table {
+  width: 100%; border-collapse: collapse; font-size: 12px;
+  background: white; border-radius: var(--radius-md);
+  overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+
+  th {
+    background: #f1f5f9; padding: 7px 12px;
+    text-align: left; font-weight: 600; color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  td {
+    padding: 7px 12px; border-bottom: 1px solid #f3f4f6;
+    color: #1f2937;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f9fafb; }
+}
+
+.lot-num-cell {
+  font-family: 'Courier New', monospace;
+  font-weight: 600; color: #0077b6;
+}
+
+.lot-status-badge {
+  display: inline-block; padding: 2px 8px;
+  border-radius: 12px; font-size: 11px; font-weight: 600;
+
+  &.status-active       { background: #d1fae5; color: #065f46; }
+  &.status-low-stock    { background: #fef3c7; color: #92400e; }
+  &.status-out-of-stock { background: #fee2e2; color: #991b1b; }
+  &.status-expired      { background: #f3f4f6; color: #6b7280; }
+}
+
+.lot-view-link {
+  display: inline-flex; align-items: center;
+  padding: 3px 5px; border-radius: 5px;
+  color: #6b7280; text-decoration: none;
+  svg { width: 14px; height: 14px; }
+  &:hover { background: #dbeafe; color: #1e40af; }
+}
+
+

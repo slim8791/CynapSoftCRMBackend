@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -55,11 +55,25 @@ export class PromotionFormComponent implements OnInit, OnDestroy {
 
     this.loadLots();
 
+    // Recompute validators when type or scope changes
+    this.form.get('typePromotion')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => { this.updateValidators(); this.cdr.markForCheck(); });
+
+    this.form.get('porteeSurTousLesLots')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => { this.updateValidators(); this.cdr.markForCheck(); });
+
+    this.loadLots();
+    this.loadProducts();
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'new') {
       this.isEdit  = true;
       this.promoId = Number(id);
       this.loadPromo();
+    } else {
+      this.updateValidators();
     }
   }
 
@@ -90,14 +104,21 @@ export class PromotionFormComponent implements OnInit, OnDestroy {
     this.svc.getById(this.promoId!).pipe(takeUntil(this.destroy$)).subscribe({
       next: p => {
         this.form.patchValue({
-          codePromo:      p.codePromo,
-          pourcentage:    p.pourcentage,
-          numeroLot:      p.numeroLot,
-          dateDebut:      p.dateDebut?.slice(0, 10),
-          dateExpiration: p.dateExpiration?.slice(0, 10),
-          estActive:      p.estActive
+          codePromo:            p.codePromo,
+          typePromotion:        p.typePromotion ?? 'Pourcentage',
+          pourcentage:          p.pourcentage ?? null,
+          seuilAchat:           p.seuilAchat ?? null,
+          quantiteGratuite:     p.quantiteGratuite ?? null,
+          porteeSurTousLesLots: p.porteeSurTousLesLots ?? false,
+          numeroLot:            p.numeroLot ?? null,
+          id_Produit:           p.id_Produit ?? null,
+          dateDebut:            p.dateDebut?.slice(0, 10),
+          dateExpiration:       p.dateExpiration?.slice(0, 10),
+          estActive:            p.estActive
         });
+        this.updateValidators();
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => { this.error = 'Impossible de charger la promotion.'; this.loading = false; this.cdr.markForCheck(); }
     });
@@ -117,12 +138,22 @@ export class PromotionFormComponent implements OnInit, OnDestroy {
 
     const dto: PromotionDto = {
       ...(this.promoId ? { id_Promo: this.promoId } : {}),
-      ...this.form.value
+      codePromo:            v.codePromo,
+      typePromotion:        v.typePromotion,
+      pourcentage:          v.typePromotion === 'Pourcentage' ? Number(v.pourcentage) : undefined,
+      seuilAchat:           v.typePromotion === 'Gratuite'    ? Number(v.seuilAchat)    : undefined,
+      quantiteGratuite:     v.typePromotion === 'Gratuite'    ? Number(v.quantiteGratuite) : undefined,
+      porteeSurTousLesLots: v.porteeSurTousLesLots,
+      numeroLot:            v.porteeSurTousLesLots ? undefined : v.numeroLot,
+      id_Produit:           v.porteeSurTousLesLots ? Number(v.id_Produit) : undefined,
+      dateDebut:            v.dateDebut,
+      dateExpiration:       v.dateExpiration,
+      estActive:            v.estActive
     };
 
     this.svc.createOrUpdate(dto).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
-        this.toast.showSuccess(this.isEdit ? 'Promotion mise à jour.' : 'Promotion créée.');
+        this.toast.showSuccess(this.isEdit ? 'Promotion updated.' : 'Promotion created.');
         this.router.navigate(['/promotions']);
       },
       error: () => { this.error = 'Erreur lors de l\'enregistrement.'; this.loading = false; this.cdr.markForCheck(); }

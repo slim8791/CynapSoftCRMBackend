@@ -54,16 +54,16 @@ namespace CynapCRM.Services.ProductAPI.Service
 
             if (promo == null)
             {
-                promo = _mapper.Map<Promotion>(promotionDto);
+                promo = _mapper.Map<Promotion>(dto);
                 _db.Promotions.Add(promo);
             }
             else
             {
-                _mapper.Map(promotionDto, promo);
+                _mapper.Map(dto, promo);
             }
 
             await _db.SaveChangesAsync();
-            return _mapper.Map<PromotionDto>(promo);
+            return promo;
         }
 
         public async Task<bool> DeletePromotionAsync(int promotionId)
@@ -97,10 +97,13 @@ namespace CynapCRM.Services.ProductAPI.Service
                 return initialPrice;
 
             var bestPromo = promotions
+                .Where(p => p.TypePromotion == TypePromotion.Pourcentage && p.Pourcentage.HasValue)
                 .OrderByDescending(p => p.Pourcentage)
-                .First();
+                .FirstOrDefault();
 
-            var discount = initialPrice * (decimal)(bestPromo.Pourcentage / 100);
+            if (bestPromo == null) return initialPrice;
+
+            var discount = initialPrice * (decimal)(bestPromo.Pourcentage!.Value / 100);
             return initialPrice - discount;
         }
 

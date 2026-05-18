@@ -5,10 +5,11 @@
   </div>
 
   @if (error)   { <div class="alert-danger">{{ error }}</div> }
-  @if (loading) { <div class="loading-block"><div class="spinner"></div> Chargement…</div> }
+  @if (loading) { <div class="loading-block"><div class="spinner"></div> Loading…</div> }
+
   @else if (stocks.length === 0) {
-    <app-empty-state title="Aucun stock délégué" message="Commencez par créer un stock.">
-      <a routerLink="/inventory/stocks/new" class="btn-primary-link">+ Créer</a>
+    <app-empty-state title="No delegate stocks" message="Start by creating a stock entry.">
+      <a routerLink="/inventory/stocks/new" class="btn-primary-link">+ Create</a>
     </app-empty-state>
   } @else {
     <div class="table-card">
@@ -29,13 +30,35 @@
             <tr>
               <td>{{ getDelegrueName(s.id_User_Delegue) }}</td>
               <td>{{ getProductName(s.id_Produit) }}</td>
-              <td class="font-mono">{{ s.numeroLot }}</td>
+              <td>#{{ s.id_Produit }}</td>
               <td>{{ getLotDate(s.numeroLot, s.dateExpiration) | date:'dd/MM/yyyy' }}</td>
               <td class="text-center"><strong [class.text-danger]="s.qteDisponible === 0">{{ s.qteDisponible }}</strong></td>
+              <td class="text-center"><strong [class.text-danger]="s.qteDisponible === 0">{{ s.qteDisponible }}</strong></td>
               <td class="text-center">{{ s.qteReservee }}</td>
+              <td>
+                <span class="stock-badge" [ngClass]="stockStatus(s)">
+                  {{ stockLabel(s) }}
+                </span>
+              </td>
               <td class="actions-cell">
-                <a [routerLink]="['/inventory/stocks', s.id_stock]" class="act-btn view">👁</a>
-                <a [routerLink]="['/inventory/stocks', s.id_stock, 'edit']" class="act-btn edit">✏</a>
+                <a [routerLink]="['/inventory/stocks', s.id_stock]" class="act-btn view" title="View">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </a>
+                <a [routerLink]="['/inventory/stocks', s.id_stock, 'edit']" class="act-btn edit" title="Edit">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </a>
+                <button class="act-btn delete" (click)="openDelete(s)" title="Delete">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
               </td>
             </tr>
           }
@@ -45,3 +68,34 @@
     </div>
   }
 </div>
+
+<!-- Delete confirmation modal -->
+@if (showDeleteModal && deletingStock) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon-danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </div>
+      <h3 class="modal-title">Delete stock entry?</h3>
+      <p class="modal-body">
+        <strong>{{ delegateName(deletingStock.id_User_Delegue) }}</strong> —
+        {{ productName(deletingStock.id_Produit) }} /
+        <span class="font-mono">{{ deletingStock.numeroLot }}</span>
+        <br>
+        <small>Available: {{ deletingStock.qteDisponible }} · Reserved: {{ deletingStock.qteReservee }}</small>
+        <br><br>
+        This action is irreversible.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelDelete()" [disabled]="deleting">Cancel</button>
+        <button class="btn-confirm-danger" (click)="confirmDelete()" [disabled]="deleting">
+          @if (deleting) { <span class="spinner-sm"></span> }
+          @else { Delete }
+        </button>
+      </div>
+    </div>
+  </div>
+}

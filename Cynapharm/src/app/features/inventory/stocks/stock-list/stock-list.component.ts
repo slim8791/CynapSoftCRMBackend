@@ -46,7 +46,12 @@ export class StockListComponent implements OnInit, OnDestroy {
   ngOnInit():  void { this.load(); }
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 
-  load(): void {
+  private unwrapArray(r: any): any[] {
+    const raw = r?.result ?? r?.Result ?? r;
+    return Array.isArray(raw) ? raw : [];
+  }
+
+  private loadAll(): void {
     this.loading = true;
     this.svc.getAll(this.page, this.pageSize).pipe(takeUntil(this.destroy$)).subscribe({
       next: data => {
@@ -56,10 +61,15 @@ export class StockListComponent implements OnInit, OnDestroy {
         this.loadRelatedData(data);
         this.cdr.markForCheck();
       },
-      error: () => { this.error = 'Erreur lors du chargement.'; this.loading = false; this.cdr.markForCheck(); }
+      error: () => {
+        this.error   = 'Error loading data.';
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
+  load():            void { this.loadAll(); }
   onPage(p: number): void { this.page = p; this.load(); }
 
   // ── Related data ──────────────────────────────────────

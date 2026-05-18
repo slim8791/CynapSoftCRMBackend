@@ -6,12 +6,16 @@ using CynapCRM.Services.ProductAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Si vous avez cette ligne :
 builder.Services.AddControllers().AddJsonOptions(options => {
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
 });
 builder.Services.AddSwaggerGen(option =>
 {
@@ -61,11 +65,11 @@ builder.Services.AddCors(options =>
 builder.AddAppAuthentication();
 
 var app = builder.Build();
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseHttpsRedirection();
 

@@ -5,11 +5,11 @@
       "UpstreamPathTemplate": "/auth/login",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/auth/login",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ]
     },
@@ -17,23 +17,36 @@
       "UpstreamPathTemplate": "/auth/forgot-password",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/auth/forgot-password",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ]
     },
     {
+      "UpstreamPathTemplate": "/auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
+        }
+      ]
+    },
+
+    {
       "UpstreamPathTemplate": "/auth/reset-password",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamPathTemplate": "/api/auth/reset-password",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7000
+          "Host": "cynapharmauth.runasp.net",
+          "Port": 80
         }
       ]
     },
@@ -741,431 +754,197 @@
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/products/{id}/deactivate",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/products/{id}/deactivate",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/products/marketting/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/marketting/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/products/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/products/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/products/lots/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/lots/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/products",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/products",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/products/promos/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/promos/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/marketting/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/marketting/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/products/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/products/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/marketting",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/marketting",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/marketting/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/marketting/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7005
+          "Host": "cynapharmproducts.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
 
     {
-      "UpstreamPathTemplate": "/fields/visites/by-delegue/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/visites/by-delegue/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/documents/factures/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/factures/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "cynapharmdocs.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/fields/visites/by-planning/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/visites/by-planning/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/documents/bons-livraison/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/bons-livraison/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "cynapharmdocs.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/fields/visites/{id}/complete",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/visites/{id}/complete",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/documents/bons-commandes/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/bons-commandes/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "cynapharmdocs.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/fields/visites/{id}/planning/{pid}",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/visites/{id}/planning/{pid}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/documents/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/documents/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "cynapharmdocs.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/fields/visites/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/visites/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/fields/kpi/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/kpi/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "cynapharmfields.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/fields/visites",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/visites",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/fields/objectifs/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/objectifs/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "cynapharmfields.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/fields/plannings/by-delegue/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/plannings/by-delegue/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/fields/plannings/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/plannings/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "cynapharmfields.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/fields/plannings/by-range",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/plannings/by-range",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/fields/rapports/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/rapports/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "cynapharmfields.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/fields/plannings/by-date",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/plannings/by-date",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/fields/regions/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/regions/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "cynapharmfields.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/fields/plannings/{id}/validate",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/plannings/{id}/validate",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/fields/visites/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/visites/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/plannings/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/plannings/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/plannings",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/plannings",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/rapports/all",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/rapports/all",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/rapports/createUpdate",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/rapports/createUpdate",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/rapports/by-visite/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/rapports/by-visite/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/rapports/by-delegue/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/rapports/by-delegue/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/rapports/can-create/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/rapports/can-create/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/rapports/has-rapport/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/rapports/has-rapport/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/rapports/{id}/validate",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/rapports/{id}/validate",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/rapports/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/rapports/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/objectifs/by-delegue/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/objectifs/by-delegue/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/objectifs/{id}/value",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/objectifs/{id}/value",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/objectifs/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/objectifs/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/objectifs",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/objectifs",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/kpi/visites-count",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/kpi/visites-count",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/kpi/has-visite",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/kpi/has-visite",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/kpi/performance/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/kpi/performance/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/fields/kpi/performance-rate/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/kpi/performance-rate/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7002
+          "Host": "cynapharmfields.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -1602,365 +1381,92 @@
     },
 
     {
-      "UpstreamPathTemplate": "/inventory/stocks-delegue/by-delegue/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/stocks-delegue/by-delegue/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/inventory/distributions/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/distributions/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7003
+          "Host": "cynapharminventories.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/inventory/stocks-delegue/by-produit/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/stocks-delegue/by-produit/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/inventory/stock/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/stock/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7003
+          "Host": "cynapharminventories.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/inventory/stocks-delegue/by-lot/{num}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/stocks-delegue/by-lot/{num}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/inventory/inventory-business/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/inventory-business/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7003
+          "Host": "cynapharminventories.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/inventory/stocks-delegue/{id}",
-      "UpstreamHttpMethod": [ "GET", "DELETE" ],
-      "DownstreamPathTemplate": "/api/stocks-delegue/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/inventory/warehouses/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/warehouses/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7003
+          "Host": "cynapharminventories.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/inventory/stocks-delegue",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/stocks-delegue",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/inventory/stock-movements/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/stock-movements/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7003
+          "Host": "cynapharminventories.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/inventory/distributions/by-delegue/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/distributions/by-delegue/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/inventory/stocks-promotionnels/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/stocks-promotionnels/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7003
+          "Host": "cynapharminventories.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/inventory/distributions/by-medecin/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/distributions/by-medecin/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/inventory/stocks-delegue/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/stocks-delegue/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/distributions/by-pharmacien/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/distributions/by-pharmacien/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/distributions/{id}",
-      "UpstreamHttpMethod": [ "GET", "DELETE" ],
-      "DownstreamPathTemplate": "/api/distributions/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/distributions",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/distributions",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/inventory-business/check-availability",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/inventory-business/check-availability",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/inventory-business/distribute-echantillon",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/inventory-business/distribute-echantillon",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/inventory-business/apply-gratuite",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/inventory-business/apply-gratuite",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/inventory-business/reserve-stock",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/inventory-business/reserve-stock",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/inventory-business/summary/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/inventory-business/summary/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stock-movements/by-delegue/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/stock-movements/by-delegue/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stock-movements/decrement",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/stock-movements/decrement",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stock-movements/increment",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/stock-movements/increment",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stock-movements/transfer",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/stock-movements/transfer",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stock-movements/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/stock-movements/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stocks-promotionnels/gratuite/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/stocks-promotionnels/gratuite/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stocks-promotionnels/gratuite",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/stocks-promotionnels/gratuite",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stocks-promotionnels/echantillon/{id}",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/stocks-promotionnels/echantillon/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stocks-promotionnels/echantillon",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamPathTemplate": "/api/stocks-promotionnels/echantillon",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/warehouses/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/warehouses/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/warehouses",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/warehouses",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stock/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
-      "DownstreamPathTemplate": "/api/stock/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/inventory/stock",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/stock",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
+          "Host": "cynapharminventories.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
@@ -2073,36 +1579,10 @@
     {
       "UpstreamPathTemplate": "/orders/reclamations/by-client/{id}",
       "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamPathTemplate": "/api/reclamations/by-client/{id}",
-      "DownstreamScheme": "https",
+      "DownstreamPathTemplate": "/api/orders",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7004
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/orders/reclamations/{id}/status",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/reclamations/{id}/status",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7004
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/orders/reclamations/{id}",
-      "UpstreamHttpMethod": [ "GET", "DELETE" ],
-      "DownstreamPathTemplate": "/api/reclamations/{id}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
+        { "Host": "cynapharmorders.runasp.net", "Port": 80 }
           "Host": "localhost",
           "Port": 7004
         }
@@ -2113,50 +1593,50 @@
       "UpstreamPathTemplate": "/orders/reclamations",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamPathTemplate": "/api/reclamations",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
           "Port": 7004
+        { "Host": "cynapharmorders.runasp.net", "Port": 80 }
+      ],
+      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
+    },
+    {
+      "UpstreamPathTemplate": "/orders/lignes/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/lignes/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/orders/{id}/cancel",
-      "UpstreamHttpMethod": [ "PUT" ],
-      "DownstreamPathTemplate": "/api/orders/{id}/cancel",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/orders/reclamations/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/reclamations/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
     },
     {
-      "UpstreamPathTemplate": "/orders/{id}",
-      "UpstreamHttpMethod": [ "GET", "DELETE" ],
-      "DownstreamPathTemplate": "/api/orders/{id}",
-      "DownstreamScheme": "https",
+      "UpstreamPathTemplate": "/orders/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamPathTemplate": "/api/orders/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7004
-        }
-      ],
-      "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }
-    },
-    {
-      "UpstreamPathTemplate": "/orders",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamPathTemplate": "/api/orders",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7004
+          "Host": "cynapharmorders.runasp.net",
+          "Port": 80
         }
       ],
       "AuthenticationOptions": { "AuthenticationProviderKey": "Bearer" }

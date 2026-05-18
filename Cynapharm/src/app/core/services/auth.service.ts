@@ -27,6 +27,7 @@ export interface User {
   phoneNumber: string;
   adresse: string;
   role: UserRole;
+  type?: UserType;
   isDeleted: boolean;
 }
 
@@ -61,12 +62,13 @@ export class AuthService {
    * ✅ LOGIN (OK – aligné backend)
    */
   login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/login`, {
-      UserName: email,
-      password: password
-    }).pipe(
-      tap(response => {
-        const data = response?.result;
+  return this.http.post<any>(`${this.apiUrl}/login`, {
+    UserName: email,
+    password
+  }).pipe(
+    tap(res => {
+      const result = res?.result;
+      if (!result) return;
 
         if (data?.token && data?.user) {
           if (this.isBrowser) {
@@ -86,15 +88,8 @@ export class AuthService {
    */
   register(userData: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/register`, userData);
-    // ❌ SUPPRIMÉ : stockage token/user (inexistant côté backend)
   }
 
-  /**
-   * ❌ SUPPRIMÉ : endpoint inexistant dans AuthAPI
-   */
-  // getProfile(): Observable<any> {
-  //   return this.http.get<any>(`${this.apiUrl}/profile`);
-  // }
 
   /**
    * ✅ LOGOUT

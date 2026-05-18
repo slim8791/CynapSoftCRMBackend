@@ -180,6 +180,13 @@ export class StockFormComponent implements OnInit, OnDestroy {
 
   get f() { return this.form.controls; }
 
+  lotLabel(l: LotDto): string {
+    const exp = l.dateExpiration
+      ? new Date(l.dateExpiration).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })
+      : '—';
+    return `${l.numero}  —  qty ${l.quantite}  ·  exp. ${exp}`;
+  }
+
   submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
@@ -205,7 +212,11 @@ export class StockFormComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
         setTimeout(() => this.router.navigate(['/inventory/stocks']), 1200);
       },
-      error: () => { this.submitError = 'Erreur lors de l\'enregistrement.'; this.saving = false; this.cdr.markForCheck(); }
+      error: () => {
+        this.submitError = 'Error saving stock.';
+        this.saving      = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 

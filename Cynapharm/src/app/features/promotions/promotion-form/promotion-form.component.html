@@ -1,13 +1,39 @@
 <div class="page-wrapper">
   <div class="page-header">
     <a routerLink="/promotions" class="back-link">← Promotions</a>
-    <h1>{{ isEdit ? 'Modifier' : 'Nouvelle' }} promotion</h1>
+    <h1>{{ isEdit ? 'Edit' : 'New' }} promotion</h1>
   </div>
 
   <div class="form-card">
-    @if (loading) { <div class="loading-block"><div class="spinner"></div></div> }
+    @if (loading && isEdit) { <div class="loading-block"><div class="spinner"></div></div> }
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- ── Promotion type ──────────────────────────────── -->
+      <div class="type-selector">
+        <button type="button"
+                class="type-btn"
+                [class.active]="isPercentage"
+                (click)="form.get('typePromotion')!.setValue('Pourcentage')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="5" x2="5" y2="19"/>
+            <circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+          </svg>
+          Percentage discount
+        </button>
+        <button type="button"
+                class="type-btn"
+                [class.active]="isFreebie"
+                (click)="form.get('typePromotion')!.setValue('Gratuite')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/>
+            <path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+          </svg>
+          Buy X get Y free
+        </button>
+      </div>
+
       <div class="form-grid">
 
         <!-- Code promo -->
@@ -90,7 +116,7 @@
 
         <!-- Statut -->
         <div class="field field-check">
-          <label><input type="checkbox" formControlName="estActive"> Promotion active</label>
+          <label><input type="checkbox" formControlName="estActive"> Active promotion</label>
         </div>
 
       </div>
@@ -98,9 +124,9 @@
       @if (error) { <div class="alert-danger">{{ error }}</div> }
 
       <div class="form-actions">
-        <a routerLink="/promotions" class="btn-cancel">Annuler</a>
+        <a routerLink="/promotions" class="btn-cancel">Cancel</a>
         <button type="submit" class="btn-submit" [disabled]="loading">
-          {{ loading ? '…' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+          {{ loading ? '…' : (isEdit ? 'Update' : 'Create') }}
         </button>
       </div>
     </form>

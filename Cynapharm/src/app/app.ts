@@ -16,7 +16,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
     ToastComponent
   ],
   templateUrl: './app.html',
-  styleUrls: ['./app.css']
+  styleUrls: ['./app.scss']
 })
 export class App {
   protected readonly title = signal('Cynapharm');

@@ -14,5 +14,5 @@
     .trunc{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .ac{display:flex;gap:4px}
     .ab{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:6px;background:#f3f4f6;cursor:pointer;text-decoration:none;font-size:13px}
-    .ab.view:hover{background:#e6f1fb}.ab.edit:hover{background:#faeeda}
+    .ab.view:hover{background:#e6f1fb}.ab.edit:hover{background:#faeeda}.ab.pdf:hover{background:#dcfce7;color:#059669}
   
