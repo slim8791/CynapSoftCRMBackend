@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36908.2
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11723.231 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -24,6 +24,17 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{5D74269A-7E19-4164-B16B-9350C378676B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CynapCRM.Mobile", "..\CynapSoftFrontend\CynapCRM.Mobile\CynapCRM.Mobile.csproj", "{0644F487-58C4-4524-9F48-404CE4D6AA9B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deployment", "deployment", "{5D90E478-399C-4C69-8E28-D3499776C6BB}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Users\SERVTECH\Downloads\cynapharmauth.runasp.net-WebDeploy.publishSettings = ..\..\Users\SERVTECH\Downloads\cynapharmauth.runasp.net-WebDeploy.publishSettings
+		..\..\Users\SERVTECH\Downloads\cynapharmdocs.runasp.net-WebDeploy.publishSettings = ..\..\Users\SERVTECH\Downloads\cynapharmdocs.runasp.net-WebDeploy.publishSettings
+		..\..\Users\SERVTECH\Downloads\cynapharmfields.runasp.net-WebDeploy.publishSettings = ..\..\Users\SERVTECH\Downloads\cynapharmfields.runasp.net-WebDeploy.publishSettings
+		..\..\Users\SERVTECH\Downloads\cynapharmgateway.runasp.net-WebDeploy.publishSettings = ..\..\Users\SERVTECH\Downloads\cynapharmgateway.runasp.net-WebDeploy.publishSettings
+		..\..\Users\SERVTECH\Downloads\cynapharminventories.runasp.net-WebDeploy.publishSettings = ..\..\Users\SERVTECH\Downloads\cynapharminventories.runasp.net-WebDeploy.publishSettings
+		..\..\Users\SERVTECH\Downloads\cynapharmorders.runasp.net-WebDeploy.publishSettings = ..\..\Users\SERVTECH\Downloads\cynapharmorders.runasp.net-WebDeploy.publishSettings
+		..\..\Users\SERVTECH\Downloads\cynapharmproducts.runasp.net-WebDeploy.publishSettings = ..\..\Users\SERVTECH\Downloads\cynapharmproducts.runasp.net-WebDeploy.publishSettings
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

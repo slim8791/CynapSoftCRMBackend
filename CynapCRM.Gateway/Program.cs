@@ -26,7 +26,7 @@ builder.AddAppAuthentication();
 
 var app = builder.Build();
 
-// app.UseHttpsRedirection(); // Removed to allow HTTP in development
+app.UseHttpsRedirection();
 
 #if DEBUG
 app.MapGet("/", () => "CynapCRM Gateway is Running!");
