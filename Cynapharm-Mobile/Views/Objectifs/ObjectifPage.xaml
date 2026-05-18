@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Objectifs"
+             xmlns:models="clr-namespace:Cynapharm_Mobile.Models.Field"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Objectifs.ObjectifPage"
+             x:DataType="vm:ObjectifViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <!-- ── Primary header ────────────────────────────────────────────── -->
+        <Grid Grid.Row="0"
+              BackgroundColor="{StaticResource Primary}"
+              Padding="16,48,16,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Label Grid.Row="0"
+                   Text="Mes objectifs"
+                   FontSize="18" FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
+
+            <!-- Global achievement card inside header -->
+            <Border Grid.Row="1"
+                    BackgroundColor="#26FFFFFF"
+                    StrokeShape="RoundRectangle 16"
+                    Stroke="Transparent"
+                    Padding="20,12"
+                    Margin="0,16,0,0"
+                    HorizontalOptions="Center">
+                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+                    <Label Text="Taux global"
+                           FontSize="12"
+                           TextColor="#CCFFFFFF"
+                           HorizontalOptions="Center" />
+                    <Label Text="{Binding GlobalAchievement, StringFormat='{0:F0}%'}"
+                           FontSize="30" FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Error banner -->
+        <controls:ErrorBanner Grid.Row="1"
+                              Message="{Binding ErrorMessage}"
+                              Margin="16,8,16,0" />
+
+        <ActivityIndicator Grid.Row="2"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="{StaticResource Primary}"
+                           HorizontalOptions="Center"
+                           Margin="8" />
+
+        <!-- ── Objectives list ───────────────────────────────────────────── -->
+        <RefreshView Grid.Row="3"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}"
+                     RefreshColor="{StaticResource Primary}">
+        <CollectionView ItemsSource="{Binding Objectifs}"
+                        ItemSizingStrategy="MeasureFirstItem">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                     Spacing="12" Padding="32">
+                    <Label Text="🎯" FontSize="48" HorizontalOptions="Center" />
+                    <Label Text="Aucun objectif défini pour cette période"
+                           Style="{StaticResource EmptyStateStyle}" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Objectif">
+                    <Border Margin="16,6" Style="{StaticResource CardStyle}">
+                        <VerticalStackLayout Spacing="10">
+                            <!-- Row: objective type + period badge -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="{Binding TypeObjectif}"
+                                       FontAttributes="Bold" FontSize="14"
+                                       TextColor="{StaticResource TextPrimary}" />
+                                <Border Grid.Column="1"
+                                        Padding="8,3"
+                                        BackgroundColor="{StaticResource SecondaryLight}"
+                                        Stroke="Transparent"
+                                        VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="12" />
+                                    </Border.StrokeShape>
+                                    <Label Text="{Binding Periode}"
+                                           FontSize="11" FontAttributes="Bold"
+                                           TextColor="{StaticResource SecondaryText}" />
+                                </Border>
+                            </Grid>
+
+                            <!-- Progress bar -->
+                            <ProgressBar Progress="{Binding ProgressValue}" />
+
+                            <!-- Values row -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="{Binding ValeurActuelle, StringFormat='Réalisé: {0}'}"
+                                       FontSize="12"
+                                       TextColor="{StaticResource TextSecondary}" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding ValeurCible, StringFormat='Cible: {0}'}"
+                                       FontSize="12"
+                                       TextColor="{StaticResource TextMuted}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

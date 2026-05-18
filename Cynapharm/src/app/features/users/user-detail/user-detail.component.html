@@ -76,8 +76,138 @@
       </div>
     </div>
 
+    <!-- ── Stock summary (DELEGUE only) ──────────────── -->
+    @if ((user.role | uppercase) === 'DELEGUE') {
+      <div class="ud-card" style="margin-bottom:1rem">
+        <h3 class="details-title" style="margin-bottom:.75rem">Stock du délégué</h3>
+        @if (loadingStockSummary) {
+          <div style="padding:.5rem;color:#666">Chargement du résumé stock…</div>
+        } @else if (stockSummary) {
+          <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:.75rem">
+            <div style="flex:1;min-width:110px;background:#f0f9ff;border-radius:8px;padding:.75rem;text-align:center">
+              <div style="font-size:1.4rem;font-weight:700;color:#0369a1">{{ stockSummary.TotalProduits }}</div>
+              <div style="font-size:.75rem;color:#64748b">Produits</div>
+            </div>
+            <div style="flex:1;min-width:110px;background:#f0fdf4;border-radius:8px;padding:.75rem;text-align:center">
+              <div style="font-size:1.4rem;font-weight:700;color:#166534">{{ stockSummary.TotalQteDisponible }}</div>
+              <div style="font-size:.75rem;color:#64748b">Qté disponible</div>
+            </div>
+            <div style="flex:1;min-width:110px;background:#faf5ff;border-radius:8px;padding:.75rem;text-align:center">
+              <div style="font-size:1.4rem;font-weight:700;color:#7c3aed">{{ stockSummary.TotalDistributions }}</div>
+              <div style="font-size:.75rem;color:#64748b">Distributions</div>
+            </div>
+            <div style="flex:1;min-width:110px;background:#fff7ed;border-radius:8px;padding:.75rem;text-align:center">
+              <div style="font-size:1.4rem;font-weight:700;color:#c2410c">{{ stockSummary.TotalQteDistribuee }}</div>
+              <div style="font-size:.75rem;color:#64748b">Qté distribuée</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            @if (stockSummary.StocksFaibles > 0) {
+              <span style="display:inline-block;padding:.25rem .75rem;border-radius:12px;font-size:.75rem;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa">
+                ⚠ {{ stockSummary.StocksFaibles }} stock(s) faible(s)
+              </span>
+            }
+            @if (stockSummary.StocksVides > 0) {
+              <span style="display:inline-block;padding:.25rem .75rem;border-radius:12px;font-size:.75rem;background:#fef2f2;color:#b91c1c;border:1px solid #fca5a5">
+                ✕ {{ stockSummary.StocksVides }} stock(s) vide(s)
+              </span>
+            }
+            @if (stockSummary.DernierMouvement) {
+              <span style="font-size:.75rem;color:#64748b">Dernier mvt : {{ stockSummary.DernierMouvement | date:'dd/MM/yyyy HH:mm' }}</span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── Tabs (info / rapports / mouvements) — DELEGUE only ── -->
+    <div *ngIf="(user.role | uppercase) === 'DELEGUE'" class="ud-tabs">
+      <button class="ud-tab-btn" [class.active]="activeTab === 'info'"       (click)="setTab('info')">Informations</button>
+      <button class="ud-tab-btn" [class.active]="activeTab === 'rapports'"   (click)="setTab('rapports')">
+        Rapports <span class="ud-tab-count">{{ rapports.length }}</span>
+      </button>
+      <button class="ud-tab-btn" [class.active]="activeTab === 'mouvements'" (click)="setTab('mouvements')">
+        Mouvements <span class="ud-tab-count">{{ movements.length }}</span>
+      </button>
+    </div>
+
+    <!-- ── Onglet : Rapports ────────────────────────── -->
+    @if ((user.role | uppercase) === 'DELEGUE' && activeTab === 'rapports') {
+      <div class="ud-card">
+        <h3 class="details-title">Rapports de visite</h3>
+        @if (loadingRapports) {
+          <div style="padding:1rem;text-align:center">Chargement…</div>
+        } @else if (rapports.length === 0) {
+          <div style="padding:1rem;color:#666">Aucun rapport pour ce délégué.</div>
+        } @else {
+          <table style="width:100%;border-collapse:collapse;font-size:.875rem">
+            <thead>
+              <tr style="background:var(--bg-subtle,#f5f5f5)">
+                <th style="padding:.5rem .75rem;text-align:left">#</th>
+                <th style="padding:.5rem .75rem;text-align:left">Date</th>
+                <th style="padding:.5rem .75rem;text-align:left">Résultat</th>
+                <th style="padding:.5rem .75rem;text-align:left">Commentaire</th>
+                <th style="padding:.5rem .75rem;text-align:left">Validé</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of rapports; track r.idRapport) {
+                <tr style="border-bottom:1px solid var(--border,#eee)">
+                  <td style="padding:.5rem .75rem">#{{ r.idRapport }}</td>
+                  <td style="padding:.5rem .75rem">{{ r.dateRapport | date:'dd/MM/yyyy' }}</td>
+                  <td style="padding:.5rem .75rem">
+                    <span class="chip" [ngClass]="getResultatClass(r.resultat)">{{ r.resultat }}</span>
+                  </td>
+                  <td style="padding:.5rem .75rem">{{ r.commentaire || '—' }}</td>
+                  <td style="padding:.5rem .75rem">{{ r.estValide ? 'Oui' : 'Non' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    }
+
+    <!-- ── Onglet : Mouvements ──────────────────────── -->
+    @if ((user.role | uppercase) === 'DELEGUE' && activeTab === 'mouvements') {
+      <div class="ud-card">
+        <h3 class="details-title">Historique des mouvements</h3>
+        @if (loadingMovements) {
+          <div style="padding:1rem;text-align:center">Chargement…</div>
+        } @else if (movements.length === 0) {
+          <div style="padding:1rem;color:#666">Aucun mouvement pour ce délégué.</div>
+        } @else {
+          <table style="width:100%;border-collapse:collapse;font-size:.875rem">
+            <thead>
+              <tr style="background:var(--bg-subtle,#f5f5f5)">
+                <th style="padding:.5rem .75rem;text-align:left">Date</th>
+                <th style="padding:.5rem .75rem;text-align:left">Type</th>
+                <th style="padding:.5rem .75rem;text-align:right">Quantité</th>
+                <th style="padding:.5rem .75rem;text-align:left">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of movements; track m.id_Movement) {
+                <tr style="border-bottom:1px solid var(--border,#eee)">
+                  <td style="padding:.5rem .75rem">{{ m.dateMovement | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td style="padding:.5rem .75rem">
+                    <span class="chip" [ngClass]="getMovementClass(m.typeMovement)"
+                          style="display:inline-block;padding:.2rem .6rem;border-radius:12px;font-size:.75rem">
+                      {{ m.typeMovement }}
+                    </span>
+                  </td>
+                  <td style="padding:.5rem .75rem;text-align:right;font-weight:600">{{ m.quantite }}</td>
+                  <td style="padding:.5rem .75rem;color:#555">{{ m.description || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    }
+
     <!-- ── Carte détails ───────────────────────────── -->
-    <div class="ud-card details-card">
+    <div class="ud-card details-card" *ngIf="(user.role | uppercase) !== 'DELEGUE' || activeTab === 'info'">
       <h3 class="details-title">Informations détaillées</h3>
 
       <div class="details-grid">

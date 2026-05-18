@@ -20,25 +20,20 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
         public async Task<bool> CreateOrUpdateEchantillonAsync(Echantillon echantillon)
         {
-
-            var distribution = await _db.Echantillons.FirstOrDefaultAsync
-                                            (e =>e.Id_Distribution == echantillon.Id_Distribution);
+            var distribution = await _db.Echantillons
+                .FirstOrDefaultAsync(e => e.Id_Distribution == echantillon.Id_Distribution);
 
             if (distribution == null)
             {
-                distribution = _mapper.Map<Echantillon>(echantillon);
-                distribution.DateDistribution = DateTime.UtcNow;
-                distribution.IsDeleted = false;
-
-                _db.Echantillons.Add(distribution);
+                echantillon.DateDistribution = DateTime.UtcNow;
+                echantillon.IsDeleted = false;
+                _db.Echantillons.Add(echantillon); // ✅ une seule fois
             }
             else
             {
-                _mapper.Map(echantillon, distribution);
+                _mapper.Map(echantillon, distribution); // ✅ update
             }
 
-
-            _db.Echantillons.Add(echantillon);
             await _db.SaveChangesAsync();
             return true;
         }
@@ -94,14 +89,26 @@ namespace CynapCRM.Services.InventoryAPI.Service
             await _db.SaveChangesAsync();
             return true;
         }
+        public async Task<IEnumerable<EchantillonDto>> GetAllDistributionsAsync(
+    int pageNumber, int pageSize)
+        {
+            var distributions = await _db.Echantillons
+                .AsNoTracking()
+                .Where(e => !e.IsDeleted)
+                .OrderByDescending(e => e.DateDistribution)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
+            return _mapper.Map<IEnumerable<EchantillonDto>>(distributions);
+        }
         public async Task<IEnumerable<EchantillonDto>> GetDistributionsByDelegueAsync(int idDelegue)
         {
             var distributions = await _db.Echantillons
                             .AsNoTracking()
                             .Where(e =>
-                                e.Id_Pharmacien == idDelegue &&
-                                !e.IsDeleted)
+                                        e.Id_Delegue == idDelegue && 
+                                        !e.IsDeleted)
                             .OrderByDescending(e => e.DateDistribution)
                             .ToListAsync();
 

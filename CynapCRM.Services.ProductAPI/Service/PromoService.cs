@@ -9,7 +9,6 @@ namespace CynapCRM.Services.ProductAPI.Service
 {
     public class PromoService : IPromoService
     {
-
         private readonly AppDbContext _db;
         private readonly IMapper _mapper;
 
@@ -19,12 +18,15 @@ namespace CynapCRM.Services.ProductAPI.Service
             _mapper = mapper;
         }
 
-        //  Gestion des promotions
+        // ─── Gestion des promotions ───────────────────────────────────────
 
         public async Task<IEnumerable<PromotionDto>> GetAllPromotionsAsync()
         {
             var promotions = await _db.Promotions
                 .Include(p => p.Lot)
+                .Where(p => p.Lot != null
+                         && p.NumeroLot != null
+                         && p.DateDebut != null)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<PromotionDto>>(promotions);
@@ -39,8 +41,14 @@ namespace CynapCRM.Services.ProductAPI.Service
             return promo == null ? null : _mapper.Map<PromotionDto>(promo);
         }
 
-        public async Task<PromotionDto> CreateOrUpdatePromotionAsync(PromotionDto promotionDto)
+        public async Task<PromotionDto?> CreateOrUpdatePromotionAsync(PromotionDto promotionDto)
         {
+            // Vérifier que le lot existe avant de créer/modifier
+            var lotExists = await _db.Lots
+                .AnyAsync(l => l.Numero == promotionDto.NumeroLot);
+
+            if (!lotExists) return null;
+
             var promo = await _db.Promotions
                 .FirstOrDefaultAsync(p => p.Id_Promo == promotionDto.Id_Promo);
 
@@ -68,7 +76,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return true;
         }
 
-        //  Application des promotions
+        // ─── Application des promotions ───────────────────────────────────
 
         public async Task<decimal> ApplyBestPromotionAsync(int productId, decimal initialPrice)
         {
@@ -78,6 +86,7 @@ namespace CynapCRM.Services.ProductAPI.Service
                 .Include(p => p.Lot)
                 .Where(p =>
                     p.EstActive &&
+                    p.DateDebut != null &&
                     p.DateDebut <= today &&
                     p.DateExpiration >= today &&
                     p.Lot != null &&
@@ -103,13 +112,14 @@ namespace CynapCRM.Services.ProductAPI.Service
                 .Include(p => p.Lot)
                 .AnyAsync(p =>
                     p.EstActive &&
+                    p.DateDebut != null &&
                     p.DateDebut <= today &&
                     p.DateExpiration >= today &&
                     p.Lot != null &&
                     p.Lot.Id_Produit == productId);
         }
 
-        //  Consultation par contexte
+        // ─── Consultation par contexte ────────────────────────────────────
 
         public async Task<IEnumerable<PromotionDto>> GetPromotionsByProductAsync(int productId)
         {
@@ -124,13 +134,14 @@ namespace CynapCRM.Services.ProductAPI.Service
         public async Task<IEnumerable<PromotionDto>> GetPromotionsByLotAsync(string numeroLot)
         {
             var promotions = await _db.Promotions
+                .Include(p => p.Lot)
                 .Where(p => p.NumeroLot == numeroLot)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<PromotionDto>>(promotions);
         }
 
-        //  Validation métier
+        // ─── Validation métier ────────────────────────────────────────────
 
         public async Task<bool> IsPromotionValidAsync(int promotionId)
         {
@@ -139,6 +150,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return await _db.Promotions.AnyAsync(p =>
                 p.Id_Promo == promotionId &&
                 p.EstActive &&
+                p.DateDebut != null &&
                 p.DateDebut <= today &&
                 p.DateExpiration >= today);
         }
@@ -148,11 +160,12 @@ namespace CynapCRM.Services.ProductAPI.Service
             return await _db.Promotions.AnyAsync(p =>
                 p.Id_Promo == promotionId &&
                 p.EstActive &&
+                p.DateDebut != null &&
                 p.DateDebut <= referenceDate &&
                 p.DateExpiration >= referenceDate);
         }
 
-        //  Indicateurs / pilotage
+        // ─── Indicateurs / pilotage ───────────────────────────────────────
 
         public async Task<double> GetPromotionCoverageRateAsync()
         {
@@ -165,6 +178,7 @@ namespace CynapCRM.Services.ProductAPI.Service
                 .Include(p => p.Lot)
                 .Where(p =>
                     p.EstActive &&
+                    p.DateDebut != null &&
                     p.DateDebut <= today &&
                     p.DateExpiration >= today &&
                     p.Lot != null)
@@ -181,6 +195,7 @@ namespace CynapCRM.Services.ProductAPI.Service
 
             return await _db.Promotions.CountAsync(p =>
                 p.EstActive &&
+                p.DateDebut != null &&
                 p.DateDebut <= today &&
                 p.DateExpiration >= today);
         }

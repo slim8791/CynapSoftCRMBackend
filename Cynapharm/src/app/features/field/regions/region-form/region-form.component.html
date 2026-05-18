@@ -1,47 +1,62 @@
 <div class="page">
-      <div class="page-header">
-        <a routerLink="/field/regions" class="back-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Retour
-        </a>
-        <h1>{{ isEdit ? 'Modifier la région' : 'Nouvelle région' }}</h1>
+  <div class="page-header">
+    <a routerLink="/field/regions" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour
+    </a>
+    <h1>{{ isEdit ? 'Modifier la région' : 'Nouvelle région' }}</h1>
+  </div>
+
+  <div *ngIf="loadingData" class="loading-wrap">
+    <div class="spinner"></div><span>Chargement...</span>
+  </div>
+  <div *ngIf="fetchError" class="error-banner">{{ fetchError }}</div>
+
+  <form *ngIf="!loadingData" [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+    <div class="form-grid">
+
+      <!-- Nom région -->
+      <div class="field full">
+        <label>Nom de la région *</label>
+        <input type="text" formControlName="nomRegion" placeholder="Ex: Région Nord" />
+        <span *ngIf="f['nomRegion'].touched && f['nomRegion'].invalid" class="field-error">Champ requis</span>
       </div>
 
-      <div *ngIf="loadingData" class="loading-wrap">
-        <div class="spinner"></div><span>Chargement...</span>
+      <!-- Code postal (4 chiffres min) -->
+      <div class="field">
+        <label>Code postal *</label>
+        <input type="text" formControlName="codePostal" placeholder="Ex: 16000" maxlength="10" />
+        @if (f['codePostal'].touched && f['codePostal'].errors?.['required']) {
+          <span class="field-error">Champ requis</span>
+        }
+        @if (f['codePostal'].touched && f['codePostal'].errors?.['pattern']) {
+          <span class="field-error">Code postal invalide (chiffres uniquement, 4 min)</span>
+        }
       </div>
 
-      <div *ngIf="fetchError" class="error-banner">{{ fetchError }}</div>
+      <!-- Délégué (dropdown) -->
+      <div class="field">
+        <label>Délégué *</label>
+        <select formControlName="id_User_Delegue">
+          <option [value]="null">-- Sélectionner un délégué --</option>
+          @for (u of delegues; track u.id) {
+            <option [value]="u.id">{{ userName(u) }}</option>
+          }
+        </select>
+        <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Délégué requis</span>
+      </div>
 
-      <form *ngIf="!loadingData" [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
-        <div class="form-grid">
-          <div class="field full">
-            <label>Nom de la région *</label>
-            <input type="text" formControlName="nomRegion" placeholder="Ex: Région Nord" />
-            <span *ngIf="f['nomRegion'].touched && f['nomRegion'].invalid" class="field-error">Champ requis</span>
-          </div>
-          <div class="field">
-            <label>Code postal *</label>
-            <input type="text" formControlName="codePostal" placeholder="Ex: 16000" />
-            <span *ngIf="f['codePostal'].touched && f['codePostal'].invalid" class="field-error">Champ requis</span>
-          </div>
-          <div class="field">
-            <label>Délégué (ID) *</label>
-            <input type="number" formControlName="id_User_Delegue" placeholder="ID du délégué" />
-            <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Champ requis</span>
-          </div>
-        </div>
-
-        <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
-        <div *ngIf="successMsg" class="success-banner">{{ successMsg }}</div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="saving">
-            <span *ngIf="saving" class="btn-spinner"></span>
-            {{ saving ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
-          </button>
-          <a routerLink="/field/regions" class="btn btn-secondary">Annuler</a>
-        </div>
-      </form>
     </div>
-  
+
+    <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
+    <div *ngIf="successMsg"  class="success-banner">{{ successMsg }}</div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        <span *ngIf="saving" class="btn-spinner"></span>
+        {{ saving ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+      </button>
+      <a routerLink="/field/regions" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>

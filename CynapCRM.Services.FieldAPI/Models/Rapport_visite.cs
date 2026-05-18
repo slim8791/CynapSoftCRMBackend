@@ -1,4 +1,4 @@
-﻿
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -17,6 +17,11 @@ namespace CynapCRM.Services.FieldAPI.Models
 
         [Required]
         public DateTime DateRapport { get; set; }
+
+        // GPS coordinates captured at submission time on the delegate's mobile device.
+        // Nullable: GPS may be unavailable or refused by the user.
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
 
         // Relation obligatoire avec Visite
         [Required]

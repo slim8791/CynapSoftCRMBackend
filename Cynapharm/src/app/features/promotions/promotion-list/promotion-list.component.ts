@@ -40,7 +40,7 @@ export class PromotionListComponent implements OnInit, OnDestroy {
   private load(): void {
     this.loading = true;
     this.svc.getAll().pipe(takeUntil(this.destroy$)).subscribe({
-      next: data => { this.promotions = data; this.loading = false; this.cdr.markForCheck(); },
+      next: data => { this.promotions = data.filter(p => p.pourcentage > 0); this.loading = false; this.cdr.markForCheck(); },
       error: () => { this.error = 'Erreur lors du chargement des promotions.'; this.loading = false; this.cdr.markForCheck(); }
     });
   }

@@ -1,63 +1,60 @@
 <div class="page">
-      <div class="page-header">
-        <div>
-          <h1>Rapports de visite</h1>
-          <p class="subtitle">Tous les rapports soumis</p>
-        </div>
-        <a routerLink="/field/rapports/new" class="btn btn-primary">+ Nouveau rapport</a>
-      </div>
-
-      <div *ngIf="loading" class="loading-wrap">
-        <div class="spinner"></div><span>Chargement...</span>
-      </div>
-
-      <div *ngIf="error && !loading" class="error-banner">
-        {{ error }}
-        <button class="retry-btn" (click)="load()">Réessayer</button>
-      </div>
-
-      <div *ngIf="!loading && !error && rapports.length === 0">
-        <app-empty-state title="Aucun rapport" message="Aucun rapport disponible.">
-          <a routerLink="/field/rapports/new" class="btn btn-primary">Créer un rapport</a>
-        </app-empty-state>
-      </div>
-
-      <div *ngIf="!loading && rapports.length > 0" class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Visite (ID)</th>
-              <th>Délégué (ID)</th>
-              <th>Date</th>
-              <th>Commentaire</th>
-              <th>Résultat</th>
-              <th>Validé</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let r of rapports">
-              <td class="mono">{{ r.idRapport }}</td>
-              <td>{{ r.id_Visite }}</td>
-              <td>{{ r.id_User_Delegue }}</td>
-              <td>{{ r.dateRapport | date:'dd/MM/yyyy' }}</td>
-              <td class="truncate" [title]="r.commentaire">{{ r.commentaire }}</td>
-              <td class="truncate" [title]="r.resultat">{{ r.resultat }}</td>
-              <td>
-                <span class="valid-badge"
-                      [class.valid]="r.estValide === true"
-                      [class.invalid]="r.estValide === false"
-                      [class.pending]="r.estValide == null">
-                  {{ r.estValide === true ? 'Validé' : r.estValide === false ? 'Refusé' : 'En attente' }}
-                </span>
-              </td>
-              <td>
-                <a [routerLink]="['/field/rapports/edit', r.idRapport]" class="link-btn">Modifier</a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <div class="page-header">
+    <div>
+      <h1>Rapports de visite</h1>
+      <p class="subtitle">Tous les rapports soumis</p>
     </div>
-  
+    <a routerLink="/field/rapports/new" class="btn btn-primary">+ Nouveau rapport</a>
+  </div>
+
+  <div *ngIf="loading" class="loading-wrap">
+    <div class="spinner"></div><span>Chargement...</span>
+  </div>
+
+  <div *ngIf="error && !loading" class="error-banner">
+    {{ error }}
+    <button class="retry-btn" (click)="load()">Réessayer</button>
+  </div>
+
+  <div *ngIf="!loading && !error && rapports.length === 0">
+    <app-empty-state title="Aucun rapport" message="Aucun rapport disponible.">
+      <a routerLink="/field/rapports/new" class="btn btn-primary">Créer un rapport</a>
+    </app-empty-state>
+  </div>
+
+  <div *ngIf="!loading && rapports.length > 0" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Délégué</th>
+          <th>Visite</th>
+          <th>Date rapport</th>
+          <th>Commentaire</th>
+          <th>Résultat</th>
+          <th>Validé</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of rapports">
+          <td>{{ getDelegrueName(r.id_User_Delegue) }}</td>
+          <td>#{{ r.id_Visite }}</td>
+          <td>{{ r.dateRapport ? (r.dateRapport | date:'dd/MM/yyyy') : '—' }}</td>
+          <td class="truncate" [title]="r.commentaire">{{ r.commentaire }}</td>
+          <td>{{ r.resultat }}</td>
+          <td>
+            <span class="valid-badge"
+                  [class.valid]="r.estValide === true"
+                  [class.invalid]="r.estValide === false"
+                  [class.pending]="r.estValide == null">
+              {{ r.estValide === true ? 'Validé' : r.estValide === false ? 'Refusé' : 'En attente' }}
+            </span>
+          </td>
+          <td>
+            <a [routerLink]="['/field/rapports/edit', r.idRapport]" class="link-btn">Modifier</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

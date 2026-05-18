@@ -22,6 +22,8 @@ export class KpiDashboardComponent implements OnInit, OnDestroy {
   error            = '';
   visitesCount     = 0;
   performanceRate  = 0;
+  tauxConversion: number | null = null;
+  loadingTaux      = false;
   historique: any[] = [];
 
   private d$ = new Subject<void>();
@@ -41,6 +43,15 @@ export class KpiDashboardComponent implements OnInit, OnDestroy {
     this.svc.getPerformanceRate(id)
       .pipe(takeUntil(this.d$), catchError(() => of(0)))
       .subscribe(r => { this.performanceRate = r; });
+
+    if (this.dateDebut && this.dateFin) {
+      this.loadingTaux = true;
+      this.svc.getTauxConversion(id, this.dateDebut, this.dateFin)
+        .pipe(takeUntil(this.d$), catchError(() => of(null)))
+        .subscribe(t => { this.tauxConversion = t; this.loadingTaux = false; this.cdr.markForCheck(); });
+    } else {
+      this.tauxConversion = null;
+    }
 
     this.svc.getHistorique(id)
       .pipe(takeUntil(this.d$), catchError(() => of([])))

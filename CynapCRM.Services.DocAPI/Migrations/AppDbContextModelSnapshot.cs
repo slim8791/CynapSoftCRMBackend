@@ -48,8 +48,8 @@ namespace CynapCRM.Services.DocAPI.Migrations
 
                     b.Property<string>("TypeDocument")
                         .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
 
                     b.HasKey("Numero_Doc");
 
@@ -68,14 +68,14 @@ namespace CynapCRM.Services.DocAPI.Migrations
                 {
                     b.HasBaseType("CynapCRM.Services.DocAPI.Models.Document");
 
-                    b.HasDiscriminator().HasValue("BonCommande");
+                    b.HasDiscriminator().HasValue("BC");
                 });
 
             modelBuilder.Entity("CynapCRM.Services.DocAPI.Models.BonLivraison", b =>
                 {
                     b.HasBaseType("CynapCRM.Services.DocAPI.Models.Document");
 
-                    b.HasDiscriminator().HasValue("BonLivraison");
+                    b.HasDiscriminator().HasValue("BL");
                 });
 
             modelBuilder.Entity("CynapCRM.Services.DocAPI.Models.Facture", b =>
@@ -91,7 +91,7 @@ namespace CynapCRM.Services.DocAPI.Migrations
                     b.Property<decimal>("MontantTTC")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasDiscriminator().HasValue("Facture");
+                    b.HasDiscriminator().HasValue("FACTURE");
                 });
 #pragma warning restore 612, 618
         }

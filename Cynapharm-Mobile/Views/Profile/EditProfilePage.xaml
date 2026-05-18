@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Profile"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Profile.EditProfilePage"
+             x:DataType="vm:EditProfileViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <Grid Grid.Row="0" BackgroundColor="#2d6a4f" Padding="16,48,16,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="36" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0"
+                    Text="‹"
+                    TextColor="White"
+                    BackgroundColor="Transparent"
+                    FontSize="24" FontAttributes="Bold"
+                    Padding="0"
+                    Command="{Binding CancelCommand}" />
+            <Label Grid.Column="1"
+                   Text="Modifier le profil"
+                   FontSize="17" FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" />
+        </Grid>
+
+        <!-- ── Body ──────────────────────────────────────────────────────── -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16" Spacing="16">
+
+                <controls:ErrorBanner Message="{Binding ErrorMessage}" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Color="{StaticResource Primary}"
+                                   HorizontalOptions="Center" />
+
+                <!-- ── Avatar section ─────────────────────────────────── -->
+                <VerticalStackLayout HorizontalOptions="Center" Spacing="8" Margin="0,8,0,0">
+                    <Grid HorizontalOptions="Center" WidthRequest="76" HeightRequest="76">
+                        <Border BackgroundColor="#33145530"
+                                StrokeShape="RoundRectangle 38"
+                                Stroke="Transparent"
+                                HeightRequest="76" WidthRequest="76">
+                            <Label Text="{Binding AvatarInitials}"
+                                   FontSize="26" FontAttributes="Bold"
+                                   TextColor="#2d6a4f"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                        </Border>
+                        <!-- Camera overlay -->
+                        <Border BackgroundColor="{StaticResource Accent}"
+                                StrokeShape="RoundRectangle 11"
+                                Stroke="Transparent"
+                                HeightRequest="22" WidthRequest="22"
+                                HorizontalOptions="End"
+                                VerticalOptions="End">
+                            <Label Text="📷" FontSize="11"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                        </Border>
+                    </Grid>
+                    <Label Text="Changer la photo"
+                           FontSize="13"
+                           TextColor="{StaticResource Accent}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- ── Card 1: Informations modifiables ───────────────── -->
+                <Label Text="INFORMATIONS PERSONNELLES"
+                       FontSize="11" FontAttributes="Bold"
+                       TextColor="{StaticResource TextMuted}"
+                       CharacterSpacing="0.5"
+                       Margin="4,0" />
+
+                <Border Style="{StaticResource CardStyle}">
+                    <VerticalStackLayout Spacing="14">
+
+                        <!-- Nom -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="NOM COMPLET"
+                                   FontSize="11" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextMuted}"
+                                   CharacterSpacing="0.5" />
+                            <Border BackgroundColor="#f7f7f9"
+                                    StrokeShape="RoundRectangle 10"
+                                    Stroke="{StaticResource BorderColor}"
+                                    StrokeThickness="1"
+                                    Padding="12,0" HeightRequest="50">
+                                <Grid ColumnDefinitions="22,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="👤" FontSize="16"
+                                           VerticalOptions="Center" />
+                                    <Entry Grid.Column="1"
+                                           Text="{Binding Name}"
+                                           Placeholder="Nom complet"
+                                           BackgroundColor="Transparent"
+                                           Margin="0" VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Téléphone -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="TÉLÉPHONE"
+                                   FontSize="11" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextMuted}"
+                                   CharacterSpacing="0.5" />
+                            <Border BackgroundColor="#f7f7f9"
+                                    StrokeShape="RoundRectangle 10"
+                                    Stroke="{StaticResource BorderColor}"
+                                    StrokeThickness="1"
+                                    Padding="12,0" HeightRequest="50">
+                                <Grid ColumnDefinitions="22,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="📞" FontSize="16"
+                                           VerticalOptions="Center" />
+                                    <Entry Grid.Column="1"
+                                           Text="{Binding Telephone}"
+                                           Placeholder="Téléphone"
+                                           Keyboard="Telephone"
+                                           BackgroundColor="Transparent"
+                                           Margin="0" VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Adresse -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="ADRESSE"
+                                   FontSize="11" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextMuted}"
+                                   CharacterSpacing="0.5" />
+                            <Border BackgroundColor="#f7f7f9"
+                                    StrokeShape="RoundRectangle 10"
+                                    Stroke="{StaticResource BorderColor}"
+                                    StrokeThickness="1"
+                                    Padding="12,0" HeightRequest="50">
+                                <Grid ColumnDefinitions="22,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="📍" FontSize="16"
+                                           VerticalOptions="Center" />
+                                    <Entry Grid.Column="1"
+                                           Text="{Binding Adresse}"
+                                           Placeholder="Adresse"
+                                           BackgroundColor="Transparent"
+                                           Margin="0" VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── Card 2: Informations non modifiables ───────────── -->
+                <Label Text="INFORMATIONS NON MODIFIABLES"
+                       FontSize="11" FontAttributes="Bold"
+                       TextColor="{StaticResource TextMuted}"
+                       CharacterSpacing="0.5"
+                       Margin="4,0" />
+
+                <Border Style="{StaticResource CardStyle}" Opacity="0.6">
+                    <VerticalStackLayout Spacing="14">
+
+                        <!-- Email (read-only) -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="EMAIL"
+                                   FontSize="11" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextMuted}"
+                                   CharacterSpacing="0.5" />
+                            <Border BackgroundColor="#f7f7f9"
+                                    StrokeShape="RoundRectangle 10"
+                                    Stroke="{StaticResource BorderColor}"
+                                    StrokeThickness="1"
+                                    Padding="12,0" HeightRequest="50">
+                                <Grid ColumnDefinitions="22,*,22" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="✉️" FontSize="16"
+                                           VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Email}"
+                                           FontSize="14"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           VerticalOptions="Center" />
+                                    <Label Grid.Column="2" Text="🔒" FontSize="14"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="Center" />
+                                </Grid>
+                            </Border>
+                            <Label Text="L'e-mail ne peut pas être modifié"
+                                   FontSize="11"
+                                   TextColor="{StaticResource TextMuted}"
+                                   Margin="4,0" />
+                        </VerticalStackLayout>
+
+                        <!-- Rôle (read-only) -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="RÔLE"
+                                   FontSize="11" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextMuted}"
+                                   CharacterSpacing="0.5" />
+                            <Border BackgroundColor="#f7f7f9"
+                                    StrokeShape="RoundRectangle 10"
+                                    Stroke="{StaticResource BorderColor}"
+                                    StrokeThickness="1"
+                                    Padding="12,0" HeightRequest="50">
+                                <Grid ColumnDefinitions="22,*,22" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="🛡️" FontSize="16"
+                                           VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Role}"
+                                           FontSize="14"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           VerticalOptions="Center" />
+                                    <Label Grid.Column="2" Text="🔒" FontSize="14"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── Buttons ────────────────────────────────────────── -->
+                <Button Text="Enregistrer les modifications"
+                        Command="{Binding SaveCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}" />
+
+                <Button Text="Annuler"
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource TextSecondary}"
+                        BorderColor="{StaticResource BorderColor}"
+                        BorderWidth="1"
+                        HeightRequest="44"
+                        CornerRadius="10"
+                        FontSize="14" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

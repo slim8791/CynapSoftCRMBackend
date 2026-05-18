@@ -6,6 +6,9 @@ import { takeUntil } from 'rxjs/operators';
 
 import { UserService } from '../user.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { RapportService, RapportDto } from '../../field/rapports/services/rapport.service';
+import { InventoryBusinessService, StockSummaryDto } from '../../inventory/stocks/services/inventory-business.service';
+import { StockMovementService, StockMovementDto } from '../../inventory/movements/services/stock-movement.service';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
@@ -21,6 +24,13 @@ export class UserDetailComponent implements OnInit, OnDestroy {
   user: any = null;
   loading = true;
   error   = '';
+  activeTab: 'info' | 'rapports' | 'mouvements' = 'info';
+  rapports: RapportDto[] = [];
+  loadingRapports = false;
+  stockSummary: StockSummaryDto | null = null;
+  loadingStockSummary = false;
+  movements: StockMovementDto[] = [];
+  loadingMovements = false;
 
   // Modal confirmation
   showActionModal  = false;
@@ -34,6 +44,9 @@ export class UserDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private userService: UserService,
+    private rapportService: RapportService,
+    private inventoryBizSvc: InventoryBusinessService,
+    private movementSvc: StockMovementService,
     private toastService: ToastService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -74,6 +87,11 @@ export class UserDetailComponent implements OnInit, OnDestroy {
             isDeleted:   raw.isDeleted   ?? raw.IsDeleted   ?? false
           };
           this.loading = false;
+          if ((this.user?.role ?? '').toUpperCase() === 'DELEGUE') {
+            this.loadRapports();
+            this.loadStockSummary();
+            this.loadMovements();
+          }
           this.cdr.markForCheck();
         },
         error: (err: any) => {
@@ -82,6 +100,57 @@ export class UserDetailComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  private loadRapports(): void {
+    this.loadingRapports = true;
+    this.rapportService.getByDelegue(this.userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: data => { this.rapports = data; this.loadingRapports = false; this.cdr.markForCheck(); },
+        error: ()   => { this.rapports = []; this.loadingRapports = false; this.cdr.markForCheck(); }
+      });
+  }
+
+  private loadStockSummary(): void {
+    this.loadingStockSummary = true;
+    this.inventoryBizSvc.getStockSummary(this.userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: data => { this.stockSummary = data; this.loadingStockSummary = false; this.cdr.markForCheck(); },
+        error: ()   => { this.stockSummary = null; this.loadingStockSummary = false; this.cdr.markForCheck(); }
+      });
+  }
+
+  private loadMovements(): void {
+    this.loadingMovements = true;
+    this.movementSvc.getMovementsByDelegue(this.userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: data => { this.movements = data; this.loadingMovements = false; this.cdr.markForCheck(); },
+        error: ()   => { this.movements = []; this.loadingMovements = false; this.cdr.markForCheck(); }
+      });
+  }
+
+  setTab(t: 'info' | 'rapports' | 'mouvements'): void { this.activeTab = t; }
+
+  getMovementClass(type: string): string {
+    switch ((type ?? '').toLowerCase()) {
+      case 'increment':     return 'mv-green';
+      case 'decrement':     return 'mv-orange';
+      case 'transfer-in':   return 'mv-cyan';
+      case 'transfer-out':  return 'mv-red';
+      default:              return '';
+    }
+  }
+
+  getResultatClass(r: string): string {
+    switch ((r ?? '').toUpperCase()) {
+      case 'POSITIF':    return 'chip-success';
+      case 'NEGATIF':    return 'chip-danger';
+      case 'EN_ATTENTE': return 'chip-warn';
+      default:           return '';
+    }
   }
 
   private resolveError(err: any): string {

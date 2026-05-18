@@ -16,6 +16,9 @@
     input, select, textarea { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111; background: #fafafa; box-sizing: border-box; }
     input:focus, select:focus, textarea:focus { outline: none; border-color: #6366f1; background: #fff; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
     .field-error { font-size: 12px; color: #dc2626; }
+    .field-hint  { font-size: 12px; color: #6b7280; }
+    .date-display { padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; background: #f3f4f6; min-height: 38px; }
+    .date-display.empty { color: #9ca3af; font-style: italic; }
     .form-actions { display: flex; gap: 10px; margin-top: 28px; padding-top: 20px; border-top: 1px solid #f3f4f6; }
     .btn { padding: 9px 22px; border-radius: 8px; font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; }
     .btn-primary { background: #6366f1; color: #fff; }

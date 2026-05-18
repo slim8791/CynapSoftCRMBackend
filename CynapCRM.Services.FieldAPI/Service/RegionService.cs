@@ -70,15 +70,21 @@ namespace CynapCRM.Services.FieldAPI.Service
 
         public async Task<bool> DeleteRegionAsync(int idRegion)
         {
-            var region = await _db.Regions.FirstOrDefaultAsync(r => r.Id_Region == idRegion);
+            var region = await _db.Regions
+                .FirstOrDefaultAsync(r => r.Id_Region == idRegion);
             if (region == null) return false;
+
+            // Vérifier si des visites ou plannings sont liés
+            var hasVisites = await _db.Visites
+                .AnyAsync(v => v.Id_Region == idRegion); // si FK existe
+            if (hasVisites) return false;
 
             _db.Regions.Remove(region);
             await _db.SaveChangesAsync();
             return true;
         }
 
-        
+
         public async Task<int> GetNombreRegionsCouvreAsync(int idDelegue)
         {
 

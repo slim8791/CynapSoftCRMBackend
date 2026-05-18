@@ -32,6 +32,19 @@
             <span class="kv">{{ performanceRate | number:'1.0-1' }}%</span>
             <span class="kl">Performance</span>
           </div>
+          <div class="kpi-card kpi-green">
+            @if (loadingTaux) {
+              <span class="kv">…</span>
+            } @else if (tauxConversion !== null) {
+              <span class="kv">{{ tauxConversion | number:'1.0-1' }}%</span>
+            } @else {
+              <span class="kv" title="Sélectionnez une période">—</span>
+            }
+            <span class="kl">Taux de conversion</span>
+            @if (tauxConversion === null && !loadingTaux) {
+              <span style="font-size:0.7rem;opacity:.6">Période requise</span>
+            }
+          </div>
         </div>
 
         @if (historique.length > 0) {

@@ -1,11 +1,10 @@
-﻿namespace CynapCRM.Services.OrderAPI.Models.Dto
+﻿// FIX: déplacer dans Models (pas Dto) pour cohérence avec EtatCommande
+namespace CynapCRM.Services.OrderAPI.Models
 {
-
     public enum StatutReclamation
     {
-        Ouverte,
-        EnCours,
-        Resolue
+        Ouverte = 0,
+        EnCours = 1,
+        Resolue = 2
     }
-
 }

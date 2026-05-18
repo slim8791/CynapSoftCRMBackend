@@ -3,24 +3,43 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '../../../core/services/api.service';
 
-/** Correspond à EtatCommande enum backend */
+/** Correspond à EtatCommande enum backend (7 états) */
 export enum EtatCommande {
-  Brouillon  = 0,
-  EnAttente  = 1,
-  Validee    = 2,
-  Expediee   = 3,
-  Livree     = 4,
-  Annulee    = 5
+  Brouillon     = 0,
+  EnAttente     = 1,
+  Confirmee     = 2,
+  EnPreparation = 3,
+  Expediee      = 4,
+  Livree        = 5,
+  Annulee       = 6,
 }
 
 export const ETAT_LABELS: Record<EtatCommande, string> = {
-  [EtatCommande.Brouillon]: 'Brouillon',
-  [EtatCommande.EnAttente]: 'En attente',
-  [EtatCommande.Validee]:   'Validée',
-  [EtatCommande.Expediee]:  'Expédiée',
-  [EtatCommande.Livree]:    'Livrée',
-  [EtatCommande.Annulee]:   'Annulée',
+  [EtatCommande.Brouillon]:     'Brouillon',
+  [EtatCommande.EnAttente]:     'En attente',
+  [EtatCommande.Confirmee]:     'Confirmée',
+  [EtatCommande.EnPreparation]: 'En préparation',
+  [EtatCommande.Expediee]:      'Expédiée',
+  [EtatCommande.Livree]:        'Livrée',
+  [EtatCommande.Annulee]:       'Annulée',
 };
+
+export interface OrderDashboardDto {
+  TotalCommandes:       number;
+  EnAttente:            number;
+  Confirmees:           number;
+  EnPreparation:        number;
+  Expediees:            number;
+  Livrees:              number;
+  Annulees:             number;
+  MontantTotalHT:       number;
+  MontantTotalTTC:      number;
+  ReclamationsOuvertes: number;
+  ReclamationsEnCours:  number;
+  ReclamationsResolues: number;
+  CommandesAujourdHui:  number;
+  CommandesCeMois:      number;
+}
 
 export interface Commande {
   id_Commande: number;
@@ -60,6 +79,13 @@ export class OrderApiService {
         const data = this.unwrap<any>(r);
         return Array.isArray(data) ? data : [];
       })
+    );
+  }
+
+  /** Tableau de bord commandes */
+  getOrdersDashboard(): Observable<OrderDashboardDto> {
+    return this.api.get<any>(`/orders/dashboard`).pipe(
+      map(r => this.unwrap<OrderDashboardDto>(r))
     );
   }
 

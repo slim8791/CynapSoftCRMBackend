@@ -5,10 +5,12 @@ import { map } from 'rxjs/operators';
 import { ApiService } from '../../../../core/services/api.service';
 
 export interface BonCommandeDto {
-  id?:           number;
-  id_Client:     number;
+  numero_Doc:    number;
+  nom_Doc?:      string;
+  id_Client?:    number;
+  id_Commande?:  number;
   dateCreation?: string;
-  montantTotal:  number;
+  typeDocument?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,7 +29,11 @@ export class BonCommandeService {
     const p = new HttpParams().set('startDate', start).set('endDate', end);
     return this.api.get<any>(`${this.base}/by-date`, p).pipe(map(r => this.u<BonCommandeDto[]>(r) ?? []));
   }
+  getByCommande(id: number): Observable<BonCommandeDto[]> {
+    return this.api.get<any>(`${this.base}/commande/${id}`).pipe(map(r => this.u<BonCommandeDto[]>(r) ?? []));
+  }
   createOrUpdate(dto: BonCommandeDto): Observable<BonCommandeDto> {
     return this.api.post<any>(`${this.base}/createUpdate`, dto).pipe(map(r => this.u<BonCommandeDto>(r)));
   }
+  delete(id: number): Observable<void> { return this.api.delete<void>(`${this.base}/${id}`); }
 }

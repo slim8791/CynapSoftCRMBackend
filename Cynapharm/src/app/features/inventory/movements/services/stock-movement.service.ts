@@ -21,6 +21,9 @@ export class StockMovementService {
   getMovements(idStock: number): Observable<StockMovementDto[]> {
     return this.api.get<any>(`${this.base}/${idStock}`).pipe(map(r => this.u<StockMovementDto[]>(r) ?? []));
   }
+  getMovementsByDelegue(idDelegue: number): Observable<StockMovementDto[]> {
+    return this.api.get<any>(`${this.base}/by-delegue/${idDelegue}`).pipe(map(r => this.u<StockMovementDto[]>(r) ?? []));
+  }
   decrement(idStock: number, qte: number): Observable<boolean> {
     return this.api.post<any>(`${this.base}/decrement?idStock=${idStock}&qte=${qte}`, {}).pipe(map(r => this.u<boolean>(r)));
   }

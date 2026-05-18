@@ -1,50 +1,47 @@
 <div class="page">
-      <div class="page-header">
-        <div>
-          <h1>Régions</h1>
-          <p class="subtitle">Liste de toutes les régions commerciales</p>
-        </div>
-        <a routerLink="/field/regions/new" class="btn btn-primary">+ Nouvelle région</a>
-      </div>
-
-      <div *ngIf="loading" class="loading-wrap">
-        <div class="spinner"></div><span>Chargement...</span>
-      </div>
-
-      <div *ngIf="error && !loading" class="error-banner">
-        {{ error }}
-        <button class="retry-btn" (click)="load()">Réessayer</button>
-      </div>
-
-      <div *ngIf="!loading && !error && regions.length === 0">
-        <app-empty-state title="Aucune région" message="Commencez par créer une nouvelle région.">
-          <a routerLink="/field/regions/new" class="btn btn-primary">Créer une région</a>
-        </app-empty-state>
-      </div>
-
-      <div *ngIf="!loading && regions.length > 0" class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nom de la région</th>
-              <th>Code postal</th>
-              <th>Délégué (ID)</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let r of regions">
-              <td class="mono">{{ r.id_Region }}</td>
-              <td class="bold">{{ r.nomRegion }}</td>
-              <td class="mono">{{ r.codePostal }}</td>
-              <td>{{ r.id_User_Delegue }}</td>
-              <td class="actions-cell">
-                <a [routerLink]="['/field/regions/edit', r.id_Region]" class="link-btn">Modifier</a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <div class="page-header">
+    <div>
+      <h1>Régions</h1>
+      <p class="subtitle">Liste de toutes les régions commerciales</p>
     </div>
-  
+    <a routerLink="/field/regions/new" class="btn btn-primary">+ Nouvelle région</a>
+  </div>
+
+  <div *ngIf="loading" class="loading-wrap">
+    <div class="spinner"></div><span>Chargement...</span>
+  </div>
+
+  <div *ngIf="error && !loading" class="error-banner">
+    {{ error }}
+    <button class="retry-btn" (click)="load()">Réessayer</button>
+  </div>
+
+  <div *ngIf="!loading && !error && regions.length === 0">
+    <app-empty-state title="Aucune région" message="Commencez par créer une nouvelle région.">
+      <a routerLink="/field/regions/new" class="btn btn-primary">Créer une région</a>
+    </app-empty-state>
+  </div>
+
+  <div *ngIf="!loading && regions.length > 0" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nom de la région</th>
+          <th>Code postal</th>
+          <th>Délégué</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of regions">
+          <td class="bold">{{ r.nomRegion }}</td>
+          <td class="mono">{{ r.codePostal }}</td>
+          <td>{{ getDelegrueName(r.id_User_Delegue) }}</td>
+          <td class="actions-cell">
+            <a [routerLink]="['/field/regions/edit', r.id_Region]" class="link-btn">Modifier</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

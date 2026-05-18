@@ -64,7 +64,7 @@
         type="text"
         [(ngModel)]="searchTerm"
         (input)="onSearch()"
-        placeholder="Rechercher (nom, description)…"
+        placeholder="Rechercher (nom, description, catégorie)…"
         class="form-control search-input"
         autocomplete="off"
         aria-label="Recherche produit" />
@@ -91,6 +91,24 @@
       </select>
     </div>
 
+    <!-- Filtre catégorie -->
+    <div class="filter-wrap">
+      <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+        <line x1="7" y1="7" x2="7.01" y2="7"/>
+      </svg>
+      <select
+        [(ngModel)]="categoryFilter"
+        (ngModelChange)="onCategoryFilterChange()"
+        class="form-select filter-select"
+        aria-label="Filtre par catégorie">
+        <option value="">Toutes les catégories</option>
+        @for (cat of availableCategories; track cat) {
+          <option [value]="cat">{{ cat }}</option>
+        }
+      </select>
+    </div>
+
     <!-- Taille de page -->
     <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="form-select" aria-label="Taille de page">
       <option value="5">5 / page</option>
@@ -101,7 +119,8 @@
 
     <span class="results-count">
       {{ filteredProducts.length }} résultat(s)
-      <ng-container *ngIf="searchTerm.length >= 3"> pour « {{ searchTerm }} »</ng-container>
+      <ng-container *ngIf="categoryFilter"> · {{ categoryFilter }}</ng-container>
+      <ng-container *ngIf="searchTerm.length >= 3"> · « {{ searchTerm }} »</ng-container>
     </span>
   </div>
 
@@ -131,8 +150,8 @@
         <table class="product-table">
           <thead>
             <tr>
-              <th class="col-id">#</th>
               <th class="col-name">Nom</th>
+              <th>Catégorie</th>
               <th>Description</th>
               <th class="col-price text-right">Prix vente</th>
               <th class="col-num text-right">TVA</th>
@@ -143,8 +162,8 @@
           <tbody>
             @for (product of paginatedProducts; track product.Id_Produit) {
               <tr>
-                <td class="id-cell">{{ product.Id_Produit }}</td>
                 <td class="name-cell">{{ product.Nom || '—' }}</td>
+                <td>{{ product.Categorie || '—' }}</td>
                 <td class="desc-cell">{{ product.Description || '—' }}</td>
                 <td class="text-right price-cell">{{ product.Prix_Vente | currencyTND }}</td>
                 <td class="text-right">{{ product.TVA ?? 0 }} %</td>
@@ -229,6 +248,22 @@
       title="Désarchiver le produit">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </button>
+  }
+
+  <!-- SUPPRIMER DÉFINITIVEMENT (si archivé) -->
+  @if (product.IsArchived) {
+    <button
+      class="act-btn danger-btn"
+      (click)="onHardDelete(product.Id_Produit)"
+      aria-label="Supprimer définitivement"
+      title="Supprimer définitivement (irréversible)">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/>
+        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
       </svg>
     </button>
   }

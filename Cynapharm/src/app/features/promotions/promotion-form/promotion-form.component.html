@@ -9,33 +9,90 @@
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
       <div class="form-grid">
+
+        <!-- Code promo -->
         <div class="field">
           <label>Code promo *</label>
-          <input type="text" formControlName="codePromo" class="input" [class.invalid]="isInvalid('codePromo')" placeholder="EX: PROMO25">
-          @if (isInvalid('codePromo')) { <span class="err">Code obligatoire.</span> }
+          <input type="text" formControlName="codePromo" class="input"
+                 [class.invalid]="isInvalid('codePromo')"
+                 placeholder="EX: PROMO25">
+          @if (form.get('codePromo')?.errors?.['required'] && form.get('codePromo')?.touched) {
+            <span class="err">Code obligatoire.</span>
+          }
+          @if (form.get('codePromo')?.errors?.['whitespace'] && form.get('codePromo')?.touched) {
+            <span class="err">Espaces interdits.</span>
+          }
         </div>
+
+        <!-- Réduction -->
         <div class="field">
           <label>Réduction (%) *</label>
-          <input type="number" formControlName="pourcentage" class="input" [class.invalid]="isInvalid('pourcentage')" min="1" max="100">
-          @if (isInvalid('pourcentage')) { <span class="err">Entre 1 et 100.</span> }
+          <input type="number" formControlName="pourcentage" class="input"
+                 [class.invalid]="isInvalid('pourcentage')"
+                 min="1" max="100" placeholder="Ex: 20">
+          @if (form.get('pourcentage')?.errors?.['required'] && form.get('pourcentage')?.touched) {
+            <span class="err">La réduction est obligatoire.</span>
+          }
+          @if ((form.get('pourcentage')?.errors?.['min'] || form.get('pourcentage')?.errors?.['max']) && form.get('pourcentage')?.touched) {
+            <span class="err">La réduction doit être entre 1 et 100.</span>
+          }
         </div>
+
+        <!-- N° de lot — dropdown -->
         <div class="field">
           <label>N° de lot *</label>
-          <input type="text" formControlName="numeroLot" class="input" [class.invalid]="isInvalid('numeroLot')" placeholder="LOT-001">
-          @if (isInvalid('numeroLot')) { <span class="err">N° de lot obligatoire.</span> }
+          @if (loadingLots) {
+            <select class="input" disabled>
+              <option>Chargement des lots…</option>
+            </select>
+          } @else {
+            <select formControlName="numeroLot" class="input"
+                    [class.invalid]="isInvalid('numeroLot')">
+              <option value="">-- Sélectionner un lot --</option>
+              @for (lot of availableLots; track lot.numero) {
+                <option [value]="lot.numero">
+                  {{ lot.numero }} — qté: {{ lot.quantite }}
+                  (exp: {{ lot.dateExpiration | date:'dd/MM/yyyy' }})
+                </option>
+              }
+            </select>
+          }
+          @if (availableLots.length === 0 && !loadingLots) {
+            <span class="err">Aucun lot disponible (non expiré, en stock).</span>
+          }
+          @if (isInvalid('numeroLot')) {
+            <span class="err">Veuillez sélectionner un lot.</span>
+          }
         </div>
+
+        <!-- Date de début -->
         <div class="field">
           <label>Date de début *</label>
-          <input type="date" formControlName="dateDebut" class="input" [class.invalid]="isInvalid('dateDebut')">
+          <input type="date" formControlName="dateDebut" class="input"
+                 [class.invalid]="isInvalid('dateDebut') || dateRangeInvalid">
+          @if (form.get('dateDebut')?.errors?.['required'] && form.get('dateDebut')?.touched) {
+            <span class="err">Date de début obligatoire.</span>
+          }
         </div>
+
+        <!-- Date d'expiration -->
         <div class="field">
           <label>Date d'expiration *</label>
-          <input type="date" formControlName="dateExpiration" class="input" [class.invalid]="isInvalid('dateExpiration')">
-          @if (isInvalid('dateExpiration')) { <span class="err">Date obligatoire.</span> }
+          <input type="date" formControlName="dateExpiration" class="input"
+                 [class.invalid]="isInvalid('dateExpiration') || dateRangeInvalid">
+          @if (form.get('dateExpiration')?.errors?.['required'] && form.get('dateExpiration')?.touched) {
+            <span class="err">Date d'expiration obligatoire.</span>
+          }
+          @if (form.get('dateExpiration')?.errors?.['dateRange'] && form.get('dateExpiration')?.touched) {
+            <span class="err">La date d'expiration doit être postérieure à la date de début.</span>
+          }
         </div>
+
+        <!-- Statut -->
         <div class="field field-check">
           <label><input type="checkbox" formControlName="estActive"> Promotion active</label>
         </div>
+
       </div>
 
       @if (error) { <div class="alert-danger">{{ error }}</div> }

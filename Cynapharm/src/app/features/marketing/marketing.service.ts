@@ -76,8 +76,9 @@ export class MarketingService {
   /** GET /products/marketting/product/{productId}/supports
    *  Le backend retourne 404 si aucun support — on normalise en tableau vide.
    */
+  /** GET /products/marketting/product/{productId} */
   getSupportsByProductId(productId: number): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/product/${productId}/supports`).pipe(
+    return this.apiService.get<any>(`${this.baseUrl}/product/${productId}`).pipe(
       catchError(err => {
         if (err.status === 404) return of({ Result: [], IsSuccess: true });
         throw err;
@@ -85,58 +86,53 @@ export class MarketingService {
     );
   }
 
-  /** GET /products/marketting/support/{supportId} */
+  /** GET /products/marketting/{supportId} */
   getSupportById(supportId: number): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/support/${supportId}`);
+    return this.apiService.get<any>(`${this.baseUrl}/${supportId}`);
   }
 
-  /** POST /products/marketting/support
-   *  Envoie un SupportMarketingDto avec les noms de champs PascalCase
-   *  pour correspondre au modèle C# attendu par AutoMapper.
-   */
+  /** POST /products/marketting */
   createOrUpdateSupport(payload: SupportMarketingDto): Observable<any> {
-    return this.apiService.post<any>(`${this.baseUrl}/support`, payload);
+    return this.apiService.post<any>(this.baseUrl, payload);
   }
 
-  /** DELETE /products/marketting/support/{supportId} */
+  /** DELETE /products/marketting/{supportId} */
   deleteSupport(supportId: number): Observable<any> {
-    return this.apiService.delete<any>(`${this.baseUrl}/support/${supportId}`);
+    return this.apiService.delete<any>(`${this.baseUrl}/${supportId}`);
   }
 
   // ── Visibilité ────────────────────────────────────────────────────────────
 
-  /** PUT /products/marketting/support/{supportId}/disable */
+  /** PUT /products/marketting/{supportId}/disable */
   disableSupport(supportId: number): Observable<any> {
-    return this.apiService.put<any>(`${this.baseUrl}/support/${supportId}/disable`, {});
+    return this.apiService.put<any>(`${this.baseUrl}/${supportId}/disable`, {});
   }
 
-  /** PUT /products/marketting/support/{supportId}/activate */
+  /** PUT /products/marketting/{supportId}/activate */
   activateSupport(supportId: number): Observable<any> {
-    return this.apiService.put<any>(`${this.baseUrl}/support/${supportId}/activate`, {});
+    return this.apiService.put<any>(`${this.baseUrl}/${supportId}/activate`, {});
   }
 
-  /** GET /products/marketting/product/{productId}/visible-supports */
+  /** GET /products/marketting/visible/{productId} */
   getVisibleSupportsByProductId(productId: number): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/product/${productId}/visible-supports`);
+    return this.apiService.get<any>(`${this.baseUrl}/visible/${productId}`);
   }
 
   // ── Fichiers ──────────────────────────────────────────────────────────────
 
-  /** GET /products/marketting/support/{supportId}/files */
+  /** GET /products/marketting/{supportId} (fichiers inclus dans la réponse) */
   getFilesBySupport(supportId: number): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/support/${supportId}/files`);
+    return this.apiService.get<any>(`${this.baseUrl}/${supportId}`);
   }
 
-  /** POST /products/marketting/support/file
-   *  FichierDto doit avoir les champs PascalCase : NomFichier, Url, Extension, Taille, Id_Support
-   */
+  /** POST /products/fichiers */
   addFileToSupport(fichierDto: FichierDto): Observable<any> {
-    return this.apiService.post<any>(`${this.baseUrl}/support/file`, fichierDto);
+    return this.apiService.post<any>('/products/fichiers', fichierDto);
   }
 
-  /** DELETE /products/marketting/file/{fichierId} */
+  /** DELETE /products/fichiers/{fichierId} */
   deleteFile(fileId: number): Observable<any> {
-    return this.apiService.delete<any>(`${this.baseUrl}/file/${fileId}`);
+    return this.apiService.delete<any>(`/products/fichiers/${fileId}`);
   }
 
   // ── Campagnes ─────────────────────────────────────────────────────────────

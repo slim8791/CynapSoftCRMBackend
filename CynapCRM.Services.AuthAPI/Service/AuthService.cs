@@ -30,8 +30,6 @@ namespace CynapCRM.Services.AuthAPI.Service
         }
         public async Task<ResponseDto> Register(RegistrationRequestDto model)
         {
-
-            // verify email 
             if (await _userManager.FindByEmailAsync(model.Email) != null)
             {
                 return new ResponseDto
@@ -53,6 +51,7 @@ namespace CynapCRM.Services.AuthAPI.Service
                         Email = model.Email,
                         UserName = model.Email,
                         Adresse = model.Adresse,
+                        PhoneNumber = model.PhoneNumber,  // ✅ ajout
                         NomOfficine = model.NomOfficine,
                         TypePharmacie = model.TypePharmacie,
                         IsDeleted = false
@@ -63,23 +62,22 @@ namespace CynapCRM.Services.AuthAPI.Service
                         Email = model.Email,
                         UserName = model.Email,
                         Adresse = model.Adresse,
+                        PhoneNumber = model.PhoneNumber,  // ✅ ajout
                         RaisonSociale = model.RaisonSociale,
                         IsDeleted = false
                     },
-
                     _ => throw new ArgumentException("UserType invalide pour un Client.")
                 };
             }
-
             else
             {
-                // ADMIN / SUPERVISEUR / DELEGUE / MEDECIN 
                 user = new Utilisateur
                 {
                     Name = model.Name,
                     Email = model.Email,
                     UserName = model.Email,
                     Adresse = model.Adresse,
+                    PhoneNumber = model.PhoneNumber,  // ✅ ajout
                     IsDeleted = false
                 };
             }
@@ -94,19 +92,18 @@ namespace CynapCRM.Services.AuthAPI.Service
                     Message = result.Errors.FirstOrDefault()?.Description
                 };
             }
+
             var role = model.Role.ToString().ToUpper();
-            // Rôle Identity
+
             if (!await _roleManager.RoleExistsAsync(role))
-            {
                 await _roleManager.CreateAsync(new IdentityRole<int> { Name = role });
-            }
 
             await _userManager.AddToRoleAsync(user, role);
 
             return new ResponseDto
             {
                 IsSuccess = true,
-                Message = $"Inscription réussie avec le rôle {role} "
+                Message = $"Inscription réussie avec le rôle {role}"
             };
         }
 
@@ -247,38 +244,32 @@ namespace CynapCRM.Services.AuthAPI.Service
         }
         public async Task<LoginResponseDto> ChangeRole(ChangeRoleDto model)
         {
-
-
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null || user.IsDeleted)
-                return null;
 
-            // Delete old roles
+            // ✅ retourne objet vide au lieu de null
+            if (user == null || user.IsDeleted)
+                return new LoginResponseDto { User = null, Token = "" };
+
             var currentRoles = await _userManager.GetRolesAsync(user);
             if (currentRoles.Any())
                 await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
             var roleName = model.NewRole.ToString();
 
-            // Create the role if necessary
             if (!await _roleManager.RoleExistsAsync(roleName))
             {
                 var roleResult = await _roleManager.CreateAsync(
                     new IdentityRole<int> { Name = roleName });
 
                 if (!roleResult.Succeeded)
-                    return null;
+                    return new LoginResponseDto { User = null, Token = "" }; // ✅
             }
 
-            // Add the new role
             var result = await _userManager.AddToRoleAsync(user, roleName);
             if (!result.Succeeded)
-                return null;
+                return new LoginResponseDto { User = null, Token = "" }; // ✅
 
-            // Retrieve updated roles
             var updatedRoles = await _userManager.GetRolesAsync(user);
-
-            // GENERATE A NEW TOKEN
             var newToken = _jwtTokenGenerator.GenerateToken(user, updatedRoles);
 
             return new LoginResponseDto
@@ -294,7 +285,6 @@ namespace CynapCRM.Services.AuthAPI.Service
                 },
                 Token = newToken
             };
-
         }
         public async Task<bool> ChangePassword(ChangePasswordDto model)
         {
@@ -402,17 +392,29 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                 .AsNoTracking()
                 .ToListAsync();
 
-            return users.Select(u => new UserDto
+            var result = new List<UserDto>();
+
+            // ✅ rôle maintenant chargé pour chaque utilisateur
+            foreach (var user in users)
             {
-                Id = u.Id,
-                Email = u.Email,
-                Name = u.Name,
-                PhoneNumber = u.PhoneNumber,
-                Adresse = u.Adresse,
-                Role = "" 
-            });
+                var roles = await _userManager.GetRolesAsync(user);
+                result.Add(new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Adresse = user.Adresse,
+                    Role = roles.FirstOrDefault() ?? "",
+                    IsDeleted = user.IsDeleted
+                });
+            }
+
+            return result;
         }
-        public async Task<IEnumerable<UserDto>> SearchUsersAsync(string keyword, bool? isActive = null)
+        public async Task<IEnumerable<UserDto>> SearchUsersAsync(
+    string keyword,
+    bool? isActive = null)
         {
             var lower = keyword?.Trim().ToLower() ?? string.Empty;
 
@@ -427,9 +429,7 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
             }
 
             if (isActive.HasValue)
-            {
                 query = query.Where(u => u.IsDeleted == !isActive.Value);
-            }
 
             var users = await query.AsNoTracking().ToListAsync();
             var result = new List<UserDto>();
@@ -439,15 +439,16 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                 var roles = await _userManager.GetRolesAsync(user);
                 result.Add(new UserDto
                 {
-                    Id        = user.Id,
-                    Email     = user.Email,
-                    Name      = user.Name,
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
                     PhoneNumber = user.PhoneNumber,
-                    Adresse   = user.Adresse,
-                    Role      = roles.FirstOrDefault() ?? "",
+                    Adresse = user.Adresse,
+                    Role = roles.FirstOrDefault() ?? "",
                     IsDeleted = user.IsDeleted
                 });
             }
+
             return result;
         }
 
@@ -477,5 +478,52 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
             }
             return result;
         }
+        public async Task<ResponseDto> UpdateProfileAsync(UpdateProfileDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null || user.IsDeleted)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Utilisateur introuvable."
+                };
+            }
+
+            // Mise à jour des champs modifiables
+            user.Name = model.Name ?? user.Name;
+            user.PhoneNumber = model.PhoneNumber ?? user.PhoneNumber;
+            user.Adresse = model.Adresse ?? user.Adresse;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = result.Errors.FirstOrDefault()?.Description
+                };
+            }
+
+            // Retourner les données mises à jour
+            var roles = await _userManager.GetRolesAsync(user);
+            return new ResponseDto
+            {
+                IsSuccess = true,
+                Message = "Profil mis à jour avec succès.",
+                Result = new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Adresse = user.Adresse,
+                    Role = roles.FirstOrDefault() ?? ""
+                }
+            };
+        }
+        
     }
 }

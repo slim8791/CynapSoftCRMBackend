@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '../../../../core/services/api.service';
@@ -9,6 +10,7 @@ export interface VisiteDto {
   id_User_Delegue: number;
   date:            string;
   type:            VisiteType;
+  isCompleted?:    boolean;
   id_Medecin?:     number | null;
   id_Pharmacien?:  number | null;
   id_Planning?:    number | null;
@@ -21,6 +23,12 @@ export class VisiteService {
   constructor(private api: ApiService) {}
   private u<T>(r: any): T { return r?.Result ?? r?.result ?? r; }
 
+  getAll(startDate?: string, endDate?: string): Observable<VisiteDto[]> {
+    let p = new HttpParams();
+    if (startDate) p = p.set('startDate', startDate);
+    if (endDate)   p = p.set('endDate', endDate);
+    return this.api.get<any>(this.base, p).pipe(map(r => this.u<VisiteDto[]>(r) ?? []));
+  }
   getById(id: number)           { return this.api.get<any>(`${this.base}/${id}`).pipe(map(r => this.u<VisiteDto>(r))); }
   getByDelegue(id: number)      { return this.api.get<any>(`${this.base}/by-delegue/${id}`).pipe(map(r => this.u<VisiteDto[]>(r) ?? [])); }
   getByPlanning(id: number)     { return this.api.get<any>(`${this.base}/by-planning/${id}`).pipe(map(r => this.u<VisiteDto[]>(r) ?? [])); }

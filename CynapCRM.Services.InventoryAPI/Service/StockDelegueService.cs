@@ -32,23 +32,35 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
         public async Task<StockDelegueDto?> CreateUpdateStockAsync(StockDelegueDto dto)
         {
+            Stock_Delegue stock;
 
-            var stock = new Stock_Delegue
+            if (dto.Id_stock == 0)
             {
-                Id_User_Delegue = dto.Id_User_Delegue,
-                Id_Produit = dto.Id_Produit,
-                NumeroLot = dto.NumeroLot,
-                QteDisponible = dto.QteDisponible,
-                QteReservee = 0,
-                DateCreation = DateTime.UtcNow,
-                IsDeleted = false
-            };
+                stock = new Stock_Delegue
+                {
+                    Id_User_Delegue = dto.Id_User_Delegue,
+                    Id_Produit = dto.Id_Produit,
+                    NumeroLot = dto.NumeroLot,
+                    QteDisponible = dto.QteDisponible,
+                    QteReservee = 0,
+                    DateCreation = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+                _db.StocksDelegues.Add(stock);
+            }
+            else
+            {
+                stock = await _db.StocksDelegues
+                    .FirstOrDefaultAsync(s => s.Id_stock == dto.Id_stock && !s.IsDeleted);
 
-            _db.StocksDelegues.Add(stock);
+                if (stock == null) return null;
+
+                stock.QteDisponible = dto.QteDisponible;
+                stock.NumeroLot = dto.NumeroLot;
+            }
+
             await _db.SaveChangesAsync();
-
             return _mapper.Map<StockDelegueDto>(stock);
-
         }
         public async Task<StockDelegueDto?> GetStockByIdAsync(int idStock)
         {
@@ -98,20 +110,18 @@ namespace CynapCRM.Services.InventoryAPI.Service
         }
         public async Task<bool> DeleteStockAsync(int idStock, StockType type)
         {
-
-            if (type != StockType.Delegue)
-                return false; 
+            if (type != StockType.Delegue) return false;
 
             var stock = await _db.StocksDelegues
                 .FirstOrDefaultAsync(s => s.Id_stock == idStock);
+            if (stock == null) return false;
 
-            if (stock == null)
-                return false;
+            // Règle métier : ne pas supprimer un stock avec quantité restante
+            if (stock.QteDisponible > 0) return false;
 
             stock.IsDeleted = true;
             await _db.SaveChangesAsync();
             return true;
-
-        }    
+        }
     }
 }

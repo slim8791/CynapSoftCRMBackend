@@ -1,14 +1,382 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Shell
-    x:Class="Cynapharm_Mobile.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:Cynapharm_Mobile"
-    Title="Cynapharm_Mobile">
+<Shell x:Class="Cynapharm_Mobile.AppShell"
+       x:Name="AppShellRoot"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:auth="clr-namespace:Cynapharm_Mobile.Views.Auth"
+       xmlns:dashboard="clr-namespace:Cynapharm_Mobile.Views.Dashboard"
+       xmlns:visites="clr-namespace:Cynapharm_Mobile.Views.Visites"
+       xmlns:planning="clr-namespace:Cynapharm_Mobile.Views.Planning"
+       xmlns:rapports="clr-namespace:Cynapharm_Mobile.Views.Rapports"
+       xmlns:stock="clr-namespace:Cynapharm_Mobile.Views.Stock"
+       xmlns:objectifs="clr-namespace:Cynapharm_Mobile.Views.Objectifs"
+       xmlns:products="clr-namespace:Cynapharm_Mobile.Views.Products"
+       xmlns:orders="clr-namespace:Cynapharm_Mobile.Views.Orders"
+       xmlns:documents="clr-namespace:Cynapharm_Mobile.Views.Documents"
+       xmlns:profile="clr-namespace:Cynapharm_Mobile.Views.Profile"
+       Shell.FlyoutBehavior="Flyout"
+       Shell.TabBarBackgroundColor="{StaticResource CardBackground}"
+       Shell.TabBarUnselectedColor="{StaticResource TextSecondary}"
+       Shell.TabBarTitleColor="{StaticResource Primary}"
+       Shell.TabBarForegroundColor="{StaticResource Primary}"
+       BackgroundColor="{StaticResource Primary}"
+       ForegroundColor="White">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <!-- ═══════════════════════════════════════════════════════════════════
+         CUSTOM FLYOUT PANEL
+    ═══════════════════════════════════════════════════════════════════ -->
+    <Shell.FlyoutContent>
+        <Grid RowDefinitions="Auto,*,Auto" BackgroundColor="White">
+
+            <!-- ── ROW 0 : HEADER ──────────────────────────────────────────── -->
+            <Grid Grid.Row="0"
+                  BackgroundColor="{StaticResource Primary}"
+                  Padding="16,48,16,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="44" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Avatar circle with initials -->
+                <Border Grid.Column="0"
+                        WidthRequest="44" HeightRequest="44"
+                        BackgroundColor="#33FFFFFF"
+                        StrokeShape="RoundRectangle 22"
+                        Stroke="Transparent">
+                    <Label Text="{Binding UserInitials, Source={x:Reference AppShellRoot}}"
+                           FontSize="16" FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <!-- Name + role -->
+                <VerticalStackLayout Grid.Column="1"
+                                     Margin="10,0,0,0"
+                                     VerticalOptions="Center"
+                                     Spacing="2">
+                    <Label Text="{Binding UserName, Source={x:Reference AppShellRoot}}"
+                           FontSize="15" FontAttributes="Bold"
+                           TextColor="White" />
+                    <Label Text="{Binding UserRole, Source={x:Reference AppShellRoot}}"
+                           FontSize="12"
+                           TextColor="#99FFFFFF" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- ── ROW 1 : NAV ITEMS ───────────────────────────────────────── -->
+            <ScrollView Grid.Row="1">
+                <VerticalStackLayout Padding="0,8,0,8" Spacing="0">
+
+                    <!-- Dashboard -->
+                    <Grid HeightRequest="52" Padding="20,0"
+                          ColumnDefinitions="36,14,*"
+                          IsVisible="{Binding ShowDashboard, Source={x:Reference AppShellRoot}}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding GoToDashboardCommand, Source={x:Reference AppShellRoot}}" />
+                        </Grid.GestureRecognizers>
+                        <Path Grid.Column="0"
+                              Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"
+                              Fill="{StaticResource TextSecondary}"
+                              Aspect="Uniform"
+                              HeightRequest="20" WidthRequest="20"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="Tableau de bord"
+                               FontSize="15" TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Visites -->
+                    <Grid HeightRequest="52" Padding="20,0"
+                          ColumnDefinitions="36,14,*"
+                          IsVisible="{Binding ShowVisites, Source={x:Reference AppShellRoot}}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding GoToVisitesCommand, Source={x:Reference AppShellRoot}}" />
+                        </Grid.GestureRecognizers>
+                        <Path Grid.Column="0"
+                              Data="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
+                              Fill="{StaticResource TextSecondary}"
+                              Aspect="Uniform"
+                              HeightRequest="20" WidthRequest="20"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="Visites"
+                               FontSize="15" TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Planning -->
+                    <Grid HeightRequest="52" Padding="20,0"
+                          ColumnDefinitions="36,14,*"
+                          IsVisible="{Binding ShowPlanning, Source={x:Reference AppShellRoot}}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding GoToPlanningCommand, Source={x:Reference AppShellRoot}}" />
+                        </Grid.GestureRecognizers>
+                        <Path Grid.Column="0"
+                              Data="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"
+                              Fill="{StaticResource TextSecondary}"
+                              Aspect="Uniform"
+                              HeightRequest="20" WidthRequest="20"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="Planning"
+                               FontSize="15" TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Catalogue -->
+                    <Grid HeightRequest="52" Padding="20,0"
+                          ColumnDefinitions="36,14,*"
+                          IsVisible="{Binding ShowCatalogue, Source={x:Reference AppShellRoot}}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding GoToCatalogueCommand, Source={x:Reference AppShellRoot}}" />
+                        </Grid.GestureRecognizers>
+                        <Path Grid.Column="0"
+                              Data="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
+                              Fill="{StaticResource TextSecondary}"
+                              Aspect="Uniform"
+                              HeightRequest="20" WidthRequest="20"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="Catalogue"
+                               FontSize="15" TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Commandes -->
+                    <Grid HeightRequest="52" Padding="20,0"
+                          ColumnDefinitions="36,14,*"
+                          IsVisible="{Binding ShowOrders, Source={x:Reference AppShellRoot}}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding GoToOrdersCommand, Source={x:Reference AppShellRoot}}" />
+                        </Grid.GestureRecognizers>
+                        <Path Grid.Column="0"
+                              Data="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.1 17 7 17h13v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 23.47 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"
+                              Fill="{StaticResource TextSecondary}"
+                              Aspect="Uniform"
+                              HeightRequest="20" WidthRequest="20"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="Commandes"
+                               FontSize="15" TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Documents -->
+                    <Grid HeightRequest="52" Padding="20,0"
+                          ColumnDefinitions="36,14,*"
+                          IsVisible="{Binding ShowDocuments, Source={x:Reference AppShellRoot}}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding GoToDocumentsCommand, Source={x:Reference AppShellRoot}}" />
+                        </Grid.GestureRecognizers>
+                        <Path Grid.Column="0"
+                              Data="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+                              Fill="{StaticResource TextSecondary}"
+                              Aspect="Uniform"
+                              HeightRequest="20" WidthRequest="20"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="Documents"
+                               FontSize="15" TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Mon Stock -->
+                    <Grid HeightRequest="52" Padding="20,0"
+                          ColumnDefinitions="36,14,*"
+                          IsVisible="{Binding ShowStock, Source={x:Reference AppShellRoot}}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding GoToStockCommand, Source={x:Reference AppShellRoot}}" />
+                        </Grid.GestureRecognizers>
+                        <Path Grid.Column="0"
+                              Data="M20 2H4c-1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.72V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.72c.57-.38 1-.99 1-1.71V4c0-1.1-1-2-2-2zm-5 12H9v-2h6v2zm6-7H3V4h18v3z"
+                              Fill="{StaticResource TextSecondary}"
+                              Aspect="Uniform"
+                              HeightRequest="20" WidthRequest="20"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="Mon Stock"
+                               FontSize="15" TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Objectifs -->
+                    <Grid HeightRequest="52" Padding="20,0"
+                          ColumnDefinitions="36,14,*"
+                          IsVisible="{Binding ShowObjectifs, Source={x:Reference AppShellRoot}}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding GoToObjectifsCommand, Source={x:Reference AppShellRoot}}" />
+                        </Grid.GestureRecognizers>
+                        <Path Grid.Column="0"
+                              Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-12.5c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zm0 5.5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"
+                              Fill="{StaticResource TextSecondary}"
+                              Aspect="Uniform"
+                              HeightRequest="20" WidthRequest="20"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="Objectifs"
+                               FontSize="15" TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Divider before Profile -->
+                    <BoxView HeightRequest="1"
+                             BackgroundColor="{StaticResource BorderColor}"
+                             Margin="20,8" />
+
+                    <!-- Profil (always visible) -->
+                    <Grid HeightRequest="52" Padding="20,0"
+                          ColumnDefinitions="36,14,*">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding GoToProfileCommand, Source={x:Reference AppShellRoot}}" />
+                        </Grid.GestureRecognizers>
+                        <Path Grid.Column="0"
+                              Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                              Fill="{StaticResource TextSecondary}"
+                              Aspect="Uniform"
+                              HeightRequest="20" WidthRequest="20"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="Profil"
+                               FontSize="15" TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- ── ROW 2 : FOOTER ──────────────────────────────────────────── -->
+            <StackLayout Grid.Row="2"
+                         Padding="16,12"
+                         BackgroundColor="{StaticResource Primary}">
+                <Label Text="Cynapharm CRM v1.0.0"
+                       FontSize="11"
+                       TextColor="#66FFFFFF"
+                       HorizontalOptions="Center" />
+            </StackLayout>
+
+        </Grid>
+    </Shell.FlyoutContent>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         AUTH ROUTE  (root ShellContent — no tab, no flyout item)
+    ═══════════════════════════════════════════════════════════════════ -->
+    <ShellContent Route="login"
+                  ContentTemplate="{DataTemplate auth:LoginPage}"
+                  Shell.NavBarIsVisible="False"
+                  FlyoutItemIsVisible="False" />
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PRIMARY TAB BAR
+         Role-specific tabs start IsVisible="False" and are toggled by
+         ApplyRoleVisibility() in AppShell.xaml.cs.
+         Catalogue and Profil are always visible (all roles).
+    ═══════════════════════════════════════════════════════════════════ -->
+    <TabBar>
+
+        <!-- ── DELEGUE tabs ─────────────────────────────────────────────── -->
+        <Tab x:Name="FlyoutDashboard" Title="Accueil" IsVisible="False">
+            <Tab.Icon>
+                <!-- ti-home (tabler-icons-webfont v3.44.0) -->
+                <FontImageSource FontFamily="Tabler" Glyph="&#xea9d;" Color="{StaticResource TextSecondary}" Size="22" />
+            </Tab.Icon>
+            <ShellContent Route="dashboard"
+                          ContentTemplate="{DataTemplate dashboard:DashboardPage}"
+                          Shell.NavBarIsVisible="False" />
+        </Tab>
+
+        <Tab x:Name="FlyoutVisites" Title="Visites" IsVisible="False">
+            <Tab.Icon>
+                <!-- ti-clipboard-list (tabler-icons-webfont v3.44.0) -->
+                <FontImageSource FontFamily="Tabler" Glyph="&#xea6d;" Color="{StaticResource TextSecondary}" Size="22" />
+            </Tab.Icon>
+            <ShellContent Route="visits"
+                          ContentTemplate="{DataTemplate visites:VisitListPage}"
+                          Shell.NavBarIsVisible="False" />
+        </Tab>
+
+        <Tab x:Name="FlyoutPlanning" Title="Planning" IsVisible="False">
+            <Tab.Icon>
+                <!-- ti-calendar (tabler-icons-webfont v3.44.0) -->
+                <FontImageSource FontFamily="Tabler" Glyph="&#xea53;" Color="{StaticResource TextSecondary}" Size="22" />
+            </Tab.Icon>
+            <ShellContent Route="planning"
+                          ContentTemplate="{DataTemplate planning:PlanningPage}"
+                          Shell.NavBarIsVisible="False" />
+        </Tab>
+
+        <!-- ── Catalogue — ALL roles ────────────────────────────────────── -->
+        <Tab Title="Catalogue">
+            <Tab.Icon>
+                <!-- ti-pill (tabler-icons-webfont v3.44.0) -->
+                <FontImageSource FontFamily="Tabler" Glyph="&#xf026;" Color="{StaticResource TextSecondary}" Size="22" />
+            </Tab.Icon>
+            <ShellContent Route="products"
+                          ContentTemplate="{DataTemplate products:ProductListPage}"
+                          Shell.NavBarIsVisible="False" />
+        </Tab>
+
+        <!-- ── CLIENT tabs ──────────────────────────────────────────────── -->
+        <Tab x:Name="FlyoutOrders" Title="Commandes" IsVisible="False">
+            <Tab.Icon>
+                <!-- ti-shopping-cart (tabler-icons-webfont v3.44.0) -->
+                <FontImageSource FontFamily="Tabler" Glyph="&#xeba0;" Color="{StaticResource TextSecondary}" Size="22" />
+            </Tab.Icon>
+            <ShellContent Route="orders"
+                          ContentTemplate="{DataTemplate orders:OrderListPage}"
+                          Shell.NavBarIsVisible="False" />
+        </Tab>
+
+        <Tab x:Name="FlyoutDocuments" Title="Documents" IsVisible="False">
+            <Tab.Icon>
+                <!-- ti-file (tabler-icons-webfont v3.44.0) -->
+                <FontImageSource FontFamily="Tabler" Glyph="&#xea5f;" Color="{StaticResource TextSecondary}" Size="22" />
+            </Tab.Icon>
+            <ShellContent Route="documents"
+                          ContentTemplate="{DataTemplate documents:DocumentListPage}"
+                          Shell.NavBarIsVisible="False" />
+        </Tab>
+
+        <!-- ── Profil — ALL roles ───────────────────────────────────────── -->
+        <Tab Title="Profil">
+            <Tab.Icon>
+                <!-- ti-user (tabler-icons-webfont v3.44.0) -->
+                <FontImageSource FontFamily="Tabler" Glyph="&#xea9e;" Color="{StaticResource TextSecondary}" Size="22" />
+            </Tab.Icon>
+            <ShellContent Route="profile"
+                          ContentTemplate="{DataTemplate profile:ProfilePage}"
+                          Shell.NavBarIsVisible="False" />
+        </Tab>
+
+    </TabBar>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SECONDARY PAGES  (accessed via flyout drawer — not in tab bar)
+         FlyoutItemIsVisible=False keeps them out of any auto-generated UI.
+         ApplyRoleVisibility() toggles IsVisible to gate route accessibility.
+    ═══════════════════════════════════════════════════════════════════ -->
+    <FlyoutItem Title="Mon Stock" x:Name="FlyoutStock"
+                FlyoutItemIsVisible="False">
+        <ShellContent Route="stock"
+                      ContentTemplate="{DataTemplate stock:MyStockPage}"
+                      Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Objectifs" x:Name="FlyoutObjectifs"
+                FlyoutItemIsVisible="False">
+        <ShellContent Route="objectifs"
+                      ContentTemplate="{DataTemplate objectifs:ObjectifPage}"
+                      Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
 
 </Shell>

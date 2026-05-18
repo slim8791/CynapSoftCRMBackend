@@ -1,7 +1,8 @@
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable } from 'rxjs';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
@@ -36,8 +37,8 @@ export class AuthService {
 
   private apiUrl = `${environment.apiUrl}/auth`;
 
-  // ✅ MODIF : typer le user
-  private currentUserSubject: BehaviorSubject<User | null>;
+  // ✅ MODIF : typer le user (via Signal)
+  private currentUserSignal = signal<User | null>(null);
   public currentUser$: Observable<User | null>;
 
   private isBrowser: boolean;
@@ -49,11 +50,11 @@ export class AuthService {
     this.isBrowser = isPlatformBrowser(this.platformId);
 
     // ✅ MODIF : récupération propre du user
-    this.currentUserSubject = new BehaviorSubject<User | null>(
-      this.isBrowser ? this.getUserFromStorage() : null
-    );
+    if (this.isBrowser) {
+      this.currentUserSignal.set(this.getUserFromStorage());
+    }
 
-    this.currentUser$ = this.currentUserSubject.asObservable();
+    this.currentUser$ = toObservable(this.currentUserSignal);
   }
 
   /**
@@ -72,7 +73,7 @@ export class AuthService {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
           }
-          this.currentUserSubject.next(data.user);
+          this.currentUserSignal.set(data.user);
         }
       })
     );
@@ -103,7 +104,7 @@ export class AuthService {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     }
-    this.currentUserSubject.next(null);
+    this.currentUserSignal.set(null);
   }
 
   /**
@@ -124,7 +125,7 @@ export class AuthService {
    * ✅ ROLE UTILS (NOUVEAU)
    */
   getUserRole(): UserRole | null {
-    return this.currentUserSubject.value?.role ?? null;
+    return this.currentUserSignal()?.role ?? null;
   }
 
   hasRole(roles: UserRole[]): boolean {
@@ -146,7 +147,7 @@ export class AuthService {
    * ✅ CURRENT USER
    */
   getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
+    return this.currentUserSignal();
   }
 
 /**

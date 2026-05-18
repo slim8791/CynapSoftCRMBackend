@@ -1,3 +1,8 @@
+<!-- Backdrop — closes the status menu on outside click -->
+@if (activeStatusMenuId !== null) {
+  <div class="status-backdrop" (click)="closeStatusMenu()"></div>
+}
+
 <div class="ol-wrapper">
 
   <!-- ═══ EN-TÊTE ══════════════════════════════════════════ -->
@@ -7,8 +12,29 @@
       <p class="ol-sub">Gestion des commandes clients</p>
     </div>
     <div class="ol-actions">
-      <a routerLink="/orders/reclamations" class="btn-outline-link">Réclamations</a>
+      <!-- Fix 4 — réclamations count badge -->
+      <a routerLink="/orders/reclamations" class="btn-outline-link">
+        Réclamations
+        @if (reclamationsTotal > 0) {
+          <span class="recl-badge">{{ reclamationsTotal }}</span>
+        }
+      </a>
     </div>
+  </div>
+
+  <!-- ═══ FILTRES ════════════════════════════════════════════ -->
+  <div class="ol-filters">
+    <select [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()" class="ol-select" aria-label="Filtre par statut">
+      @for (s of statuses; track s.value) {
+        <option [value]="s.value">{{ s.label }}</option>
+      }
+    </select>
+    <input type="date" [(ngModel)]="startDate" (ngModelChange)="onFilterChange()" class="ol-date-input" aria-label="Date début">
+    <span class="ol-filter-sep">→</span>
+    <input type="date" [(ngModel)]="endDate" (ngModelChange)="onFilterChange()" class="ol-date-input" aria-label="Date fin">
+    @if (statusFilter || startDate || endDate) {
+      <button class="ol-clear-btn" (click)="clearFilters()">✕ Effacer</button>
+    }
   </div>
 
   <!-- ═══ ERREUR ═══════════════════════════════════════════ -->
@@ -62,7 +88,10 @@
               <tr>
                 <td class="col-id">#{{ order.Id_Commande }}</td>
                 <td>{{ order.DateCommande | date:'dd/MM/yyyy' }}</td>
-                <td class="col-gray">Client #{{ order.Id_Client }}</td>
+
+                <!-- Fix 2 — Client name or "Client inconnu" -->
+                <td class="col-gray">{{ getClientName(order.Id_Client) }}</td>
+
                 <td class="col-center">
                   <span class="badge-count">{{ getLignesCount(order) }}</span>
                 </td>
@@ -73,14 +102,49 @@
                     {{ getEtatLabel(order.Statut) }}
                   </span>
                 </td>
+
                 <td class="col-actions">
+                  <!-- Vue détail -->
                   <button class="act-btn view" (click)="onView(order.Id_Commande)" title="Voir le détail">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                       <circle cx="12" cy="12" r="3"/>
                     </svg>
                   </button>
-                  @if (isAdmin) {
+
+                  <!-- Fix 3 — Changer statut dropdown -->
+                  @if (getNextStatuses(order).length > 0) {
+                    <div class="status-dropdown-wrap">
+                      <button
+                        class="act-btn status-btn"
+                        (click)="toggleStatusMenu(order.Id_Commande)"
+                        title="Changer le statut"
+                        [class.status-btn-open]="activeStatusMenuId === order.Id_Commande">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="17 1 21 5 17 9"/>
+                          <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                          <polyline points="7 23 3 19 7 15"/>
+                          <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                        </svg>
+                      </button>
+                      @if (activeStatusMenuId === order.Id_Commande) {
+                        <div class="status-menu">
+                          <p class="status-menu-label">Passer vers :</p>
+                          @for (next of getNextStatuses(order); track next.value) {
+                            <button
+                              class="status-menu-item"
+                              [ngClass]="getEtatClass(next.value)"
+                              (click)="changeStatus(order, next.value)">
+                              {{ next.label }}
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  <!-- Fix 1 — Delete only for Brouillon or Annulee -->
+                  @if (isAdmin && canDelete(order)) {
                     <button class="act-btn delete" (click)="openDeleteModal(order)" title="Supprimer">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"/>
@@ -129,9 +193,7 @@
       </p>
 
       <div class="modal-actions">
-        <button class="btn-cancel" (click)="cancelDelete()" [disabled]="deleting">
-          Annuler
-        </button>
+        <button class="btn-cancel" (click)="cancelDelete()" [disabled]="deleting">Annuler</button>
         <button class="btn-confirm-danger" (click)="confirmDelete()" [disabled]="deleting">
           @if (deleting) { <span class="spinner-sm"></span> }
           @else          { Supprimer }

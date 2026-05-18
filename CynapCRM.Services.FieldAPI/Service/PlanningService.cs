@@ -17,6 +17,24 @@ namespace CynapCRM.Services.FieldAPI.Service
             _db = db;
             _mapper = mapper;
         }
+        public async Task<IEnumerable<PlanningVisiteDto>> GetAllPlanningsAsync(
+    DateTime? startDate = null,
+    DateTime? endDate = null)
+        {
+            var query = _db.Plannings.AsNoTracking().AsQueryable();
+
+            if (startDate.HasValue)
+                query = query.Where(p => p.Date >= startDate.Value.Date);
+            if (endDate.HasValue)
+                query = query.Where(p => p.Date <= endDate.Value.Date);
+
+            var plannings = await query
+                .OrderBy(p => p.Date)
+                .ThenBy(p => p.HeureDebut)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<PlanningVisiteDto>>(plannings);
+        }
         public async Task<PlanningVisiteDto?> CreateOrUpdatePlanningAsync(PlanningVisiteDto dto)
         {
             if (dto.HeureDebut >= dto.HeureFin)

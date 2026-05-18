@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ObjectifService, ObjectifDto } from '../services/objectif.service';
+import { UserService } from '../../../../features/users/user.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 
 @Component({
@@ -15,23 +16,43 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 })
 export class ObjectifListComponent implements OnInit, OnDestroy {
   objectifs: ObjectifDto[] = [];
-  loading = false;
-  error = '';
+  loading   = false;
+  error     = '';
+
+  delegueNames: Record<number, string> = {};
 
   private destroy$ = new Subject<void>();
 
-  constructor(private svc: ObjectifService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private svc:     ObjectifService,
+    private userSvc: UserService,
+    private cdr:     ChangeDetectorRef
+  ) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$)).subscribe({
+      next: users => {
+        users.forEach(u => {
+          const id = u?.id ?? u?.Id;
+          if (id != null) this.delegueNames[id] = u?.name ?? u?.Name ?? u?.email ?? `#${id}`;
+        });
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+  }
 
   load(): void {
     this.loading = true;
-    this.error = '';
+    this.error   = '';
     this.svc.getAll().pipe(takeUntil(this.destroy$)).subscribe({
       next: data => { this.objectifs = data; this.loading = false; this.cdr.markForCheck(); },
       error: () => { this.error = 'Impossible de charger les objectifs.'; this.loading = false; this.cdr.markForCheck(); }
     });
   }
+
+  getDelegrueName(id: number): string { return this.delegueNames[id] ?? `#${id}`; }
 
   progressPct(realise: number, cible: number): number {
     if (!cible || cible <= 0) return 0;

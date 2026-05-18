@@ -1,32 +1,48 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
 import { DistributionService, EchantillonDto } from '../services/distribution.service';
-import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { UserService } from '../../../users/user.service';
+import { StockService, StockDelegueDto } from '../../stocks/services/stock.service';
+
+function recipientRequired(form: AbstractControl): ValidationErrors | null {
+  const med = form.get('id_Medecin')?.value;
+  const pha = form.get('id_Pharmacien')?.value;
+  return (!med && !pha) ? { recipientRequired: true } : null;
+}
 
 @Component({
   selector: 'app-distribution-form',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, EmptyStateComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: './distribution-form.component.html',
   styleUrls: ['./distribution-form.component.css']
 })
 export class DistributionFormComponent implements OnInit, OnDestroy {
   form!: FormGroup;
-  saving = false;
+  saving      = false;
   submitError = '';
-  successMsg = '';
+  successMsg  = '';
+
+  delegues:    any[] = [];
+  medecins:    any[] = [];
+  pharmaciens: any[] = [];
+  stocks:      StockDelegueDto[] = [];
+  loadingStocks = false;
 
   private destroy$ = new Subject<void>();
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private svc: DistributionService,
-    private cdr: ChangeDetectorRef
+    private fb:      FormBuilder,
+    private router:  Router,
+    private svc:     DistributionService,
+    private userSvc: UserService,
+    private stockSvc: StockService,
+    private cdr:     ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -37,19 +53,67 @@ export class DistributionFormComponent implements OnInit, OnDestroy {
       id_Stock:      [null, [Validators.required]],
       qte:           [null, [Validators.required, Validators.min(1)]],
       numeroLot:     ['',   [Validators.required]]
+    }, { validators: recipientRequired });
+
+    this.loadUsers();
+
+    // When delegue changes, reload stocks
+    this.form.get('id_Delegue')!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(id => {
+      this.form.patchValue({ id_Stock: null, numeroLot: '' });
+      this.stocks = [];
+      if (id) this.loadStocks(+id);
+    });
+
+    // When stock changes, auto-fill numeroLot
+    this.form.get('id_Stock')!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(id => {
+      const stock = this.stocks.find(s => s.id_stock === +id);
+      if (stock) this.form.patchValue({ numeroLot: stock.numeroLot }, { emitEvent: false });
     });
   }
 
+  private loadUsers(): void {
+    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$))
+      .subscribe({ next: u => { this.delegues = u; this.cdr.markForCheck(); }, error: () => {} });
+    this.userSvc.getUsersByRole('MEDECIN').pipe(takeUntil(this.destroy$))
+      .subscribe({ next: u => { this.medecins = u; this.cdr.markForCheck(); }, error: () => {} });
+    this.userSvc.getUsersByRole('PHARMACIEN').pipe(takeUntil(this.destroy$))
+      .subscribe({ next: u => { this.pharmaciens = u; this.cdr.markForCheck(); }, error: () => {} });
+  }
+
+  private loadStocks(delegueId: number): void {
+    this.loadingStocks = true;
+    this.stockSvc.getByDelegue(delegueId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: s => { this.stocks = s; this.loadingStocks = false; this.cdr.markForCheck(); },
+      error: () => { this.loadingStocks = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  userName(u: any): string {
+    return u?.name ?? u?.Name ?? u?.fullName ?? u?.email ?? `#${u?.id}`;
+  }
+
   get f() { return this.form.controls; }
+  get recipientError(): boolean {
+    return !!(this.form.errors?.['recipientRequired'] && this.form.touched);
+  }
 
   submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
+
     this.saving = true;
     this.submitError = '';
-    this.successMsg = '';
+    this.successMsg  = '';
 
-    const dto: EchantillonDto = this.form.value;
+    const v = this.form.value;
+    const dto: EchantillonDto = {
+      id_Delegue:    +v.id_Delegue,
+      id_Medecin:    v.id_Medecin    ? +v.id_Medecin    : null,
+      id_Pharmacien: v.id_Pharmacien ? +v.id_Pharmacien : null,
+      id_Stock:      +v.id_Stock,
+      qte:           +v.qte,
+      numeroLot:     v.numeroLot
+    };
 
     this.svc.createOrUpdate(dto).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {

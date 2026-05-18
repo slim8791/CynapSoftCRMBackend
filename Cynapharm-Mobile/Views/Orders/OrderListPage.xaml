@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Orders"
+             xmlns:models="clr-namespace:Cynapharm_Mobile.Models.Orders"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Orders.OrderListPage"
+             x:DataType="vm:OrderListViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+
+        <!-- ── Primary header ────────────────────────────────────────────── -->
+        <Grid Grid.Row="0"
+              BackgroundColor="{StaticResource Primary}"
+              Padding="16,48,16,16">
+            <Label Text="Commandes"
+                   FontSize="18" FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" />
+        </Grid>
+
+        <!-- Error banner -->
+        <controls:ErrorBanner Grid.Row="1"
+                              Message="{Binding ErrorMessage}"
+                              Margin="16,8,16,0" />
+
+        <!-- ── GROSSISTE KPI cards ───────────────────────────────────────── -->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,*" ColumnSpacing="12"
+              Padding="16,12,16,4"
+              IsVisible="{Binding IsGrossiste}">
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding Orders.Count, StringFormat='{0}'}"
+                           FontSize="22" FontAttributes="Bold"
+                           TextColor="{StaticResource Primary}" />
+                    <Label Text="Commandes" FontSize="12"
+                           TextColor="{StaticResource TextSecondary}" />
+                </VerticalStackLayout>
+            </Border>
+            <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="0">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Volume"
+                           FontSize="22" FontAttributes="Bold"
+                           TextColor="{StaticResource Secondary}" />
+                    <Label Text="Ce mois" FontSize="12"
+                           TextColor="{StaticResource TextSecondary}" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- ── Status filter chips ───────────────────────────────────────── -->
+        <ScrollView Grid.Row="3"
+                    Orientation="Horizontal"
+                    BackgroundColor="{StaticResource CardBackground}">
+            <HorizontalStackLayout Padding="16,10" Spacing="8"
+                                   BindableLayout.ItemsSource="{Binding StatusOptions}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Border Padding="14,6"
+                                StrokeThickness="1"
+                                Stroke="{StaticResource BorderColor}"
+                                BackgroundColor="{StaticResource SurfaceBackground}">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20" />
+                            </Border.StrokeShape>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border"
+                                             Binding="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.StatusFilter}"
+                                             Value="{Binding .}">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                    <Setter Property="Stroke"          Value="{StaticResource Primary}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Label Text="{Binding .}" FontSize="13"
+                                   TextColor="{StaticResource TextSecondary}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label"
+                                                 Binding="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.StatusFilter}"
+                                                 Value="{Binding .}">
+                                        <Setter Property="TextColor" Value="White" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SetStatusFilterCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- ── Order list ────────────────────────────────────────────────── -->
+        <RefreshView Grid.Row="4"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}">
+            <CollectionView ItemsSource="{Binding Orders}"
+                            RemainingItemsThreshold="3"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}"
+                            ItemSizingStrategy="MeasureFirstItem">
+
+                <CollectionView.Footer>
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding HasMore}"
+                                       HorizontalOptions="Center"
+                                       Margin="8" />
+                </CollectionView.Footer>
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                         Spacing="12" Padding="32">
+                        <Label Text="📦" FontSize="48" HorizontalOptions="Center" />
+                        <Label Text="Aucune commande trouvée"
+                               Style="{StaticResource EmptyStateStyle}" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Order">
+                        <Border Margin="16,6" Style="{StaticResource CardStyle}">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="6">
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding NumeroCommande, StringFormat='#{0}'}"
+                                       FontAttributes="Bold" FontSize="15"
+                                       TextColor="{StaticResource TextPrimary}" />
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding MontantTotal, StringFormat='{0:N3} TND'}"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource Primary}" />
+                                <Label Grid.Row="1" Grid.Column="0"
+                                       Text="{Binding DateCommande, StringFormat='{0:dd/MM/yyyy}'}"
+                                       FontSize="12"
+                                       TextColor="{StaticResource TextSecondary}" />
+                                <Border Grid.Row="1" Grid.Column="1"
+                                        Padding="8,3"
+                                        Stroke="Transparent"
+                                        BackgroundColor="{StaticResource SecondaryLight}"
+                                        VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="12" />
+                                    </Border.StrokeShape>
+                                    <Label Text="{Binding Statut}"
+                                           FontSize="11" FontAttributes="Bold"
+                                           TextColor="{Binding Statut, Converter={StaticResource StatusColorConverter}}" />
+                                </Border>
+                            </Grid>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.GoToDetailCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- ── FAB ───────────────────────────────────────────────────────── -->
+        <Button Grid.Row="5"
+                Text="+ Nouvelle commande"
+                Command="{Binding CreateOrderCommand}"
+                Style="{StaticResource PrimaryButtonStyle}"
+                Margin="16,8" />
+
+    </Grid>
+</ContentPage>

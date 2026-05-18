@@ -1,0 +1,74 @@
+<div class="pw">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+    <div>
+      <a routerLink="/field/visites" style="font-size:.875rem;color:var(--c-primary,#2563eb);text-decoration:none">← Par délégué</a>
+      <h1 style="margin:.25rem 0 0;font-size:1.5rem;font-weight:600">Toutes les visites</h1>
+      <p style="margin:.25rem 0 0;color:#666;font-size:.875rem">{{ filtered.length }} visite(s)</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1.25rem;align-items:flex-end">
+    <div>
+      <label style="display:block;font-size:.8rem;color:#555;margin-bottom:.25rem">Date début</label>
+      <input type="date" [(ngModel)]="startDate" style="border:1px solid #ddd;border-radius:6px;padding:.375rem .625rem;font-size:.875rem">
+    </div>
+    <div>
+      <label style="display:block;font-size:.8rem;color:#555;margin-bottom:.25rem">Date fin</label>
+      <input type="date" [(ngModel)]="endDate" style="border:1px solid #ddd;border-radius:6px;padding:.375rem .625rem;font-size:.875rem">
+    </div>
+    <div>
+      <label style="display:block;font-size:.8rem;color:#555;margin-bottom:.25rem">ID Délégué</label>
+      <input type="number" [(ngModel)]="delegueId" (ngModelChange)="onDelegueFilter()" placeholder="Tous"
+             style="width:110px;border:1px solid #ddd;border-radius:6px;padding:.375rem .625rem;font-size:.875rem">
+    </div>
+    <button (click)="load()" [disabled]="loading"
+            style="padding:.4rem 1rem;background:var(--c-primary,#2563eb);color:#fff;border:none;border-radius:6px;font-size:.875rem;cursor:pointer">
+      {{ loading ? '…' : 'Actualiser' }}
+    </button>
+  </div>
+
+  @if (error)   { <div style="background:#fef2f2;color:#b91c1c;border:1px solid #fca5a5;border-radius:6px;padding:.75rem 1rem;margin-bottom:1rem">{{ error }}</div> }
+  @if (loading) { <div style="text-align:center;padding:2rem;color:#666">Chargement…</div> }
+
+  @else if (filtered.length === 0) {
+    <div style="text-align:center;padding:3rem;color:#888">Aucune visite trouvée.</div>
+  } @else {
+    <div style="overflow-x:auto;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+      <table style="width:100%;border-collapse:collapse;font-size:.875rem">
+        <thead style="background:var(--bg-subtle,#f8fafc)">
+          <tr>
+            <th style="padding:.625rem 1rem;text-align:left;font-weight:600">#ID</th>
+            <th style="padding:.625rem 1rem;text-align:left;font-weight:600">Délégué</th>
+            <th style="padding:.625rem 1rem;text-align:left;font-weight:600">Date</th>
+            <th style="padding:.625rem 1rem;text-align:left;font-weight:600">Type</th>
+            <th style="padding:.625rem 1rem;text-align:left;font-weight:600">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (v of filtered; track v.idVisite) {
+            <tr (click)="onRow(v)"
+                style="border-bottom:1px solid #f1f5f9;cursor:pointer;transition:background .15s"
+                onmouseenter="this.style.background='#f8fafc'"
+                onmouseleave="this.style.background=''">
+              <td style="padding:.625rem 1rem;color:#64748b">#{{ v.idVisite }}</td>
+              <td style="padding:.625rem 1rem;font-weight:500">#{{ v.id_User_Delegue }}</td>
+              <td style="padding:.625rem 1rem">{{ v.date | date:'dd/MM/yyyy' }}</td>
+              <td style="padding:.625rem 1rem">{{ typeLabel(v.type) }}</td>
+              <td style="padding:.625rem 1rem">
+                @if (v.isCompleted) {
+                  <span style="display:inline-block;padding:.2rem .6rem;border-radius:12px;font-size:.75rem;background:#dcfce7;color:#166534">Terminée</span>
+                } @else {
+                  <span style="display:inline-block;padding:.2rem .6rem;border-radius:12px;font-size:.75rem;background:#fef9c3;color:#854d0e">En cours</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from '../../core/services/api.service';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface UserDto {
   id: number;
@@ -25,6 +26,15 @@ export class UserService {
     return this.apiService.get<any[]>(`${this.baseUrl}/users`);
   }
 
+  getUsersByRole(role: string): Observable<any[]> {
+    return this.apiService.get<any>(`${this.baseUrl}/users/role/${encodeURIComponent(role)}`).pipe(
+      map((r: any) => {
+        const raw = r?.Result ?? r?.result ?? r;
+        return Array.isArray(raw) ? raw : [];
+      })
+    );
+  }
+
   getUserById(id: number): Observable<any> {
     return this.apiService.get<any>(`${this.baseUrl}/users/${id}`);
   }
@@ -39,20 +49,11 @@ export class UserService {
 
   
   disableUser(email: string): Observable<any> {
-    // ✅ Email encodé dans l'URL
-    const encodedEmail = encodeURIComponent(email);
-    return this.apiService.put<any>(
-      `${this.baseUrl}/delete-user/${encodedEmail}`,
-      {}
-    );
+    return this.apiService.put<any>(`${this.baseUrl}/disable`, { Email: email });
   }
 
   enableUser(email: string): Observable<any> {
-    const encodedEmail = encodeURIComponent(email);
-    return this.apiService.put<any>(
-      `${this.baseUrl}/enable-user/${encodedEmail}`,
-      {}
-    );
+    return this.apiService.put<any>(`${this.baseUrl}/enable`, { Email: email });
   }
 
   /** Recherche backend (keyword >= 3 chars). isActive=true→actifs, false→désactivés, undefined→tous */
@@ -63,7 +64,7 @@ export class UserService {
   }
 
   getDisabledUsers(): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/disabled-users`);
+    return this.apiService.get<any>(`${this.baseUrl}/users/disabled`);
   }
 }
 

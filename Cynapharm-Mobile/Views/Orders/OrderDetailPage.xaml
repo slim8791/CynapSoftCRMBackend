@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Orders"
+             xmlns:models="clr-namespace:Cynapharm_Mobile.Models.Orders"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Orders.OrderDetailPage"
+             x:DataType="vm:OrderDetailViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ── Primary header ────────────────────────────────────────────── -->
+        <Grid Grid.Row="0"
+              BackgroundColor="{StaticResource Primary}"
+              Padding="16,48,16,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0"
+                   Text="‹"
+                   FontSize="28" FontAttributes="Bold"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   Padding="0,0,8,0" />
+
+            <Label Grid.Column="1"
+                   Text="Détail commande"
+                   FontSize="18" FontAttributes="Bold"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center" />
+        </Grid>
+
+        <!-- ── Body ──────────────────────────────────────────────────────── -->
+        <RefreshView Grid.Row="1"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}"
+                     RefreshColor="{StaticResource Primary}">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="16">
+
+                <controls:ErrorBanner Message="{Binding ErrorMessage}" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Color="{StaticResource Primary}"
+                                   HorizontalOptions="Center" />
+
+                <!-- Order header card -->
+                <Border Style="{StaticResource CardStyle}">
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
+                        <Label Grid.Row="0" Grid.Column="0"
+                               Text="Numéro"
+                               FontSize="12" TextColor="{StaticResource TextSecondary}" />
+                        <Label Grid.Row="0" Grid.Column="1"
+                               Text="{Binding Order.NumeroCommande, StringFormat='#{0}'}"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}" />
+
+                        <Label Grid.Row="1" Grid.Column="0"
+                               Text="Date"
+                               FontSize="12" TextColor="{StaticResource TextSecondary}" />
+                        <Label Grid.Row="1" Grid.Column="1"
+                               Text="{Binding Order.DateCommande, StringFormat='{0:dd/MM/yyyy}'}"
+                               TextColor="{StaticResource TextPrimary}" />
+
+                        <Label Grid.Row="2" Grid.Column="0"
+                               Text="Statut"
+                               FontSize="12" TextColor="{StaticResource TextSecondary}" />
+                        <Border Grid.Row="2" Grid.Column="1"
+                                Padding="8,3" Stroke="Transparent"
+                                BackgroundColor="{StaticResource SecondaryLight}"
+                                HorizontalOptions="Start">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Label Text="{Binding Order.Statut}"
+                                   FontSize="11" FontAttributes="Bold"
+                                   TextColor="{Binding Order.Statut, Converter={StaticResource StatusColorConverter}}" />
+                        </Border>
+
+                        <Label Grid.Row="3" Grid.Column="0"
+                               Text="Total"
+                               FontSize="12" TextColor="{StaticResource TextSecondary}" />
+                        <Label Grid.Row="3" Grid.Column="1"
+                               Text="{Binding Order.MontantTotal, StringFormat='{0:N3} TND'}"
+                               TextColor="{StaticResource Primary}"
+                               FontAttributes="Bold" FontSize="16" />
+                    </Grid>
+                </Border>
+
+                <!-- Line items -->
+                <Label Text="Articles"
+                       Style="{StaticResource SectionTitleStyle}" />
+
+                <CollectionView ItemsSource="{Binding Lignes}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:LigneCommande">
+                            <Border Margin="0,0,0,8" Style="{StaticResource CardStyle}">
+                                <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" RowSpacing="4">
+                                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                                           Text="{Binding DisplayName}"
+                                           FontAttributes="Bold" FontSize="14"
+                                           TextColor="{StaticResource TextPrimary}" />
+                                    <Label Grid.Row="1" Grid.Column="0"
+                                           Text="{Binding Quantite, StringFormat='Qté: {0}'}"
+                                           TextColor="{StaticResource TextSecondary}" FontSize="12" />
+                                    <Label Grid.Row="1" Grid.Column="1"
+                                           Text="{Binding PrixUnitaire, StringFormat='{0:N3} TND'}"
+                                           TextColor="{StaticResource TextSecondary}" FontSize="12" />
+                                    <Label Grid.Row="1" Grid.Column="2"
+                                           Text="{Binding SousTotal, StringFormat='{0:N3} TND'}"
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource Primary}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Notes -->
+                <Label Text="{Binding Order.Notes}"
+                       TextColor="{StaticResource TextSecondary}"
+                       FontSize="13"
+                       IsVisible="{Binding Order.Notes, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+
+                <!-- Reclamation toggle -->
+                <Button Text="Soumettre une réclamation"
+                        Command="{Binding ToggleReclamationFormCommand}"
+                        BackgroundColor="{StaticResource DangerLight}"
+                        TextColor="{StaticResource DangerText}"
+                        CornerRadius="10"
+                        HeightRequest="44"
+                        Margin="0,8,0,0"
+                        IsVisible="{Binding IsDelivered}" />
+
+                <!-- Reclamation form -->
+                <Border Padding="16"
+                        BackgroundColor="{StaticResource CardBackground}"
+                        StrokeShape="RoundRectangle 16"
+                        Stroke="{StaticResource Danger}"
+                        StrokeThickness="1"
+                        IsVisible="{Binding ShowReclamationForm}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Réclamation"
+                               FontAttributes="Bold" FontSize="15"
+                               TextColor="{StaticResource TextPrimary}" />
+                        <Border Stroke="{StaticResource BorderColor}"
+                                BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeThickness="1" Padding="12,0" HeightRequest="48">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+                            <Entry Placeholder="Motif"
+                                   Text="{Binding ReclamationMotif}"
+                                   BackgroundColor="Transparent"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   Margin="0" VerticalOptions="Center" />
+                        </Border>
+                        <Border Stroke="{StaticResource BorderColor}"
+                                BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeThickness="1" Padding="12,10">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+                            <Editor Placeholder="Description"
+                                    Text="{Binding ReclamationDescription}"
+                                    MinimumHeightRequest="80"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    PlaceholderColor="{StaticResource TextMuted}" />
+                        </Border>
+                        <Button Text="Envoyer"
+                                Command="{Binding SubmitReclamationCommand}"
+                                BackgroundColor="{StaticResource Danger}"
+                                TextColor="White"
+                                CornerRadius="10"
+                                HeightRequest="44"
+                                Margin="0"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

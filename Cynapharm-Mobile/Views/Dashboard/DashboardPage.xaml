@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Dashboard"
+             xmlns:field="clr-namespace:Cynapharm_Mobile.Models.Field"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             x:Class="Cynapharm_Mobile.Views.Dashboard.DashboardPage"
+             x:DataType="vm:DashboardViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ── Primary header ────────────────────────────────────────────── -->
+        <Grid Grid.Row="0"
+              BackgroundColor="{StaticResource Primary}"
+              Padding="16,48,16,36">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Avatar + welcome + bell -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                <Border Grid.Column="0"
+                        BackgroundColor="#33FFFFFF"
+                        StrokeShape="RoundRectangle 20"
+                        Stroke="Transparent"
+                        HeightRequest="40" WidthRequest="40"
+                        VerticalOptions="Center">
+                    <Label Text="{Binding UserInitials}"
+                           FontSize="14" FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                    <Label Text="{Binding UserDisplayName, StringFormat='Bonjour, {0} !'}"
+                           FontSize="16" FontAttributes="Bold"
+                           TextColor="White" />
+                    <Label Text="{Binding TodayVisitCount, StringFormat='Visites aujourd\'hui : {0}'}"
+                           TextColor="#CCFFFFFF" FontSize="12" />
+                </VerticalStackLayout>
+
+                <Label Grid.Column="2"
+                       Text="🔔"
+                       FontSize="20"
+                       TextColor="White"
+                       VerticalOptions="Center" />
+            </Grid>
+
+            <!-- Date -->
+            <Label Grid.Row="1"
+                   Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat='{0:dddd d MMMM yyyy}'}"
+                   TextColor="#99FFFFFF" FontSize="11"
+                   Margin="0,8,0,0" />
+        </Grid>
+
+        <!-- ── Scrollable body ───────────────────────────────────────────── -->
+        <RefreshView Grid.Row="1"
+                     Command="{Binding LoadDashboardCommand}"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     RefreshColor="{StaticResource Primary}">
+            <ScrollView>
+                <VerticalStackLayout Padding="16,0,16,24" Spacing="16">
+
+                    <controls:ErrorBanner Message="{Binding ErrorMessage}" />
+
+                    <!-- ── KPI cards — overlap header by 28 px ─────────────── -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,-28,0,0">
+
+                        <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Visites aujourd'hui"
+                                       FontSize="12"
+                                       TextColor="{StaticResource TextSecondary}" />
+                                <Label Text="{Binding TodayVisitCount}"
+                                       FontSize="28" FontAttributes="Bold"
+                                       TextColor="{StaticResource Primary}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="0">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Visites réalisées"
+                                       FontSize="12"
+                                       TextColor="{StaticResource TextSecondary}" />
+                                <Label Text="{Binding TodayVisitCount}"
+                                       FontSize="28" FontAttributes="Bold"
+                                       TextColor="{StaticResource Secondary}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <!-- ── Quick access ───────────────────────────────────── -->
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Accès rapide"
+                               Style="{StaticResource SectionTitleStyle}" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <Button Grid.Column="0"
+                                    Text="Mes visites"
+                                    Command="{Binding GoToVisitsCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="0" />
+                            <Button Grid.Column="1"
+                                    Text="Planning"
+                                    Command="{Binding GoToPlanningCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0" />
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <!-- ── Objectives ─────────────────────────────────────── -->
+                    <Label Text="Mes objectifs du mois"
+                           Style="{StaticResource SectionTitleStyle}"
+                           Margin="0,4,0,0" />
+
+                    <!-- BindableLayout renders correctly inside ScrollView;
+                         CollectionView inside ScrollView collapses to height 0. -->
+                    <VerticalStackLayout Spacing="10"
+                                         BindableLayout.ItemsSource="{Binding ObjectifItems}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="field:Objectif">
+                                <Border Style="{StaticResource CardStyle}">
+                                    <VerticalStackLayout Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding TypeObjectif}"
+                                                   FontAttributes="Bold" FontSize="14"
+                                                   TextColor="{StaticResource TextPrimary}" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Periode}"
+                                                   TextColor="{StaticResource TextSecondary}"
+                                                   FontSize="11"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                        <ProgressBar Progress="{Binding ProgressValue}" />
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding ValeurActuelle, StringFormat='Réalisé : {0:N0}'}"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource Primary}" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding ValeurCible, StringFormat='Cible : {0:N0}'}"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource TextSecondary}" />
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Label Text="Aucun objectif pour cette période"
+                           Style="{StaticResource EmptyStateStyle}"
+                           Margin="0,4"
+                           IsVisible="{Binding ObjectifItems.Count, Converter={StaticResource InvertedBoolConverter}}" />
+
+                    <!-- ── KPIs ───────────────────────────────────────────── -->
+                    <Label Text="KPIs du mois"
+                           Style="{StaticResource SectionTitleStyle}"
+                           Margin="0,4,0,0" />
+
+                    <VerticalStackLayout Spacing="10"
+                                         BindableLayout.ItemsSource="{Binding KpiItems}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="field:Kpi">
+                                <Border Style="{StaticResource CardStyle}">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                            <Label Text="{Binding Indicateur}"
+                                                   FontAttributes="Bold" FontSize="14"
+                                                   TextColor="{StaticResource TextPrimary}" />
+                                            <Label Text="{Binding Periode}"
+                                                   FontSize="11"
+                                                   TextColor="{StaticResource TextSecondary}" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Valeur, StringFormat='{0:N0}'}"
+                                               TextColor="{StaticResource Primary}"
+                                               FontAttributes="Bold" FontSize="22"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Label Text="Aucun KPI disponible pour cette période"
+                           Style="{StaticResource EmptyStateStyle}"
+                           Margin="0,4"
+                           IsVisible="{Binding KpiItems.Count, Converter={StaticResource InvertedBoolConverter}}" />
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

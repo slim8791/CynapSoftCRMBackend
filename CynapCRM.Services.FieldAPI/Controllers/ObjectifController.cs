@@ -6,12 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 namespace CynapCRM.Services.FieldAPI.Controllers
 {
 
+    // ═══════════════════════════════════════
+    // ObjectifController.cs
+    // ═══════════════════════════════════════
+
     [ApiController]
     [Route("api/objectifs")]
     [Authorize]
-    public class ObjectifController : Controller
+    public class ObjectifController : ControllerBase // FIX: Controller → ControllerBase
     {
-
         private readonly IObjectifService _objectifService;
         protected ResponseDto _response;
 
@@ -21,26 +24,6 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             _response = new ResponseDto();
         }
 
-        [HttpGet("{idObjectif}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> GetObjectifById(int idObjectif)
-        {
-            try
-            {
-                var objectif = await _objectifService.GetObjectifsByIdAsync(idObjectif);
-
-                if (objectif == null)
-                    return NotFound();
-
-                return Ok(objectif);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.Message = ex.Message;
-                return StatusCode(515, _response);
-            }
-        }
         [HttpGet]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> GetAllObjectifs()
@@ -48,7 +31,8 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             try
             {
                 var objectifs = await _objectifService.GetAllObjectifsAsync();
-                return Ok(objectifs);
+                _response.Result = objectifs;
+                return Ok(_response);
             }
             catch (Exception ex)
             {
@@ -56,32 +40,70 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
-            
+        }
+
+        [HttpGet("{idObjectif:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetObjectifById(int idObjectif)
+        {
+            try
+            {
+                var objectif = await _objectifService.GetObjectifsByIdAsync(idObjectif);
+                if (objectif == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Objectif introuvable.";
+                    return NotFound(_response);
+                }
+                _response.Result = objectif;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
+        // FIX: ajout DELEGUE — peut voir ses propres objectifs
+        [HttpGet("by-delegue/{idDelegue:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetObjectifsByDelegue(int idDelegue)
+        {
+            try
+            {
+                var result = await _objectifService.GetObjectifsByDelegueAsync(idDelegue);
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
         }
 
         [HttpPost]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> CreateOrUpdateObjectif(
-            [FromBody] ObjectifDelegueDto dto)
+        public async Task<IActionResult> CreateOrUpdateObjectif([FromBody] ObjectifDelegueDto dto)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Données de l’objectif invalides.";
+                    _response.Message = "Données de l'objectif invalides.";
                     return BadRequest(_response);
                 }
-
                 var result = await _objectifService.CreateOrUpdateObjectifAsync(dto);
-
                 if (result == null)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Impossible de créer ou modifier l’objectif.";
+                    _response.Message = "Impossible de créer ou modifier l'objectif.";
                     return BadRequest(_response);
                 }
-
                 _response.Result = result;
                 _response.Message = "Objectif enregistré avec succès.";
                 return Ok(_response);
@@ -94,24 +116,6 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             }
         }
 
-        [HttpGet("by-delegue/{idDelegue:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> GetObjectifsByDelegue(int idDelegue)
-        {
-            try
-            {
-                var result = await _objectifService.GetObjectifsByDelegueAsync(idDelegue);
-
-                _response.Result = result;
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.Message = ex.Message;
-                return StatusCode(515, _response);
-            }
-        }
         [HttpPut("{idObjectif:int}/value")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> UpdateObjectifValue(
@@ -120,16 +124,15 @@ namespace CynapCRM.Services.FieldAPI.Controllers
         {
             try
             {
-                var result = await _objectifService.UpdateObjectifValueAsync(idObjectif, nouvelleValeur);
-
+                var result = await _objectifService
+                    .UpdateObjectifValueAsync(idObjectif, nouvelleValeur);
                 if (!result)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Mise à jour de la valeur impossible.";
+                    _response.Message = "Mise à jour impossible.";
                     return BadRequest(_response);
                 }
-
-                _response.Message = "Valeur réalisé mise à jour avec succès.";
+                _response.Message = "Valeur réalisée mise à jour avec succès.";
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -139,6 +142,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 return StatusCode(515, _response);
             }
         }
+
         [HttpDelete("{idObjectif:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteObjectif(int idObjectif)
@@ -146,14 +150,12 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             try
             {
                 var result = await _objectifService.DeleteObjectifAsync(idObjectif);
-
                 if (!result)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Suppression impossible (objectif introuvable).";
-                    return BadRequest(_response);
+                    return NotFound(_response);
                 }
-
                 _response.Message = "Objectif supprimé avec succès.";
                 return Ok(_response);
             }
@@ -166,4 +168,3 @@ namespace CynapCRM.Services.FieldAPI.Controllers
         }
     }
 }
-

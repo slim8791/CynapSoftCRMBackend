@@ -48,7 +48,7 @@
             <span class="progress-pct">{{ progressPct(o.valeurRealisee, o.valeurCible) }}%</span>
           </div>
           <div class="obj-footer">
-            <span class="delegue-tag">Délégué #{{ o.id_User_Delegue }}</span>
+            <span class="delegue-tag">{{ getDelegrueName(o.id_User_Delegue) }}</span>
             <a [routerLink]="['/field/objectifs/edit', o.idObjectif]" class="link-btn">Modifier</a>
           </div>
         </div>

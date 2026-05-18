@@ -25,6 +25,13 @@ export class DocumentService {
   getById(numero: string)    { return this.api.get<any>(`${this.base}/${numero}`).pipe(map(r => this.u<DocumentDto>(r))); }
   getByClient(id: number)    { return this.api.get<any>(`${this.base}/client/${id}`).pipe(map(r => this.u<DocumentDto[]>(r) ?? [])); }
   getByCommande(id: number)  { return this.api.get<any>(`${this.base}/commande/${id}`).pipe(map(r => this.u<DocumentDto[]>(r) ?? [])); }
-  createOrUpdate(dto: DocumentDto): Observable<DocumentDto> { return this.api.post<any>(`${this.base}/document`, dto).pipe(map(r => this.u<DocumentDto>(r))); }
+  getByType(type: string, pageNumber = 1, pageSize = 20): Observable<DocumentDto[]> {
+    const p = new HttpParams().set('pageNumber', pageNumber).set('pageSize', pageSize);
+    return this.api.get<any>(`${this.base}/type/${type}`, p).pipe(map(r => this.u<DocumentDto[]>(r) ?? []));
+  }
+  getByClientAndType(idClient: number, type: string): Observable<DocumentDto[]> {
+    return this.api.get<any>(`${this.base}/client/${idClient}/type/${type}`).pipe(map(r => this.u<DocumentDto[]>(r) ?? []));
+  }
+  createOrUpdate(dto: DocumentDto): Observable<DocumentDto> { return this.api.post<any>(`${this.base}/createUpdate`, dto).pipe(map(r => this.u<DocumentDto>(r))); }
   delete(numero: string): Observable<void> { return this.api.delete<void>(`${this.base}/${numero}`); }
 }

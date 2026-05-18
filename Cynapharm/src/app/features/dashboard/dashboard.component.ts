@@ -4,7 +4,7 @@ import { Subject, of } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
-import { OrderApiService, Commande, OrderStats } from './services/order-api.service';
+import { OrderApiService, Commande, OrderStats, OrderDashboardDto } from './services/order-api.service';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { CurrencyTNDPipe } from '../../shared/pipes/currency-tnd.pipe';
 
@@ -21,10 +21,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   error = '';
 
   // ── KPI Cards ─────────────────────────────────────────
-  commandesAujourdhui = 0;   // remplace visitesToday (KPI endpoint manquant)
+  commandesAujourdhui = 0;
   commandesEnAttente  = 0;
   caTotal             = 0;
-  tauxLivraison       = 0;   // remplace performanceRate (calculé localement)
+  tauxLivraison       = 0;
+  orderDash: OrderDashboardDto | null = null;
+  loadingDash = false;
 
   // ── Chart : Commandes par statut — barres ────────────
   statutBarSeries: any[] = [];
@@ -86,10 +88,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.error   = '';
 
     this.orderApi.getAllOrders()
-      .pipe(
-        catchError(() => of([] as Commande[])),
-        takeUntil(this.destroy$)
-      )
+      .pipe(catchError(() => of([] as Commande[])), takeUntil(this.destroy$))
       .subscribe({
         next: orders => {
           this.buildOrderCharts(orders);
@@ -102,6 +101,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+
+    this.loadingDash = true;
+    this.orderApi.getOrdersDashboard()
+      .pipe(catchError(() => of(null)), takeUntil(this.destroy$))
+      .subscribe(d => { this.orderDash = d; this.loadingDash = false; this.cdr.markForCheck(); });
   }
 
   // ── Construction de tous les graphiques depuis les commandes ──

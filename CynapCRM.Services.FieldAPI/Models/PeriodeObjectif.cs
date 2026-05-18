@@ -3,9 +3,9 @@
 
     public enum PeriodeObjectif
     {
-        Mensuel = 1,
-        Trimestriel = 2,
-        Annuel = 3
+        Mensuel = 0,
+        Trimestriel = 1,
+        Annuel = 2
     }
 
 }

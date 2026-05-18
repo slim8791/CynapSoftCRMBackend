@@ -94,6 +94,28 @@
 
     </div>
 
+    <!-- ── Statistiques commandes (API dashboard) ───────── -->
+    @if (orderDash) {
+      <div style="margin-bottom:1.5rem">
+        <h2 style="font-size:1rem;font-weight:600;color:#374151;margin:0 0 .75rem">Statistiques des commandes</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.75rem;margin-bottom:.75rem">
+          <div class="kpi-card kpi-blue"  style="padding:.875rem"><span class="kpi-label">Total</span><span class="kpi-value">{{ orderDash.TotalCommandes }}</span></div>
+          <div class="kpi-card kpi-orange"><span class="kpi-label">En attente</span><span class="kpi-value">{{ orderDash.EnAttente }}</span></div>
+          <div class="kpi-card"           ><span class="kpi-label">Confirmées</span><span class="kpi-value">{{ orderDash.Confirmees }}</span></div>
+          <div class="kpi-card"           ><span class="kpi-label">En préparation</span><span class="kpi-value">{{ orderDash.EnPreparation }}</span></div>
+          <div class="kpi-card"           ><span class="kpi-label">Expédiées</span><span class="kpi-value">{{ orderDash.Expediees }}</span></div>
+          <div class="kpi-card kpi-green" ><span class="kpi-label">Livrées</span><span class="kpi-value">{{ orderDash.Livrees }}</span></div>
+          <div class="kpi-card"  style="background:#fef2f2"><span class="kpi-label">Annulées</span><span class="kpi-value" style="color:#b91c1c">{{ orderDash.Annulees }}</span></div>
+          <div class="kpi-card kpi-green" ><span class="kpi-label">Total HT (TND)</span><span class="kpi-value" style="font-size:1rem">{{ orderDash.MontantTotalHT | number:'1.0-0' }}</span></div>
+          <div class="kpi-card kpi-green" ><span class="kpi-label">Total TTC (TND)</span><span class="kpi-value" style="font-size:1rem">{{ orderDash.MontantTotalTTC | number:'1.0-0' }}</span></div>
+          <div class="kpi-card kpi-orange"><span class="kpi-label">Réclam. ouvertes</span><span class="kpi-value">{{ orderDash.ReclamationsOuvertes }}</span></div>
+          <div class="kpi-card kpi-orange"><span class="kpi-label">Réclam. en cours</span><span class="kpi-value">{{ orderDash.ReclamationsEnCours }}</span></div>
+          <div class="kpi-card kpi-blue"  ><span class="kpi-label">Aujourd'hui</span><span class="kpi-value">{{ orderDash.CommandesAujourdHui }}</span></div>
+          <div class="kpi-card kpi-blue"  ><span class="kpi-label">Ce mois</span><span class="kpi-value">{{ orderDash.CommandesCeMois }}</span></div>
+        </div>
+      </div>
+    }
+
     <!-- ── Graphiques ligne 1 ─────────────────────────── -->
     <div class="charts-row">
 

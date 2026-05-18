@@ -4,8 +4,9 @@ namespace CynapCRM.Services.DocAPI.Service.IService
 {
     public interface IFactureService
     {
-
-
+        Task<IEnumerable<FactureDto>> GetFacturesByCommandeAsync(
+            int idCommande);
+        Task<bool> DeleteFactureAsync(int idFacture);
         Task<IEnumerable<FactureDto>> GetAllFacturesAsync(int pageNumber, int pageSize);
 
         Task<FactureDto?> CreateOrUpdateFactureAsync(FactureDto factureDto);

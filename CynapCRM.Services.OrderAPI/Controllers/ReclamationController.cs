@@ -1,4 +1,5 @@
 ﻿using Azure;
+using CynapCRM.Services.OrderAPI.Models;
 using CynapCRM.Services.OrderAPI.Models.Dto;
 using CynapCRM.Services.OrderAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
@@ -8,22 +9,25 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CynapCRM.Services.OrderAPI.Controllers
 {
+    // ═══════════════════════════════════════
+    // ReclamationController.cs
+    // ═══════════════════════════════════════
 
     [ApiController]
     [Route("api/reclamations")]
     [Authorize]
-    
     public class ReclamationController : ControllerBase
     {
         private readonly IReclamationService _reclamationService;
         protected ResponseDto _response;
+
         public ReclamationController(IReclamationService reclamationService)
         {
             _reclamationService = reclamationService;
             _response = new();
-
         }
 
+        // FIX: retourner ResponseDto cohérent
         [HttpGet]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> GetAllReclamations()
@@ -31,18 +35,20 @@ namespace CynapCRM.Services.OrderAPI.Controllers
             try
             {
                 var result = await _reclamationService.GetAllReclamationsAsync();
-                return Ok(result);
+                _response.Result = result;
+                return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Erreur lors de la récupération : " + ex.Message;
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }
 
+        // FIX: ajout rôles CLIENT pour voir leurs propres réclamations
         [HttpGet("by-commande/{orderId:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> GetReclamationsByOrder(int orderId)
         {
             try
@@ -54,26 +60,20 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     return BadRequest(_response);
                 }
                 var result = await _reclamationService.GetReclamationsByOrderAsync(orderId);
-                if (result == null || !result.Any())
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "Aucune réclamation trouvée pour cette commande.";
-                    return NotFound(_response);
-                }
                 _response.Result = result;
-                _response.IsSuccess = true;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Erreur lors de la récupération : " + ex.Message;
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }
 
+        // FIX: ajout rôles CLIENT
         [HttpGet("by-client/{idClient:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> GetReclamationsByClient(int idClient)
         {
             try
@@ -85,26 +85,20 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     return BadRequest(_response);
                 }
                 var result = await _reclamationService.GetReclamationsByClientAsync(idClient);
-                if (result == null || !result.Any())
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "Aucune réclamation trouvée pour ce client.";
-                    return NotFound(_response);
-                }
                 _response.Result = result;
-                _response.IsSuccess = true;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Erreur lors de la récupération : " + ex.Message;
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }
 
+        // FIX: ajout rôles CLIENT
         [HttpGet("{idReclamation:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> GetReclamationById(int idReclamation)
         {
             try
@@ -123,20 +117,20 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     return NotFound(_response);
                 }
                 _response.Result = result;
-                _response.IsSuccess = true;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Erreur lors de la récupération : " + ex.Message;
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }
 
         [HttpPost]
-        [Authorize(Roles = "CLIENT")]
-        public async Task<IActionResult> CreateUpdateReclamation([FromBody] ReclamationDto reclamationDto)
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
+        public async Task<IActionResult> CreateUpdateReclamation(
+            [FromBody] ReclamationDto reclamationDto)
         {
             try
             {
@@ -147,87 +141,79 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     return BadRequest(_response);
                 }
 
-                // ID CLIENT depuis le JWT
                 var clientIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
                 if (clientIdClaim == null)
-                    return Unauthorized("Identité du client introuvable.");
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Identité du client introuvable.";
+                    return Unauthorized(_response);
+                }
 
                 reclamationDto.Id_Client = int.Parse(clientIdClaim.Value);
 
-                var result = await _reclamationService.CreateUpdateReclamationAsync(reclamationDto);
+                var result = await _reclamationService
+                    .CreateUpdateReclamationAsync(reclamationDto);
 
                 if (result == null)
                 {
                     _response.IsSuccess = false;
-                    if (reclamationDto.Id_Rec == 0)
-                    {
-                        _response.Message = "Échec de la création. Vérifiez les références de commande et de ligne.";
-                    }
-                    else
-                    {
-                        _response.Message = "Réclamation introuvable pour mise à jour.";
-                    }
-
+                    _response.Message = reclamationDto.Id_Rec == 0
+                        ? "Échec de la création. Vérifiez la commande et la ligne."
+                        : "Réclamation introuvable ou non modifiable.";
                     return BadRequest(_response);
                 }
 
                 _response.Result = result;
-                if (reclamationDto.Id_Rec == 0)
-                {
-                    _response.Message = "Réclamation créée avec succès.";
-                }
-                else
-                {
-                    _response.Message = "Réclamation modifiée avec succès.";
-                }
+                _response.Message = reclamationDto.Id_Rec == 0
+                    ? "Réclamation créée avec succès."
+                    : "Réclamation modifiée avec succès.";
                 return Ok(_response);
-
-                
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Erreur lors de l'opération : " + ex.Message;
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }
-
 
         [HttpPut("{reclamationId:int}/status")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> UpdateReclamationStatus(int reclamationId, [FromBody] StatutReclamation newStatus)
+        public async Task<IActionResult> UpdateReclamationStatus(
+            int reclamationId,
+            [FromBody] StatutReclamation newStatus)
         {
             try
             {
-                if (!ModelState.IsValid)
+                if (reclamationId <= 0)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Données invalides pour la mise à jour du statut.";
+                    _response.Message = "ID de réclamation invalide.";
                     return BadRequest(_response);
                 }
-
-                bool isUpdated = await _reclamationService.UpdateReclamationStatusAsync(reclamationId, newStatus);
+                bool isUpdated = await _reclamationService
+                    .UpdateReclamationStatusAsync(reclamationId, newStatus);
                 if (!isUpdated)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Réclamation introuvable pour la mise à jour du statut.";
-                    return NotFound(_response);
+                    // FIX: message précis — machine d'état
+                    _response.Message = "Transition de statut invalide ou réclamation introuvable.";
+                    return BadRequest(_response); // FIX: BadRequest plus approprié que NotFound
                 }
-                _response.Message = "Mise à jour réussie.";
+                _response.Message = "Statut mis à jour avec succès.";
                 return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Erreur lors de la modification : " + ex.Message;
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
-
         }
 
+        // FIX: CLIENT peut supprimer sa propre réclamation ouverte
         [HttpDelete("{reclamationId:int}")]
-        [Authorize(Roles = "ADMIN")]
+        [Authorize(Roles = "ADMIN,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> DeleteReclamation(int reclamationId)
         {
             try
@@ -238,12 +224,14 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     _response.Message = "ID de réclamation invalide.";
                     return BadRequest(_response);
                 }
-                bool isDeleted = await _reclamationService.DeleteReclamationAsync(reclamationId);
+                bool isDeleted = await _reclamationService
+                    .DeleteReclamationAsync(reclamationId);
                 if (!isDeleted)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Réclamation introuvable pour suppression.";
-                    return NotFound(_response);
+                    // FIX: message précis — règle métier
+                    _response.Message = "Suppression impossible (réclamation non ouverte ou introuvable).";
+                    return BadRequest(_response);
                 }
                 _response.Message = "Réclamation supprimée avec succès.";
                 return Ok(_response);
@@ -251,10 +239,9 @@ namespace CynapCRM.Services.OrderAPI.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = "Erreur lors de la suppression : " + ex.Message;
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
-
         }
     }
 }

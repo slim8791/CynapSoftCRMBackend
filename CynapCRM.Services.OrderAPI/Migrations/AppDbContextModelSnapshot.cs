@@ -36,11 +36,17 @@ namespace CynapCRM.Services.OrderAPI.Migrations
                     b.Property<int>("Id_Client")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<decimal>("MontantTTC")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("MontantTotalHT")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("MotifAnnulation")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Statut")
                         .HasColumnType("int");

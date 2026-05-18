@@ -8,7 +8,7 @@
 
   <Identity Name="maui-package-name-placeholder" Publisher="CN=User Name" Version="0.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="AFE1AA5C-F8F5-4404-AD7E-FC7260FB7858" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="C3F3428D-E06B-4A16-9670-099B2C56725A" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>$placeholder$</DisplayName>
@@ -41,6 +41,8 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
+    <!-- Required for Microsoft.Maui.Devices.Sensors.Geolocation on Windows -->
+    <DeviceCapability Name="location" />
   </Capabilities>
 
 </Package>

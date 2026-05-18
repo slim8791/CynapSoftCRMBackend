@@ -22,7 +22,7 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
     return true;
   }
 
-  // ❌ rôle interdit → dashboard (PAS forbidden)
-  router.navigate(['/dashboard']);
+  // ❌ rôle interdit → forbidden (redirection claire)
+  router.navigate(['/forbidden']);
   return false;
 };

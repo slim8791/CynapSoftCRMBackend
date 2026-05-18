@@ -16,12 +16,7 @@ export class ApiService {
    * Generic GET request
    */
   get<T>(endpoint: string, params?: HttpParams): Observable<T> {
-    return this.http.get<T>(`${this.apiUrl}${endpoint}`, { params }).pipe(
-      catchError((err: HttpErrorResponse) => {
-        console.error('API GET error', endpoint, err.status, err.error);
-        return throwError(() => err);
-      })
-    );
+    return this.http.get<T>(`${this.apiUrl}${endpoint}`, { params });
   }
 
   unwrapResponse<T>(response: any): T {

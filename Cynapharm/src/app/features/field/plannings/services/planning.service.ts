@@ -20,6 +20,12 @@ export class PlanningService {
   constructor(private api: ApiService) {}
   private u<T>(r: any): T { return r?.Result ?? r?.result ?? r; }
 
+  getAll(startDate?: string, endDate?: string): Observable<PlanningDto[]> {
+    let p = new HttpParams();
+    if (startDate) p = p.set('startDate', startDate);
+    if (endDate)   p = p.set('endDate', endDate);
+    return this.api.get<any>(this.base, p).pipe(map(r => this.u<PlanningDto[]>(r) ?? []));
+  }
   getById(id: number)     { return this.api.get<any>(`${this.base}/${id}`).pipe(map(r => this.u<PlanningDto>(r))); }
   getByDelegue(id: number){ return this.api.get<any>(`${this.base}/by-delegue/${id}`).pipe(map(r => this.u<PlanningDto[]>(r) ?? [])); }
   getByRange(idDelegue: number, start: string, end: string): Observable<PlanningDto[]> {

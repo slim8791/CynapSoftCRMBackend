@@ -112,10 +112,43 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Erreur de recherche : {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
+        [HttpPut("update-profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Données invalides.";
+                    return BadRequest(_response);
+                }
 
+                var result = await _authService.UpdateProfileAsync(model);
+
+                if (!result.IsSuccess)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = result.Message;
+                    return BadRequest(_response);
+                }
+
+                _response.IsSuccess = true;
+                _response.Message = result.Message;
+                _response.Result = result.Result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
         [HttpGet("users")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetAllUsers()
@@ -382,7 +415,7 @@ Inner: {ex.InnerException?.Message}";
             {
                 _response.IsSuccess = false;
                 _response.Message = $"Erreur: {ex.Message}";
-                return StatusCode(500, _response);
+                return StatusCode(515, _response);
             }
         }
 

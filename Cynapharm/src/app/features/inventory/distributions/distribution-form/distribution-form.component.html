@@ -1,54 +1,100 @@
 <div class="page">
-      <div class="page-header">
-        <a routerLink="/inventory/distributions" class="back-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Retour
-        </a>
-        <h1>Nouvelle distribution</h1>
+  <div class="page-header">
+    <a routerLink="/inventory/distributions" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour
+    </a>
+    <h1>Nouvelle distribution</h1>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+    <div class="form-grid">
+
+      <!-- Délégué -->
+      <div class="field">
+        <label>Délégué *</label>
+        <select formControlName="id_Delegue">
+          <option [value]="null">-- Sélectionner un délégué --</option>
+          @for (u of delegues; track u.id) {
+            <option [value]="u.id">{{ userName(u) }}</option>
+          }
+        </select>
+        <span *ngIf="f['id_Delegue'].touched && f['id_Delegue'].invalid" class="field-error">Délégué requis</span>
       </div>
 
-      <form [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
-        <div class="form-grid">
-          <div class="field">
-            <label>Délégué (ID) *</label>
-            <input type="number" formControlName="id_Delegue" placeholder="ID du délégué" />
-            <span *ngIf="f['id_Delegue'].touched && f['id_Delegue'].invalid" class="field-error">Champ requis</span>
-          </div>
-          <div class="field">
-            <label>Stock (ID) *</label>
-            <input type="number" formControlName="id_Stock" placeholder="ID du stock" />
-            <span *ngIf="f['id_Stock'].touched && f['id_Stock'].invalid" class="field-error">Champ requis</span>
-          </div>
-          <div class="field">
-            <label>Quantité *</label>
-            <input type="number" formControlName="qte" placeholder="0" min="1" />
-            <span *ngIf="f['qte'].touched && f['qte'].invalid" class="field-error">Valeur invalide (min 1)</span>
-          </div>
-          <div class="field">
-            <label>Numéro de lot *</label>
-            <input type="text" formControlName="numeroLot" placeholder="Ex: LOT-2024-001" />
-            <span *ngIf="f['numeroLot'].touched && f['numeroLot'].invalid" class="field-error">Champ requis</span>
-          </div>
-          <div class="field">
-            <label>Médecin (ID) <span class="opt">optionnel</span></label>
-            <input type="number" formControlName="id_Medecin" placeholder="ID médecin" />
-          </div>
-          <div class="field">
-            <label>Pharmacien (ID) <span class="opt">optionnel</span></label>
-            <input type="number" formControlName="id_Pharmacien" placeholder="ID pharmacien" />
-          </div>
-        </div>
+      <!-- Stock (cascading from delegue) -->
+      <div class="field">
+        <label>Stock *</label>
+        <select formControlName="id_Stock" [attr.disabled]="!f['id_Delegue'].value ? true : null">
+          <option [value]="null">
+            @if (!f['id_Delegue'].value) { -- Sélectionner d'abord un délégué -- }
+            @else if (loadingStocks) { Chargement… }
+            @else { -- Sélectionner un stock -- }
+          </option>
+          @for (s of stocks; track s.id_stock) {
+            <option [value]="s.id_stock">
+              Lot {{ s.numeroLot }} — Dispo: {{ s.qteDisponible }}
+            </option>
+          }
+        </select>
+        @if (stocks.length === 0 && f['id_Delegue'].value && !loadingStocks) {
+          <span class="field-hint">Aucun stock pour ce délégué.</span>
+        }
+        <span *ngIf="f['id_Stock'].touched && f['id_Stock'].invalid" class="field-error">Stock requis</span>
+      </div>
 
-        <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
-        <div *ngIf="successMsg" class="success-banner">{{ successMsg }}</div>
+      <!-- Numéro de lot (auto-filled) -->
+      <div class="field">
+        <label>Numéro de lot *</label>
+        <input type="text" formControlName="numeroLot" placeholder="Auto-rempli depuis le stock" readonly />
+        <span *ngIf="f['numeroLot'].touched && f['numeroLot'].invalid" class="field-error">Sélectionnez un stock</span>
+      </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="saving">
-            <span *ngIf="saving" class="btn-spinner"></span>
-            {{ saving ? 'Enregistrement...' : 'Créer' }}
-          </button>
-          <a routerLink="/inventory/distributions" class="btn btn-secondary">Annuler</a>
-        </div>
-      </form>
+      <!-- Quantité -->
+      <div class="field">
+        <label>Quantité *</label>
+        <input type="number" formControlName="qte" placeholder="0" min="1" />
+        <span *ngIf="f['qte'].touched && f['qte'].invalid" class="field-error">Valeur invalide (min 1)</span>
+      </div>
+
+      <!-- Médecin -->
+      <div class="field">
+        <label>Médecin <span class="opt">optionnel</span></label>
+        <select formControlName="id_Medecin">
+          <option [value]="null">-- Aucun --</option>
+          @for (u of medecins; track u.id) {
+            <option [value]="u.id">{{ userName(u) }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Pharmacien -->
+      <div class="field">
+        <label>Pharmacien <span class="opt">optionnel</span></label>
+        <select formControlName="id_Pharmacien">
+          <option [value]="null">-- Aucun --</option>
+          @for (u of pharmaciens; track u.id) {
+            <option [value]="u.id">{{ userName(u) }}</option>
+          }
+        </select>
+      </div>
+
     </div>
-  
+
+    @if (recipientError) {
+      <div class="error-banner" style="margin-top:12px">
+        Au moins un destinataire est requis : sélectionnez un médecin ou un pharmacien.
+      </div>
+    }
+    <div *ngIf="submitError" class="error-banner" style="margin-top:12px">{{ submitError }}</div>
+    <div *ngIf="successMsg"  class="success-banner">{{ successMsg }}</div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        <span *ngIf="saving" class="btn-spinner"></span>
+        {{ saving ? 'Enregistrement...' : 'Créer' }}
+      </button>
+      <a routerLink="/inventory/distributions" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>

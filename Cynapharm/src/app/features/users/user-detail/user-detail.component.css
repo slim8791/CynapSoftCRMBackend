@@ -183,6 +183,18 @@ span.role-badge.role-client                             { background: #f3f4f6; c
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── Tabs ─────────────────────────────────────────────── */
+.ud-tabs { display: flex; gap: .5rem; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: .25rem; }
+.ud-tab-btn { background: none; border: none; padding: .5rem .875rem; font-size: .875rem; font-weight: 500; color: #6b7280; cursor: pointer; border-radius: 6px 6px 0 0; }
+.ud-tab-btn.active { color: #2563eb; background: #eff6ff; border-bottom: 2px solid #2563eb; margin-bottom: -2px; }
+.ud-tab-count { display: inline-block; background: #e5e7eb; color: #374151; border-radius: 10px; padding: 0 .4rem; font-size: .7rem; margin-left: .3rem; }
+
+/* ── Movement badges ──────────────────────────────────── */
+.mv-green  { background: #dcfce7; color: #166534; }
+.mv-orange { background: #fff7ed; color: #c2410c; }
+.mv-cyan   { background: #cffafe; color: #155e75; }
+.mv-red    { background: #fef2f2; color: #b91c1c; }
+
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 600px) {
   .ud-wrapper   { padding: 16px; }

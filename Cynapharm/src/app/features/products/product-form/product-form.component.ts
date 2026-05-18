@@ -21,10 +21,15 @@ export class ProductFormComponent implements OnInit {
   error = '';
   success = false;
 
+  // ── Catégories ───────────────────────────────────────
+  categories: string[] = [];
+  loadingCategories = false;
+  catSelectValue = '';   // drives the <select>; '__new__' triggers the text input
+
   private productId = '';
   private loadedIsArchived = false;
-  private readonly destroyRef  = inject(DestroyRef);
-  private readonly cdr         = inject(ChangeDetectorRef);
+  private readonly destroyRef     = inject(DestroyRef);
+  private readonly cdr            = inject(ChangeDetectorRef);
   private readonly toastService   = inject(ToastService);
   private readonly fb             = inject(FormBuilder);
   private readonly route          = inject(ActivatedRoute);
@@ -35,6 +40,7 @@ export class ProductFormComponent implements OnInit {
     this.productForm = this.fb.group({
       Nom:           ['', [Validators.required, Validators.maxLength(200)]],
       Description:   ['', [Validators.maxLength(1000)]],
+      Categorie:     ['', [Validators.required]],
       Prix_Vente:    ['', [Validators.required, Validators.min(0)]],
       Prix_Creation: ['', [Validators.required, Validators.min(0)]],
       TVA:           [19, [Validators.required, Validators.min(0), Validators.max(100)]],
@@ -43,6 +49,8 @@ export class ProductFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadCategories();
+
     this.route.params
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
@@ -53,11 +61,50 @@ export class ProductFormComponent implements OnInit {
         } else {
           this.isEditMode = false;
         }
-        this.cdr.detectChanges(); // ← force le template à relire isEditMode
+        this.cdr.detectChanges();
       });
   }
 
-  // ── Helpers template ────────────────────────────────
+  // ── Catégories ───────────────────────────────────────
+
+  private loadCategories(): void {
+    this.loadingCategories = true;
+    this.productService.getCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: cats => {
+          this.categories = cats;
+          this.loadingCategories = false;
+          // Re-sync select if the form already has a value (edit mode loaded first)
+          const current = this.productForm.get('Categorie')?.value as string;
+          if (current) {
+            this.catSelectValue = cats.includes(current) ? current : '__new__';
+          }
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.loadingCategories = false;
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  get showNewCategoryInput(): boolean {
+    return this.catSelectValue === '__new__';
+  }
+
+  onCategorySelectChange(value: string): void {
+    this.catSelectValue = value;
+    if (value !== '__new__') {
+      this.productForm.get('Categorie')?.setValue(value);
+      this.productForm.get('Categorie')?.markAsTouched();
+    } else {
+      this.productForm.get('Categorie')?.setValue('');
+    }
+    this.cdr.detectChanges();
+  }
+
+  // ── Helpers template ─────────────────────────────────
 
   isInvalid(field: string): boolean {
     const ctrl = this.productForm.get(field);
@@ -91,17 +138,25 @@ export class ProductFormComponent implements OnInit {
           const raw = data?.Result ?? data;
 
           this.loadedIsArchived = raw.IsArchived ?? raw.isArchived ?? false;
+
+          const cat = raw.Categorie ?? raw.categorie ?? '';
           this.productForm.patchValue({
             Nom:           raw.Nom           ?? raw.nom           ?? '',
             Description:   raw.Description   ?? raw.description   ?? '',
-            Prix_Vente:    raw.Prix_Vente     ?? raw.prix_Vente    ?? 0,
+            Categorie:     cat,
+            Prix_Vente:    raw.PrixVente      ?? raw.prixVente     ?? 0,
             Prix_Creation: raw.Prix_Creation  ?? raw.prix_Creation ?? 0,
             TVA:           raw.TVA            ?? raw.tva           ?? 19,
             isActive:      raw.IsActive       ?? raw.isActive      ?? true
           });
 
+          // Sync the select: existing category or switch to text input
+          if (cat) {
+            this.catSelectValue = this.categories.includes(cat) ? cat : '__new__';
+          }
+
           this.loading = false;
-          this.cdr.detectChanges(); // ← le bouton affiche "Mettre à jour" immédiatement
+          this.cdr.detectChanges();
         },
         error: (err) => {
           this.error   = `Impossible de charger le produit (${err.status ?? err.message}).`;
@@ -129,7 +184,8 @@ export class ProductFormComponent implements OnInit {
       Id_Produit:    this.isEditMode ? parseInt(this.productId, 10) : 0,
       Nom:           v.Nom,
       Description:   v.Description ?? '',
-      Prix_Vente:    parseFloat(String(v.Prix_Vente).replace(',', '.')),
+      Categorie:     v.Categorie ?? '',
+      PrixVente:     parseFloat(String(v.Prix_Vente).replace(',', '.')),
       Prix_Creation: parseFloat(String(v.Prix_Creation).replace(',', '.')),
       TVA:           Number(v.TVA),
       IsActive:      v.isActive ?? true,
@@ -147,6 +203,7 @@ export class ProductFormComponent implements OnInit {
         this.toastService.showSuccess(
           this.isEditMode ? 'Produit mis à jour avec succès.' : 'Produit créé avec succès.'
         );
+        this.loadCategories();
         setTimeout(() => this.router.navigate(['/products']), 1200);
       },
       error: () => {

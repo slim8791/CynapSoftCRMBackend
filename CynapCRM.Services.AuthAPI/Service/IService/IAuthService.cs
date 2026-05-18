@@ -6,7 +6,7 @@ namespace CynapCRM.Services.AuthAPI.Service.IService
     public interface IAuthService
     {
         Task<ResponseDto> Register(RegistrationRequestDto model);
-
+        Task<ResponseDto> UpdateProfileAsync(UpdateProfileDto model);
         Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto);
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<bool> AssignRole(string email, UserRole role);

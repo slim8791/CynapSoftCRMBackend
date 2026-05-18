@@ -1,52 +1,83 @@
 <div class="page">
-      <div class="page-header">
-        <a routerLink="/field/rapports" class="back-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Retour
-        </a>
-        <h1>{{ isEdit ? 'Modifier le rapport' : 'Nouveau rapport' }}</h1>
+  <div class="page-header">
+    <a routerLink="/field/rapports" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour
+    </a>
+    <h1>{{ isEdit ? 'Modifier le rapport' : 'Nouveau rapport' }}</h1>
+  </div>
+
+  <div *ngIf="loadingData" class="loading-wrap">
+    <div class="spinner"></div><span>Chargement...</span>
+  </div>
+  <div *ngIf="fetchError" class="error-banner">{{ fetchError }}</div>
+
+  <form *ngIf="!loadingData" [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+    <div class="form-row">
+
+      <!-- Délégué -->
+      <div class="field">
+        <label>Délégué *</label>
+        <select formControlName="id_User_Delegue">
+          <option [value]="null">-- Sélectionner un délégué --</option>
+          @for (u of delegues; track u.id) {
+            <option [value]="u.id">{{ userName(u) }}</option>
+          }
+        </select>
+        <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Délégué requis</span>
       </div>
 
-      <div *ngIf="loadingData" class="loading-wrap">
-        <div class="spinner"></div><span>Chargement...</span>
+      <!-- Visite (cascading) -->
+      <div class="field">
+        <label>Visite *</label>
+        <select formControlName="id_Visite" [attr.disabled]="!f['id_User_Delegue'].value ? true : null">
+          <option [value]="null">
+            @if (!f['id_User_Delegue'].value) { -- Sélectionner d'abord un délégué -- }
+            @else if (loadingVisites) { Chargement… }
+            @else { -- Sélectionner une visite -- }
+          </option>
+          @for (v of visites; track v.idVisite) {
+            <option [value]="v.idVisite">
+              Visite #{{ v.idVisite }} — {{ v.date | date:'dd/MM/yyyy' }}
+            </option>
+          }
+        </select>
+        @if (visites.length === 0 && f['id_User_Delegue'].value && !loadingVisites) {
+          <span class="field-hint">Aucune visite pour ce délégué.</span>
+        }
+        <span *ngIf="f['id_Visite'].touched && f['id_Visite'].invalid" class="field-error">Visite requise</span>
       </div>
 
-      <div *ngIf="fetchError" class="error-banner">{{ fetchError }}</div>
-
-      <form *ngIf="!loadingData" [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
-        <div class="form-row">
-          <div class="field">
-            <label>Visite (ID) *</label>
-            <input type="number" formControlName="id_Visite" placeholder="ID de la visite" />
-            <span *ngIf="f['id_Visite'].touched && f['id_Visite'].invalid" class="field-error">Champ requis</span>
-          </div>
-          <div class="field">
-            <label>Délégué (ID) *</label>
-            <input type="number" formControlName="id_User_Delegue" placeholder="ID du délégué" />
-            <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Champ requis</span>
-          </div>
-        </div>
-        <div class="field">
-          <label>Commentaire *</label>
-          <textarea formControlName="commentaire" rows="4" placeholder="Saisissez votre commentaire..."></textarea>
-          <span *ngIf="f['commentaire'].touched && f['commentaire'].invalid" class="field-error">Champ requis</span>
-        </div>
-        <div class="field">
-          <label>Résultat *</label>
-          <textarea formControlName="resultat" rows="4" placeholder="Décrivez le résultat de la visite..."></textarea>
-          <span *ngIf="f['resultat'].touched && f['resultat'].invalid" class="field-error">Champ requis</span>
-        </div>
-
-        <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
-        <div *ngIf="successMsg" class="success-banner">{{ successMsg }}</div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="saving">
-            <span *ngIf="saving" class="btn-spinner"></span>
-            {{ saving ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
-          </button>
-          <a routerLink="/field/rapports" class="btn btn-secondary">Annuler</a>
-        </div>
-      </form>
     </div>
-  
+
+    <!-- Commentaire -->
+    <div class="field">
+      <label>Commentaire *</label>
+      <textarea formControlName="commentaire" rows="4" placeholder="Saisissez votre commentaire..."></textarea>
+      <span *ngIf="f['commentaire'].touched && f['commentaire'].invalid" class="field-error">Champ requis</span>
+    </div>
+
+    <!-- Résultat (dropdown) -->
+    <div class="field">
+      <label>Résultat *</label>
+      <select formControlName="resultat">
+        <option value="">-- Sélectionner un résultat --</option>
+        @for (r of resultats; track r) {
+          <option [value]="r">{{ r }}</option>
+        }
+      </select>
+      <span *ngIf="f['resultat'].touched && f['resultat'].invalid" class="field-error">Résultat requis</span>
+    </div>
+
+    <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
+    <div *ngIf="successMsg"  class="success-banner">{{ successMsg }}</div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        <span *ngIf="saving" class="btn-spinner"></span>
+        {{ saving ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+      </button>
+      <a routerLink="/field/rapports" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>

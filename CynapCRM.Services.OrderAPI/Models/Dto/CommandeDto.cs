@@ -6,9 +6,19 @@
         public DateTime DateCommande { get; set; }
         public decimal MontantTotalHT { get; set; }
         public decimal MontantTTC { get; set; }
-        public string Statut { get; set; } 
+
+        // FIX: EtatCommande au lieu de string pour typage fort
+        public EtatCommande Statut { get; set; }
+
         public int Id_Client { get; set; }
 
+        // FIX: champs manquants
+        public string? MotifAnnulation { get; set; }
+        public bool IsDeleted { get; set; }
+
         public List<LigneCommandeDto> Lignes { get; set; } = new();
+
+        // FIX: réclamations manquantes
+        public List<ReclamationDto>? Reclamations { get; set; }
     }
 }

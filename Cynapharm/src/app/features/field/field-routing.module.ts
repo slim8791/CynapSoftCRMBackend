@@ -7,6 +7,8 @@ const routes: Routes = [
   // Visites
   { path: 'visites',
     loadComponent: () => import('./visites/visite-list/visite-list.component').then(m => m.VisiteListComponent) },
+  { path: 'visites/all',
+    loadComponent: () => import('./visites/visite-all/visite-all.component').then(m => m.VisiteAllComponent) },
   { path: 'visites/new',
     loadComponent: () => import('./visites/visite-form/visite-form.component').then(m => m.VisiteFormComponent) },
   { path: 'visites/:id/edit',

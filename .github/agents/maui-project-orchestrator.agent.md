@@ -69,8 +69,12 @@ src/
    - **Feedback**: User provides comments; send feedback back to `maui-project-planner` for revisions
 3. **Implementation Phase** (if approved): Invoke `maui-project-developer` to build the MAUI application based on the approved plan.
 4. **Validation Phase**: Invoke `maui-project-reviewer` to validate the build and ensure quality.
+5. **Testing Phase**: Invoke `maui-project-tester` to test business logic using the code produced by `maui-project-developer` as input.
+   - **Pass**: All tests pass; workflow is complete.
+   - **Fail**: One or more tests fail; return to step 3 (`maui-project-developer`) with the test report so failing logic can be corrected, then re-run steps 4 and 5.
 
 ## Internal Subagents
 - `maui-project-planner`: Generates the initial plan
 - `maui-project-developer`: Implements the approved plan
 - `maui-project-reviewer`: Validates the implementation
+- `maui-project-tester`: Tests business logic (ViewModels, Services, Models) and produces a pass/fail report

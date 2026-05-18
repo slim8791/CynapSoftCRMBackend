@@ -23,6 +23,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             _productService = productService;
         }
 
+        [HttpGet("product/{id:int}")]
         [HttpGet("{id:int}/lots")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetLotsByIdProduct(int id)

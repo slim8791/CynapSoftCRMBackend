@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace CynapCRM.Services.InventoryAPI.Controllers
 {
 
+    // ═══════════════════════════════════════
+    // StockPromotionnelController.cs
+    // ═══════════════════════════════════════
+
     [ApiController]
     [Route("api/stocks-promotionnels")]
     [Authorize]
@@ -14,13 +18,18 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
         private readonly IStockPromotionnelService _stockPromotionnelService;
         protected ResponseDto _response;
 
-        public StockPromotionnelController(IStockPromotionnelService stockPromotionnelService)
+        public StockPromotionnelController(
+            IStockPromotionnelService stockPromotionnelService)
         {
             _stockPromotionnelService = stockPromotionnelService;
             _response = new ResponseDto();
         }
-        [HttpPost("Gratuite")]
-        public async Task<IActionResult> CreateOrUpdateGratuite([FromBody] StockGratuiteDto gratuiteDto)
+
+        // FIX: ajout restriction de rôle
+        [HttpPost("gratuite")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> CreateOrUpdateGratuite(
+            [FromBody] StockGratuiteDto gratuiteDto)
         {
             try
             {
@@ -28,17 +37,16 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Données invalides.";
-                    return BadRequest(ModelState);
+                    return BadRequest(_response);
                 }
-
-                var result = await _stockPromotionnelService.CreateUpdateStockGratuiteAsync(gratuiteDto);
+                var result = await _stockPromotionnelService
+                    .CreateUpdateStockGratuiteAsync(gratuiteDto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Erreur lors du traitement de la gratuité.";
-                    return NotFound(_response);
+                    return BadRequest(_response); // FIX: NotFound → BadRequest
                 }
-
                 _response.Result = result;
                 _response.Message = "Stock de gratuité mis à jour.";
                 return Ok(_response);
@@ -63,7 +71,8 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     _response.Message = "Id stock invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _stockPromotionnelService.GetStockGratuiteByIdAsync(idStock);
+                var result = await _stockPromotionnelService
+                    .GetStockGratuiteByIdAsync(idStock);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -83,25 +92,25 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
 
         [HttpPost("echantillon")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> CreateOrUpdateEchantillonStock([FromBody] StockEchantillonDto echantillonDto)
+        public async Task<IActionResult> CreateOrUpdateEchantillonStock(
+            [FromBody] StockEchantillonDto echantillonDto)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Données d'entrée invalides.";
-                    return BadRequest(ModelState);
+                    _response.Message = "Données invalides.";
+                    return BadRequest(_response);
                 }
-
-                var result = await _stockPromotionnelService.CreateUpdateStockEchantillonAsync(echantillonDto);
+                var result = await _stockPromotionnelService
+                    .CreateUpdateStockEchantillonAsync(echantillonDto);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Erreur lors du traitement du stock échantillon.";
-                    return NotFound(_response);
+                    return BadRequest(_response); // FIX: NotFound → BadRequest
                 }
-
                 _response.Result = result;
                 _response.Message = "Stock échantillon mis à jour avec succès.";
                 return Ok(_response);
@@ -113,6 +122,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(515, _response);
             }
         }
+
         [HttpGet("echantillon/{idStock:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetStockEchantillonById(int idStock)
@@ -125,7 +135,8 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     _response.Message = "Id stock invalide.";
                     return BadRequest(_response);
                 }
-                var result = await _stockPromotionnelService.GetStockEchantillonByIdAsync(idStock);
+                var result = await _stockPromotionnelService
+                    .GetStockEchantillonByIdAsync(idStock);
                 if (result == null)
                 {
                     _response.IsSuccess = false;
@@ -142,6 +153,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(515, _response);
             }
         }
-
     }
+
+
 }

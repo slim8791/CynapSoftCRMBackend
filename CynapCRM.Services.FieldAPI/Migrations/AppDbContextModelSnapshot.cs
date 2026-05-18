@@ -109,6 +109,12 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     b.Property<int>("Id_Visite")
                         .HasColumnType("int");
 
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
+
                     b.Property<string>("Resultat")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

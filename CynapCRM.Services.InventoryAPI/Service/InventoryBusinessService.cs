@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CynapCRM.Services.InventoryAPI.Data;
 using CynapCRM.Services.InventoryAPI.Models;
+using CynapCRM.Services.InventoryAPI.Models.Dto;
 using CynapCRM.Services.InventoryAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
 
@@ -81,14 +82,41 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
         public async Task<bool> ApplyGratuiteAsync(int idStock, int quantiteAchetee, int seuilPromo)
         {
+            if (quantiteAchetee < seuilPromo || seuilPromo <= 0) return false;
 
-            if (quantiteAchetee < seuilPromo)
-                return false;
-
-            return await _stockMovementService.DecrementStockAsync(idStock, 1);
-
+            var nbGratuites = quantiteAchetee / seuilPromo;
+            return await _stockMovementService.DecrementStockAsync(idStock, nbGratuites);
         }
+        public async Task<StockSummaryDto> GetStockSummaryByDelegueAsync(int idDelegue)
+        {
+            var stocks = await _db.StocksDelegues
+                .AsNoTracking()
+                .Where(s => s.Id_User_Delegue == idDelegue && !s.IsDeleted)
+                .ToListAsync();
 
+            var distributions = await _db.Echantillons
+                .AsNoTracking()
+                .Where(e => e.Id_Delegue == idDelegue && !e.IsDeleted)
+                .ToListAsync();
+
+            var dernierMouvement = await _db.StockMovements
+                .AsNoTracking()
+                .Where(m => stocks.Select(s => s.Id_stock).Contains(m.Id_Stock))
+                .OrderByDescending(m => m.DateMovement)
+                .Select(m => m.DateMovement)
+                .FirstOrDefaultAsync();
+
+            return new StockSummaryDto
+            {
+                TotalProduits = stocks.Count,
+                TotalQteDisponible = stocks.Sum(s => s.QteDisponible),
+                StocksVides = stocks.Count(s => s.QteDisponible == 0),
+                StocksFaibles = stocks.Count(s => s.QteDisponible > 0 && s.QteDisponible <= 5),
+                TotalDistributions = distributions.Count,
+                TotalQteDistribuee = distributions.Sum(e => e.Qte),
+                DernierMouvement = dernierMouvement == default ? null : dernierMouvement
+            };
+        }
 
         public async Task<bool> ReserveStockAsync(int idStock, int quantite)
         {

@@ -1,4 +1,5 @@
-﻿using CynapCRM.Services.OrderAPI.Models.Dto;
+﻿using CynapCRM.Services.OrderAPI.Models;
+using CynapCRM.Services.OrderAPI.Models.Dto;
 
 namespace CynapCRM.Services.OrderAPI.Service.IService
 {

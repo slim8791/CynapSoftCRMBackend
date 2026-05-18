@@ -31,14 +31,14 @@ export class LotService {
   /** Récupère les lots d'un produit donné */
   getLotsByProductId(productId: number): Observable<LotDto[]> {
     return this.apiService
-      .get<ApiResponse<LotDto[]>>(`${this.baseUrl}/${productId}/lots`)
+      .get<ApiResponse<LotDto[]>>(`${this.baseUrl}/product/${productId}`)
       .pipe(map(res => this.unwrap(res)));
   }
 
   /** Récupère un lot par son numéro (normalise PascalCase → camelCase) */
   getLotByNumero(numeroLot: string): Observable<LotDto> {
     return this.apiService
-      .get<ApiResponse<LotDto>>(`${this.baseUrl}/lot/${numeroLot}`)
+      .get<ApiResponse<LotDto>>(`${this.baseUrl}/${numeroLot}`)
       .pipe(map(res => {
         const raw: any = res?.Result ?? res?.result ?? res;
         return {
@@ -71,7 +71,7 @@ export class LotService {
 
   /** Supprime un lot par son numéro */
   deleteLot(numeroLot: string): Observable<void> {
-    return this.apiService.delete<void>(`${this.baseUrl}/lot/${numeroLot}`);
+    return this.apiService.delete<void>(`${this.baseUrl}/${numeroLot}`);
   }
 
   // ── Helpers privés ─────────────────────────────────────────────────────────

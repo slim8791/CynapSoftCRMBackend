@@ -3,6 +3,7 @@
     <div><h1 class="page-title">Stocks Délégués</h1><p class="page-sub">{{ stocks.length }} ligne(s)</p></div>
     <a routerLink="/inventory/stocks/new" class="btn-primary-link">+ Nouveau stock</a>
   </div>
+
   @if (error)   { <div class="alert-danger">{{ error }}</div> }
   @if (loading) { <div class="loading-block"><div class="spinner"></div> Chargement…</div> }
   @else if (stocks.length === 0) {
@@ -12,15 +13,24 @@
   } @else {
     <div class="table-card">
       <table class="data-table">
-        <thead><tr><th>ID</th><th>Délégué</th><th>Produit</th><th>N° Lot</th><th>Expiration</th><th>Disponible</th><th>Réservé</th><th>Actions</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Délégué</th>
+            <th>Produit</th>
+            <th>N° Lot</th>
+            <th>Expiration</th>
+            <th>Disponible</th>
+            <th>Réservé</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody>
           @for (s of stocks; track s.id_stock) {
             <tr>
-              <td>{{ s.id_stock }}</td>
-              <td>#{{ s.id_User_Delegue }}</td>
-              <td>#{{ s.id_Produit }}</td>
+              <td>{{ getDelegrueName(s.id_User_Delegue) }}</td>
+              <td>{{ getProductName(s.id_Produit) }}</td>
               <td class="font-mono">{{ s.numeroLot }}</td>
-              <td>{{ s.dateExpiration | date:'dd/MM/yy' }}</td>
+              <td>{{ getLotDate(s.numeroLot, s.dateExpiration) | date:'dd/MM/yyyy' }}</td>
               <td class="text-center"><strong [class.text-danger]="s.qteDisponible === 0">{{ s.qteDisponible }}</strong></td>
               <td class="text-center">{{ s.qteReservee }}</td>
               <td class="actions-cell">

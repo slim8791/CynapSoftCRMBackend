@@ -23,11 +23,18 @@ export class FactureListComponent implements OnInit, OnDestroy {
   ngOnInit() { this.load(); }
   ngOnDestroy() { this.d$.next(); this.d$.complete(); }
   load() {
-    this.loading = true;
+    this.loading = true; this.error = '';
     this.svc.getAll(this.page, this.pageSize).pipe(takeUntil(this.d$)).subscribe({
       next: d => { this.factures = d; this.total = d.length; this.loading = false; this.cdr.markForCheck(); },
       error: () => { this.error = 'Erreur chargement.'; this.loading = false; this.cdr.markForCheck(); }
     });
   }
   onPage(p: number) { this.page = p; this.load(); }
+  delete(id: number) {
+    if (!confirm('Supprimer cette facture ?')) return;
+    this.svc.delete(id).pipe(takeUntil(this.d$)).subscribe({
+      next: () => this.load(),
+      error: () => { this.error = 'Erreur lors de la suppression.'; this.cdr.markForCheck(); }
+    });
+  }
 }

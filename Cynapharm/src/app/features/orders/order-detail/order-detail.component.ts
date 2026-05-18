@@ -4,53 +4,87 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { FormsModule } from '@angular/forms';
 import { OrderService, CommandeDto, EtatCommande } from '../order.service';
 import { ReclamationService, ReclamationDto } from '../services/reclamation.service';
+import { FactureService, FactureDto } from '../../documents/factures/services/facture.service';
+import { BonCommandeService, BonCommandeDto } from '../../documents/bons-commandes/services/bon-commande.service';
+import { BonLivraisonService, BonLivraisonDto } from '../../documents/bons-livraison/services/bon-livraison.service';
 import { AuthService, UserRole } from '../../../core/services/auth.service';
+import { UserService } from '../../users/user.service';
+import { ProductService } from '../../products/product.service';
 import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './order-detail.component.html',
   styleUrls: ['./order-detail.component.css'],
 })
 export class OrderDetailComponent implements OnInit, OnDestroy {
 
-  order:        CommandeDto | null = null;
-  reclamations: ReclamationDto[]   = [];
+  order:         CommandeDto | null = null;
+  reclamations:  ReclamationDto[]   = [];
+  factures:      FactureDto[]       = [];
+  bonsCommandes: BonCommandeDto[]   = [];
+  bonsLivraison: BonLivraisonDto[]  = [];
+
   loading      = true;
   loadingRec   = false;
+  loadingDocs  = false;
   error        = '';
-  activeTab: 'info' | 'lignes' | 'reclamations' = 'info';
+
+  activeTab: 'info' | 'lignes' | 'reclamations' | 'documents' = 'info';
 
   isAdmin = false;
+
+  // Fix 2 — resolved client name
+  clientName = '';
+
+  // Fix — product names cache
+  productNames: Record<number, string> = {};
+
+  // Modals
   showStatusModal = false;
   showDeleteModal = false;
+  showCancelModal = false;
+  cancelMotif     = '';
   deleting        = false;
   statusOptions: { label: string; value: EtatCommande }[] = [];
+
+  // Fix 4 — document creation loaders
+  creatingBC      = false;
+  creatingBL      = false;
+  creatingFacture = false;
 
   private orderId = 0;
   private destroy$ = new Subject<void>();
 
   constructor(
-    private route:    ActivatedRoute,
-    private router:   Router,
-    private svc:      OrderService,
-    private recSvc:   ReclamationService,
-    private auth:     AuthService,
-    private toast:    ToastService,
-    private cdr:      ChangeDetectorRef,
+    private route:        ActivatedRoute,
+    private router:       Router,
+    private svc:          OrderService,
+    private recSvc:       ReclamationService,
+    private factureSvc:   FactureService,
+    private bcSvc:        BonCommandeService,
+    private blSvc:        BonLivraisonService,
+    private auth:         AuthService,
+    private userSvc:      UserService,
+    private productSvc:   ProductService,
+    private toast:        ToastService,
+    private cdr:          ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
-    this.isAdmin  = this.auth.getUserRole() === UserRole.ADMIN;
-    this.orderId  = Number(this.route.snapshot.paramMap.get('id'));
+    this.isAdmin = this.auth.getUserRole() === UserRole.ADMIN;
+    this.orderId = Number(this.route.snapshot.paramMap.get('id'));
     this.loadOrder();
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
+
+  // ── Order ─────────────────────────────────────────────
 
   private loadOrder(): void {
     this.loading = true;
@@ -60,7 +94,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
         this.loading = false;
         if (order) {
           this.statusOptions = this.svc.getNextStatuses(order.Statut);
+          this.loadClientName(order.Id_Client);
+          this.loadProductNames(order.Lignes ?? []);
           this.loadReclamations();
+          this.loadDocuments();
         }
         this.cdr.markForCheck();
       },
@@ -72,25 +109,86 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadReclamations(): void {
-    this.loadingRec = true;
-    this.recSvc.getByOrder(this.orderId).pipe(takeUntil(this.destroy$)).subscribe({
-      next: data => { this.reclamations = data; this.loadingRec = false; this.cdr.markForCheck(); },
-      error: ()   => { this.reclamations = []; this.loadingRec = false; this.cdr.markForCheck(); },
+  // Fix — load product names for all unique product IDs in the lignes
+  private loadProductNames(lignes: { Id_Produit: number }[]): void {
+    const ids = [...new Set(lignes.map(l => l.Id_Produit).filter(id => id > 0))];
+    ids.forEach(id => {
+      this.productSvc.getProductById(id).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (data: any) => {
+          const raw = data?.Result ?? data?.result ?? data;
+          this.productNames[id] = raw?.Nom ?? raw?.nom ?? `Produit #${id}`;
+          this.cdr.markForCheck();
+        },
+        error: () => { this.productNames[id] = `Produit #${id}`; },
+      });
     });
   }
 
-  setTab(t: 'info' | 'lignes' | 'reclamations'): void { this.activeTab = t; }
+  getProductName(id: number): string {
+    return this.productNames[id] ?? `Produit #${id}`;
+  }
+
+  // Fix 2 — load single user name by id
+  private loadClientName(id: number): void {
+    if (!id || id === 0) { this.clientName = 'Client inconnu'; return; }
+    this.userSvc.getUserById(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res: any) => {
+        const u = res?.Result ?? res?.result ?? res;
+        this.clientName =
+          u?.fullName ?? u?.FullName ??
+          u?.name     ?? u?.Name     ??
+          u?.userName ?? u?.UserName ??
+          u?.email    ?? u?.Email    ?? `Client #${id}`;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.clientName = `Client #${id}`; this.cdr.markForCheck(); },
+    });
+  }
+
+  // ── Statut helpers ─────────────────────────────────────
+
+  /** Current statut as a number for comparisons */
+  get statutNumber(): number {
+    return this.svc.statutToNumber(this.order?.Statut ?? '');
+  }
+
+  /** Fix 1 — only Brouillon(0) or Annulee(6) can be deleted */
+  canDelete(): boolean {
+    const n = this.statutNumber;
+    return n === EtatCommande.Brouillon || n === EtatCommande.Annulee;
+  }
+
+  /**
+   * Fix 3 — single labelled forward-transition button.
+   * Annulee is excluded here (handled by the cancel modal).
+   */
+  get directTransition(): { label: string; value: EtatCommande } | null {
+    const map: Partial<Record<number, { label: string; value: EtatCommande }>> = {
+      [EtatCommande.EnAttente]:     { label: 'Confirmer',             value: EtatCommande.Confirmee     },
+      [EtatCommande.Confirmee]:     { label: 'Mettre en préparation', value: EtatCommande.EnPreparation },
+      [EtatCommande.EnPreparation]: { label: 'Expédier',              value: EtatCommande.Expediee      },
+      [EtatCommande.Expediee]:      { label: 'Marquer comme livrée',  value: EtatCommande.Livree        },
+    };
+    return map[this.statutNumber] ?? null;
+  }
+
+  canChangeStatus(): boolean { return this.statusOptions.length > 0; }
 
   // Status workflow
   openStatusModal(): void {
     if (!this.order) return;
-    this.statusOptions = this.svc.getNextStatuses(this.order.Statut);
+    this.statusOptions   = this.svc.getNextStatuses(this.order.Statut);
     this.showStatusModal = true;
   }
 
   applyStatus(newStatus: EtatCommande): void {
     if (!this.order) return;
+    if (newStatus === EtatCommande.Annulee) {
+      this.showStatusModal = false;
+      this.cancelMotif     = '';
+      this.showCancelModal = true;
+      return;
+    }
     this.showStatusModal = false;
     this.svc.updateOrderStatus({ Id_Commande: this.order.Id_Commande, NouveauStatut: newStatus })
       .pipe(takeUntil(this.destroy$)).subscribe({
@@ -99,6 +197,18 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  closeCancelModal(): void { this.showCancelModal = false; this.cancelMotif = ''; }
+
+  confirmCancel(): void {
+    if (!this.order) return;
+    this.svc.cancelOrder(this.order.Id_Commande, this.cancelMotif)
+      .pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => { this.showCancelModal = false; this.toast.showSuccess('Commande annulée.'); this.loadOrder(); },
+        error: () => this.toast.showError('Erreur lors de l\'annulation.'),
+      });
+  }
+
+  // Delete order
   openDeleteModal(): void   { this.showDeleteModal = true; }
   cancelDeleteOrder(): void { this.showDeleteModal = false; }
 
@@ -111,6 +221,16 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Réclamations ───────────────────────────────────────
+
+  private loadReclamations(): void {
+    this.loadingRec = true;
+    this.recSvc.getByOrder(this.orderId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: data => { this.reclamations = data; this.loadingRec = false; this.cdr.markForCheck(); },
+      error: ()   => { this.reclamations = []; this.loadingRec = false; this.cdr.markForCheck(); },
+    });
+  }
+
   onDeleteRec(id: number): void {
     if (!confirm('Supprimer cette réclamation ?')) return;
     this.recSvc.delete(id).pipe(takeUntil(this.destroy$)).subscribe({
@@ -119,11 +239,89 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Documents ──────────────────────────────────────────
+
+  private loadDocuments(): void {
+    this.loadingDocs = true;
+    this.factureSvc.getByCommande(this.orderId).pipe(takeUntil(this.destroy$))
+      .subscribe({ next: d => { this.factures = d; this.cdr.markForCheck(); }, error: () => {} });
+    this.bcSvc.getByCommande(this.orderId).pipe(takeUntil(this.destroy$))
+      .subscribe({ next: d => { this.bonsCommandes = d; this.cdr.markForCheck(); }, error: () => {} });
+    this.blSvc.getByCommande(this.orderId).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: d => { this.bonsLivraison = d; this.loadingDocs = false; this.cdr.markForCheck(); },
+        error: ()  => { this.loadingDocs = false; this.cdr.markForCheck(); },
+      });
+  }
+
+  // Fix 4 — create document buttons
+  createBC(): void {
+    if (!this.order) return;
+    this.creatingBC = true;
+    this.bcSvc.createOrUpdate({ numero_Doc: 0, id_Commande: this.orderId, id_Client: this.order.Id_Client })
+      .pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => { this.toast.showSuccess('Bon de commande créé.'); this.creatingBC = false; this.loadDocuments(); },
+        error: () => { this.toast.showError('Erreur lors de la création du BC.'); this.creatingBC = false; this.cdr.markForCheck(); },
+      });
+  }
+
+  createBL(): void {
+    if (!this.order) return;
+    this.creatingBL = true;
+    this.blSvc.createOrUpdate({ numero_Doc: 0, id_Commande: this.orderId, id_Client: this.order.Id_Client })
+      .pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => { this.toast.showSuccess('Bon de livraison créé.'); this.creatingBL = false; this.loadDocuments(); },
+        error: () => { this.toast.showError('Erreur lors de la création du BL.'); this.creatingBL = false; this.cdr.markForCheck(); },
+      });
+  }
+
+  createFacture(): void {
+    if (!this.order) return;
+    this.creatingFacture = true;
+    this.factureSvc.createOrUpdate({
+      numero_Doc: 0,
+      id_Commande: this.orderId,
+      id_Client:   this.order.Id_Client,
+      montantHT:   this.order.MontantTotalHT ?? 0,
+      montantTTC:  this.order.MontantTTC     ?? 0,
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => { this.toast.showSuccess('Facture créée.'); this.creatingFacture = false; this.loadDocuments(); },
+      error: () => { this.toast.showError('Erreur lors de la création de la facture.'); this.creatingFacture = false; this.cdr.markForCheck(); },
+    });
+  }
+
+  onDeleteFacture(id: number): void {
+    if (!confirm('Supprimer cette facture ?')) return;
+    this.factureSvc.delete(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => { this.toast.showSuccess('Facture supprimée.'); this.loadDocuments(); },
+      error: () => this.toast.showError('Erreur lors de la suppression.'),
+    });
+  }
+
+  onDeleteBC(id: number): void {
+    if (!confirm('Supprimer ce bon de commande ?')) return;
+    this.bcSvc.delete(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => { this.toast.showSuccess('Bon de commande supprimé.'); this.loadDocuments(); },
+      error: () => this.toast.showError('Erreur lors de la suppression.'),
+    });
+  }
+
+  onDeleteBL(id: number): void {
+    if (!confirm('Supprimer ce bon de livraison ?')) return;
+    this.blSvc.delete(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => { this.toast.showSuccess('Bon de livraison supprimé.'); this.loadDocuments(); },
+      error: () => this.toast.showError('Erreur lors de la suppression.'),
+    });
+  }
+
+  // ── Helpers ───────────────────────────────────────────
+
+  get totalDocs(): number { return this.factures.length + this.bonsCommandes.length + this.bonsLivraison.length; }
+  setTab(t: 'info' | 'lignes' | 'reclamations' | 'documents'): void { this.activeTab = t; }
   getTotalLignes(): number { return this.order?.Lignes?.length ?? 0; }
 
-  getEtatLabel  = (s: string) => this.svc.getEtatLabel(s);
-  getEtatClass  = (s: string) => this.svc.getEtatClass(s);
+  getEtatLabel  = (s: string | number) => this.svc.getEtatLabel(s);
+  getEtatClass  = (s: string | number) => this.svc.getEtatClass(s);
   getRecLabel   = (s?: string) => this.recSvc.getStatutLabel(s);
   getRecClass   = (s?: string) => this.recSvc.getStatutClass(s);
-  canChangeStatus(): boolean { return this.statusOptions.length > 0; }
 }

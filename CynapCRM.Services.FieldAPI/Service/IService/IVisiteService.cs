@@ -4,7 +4,9 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 {
     public interface IVisiteService
     {
-
+        Task<IEnumerable<VisiteDto>> GetAllVisitesAsync(
+    DateTime? startDate = null,
+    DateTime? endDate = null);
         Task<VisiteDto?> CreateOrUpdateVisiteAsync(CreateVisiteDto dto);
 
         Task<VisiteDto?> GetVisiteByIdAsync(int idVisite);

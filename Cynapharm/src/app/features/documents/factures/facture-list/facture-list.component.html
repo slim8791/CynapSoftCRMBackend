@@ -1,35 +1,44 @@
 <div class="pw">
-      <div class="ph">
-        <div><h1 class="pt">Factures</h1><p class="ps">{{ factures.length }} facture(s)</p></div>
-        <a routerLink="/documents/factures/new" class="btn-p">+ Nouvelle facture</a>
-      </div>
-      @if (error)   { <div class="ae">{{ error }}</div> }
-      @if (loading) { <div class="lb"><div class="sp"></div> Chargement…</div> }
-      @else if (factures.length === 0) {
-        <app-empty-state title="Aucune facture" message="Commencez par créer une facture."></app-empty-state>
-      } @else {
-        <div class="tc">
-          <table class="dt">
-            <thead><tr><th>ID</th><th>Client</th><th>Date</th><th class="tr">HT</th><th class="tr">TVA%</th><th class="tr">TTC</th><th>Actions</th></tr></thead>
-            <tbody>
-              @for (f of factures; track f.id) {
-                <tr>
-                  <td>#{{ f.id }}</td>
-                  <td>#{{ f.id_Client }}</td>
-                  <td>{{ f.dateFacture | date:'dd/MM/yy' }}</td>
-                  <td class="tr">{{ f.montantHT | currencyTND }}</td>
-                  <td class="tr">{{ f.tva }}%</td>
-                  <td class="tr fw">{{ f.montantTTC | currencyTND }}</td>
-                  <td class="ac">
-                    <a [routerLink]="['/documents/factures', f.id]" class="ab view">👁</a>
-                    <a [routerLink]="['/documents/factures', f.id, 'edit']" class="ab edit">✏</a>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-          <app-paginator [page]="page" [pageSize]="pageSize" [total]="total" (pageChange)="onPage($event)"></app-paginator>
-        </div>
-      }
+  <div class="ph">
+    <div><h1 class="pt">Factures</h1><p class="ps">{{ factures.length }} facture(s)</p></div>
+  </div>
+  @if (error)   { <div class="ae">{{ error }}</div> }
+  @if (loading) { <div class="lb"><div class="sp"></div> Chargement…</div> }
+  @else if (factures.length === 0) {
+    <app-empty-state title="Aucune facture" message="Commencez par créer une facture."></app-empty-state>
+  } @else {
+    <div class="tc">
+      <table class="dt">
+        <thead>
+          <tr>
+            <th>N° Doc</th>
+            <th>Nom</th>
+            <th>Client</th>
+            <th>Commande</th>
+            <th>Date facture</th>
+            <th class="tr">Montant HT</th>
+            <th class="tr">Montant TTC</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of factures; track f.numero_Doc) {
+            <tr>
+              <td>{{ f.numero_Doc }}</td>
+              <td>{{ f.nom_Doc ?? '-' }}</td>
+              <td>{{ f.id_Client ?? '-' }}</td>
+              <td>{{ f.id_Commande ?? '-' }}</td>
+              <td>{{ f.dateFacture | date:'dd/MM/yyyy' }}</td>
+              <td class="tr">{{ f.montantHT != null ? (f.montantHT | currencyTND) : '-' }}</td>
+              <td class="tr fw">{{ f.montantTTC != null ? (f.montantTTC | currencyTND) : '-' }}</td>
+              <td class="ac">
+                <button class="ab del" (click)="delete(f.numero_Doc)" title="Supprimer">🗑</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-paginator [page]="page" [pageSize]="pageSize" [total]="total" (pageChange)="onPage($event)"></app-paginator>
     </div>
-  
+  }
+</div>

@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { passwordMatchValidator } from '../../../core/validators/password-match.validator';
 
 @Component({
   selector: 'app-reset-password',
@@ -39,7 +40,7 @@ export class ResetPasswordComponent implements OnInit {
     this.resetForm = this.fb.group({
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required, Validators.minLength(6)]]
-    });
+    }, { validators: passwordMatchValidator('newPassword', 'confirmPassword') });
   }
 
   ngOnInit(): void {
@@ -55,12 +56,7 @@ export class ResetPasswordComponent implements OnInit {
   onSubmit(): void {
     if (this.resetForm.invalid) return;
 
-    const { newPassword, confirmPassword } = this.resetForm.value;
-
-    if (newPassword !== confirmPassword) {
-      this.error = 'Les mots de passe ne correspondent pas.';
-      return;
-    }
+    const { newPassword } = this.resetForm.value;
 
     this.loading = true;
     this.error = '';

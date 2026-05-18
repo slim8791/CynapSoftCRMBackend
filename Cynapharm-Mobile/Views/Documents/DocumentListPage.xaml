@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Documents"
+             xmlns:docs="clr-namespace:Cynapharm_Mobile.Models.Documents"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Documents.DocumentListPage"
+             x:DataType="vm:DocumentListViewModel"
+             Title="Documents"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+
+        <!-- ── Primary header ────────────────────────────────────────────── -->
+        <Grid Grid.Row="0"
+              BackgroundColor="{StaticResource Primary}"
+              Padding="16,48,16,16">
+            <Label Text="Documents"
+                   FontSize="18" FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" />
+        </Grid>
+
+        <!-- Error banner -->
+        <controls:ErrorBanner Grid.Row="1"
+                              Message="{Binding ErrorMessage}"
+                              Margin="16,8,16,0" />
+
+        <!-- ── Tab bar ───────────────────────────────────────────────────── -->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,*,*"
+              BackgroundColor="{StaticResource CardBackground}">
+
+            <!-- Factures — index 0 -->
+            <VerticalStackLayout Grid.Column="0" Spacing="0">
+                <Button Text="Factures"
+                        Command="{Binding SetTypeIndexCommand}" CommandParameter="0"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource TextSecondary}"
+                        FontSize="13"
+                        HeightRequest="46"
+                        Margin="0">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding SelectedTypeIndex}" Value="0">
+                            <Setter Property="TextColor"     Value="{StaticResource Primary}" />
+                            <Setter Property="FontAttributes" Value="Bold" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <BoxView HeightRequest="2" CornerRadius="1">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding SelectedTypeIndex}" Value="0">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding SelectedTypeIndex}" Value="1">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding SelectedTypeIndex}" Value="2">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+            </VerticalStackLayout>
+
+            <!-- Bons de commande — index 1 -->
+            <VerticalStackLayout Grid.Column="1" Spacing="0">
+                <Button Text="Bons cmd."
+                        Command="{Binding SetTypeIndexCommand}" CommandParameter="1"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource TextSecondary}"
+                        FontSize="13"
+                        HeightRequest="46"
+                        Margin="0">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding SelectedTypeIndex}" Value="1">
+                            <Setter Property="TextColor"     Value="{StaticResource Primary}" />
+                            <Setter Property="FontAttributes" Value="Bold" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <BoxView HeightRequest="2" CornerRadius="1">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding SelectedTypeIndex}" Value="0">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding SelectedTypeIndex}" Value="1">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding SelectedTypeIndex}" Value="2">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+            </VerticalStackLayout>
+
+            <!-- Bons de livraison — index 2 -->
+            <VerticalStackLayout Grid.Column="2" Spacing="0">
+                <Button Text="Bons liv."
+                        Command="{Binding SetTypeIndexCommand}" CommandParameter="2"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource TextSecondary}"
+                        FontSize="13"
+                        HeightRequest="46"
+                        Margin="0">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding SelectedTypeIndex}" Value="2">
+                            <Setter Property="TextColor"     Value="{StaticResource Primary}" />
+                            <Setter Property="FontAttributes" Value="Bold" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <BoxView HeightRequest="2" CornerRadius="1">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding SelectedTypeIndex}" Value="0">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding SelectedTypeIndex}" Value="1">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding SelectedTypeIndex}" Value="2">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+            </VerticalStackLayout>
+
+        </Grid>
+
+        <!-- Loading indicator -->
+        <ActivityIndicator Grid.Row="3"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="{StaticResource Primary}"
+                           HorizontalOptions="Center"
+                           Margin="0,4" />
+
+        <!-- ── Document list ─────────────────────────────────────────────── -->
+        <RefreshView Grid.Row="4"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}">
+            <CollectionView ItemsSource="{Binding Documents}" Margin="0,4">
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                         Spacing="12" Padding="32">
+                        <Label Text="📄" FontSize="48" HorizontalOptions="Center" />
+                        <Label Text="Aucun document trouvé"
+                               Style="{StaticResource EmptyStateStyle}" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="docs:DocumentSummary">
+                        <Border Margin="16,6" Padding="0" Style="{StaticResource CardStyle}">
+                            <Grid ColumnDefinitions="6,*,Auto" ColumnSpacing="0">
+                                <!-- Left accent bar -->
+                                <BoxView Grid.Column="0"
+                                         BackgroundColor="{StaticResource Primary}"
+                                         CornerRadius="16,0,0,16" />
+                                <VerticalStackLayout Grid.Column="1" Padding="14,12" Spacing="4">
+                                    <Label Text="{Binding Numero}"
+                                           FontAttributes="Bold" FontSize="15"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding Date, StringFormat='Le {0:dd/MM/yyyy}'}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource TextSecondary}" />
+                                    <Label Text="{Binding Montant, StringFormat='{0:N3} TND'}"
+                                           FontSize="13"
+                                           TextColor="{StaticResource Primary}"
+                                           FontAttributes="Bold"
+                                           IsVisible="{Binding Montant, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="2" Padding="12,12" Spacing="6"
+                                                     HorizontalOptions="End" VerticalOptions="Center">
+                                    <Border BackgroundColor="{StaticResource PrimaryLight}"
+                                            Padding="8,3"
+                                            StrokeShape="RoundRectangle 12"
+                                            Stroke="Transparent">
+                                        <Label Text="{Binding Statut}"
+                                               FontSize="11" FontAttributes="Bold"
+                                               TextColor="{StaticResource PrimaryText}" />
+                                    </Border>
+                                    <Label Text="›" FontSize="20"
+                                           TextColor="{StaticResource BorderColor}"
+                                           HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.GoToDetailCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

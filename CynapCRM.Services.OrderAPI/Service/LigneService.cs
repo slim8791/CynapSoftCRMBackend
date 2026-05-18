@@ -67,11 +67,10 @@ namespace CynapCRM.Services.OrderAPI.Service
 
         public async Task<bool> RemoveLigneCommandeAsync(int ligneId)
         {
-
             var ligne = await _db.LignesCommandes
-                            .Include(l => l.Commande)
-                            .ThenInclude(c => c.Lignes)
-                            .FirstOrDefaultAsync(l => l.Id_Ligne == ligneId);
+                .Include(l => l.Commande)
+                    .ThenInclude(c => c.Lignes)
+                .FirstOrDefaultAsync(l => l.Id_Ligne == ligneId);
 
             if (ligne == null)
                 return false;
@@ -83,14 +82,13 @@ namespace CynapCRM.Services.OrderAPI.Service
                  commande.Statut != EtatCommande.EnAttente))
                 return false;
 
+            // FIX: retirer de la collection EN MÉMOIRE avant de recalculer
+            commande.Lignes.Remove(ligne);
             _db.LignesCommandes.Remove(ligne);
 
-            //  Recalcul des montants
-            commande.MontantTotalHT = commande.Lignes
-                .Where(l => l.Id_Ligne != ligneId)
-                .Sum(l =>
-                    (l.PrixUnitaire * l.Quantite) *
-                    (1 - (l.Remise / 100)));
+            // FIX: recalcul propre — la ligne supprimée n'est plus dans la collection
+            commande.MontantTotalHT = commande.Lignes.Sum(l =>
+                (l.PrixUnitaire * l.Quantite) * (1 - (l.Remise / 100)));
 
             commande.MontantTTC = commande.MontantTotalHT *
                 (1 + CreateOrderDto.TauxTVA);

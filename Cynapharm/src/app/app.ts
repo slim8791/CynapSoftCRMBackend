@@ -3,15 +3,17 @@ import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } fro
 import { CommonModule } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
 import { filter } from 'rxjs/operators';
+import { ToastComponent } from './shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
     CommonModule,
-    RouterOutlet,        // ✅ OBLIGATOIRE
+    RouterOutlet,
     RouterLink,
-    RouterLinkActive
+    RouterLinkActive,
+    ToastComponent
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.css']

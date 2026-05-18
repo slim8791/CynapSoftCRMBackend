@@ -5,41 +5,47 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { RegionService, RegionDto } from '../services/region.service';
-import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { UserService } from '../../../../features/users/user.service';
 
 @Component({
   selector: 'app-region-form',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, EmptyStateComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: './region-form.component.html',
   styleUrls: ['./region-form.component.css']
 })
 export class RegionFormComponent implements OnInit, OnDestroy {
   form!: FormGroup;
-  isEdit = false;
+  isEdit      = false;
   editId: number | null = null;
   loadingData = false;
-  saving = false;
-  fetchError = '';
+  saving      = false;
+  fetchError  = '';
   submitError = '';
-  successMsg = '';
+  successMsg  = '';
+
+  delegues: any[] = [];
 
   private destroy$ = new Subject<void>();
 
   constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private svc: RegionService,
-    private cdr: ChangeDetectorRef
+    private fb:      FormBuilder,
+    private route:   ActivatedRoute,
+    private router:  Router,
+    private svc:     RegionService,
+    private userSvc: UserService,
+    private cdr:     ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
       nomRegion:       ['', [Validators.required]],
-      codePostal:      ['', [Validators.required]],
+      codePostal:      ['', [Validators.required, Validators.pattern(/^\d{4,}$/)]],
       id_User_Delegue: [null, [Validators.required]]
     });
+
+    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$))
+      .subscribe({ next: u => { this.delegues = u; this.cdr.markForCheck(); }, error: () => {} });
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
@@ -53,6 +59,10 @@ export class RegionFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  userName(u: any): string {
+    return u?.name ?? u?.Name ?? u?.fullName ?? u?.email ?? `#${u?.id}`;
+  }
+
   get f() { return this.form.controls; }
 
   submit(): void {
@@ -60,10 +70,11 @@ export class RegionFormComponent implements OnInit, OnDestroy {
     if (this.form.invalid) return;
     this.saving = true;
     this.submitError = '';
-    this.successMsg = '';
+    this.successMsg  = '';
 
     const dto: RegionDto = {
       ...this.form.value,
+      id_User_Delegue: +this.form.value.id_User_Delegue,
       ...(this.isEdit && this.editId ? { id_Region: this.editId } : {})
     };
 

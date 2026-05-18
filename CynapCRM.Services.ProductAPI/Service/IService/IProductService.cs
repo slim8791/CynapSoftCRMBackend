@@ -7,6 +7,9 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
     /// </summary>
     public interface IProductService
     {
+        Task<IEnumerable<ProduitDto>> GetProductsWithExpiringLotsAsync(
+            int daysThreshold = 30);
+        Task<IEnumerable<ProduitDto>> GetProductsWithActivePromotionsAsync();
         //  Catalogue  consultation
 
         Task<IEnumerable<ProduitDto>> GetAllProductsAsync();
@@ -44,6 +47,11 @@ namespace CynapCRM.Services.ProductAPI.Service.IService
         /// Désactive un produit (non vendable)
         /// </summary>
         Task<bool> DeactivateProductAsync(int productId);
+
+        /// <summary>
+        /// Suppression physique — uniquement si le produit est archivé et son stock est à zéro.
+        /// </summary>
+        Task<bool> DeleteProductAsync(int productId);
 
         //🔹 Disponibilité / état produit
 

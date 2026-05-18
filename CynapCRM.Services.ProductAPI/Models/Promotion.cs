@@ -10,10 +10,8 @@ namespace CynapCRM.Services.ProductAPI.Models
         [Required]
         [StringLength(20)]
         public string CodePromo { get; set; } = string.Empty;
-        [Required]
-        [Range(1, 100)]
-        public float Pourcentage { get; set; }
-        public DateTime DateDebut { get; set; } 
+        public float? Pourcentage { get; set; }
+        public DateTime? DateDebut { get; set; }
         [Required]
         public DateTime DateExpiration { get; set; }
 

@@ -71,7 +71,6 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
         [HttpGet("visible")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetVisibleProducts()
         {
             try
@@ -227,6 +226,36 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                 return StatusCode(515, _response);
             }
         }
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> DeleteProductPermanently(int id)
+        {
+            try
+            {
+                if (id <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "ID de produit invalide.";
+                    return BadRequest(_response);
+                }
+                var result = await _productService.DeleteProductAsync(id);
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Suppression impossible : le produit doit être archivé et son stock doit être à zéro.";
+                    return BadRequest(_response);
+                }
+                _response.Message = "Produit supprimé définitivement.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
         [HttpGet("{productId:int}/available")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> IsProductAvailable(int productId)
@@ -433,7 +462,6 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
         [HttpGet("categories")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetCategories()
         {
             try
@@ -458,7 +486,6 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
         [HttpGet("category/{category}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetProductsByCategory(string category)
         {
             try
@@ -584,6 +611,57 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                 var result = await _productService.GetProductDashboardAsync();
                 _response.Result = result;
 
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+        [HttpGet("expiring-lots")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetExpiringLots([FromQuery] int days = 30)
+        {
+            try
+            {
+                if (days <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Paramètre days invalide.";
+                    return BadRequest(_response);
+                }
+                var result = await _productService.GetProductsWithExpiringLotsAsync(days);
+                if (result == null || !result.Any())
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Aucun lot expirant dans cette période.";
+                    return NotFound(_response);
+                }
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+        [HttpGet("with-promotions")]
+        public async Task<IActionResult> GetProductsWithActivePromotions()
+        {
+            try
+            {
+                var result = await _productService.GetProductsWithActivePromotionsAsync();
+                if (result == null || !result.Any())
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Aucun produit avec promotion active.";
+                    return NotFound(_response);
+                }
+                _response.Result = result;
                 return Ok(_response);
             }
             catch (Exception ex)
