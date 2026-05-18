@@ -16,7 +16,10 @@ namespace CynapCRM.Services.ProductAPI
                 .ForMember(s => s.PrixVente, opt => opt.MapFrom(d => d.Prix_Vente));
                 
             CreateMap<Lot, LotDto>().ReverseMap();
-            CreateMap<Promotion, PromotionDto>().ReverseMap();
+            CreateMap<Promotion, PromotionDto>()
+                .ForMember(d => d.Id_Produit, opt => opt.MapFrom(s =>
+                    s.Id_Produit ?? (s.Lot != null ? (int?)s.Lot.Id_Produit : null)))
+                .ReverseMap();
             CreateMap<Support_Marketting, SupportMarketingDto>().ReverseMap();
             CreateMap<Fichier, FichierDto>().ReverseMap();
         }

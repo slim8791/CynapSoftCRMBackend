@@ -31,7 +31,7 @@
             ],
             "styles": [
               "src/styles.scss",
-              "src/app/app.css"
+              "src/app/app.scss"
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",

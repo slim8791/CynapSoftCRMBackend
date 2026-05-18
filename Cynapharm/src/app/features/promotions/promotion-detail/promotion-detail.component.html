@@ -1,29 +1,78 @@
 <div class="page-wrapper">
-      <a routerLink="/promotions" class="back-link">← Promotions</a>
-      <h1>Promotion — {{ promo?.codePromo }}</h1>
+  <a routerLink="/promotions" class="back-link">← Promotions</a>
+  <h1>Promotion — {{ promo?.codePromo }}</h1>
 
-      @if (loading) { <div class="loading-block"><div class="spinner"></div></div> }
-      @if (error) { <div class="alert-danger">{{ error }}</div> }
+  @if (loading) { <div class="loading-block"><div class="spinner"></div></div> }
+  @if (error)   { <div class="alert-danger">{{ error }}</div> }
 
-      @if (promo && !loading) {
-        <div class="detail-card">
-          <div class="detail-grid">
-            <div class="detail-row"><span class="dl">Code</span><span class="dv font-mono">{{ promo.codePromo }}</span></div>
-            <div class="detail-row"><span class="dl">Réduction</span><span class="dv text-red">-{{ promo.pourcentage }}%</span></div>
-            <div class="detail-row"><span class="dl">N° Lot</span><span class="dv">{{ promo.numeroLot }}</span></div>
-            <div class="detail-row"><span class="dl">Début</span><span class="dv">{{ promo.dateDebut | date:'dd/MM/yyyy' }}</span></div>
-            <div class="detail-row"><span class="dl">Expiration</span><span class="dv">{{ promo.dateExpiration | date:'dd/MM/yyyy' }}</span></div>
-            <div class="detail-row"><span class="dl">Statut</span>
-              <span class="chip" [class.chip-active]="promo.estActive" [class.chip-inactive]="!promo.estActive">
-                {{ promo.estActive ? 'Active' : 'Inactive' }}
-              </span>
-            </div>
-          </div>
-          <div class="detail-actions">
-            <a routerLink="/promotions" class="btn-cancel">← Retour</a>
-            <a [routerLink]="['/promotions', promo.id_Promo, 'edit']" class="btn-submit">Modifier</a>
-          </div>
+  @if (promo && !loading) {
+    <div class="detail-card">
+      <div class="detail-grid">
+
+        <div class="detail-row">
+          <span class="dl">Code</span>
+          <span class="dv font-mono">{{ promo.codePromo }}</span>
         </div>
-      }
+
+        <div class="detail-row">
+          <span class="dl">Type</span>
+          <span class="dv">
+            @if ((promo.typePromotion ?? 'Pourcentage') === 'Gratuite') {
+              <span class="type-badge type-gift">🎁 Buy X get Y free</span>
+            } @else {
+              <span class="type-badge type-pct">% Percentage discount</span>
+            }
+          </span>
+        </div>
+
+        @if ((promo.typePromotion ?? 'Pourcentage') === 'Pourcentage') {
+          <div class="detail-row">
+            <span class="dl">Discount</span>
+            <span class="dv text-red">-{{ promo.pourcentage }}%</span>
+          </div>
+        } @else {
+          <div class="detail-row">
+            <span class="dl">Rule</span>
+            <span class="dv">
+              Buy <strong>{{ promo.seuilAchat }}</strong> unit(s)
+              → get <strong>{{ promo.quantiteGratuite }}</strong> free
+            </span>
+          </div>
+        }
+
+        <div class="detail-row">
+          <span class="dl">Scope</span>
+          <span class="dv">
+            @if (promo.porteeSurTousLesLots) {
+              All lots of product <strong>#{{ promo.id_Produit }}</strong>
+            } @else {
+              Lot <strong>{{ promo.numeroLot }}</strong>
+            }
+          </span>
+        </div>
+
+        <div class="detail-row">
+          <span class="dl">Start</span>
+          <span class="dv">{{ promo.dateDebut | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Expiry</span>
+          <span class="dv">{{ promo.dateExpiration | date:'dd/MM/yyyy' }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="dl">Status</span>
+          <span class="chip" [class.chip-active]="promo.estActive" [class.chip-inactive]="!promo.estActive">
+            {{ promo.estActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+      </div>
+
+      <div class="detail-actions">
+        <a routerLink="/promotions" class="btn-cancel">← Back</a>
+        <a [routerLink]="['/promotions', promo.id_Promo, 'edit']" class="btn-submit">Edit</a>
+      </div>
     </div>
-  
+  }
+</div>

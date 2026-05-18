@@ -29,13 +29,14 @@ namespace CynapCRM.Services.ProductAPI.Data
                 .HasForeignKey(l => l.Id_Produit)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Lot → Promotions (1-N)
+            // Lot → Promotions (0..1-N)  — NumeroLot is nullable for product-wide promos
             modelBuilder.Entity<Promotion>()
                 .HasOne(p => p.Lot)
                 .WithMany(l => l.Promotions)
                 .HasForeignKey(p => p.NumeroLot)
                 .HasPrincipalKey(l => l.Numero)
-                .OnDelete(DeleteBehavior.Cascade);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Produit → Supports Marketing (1-N)
             modelBuilder.Entity<Support_Marketting>()

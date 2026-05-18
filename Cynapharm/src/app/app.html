@@ -5,8 +5,10 @@
 
     <!-- Brand -->
     <div class="sidebar-brand">
-      <span class="brand-icon">⊕</span>
-      <span class="brand-name">Cynap<strong>Soft</strong></span>
+      <div class="brand-icon-box">
+        <i class="ti ti-circle-plus" aria-hidden="true"></i>
+      </div>
+      <span class="brand-name">Cynap<strong>harm</strong></span>
     </div>
 
     <!-- Navigation -->
@@ -14,124 +16,154 @@
 
       <!-- Dashboard -->
       <a routerLink="/dashboard" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">📊</span>
+        <i class="ti ti-layout-dashboard nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Dashboard</span>
       </a>
 
       <!-- ── Catalogue ── -->
-      <div class="nav-section-title">Catalogue</div>
+      <div class="nav-section">
+        <span class="nav-section-title">Catalogue</span>
+        <div class="nav-section-line"></div>
+      </div>
 
       <a routerLink="/products" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">💊</span>
+        <i class="ti ti-pill nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Produits</span>
       </a>
       <a routerLink="/lots" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">📦</span>
+        <i class="ti ti-package nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Lots</span>
       </a>
       <a routerLink="/promotions" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">🏷</span>
+        <i class="ti ti-tag nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Promotions</span>
       </a>
 
       <!-- ── Commandes ── -->
-      <div class="nav-section-title">Commandes</div>
+      <div class="nav-section">
+        <span class="nav-section-title">Commandes</span>
+        <div class="nav-section-line"></div>
+      </div>
 
       <a routerLink="/orders" routerLinkActive="nav-active" [routerLinkActiveOptions]="{exact:true}" class="nav-item">
-        <span class="nav-icon">🛒</span>
+        <i class="ti ti-shopping-cart nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Commandes</span>
       </a>
       <a routerLink="/orders/reclamations" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">⚠</span>
+        <i class="ti ti-alert-triangle nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Réclamations</span>
       </a>
 
       <!-- ── Inventaire ── -->
-      <div class="nav-section-title">Inventaire</div>
+      <div class="nav-section">
+        <span class="nav-section-title">Inventaire</span>
+        <div class="nav-section-line"></div>
+      </div>
 
       <a routerLink="/inventory/stocks" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">🏪</span>
+        <i class="ti ti-building-store nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Stocks délégués</span>
       </a>
       <a routerLink="/inventory/movements" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">↔</span>
+        <i class="ti ti-arrows-exchange nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Mouvements</span>
       </a>
       <a routerLink="/inventory/distributions" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">🧪</span>
+        <i class="ti ti-flask nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Distributions</span>
       </a>
       <a routerLink="/inventory/promo-stocks" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">🎁</span>
+        <i class="ti ti-gift nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Promo-stocks</span>
       </a>
 
       <!-- ── Terrain ── -->
-      <div class="nav-section-title">Terrain</div>
+      <div class="nav-section">
+        <span class="nav-section-title">Terrain</span>
+        <div class="nav-section-line"></div>
+      </div>
 
       <a routerLink="/field/visites" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">👣</span>
+        <i class="ti ti-map-pin nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Visites</span>
       </a>
       <a routerLink="/field/plannings" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">📅</span>
+        <i class="ti ti-calendar-event nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Plannings</span>
       </a>
       <a routerLink="/field/rapports" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">📝</span>
+        <i class="ti ti-file-text nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Rapports</span>
       </a>
       <a routerLink="/field/objectifs" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">🎯</span>
+        <i class="ti ti-target nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Objectifs</span>
       </a>
       <a routerLink="/field/regions" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">🗺</span>
+        <i class="ti ti-map-2 nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Régions</span>
       </a>
       <a routerLink="/field/kpi" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">📈</span>
+        <i class="ti ti-chart-line nav-icon" aria-hidden="true"></i>
         <span class="nav-label">KPI</span>
       </a>
 
       <!-- ── Documents ── -->
-      <div class="nav-section-title">Documents</div>
+      <div class="nav-section">
+        <span class="nav-section-title">Documents</span>
+        <div class="nav-section-line"></div>
+      </div>
 
       <a routerLink="/documents/bons-commandes" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">📋</span>
+        <i class="ti ti-clipboard-list nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Bons commande</span>
       </a>
       <a routerLink="/documents/bons-livraison" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">🚚</span>
+        <i class="ti ti-truck-delivery nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Bons livraison</span>
       </a>
       <a routerLink="/documents/factures" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">🧾</span>
+        <i class="ti ti-receipt nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Factures</span>
       </a>
 
       <!-- ── Admin ── -->
-      <div class="nav-section-title">Admin</div>
+      <div class="nav-section">
+        <span class="nav-section-title">Admin</span>
+        <div class="nav-section-line"></div>
+      </div>
 
       <a routerLink="/users" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">👥</span>
+        <i class="ti ti-users nav-icon" aria-hidden="true"></i>
         <span class="nav-label">Utilisateurs</span>
       </a>
 
-      <!-- ── Paramètres + Déconnexion ── -->
+      <!-- ── Bas ── -->
       <div class="nav-spacer"></div>
 
-      <a routerLink="/settings" routerLinkActive="nav-active" class="nav-item">
-        <span class="nav-icon">⚙</span>
-        <span class="nav-label">Paramètres</span>
-      </a>
-
-      <a href="#" class="nav-item nav-logout" (click)="logout(); $event.preventDefault()">
-        <span class="nav-icon">🚪</span>
-        <span class="nav-label">Déconnexion</span>
-      </a>
+      <div class="nav-bottom">
+        <a routerLink="/settings" routerLinkActive="nav-active" class="nav-item">
+          <i class="ti ti-settings nav-icon" aria-hidden="true"></i>
+          <span class="nav-label">Paramètres</span>
+        </a>
+        <a href="#" class="nav-item nav-logout" (click)="logout(); $event.preventDefault()">
+          <i class="ti ti-logout nav-icon" aria-hidden="true"></i>
+          <span class="nav-label">Déconnexion</span>
+        </a>
+      </div>
 
     </nav>
+
+    <!-- User strip -->
+    <div class="sidebar-user">
+      <div class="user-avatar">AD</div>
+      <div class="user-info">
+        <span class="user-name">Admin Délégué</span>
+        <span class="user-role">Administrateur</span>
+      </div>
+      <i class="ti ti-chevron-up user-chevron" aria-hidden="true"></i>
+    </div>
+
   </aside>
 
   <!-- ── Main ──────────────────────────────────── -->

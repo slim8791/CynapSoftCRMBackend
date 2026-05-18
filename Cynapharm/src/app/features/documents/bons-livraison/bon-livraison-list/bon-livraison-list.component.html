@@ -19,8 +19,9 @@
                   <td>{{ b.dateLivraison | date:'dd/MM/yy' }}</td>
                   <td class="trunc">{{ b.adresseLivraison }}</td>
                   <td class="ac">
-                    <a [routerLink]="['/documents/bons-livraison', b.id]" class="ab view">👁</a>
-                    <a [routerLink]="['/documents/bons-livraison', b.id, 'edit']" class="ab edit">✏</a>
+                    <a [routerLink]="['/documents/bons-livraison', b.id]" class="ab view" title="Voir">👁</a>
+                    <a [routerLink]="['/documents/bons-livraison', b.id, 'edit']" class="ab edit" title="Modifier">✏</a>
+                    <button class="ab pdf" (click)="downloadPdf(b)" title="Télécharger PDF">⬇</button>
                   </td>
                 </tr>
               }

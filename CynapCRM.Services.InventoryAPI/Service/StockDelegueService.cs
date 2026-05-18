@@ -32,23 +32,41 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
         public async Task<StockDelegueDto?> CreateUpdateStockAsync(StockDelegueDto dto)
         {
+            // Update path: Id_stock > 0 and record exists
+            if (dto.Id_stock > 0)
+            {
+                var existing = await _db.StocksDelegues
+                    .FirstOrDefaultAsync(s => s.Id_stock == dto.Id_stock && !s.IsDeleted);
 
+                if (existing != null)
+                {
+                    existing.Id_User_Delegue = dto.Id_User_Delegue;
+                    existing.Id_Produit      = dto.Id_Produit;
+                    existing.NumeroLot       = dto.NumeroLot;
+                    existing.DateExpiration  = dto.DateExpiration;
+                    existing.QteDisponible   = dto.QteDisponible;
+                    existing.QteReservee     = dto.QteReservee;   // ← was hardcoded 0
+                    await _db.SaveChangesAsync();
+                    return _mapper.Map<StockDelegueDto>(existing);
+                }
+            }
+
+            // Create path
             var stock = new Stock_Delegue
             {
                 Id_User_Delegue = dto.Id_User_Delegue,
-                Id_Produit = dto.Id_Produit,
-                NumeroLot = dto.NumeroLot,
-                QteDisponible = dto.QteDisponible,
-                QteReservee = 0,
-                DateCreation = DateTime.UtcNow,
-                IsDeleted = false
+                Id_Produit      = dto.Id_Produit,
+                NumeroLot       = dto.NumeroLot,
+                DateExpiration  = dto.DateExpiration,   // ← was missing
+                QteDisponible   = dto.QteDisponible,
+                QteReservee     = dto.QteReservee,      // ← was hardcoded 0
+                DateCreation    = DateTime.UtcNow,
+                IsDeleted       = false
             };
 
             _db.StocksDelegues.Add(stock);
             await _db.SaveChangesAsync();
-
             return _mapper.Map<StockDelegueDto>(stock);
-
         }
         public async Task<StockDelegueDto?> GetStockByIdAsync(int idStock)
         {
