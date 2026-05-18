@@ -7,7 +7,6 @@ import { BonCommandeService, BonCommandeDto } from '../services/bon-commande.ser
 import { CurrencyTNDPipe } from '../../../../shared/pipes/currency-tnd.pipe';
 import { PaginatorComponent } from '../../../../shared/components/paginator/paginator.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
-import { PdfService } from '../../../../shared/services/pdf.service';
 
 @Component({
   selector: 'app-bon-commande-list',
@@ -20,7 +19,7 @@ export class BonCommandeListComponent implements OnInit, OnDestroy {
   bons: BonCommandeDto[] = [];
   loading = false; error = ''; page = 1; pageSize = 20; total = 0;
   private d$ = new Subject<void>();
-  constructor(private svc: BonCommandeService, private cdr: ChangeDetectorRef, private pdf: PdfService) {}
+  constructor(private svc: BonCommandeService, private cdr: ChangeDetectorRef) {}
   ngOnInit() { this.load(); }
   ngOnDestroy() { this.d$.next(); this.d$.complete(); }
   load() {

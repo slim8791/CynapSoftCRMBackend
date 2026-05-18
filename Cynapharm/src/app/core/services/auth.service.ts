@@ -70,12 +70,12 @@ export class AuthService {
       const result = res?.result;
       if (!result) return;
 
-        if (data?.token && data?.user) {
+        if (result?.token && result?.user) {
           if (this.isBrowser) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('token', result.token);
+            localStorage.setItem('user', JSON.stringify(result.user));
           }
-          this.currentUserSignal.set(data.user);
+          this.currentUserSignal.set(result.user);
         }
       })
     );

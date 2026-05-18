@@ -25,45 +25,45 @@ export class PdfService {
 
   downloadBonCommande(bon: BonCommandeDto): void {
     const doc = this._base();
-    let y = this._header(doc, 'BON DE COMMANDE', `BC-${String(bon.id ?? 0).padStart(5, '0')}`);
+    const ref = String(bon.numero_Doc ?? 0).padStart(5, '0');
+    let y = this._header(doc, 'BON DE COMMANDE', `BC-${ref}`);
     y = this._section(doc, y, 'INFORMATIONS GÉNÉRALES', [
-      ['Numéro',           `BC-${String(bon.id ?? 0).padStart(5, '0')}`],
+      ['Numéro',           `BC-${ref}`],
+      ['Nom',              bon.nom_Doc ?? '—'],
       ['Date de création', this._date(bon.dateCreation)],
-      ['Client',           `Client n° ${bon.id_Client}`],
+      ['Client',           `Client n° ${bon.id_Client ?? '—'}`],
     ]);
-    y = this._section(doc, y, 'MONTANT', [
-      ['Montant total', this._currency(bon.montantTotal)],
-    ], true);
     this._footer(doc);
-    doc.save(`BC-${String(bon.id ?? 0).padStart(5, '0')}.pdf`);
+    doc.save(`BC-${ref}.pdf`);
   }
 
   downloadBonLivraison(bon: BonLivraisonDto): void {
     const doc = this._base();
-    let y = this._header(doc, 'BON DE LIVRAISON', `BL-${String(bon.id ?? 0).padStart(5, '0')}`);
+    const ref = String(bon.numero_Doc ?? 0).padStart(5, '0');
+    let y = this._header(doc, 'BON DE LIVRAISON', `BL-${ref}`);
     y = this._section(doc, y, 'INFORMATIONS GÉNÉRALES', [
-      ['Numéro',            `BL-${String(bon.id ?? 0).padStart(5, '0')}`],
-      ['Date de livraison', this._date(bon.dateLivraison)],
-      ['Client',            `Client n° ${bon.id_Client}`],
-    ]);
-    y = this._section(doc, y, 'LIVRAISON', [
-      ['Adresse de livraison', bon.adresseLivraison ?? '—'],
+      ['Numéro',           `BL-${ref}`],
+      ['Nom',              bon.nom_Doc ?? '—'],
+      ['Date de création', this._date(bon.dateCreation)],
+      ['Client',           `Client n° ${bon.id_Client ?? '—'}`],
     ]);
     this._footer(doc);
-    doc.save(`BL-${String(bon.id ?? 0).padStart(5, '0')}.pdf`);
+    doc.save(`BL-${ref}.pdf`);
   }
 
   downloadFacture(facture: FactureDto): void {
     const doc = this._base();
-    let y = this._header(doc, 'FACTURE', `FAC-${String(facture.id ?? 0).padStart(5, '0')}`);
+    const ref = String(facture.numero_Doc ?? 0).padStart(5, '0');
+    let y = this._header(doc, 'FACTURE', `FAC-${ref}`);
     y = this._section(doc, y, 'INFORMATIONS GÉNÉRALES', [
-      ['Numéro',       `FAC-${String(facture.id ?? 0).padStart(5, '0')}`],
+      ['Numéro',       `FAC-${ref}`],
+      ['Nom',          facture.nom_Doc ?? '—'],
       ['Date facture', this._date(facture.dateFacture)],
-      ['Client',       `Client n° ${facture.id_Client}`],
+      ['Client',       `Client n° ${facture.id_Client ?? '—'}`],
     ]);
     y = this._amountBlock(doc, y, facture);
     this._footer(doc);
-    doc.save(`FAC-${String(facture.id ?? 0).padStart(5, '0')}.pdf`);
+    doc.save(`FAC-${ref}.pdf`);
   }
 
   // ── Layout builders ───────────────────────────────────────────────────
@@ -206,16 +206,16 @@ export class PdfService {
     doc.setTextColor(...C_GRAY);
     doc.text('Montant HT', MARGIN + 4, y);
     doc.setTextColor(...C_DARK);
-    doc.text(this._currency(f.montantHT), MARGIN + LABEL_W, y);
+    doc.text(this._currency(f.montantHT ?? 0), MARGIN + LABEL_W, y);
     y += ROW_H;
 
-    // TVA row
+    // TVA row (computed, since TVA % is not in FactureDto)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...C_GRAY);
-    doc.text(`TVA (${f.tva}%)`, MARGIN + 4, y);
+    doc.text('TVA', MARGIN + 4, y);
     doc.setTextColor(...C_DARK);
-    const tvaAmount = f.montantTTC - f.montantHT;
+    const tvaAmount = (f.montantTTC ?? 0) - (f.montantHT ?? 0);
     doc.text(this._currency(tvaAmount), MARGIN + LABEL_W, y);
     y += ROW_H + 3;
 
@@ -227,7 +227,7 @@ export class PdfService {
     doc.setTextColor(...C_WHITE);
     doc.text('MONTANT TTC', MARGIN + 4, y + 2);
     doc.setFontSize(12);
-    doc.text(this._currency(f.montantTTC), PAGE_W - MARGIN - 4, y + 2, { align: 'right' });
+    doc.text(this._currency(f.montantTTC ?? 0), PAGE_W - MARGIN - 4, y + 2, { align: 'right' });
     y += 18;
 
     return y;

@@ -3,6 +3,6 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5555',
+  apiUrl: 'http://cynapharmgateway.runasp.net',
   appName: 'Cynapharm CRM'
 };

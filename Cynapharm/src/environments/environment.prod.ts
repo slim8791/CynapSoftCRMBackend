@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:5555',
+  apiUrl: 'http://cynapharmgateway.runasp.net',
   appName: 'Cynapharm CRM'
 };
