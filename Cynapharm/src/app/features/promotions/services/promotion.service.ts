@@ -5,15 +5,26 @@ import { map } from 'rxjs/operators';
 import { ApiService } from '../../../core/services/api.service';
 import { ResponseDto } from '../../../core/models/response-dto.model';
 
+export type TypePromotion = 'Pourcentage' | 'Gratuite';
+
 export interface PromotionDto {
-  id_Promo?:      number;
-  codePromo:      string;
-  pourcentage:    number;
-  dateDebut:      string;
-  dateExpiration: string;
-  estActive:      boolean;
-  numeroLot:      string;
-  isValid?:       boolean;
+  id_Promo?:             number;
+  codePromo:             string;
+  typePromotion:         TypePromotion;
+  // Percentage type
+  pourcentage?:          number;
+  // Freebie type
+  seuilAchat?:           number;   // buy X
+  quantiteGratuite?:     number;   // get Y free
+  // Scope
+  porteeSurTousLesLots:  boolean;  // true = all lots of a product
+  numeroLot?:            string;   // specific lot (when porteeSurTousLesLots=false)
+  id_Produit?:           number;   // product (when porteeSurTousLesLots=true)
+  // Common
+  dateDebut:             string;
+  dateExpiration:        string;
+  estActive:             boolean;
+  isValid?:              boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -31,14 +42,19 @@ export class PromotionService {
 
   private normalize(r: any): PromotionDto {
     return {
-      id_Promo:       r.id_Promo       ?? r.Id_Promo       ?? r.idPromo       ?? undefined,
-      codePromo:      r.codePromo      ?? r.CodePromo      ?? '',
-      pourcentage:    r.pourcentage    ?? r.Pourcentage    ?? 0,
-      dateDebut:      r.dateDebut      ?? r.DateDebut      ?? '',
-      dateExpiration: r.dateExpiration ?? r.DateExpiration ?? '',
-      estActive:      r.estActive      ?? r.EstActive      ?? false,
-      numeroLot:      r.numeroLot      ?? r.NumeroLot      ?? '',
-      isValid:        r.isValid        ?? r.IsValid        ?? false,
+      id_Promo:            r.id_Promo            ?? r.Id_Promo            ?? undefined,
+      codePromo:           r.codePromo           ?? r.CodePromo           ?? '',
+      typePromotion:       r.typePromotion        ?? r.TypePromotion       ?? 'Pourcentage',
+      pourcentage:         r.pourcentage         ?? r.Pourcentage,
+      seuilAchat:          r.seuilAchat          ?? r.SeuilAchat,
+      quantiteGratuite:    r.quantiteGratuite    ?? r.QuantiteGratuite,
+      porteeSurTousLesLots: r.porteeSurTousLesLots ?? r.PorteeSurTousLesLots ?? false,
+      numeroLot:           r.numeroLot           ?? r.NumeroLot,
+      id_Produit:          r.id_Produit          ?? r.Id_Produit,
+      dateDebut:           r.dateDebut           ?? r.DateDebut           ?? '',
+      dateExpiration:      r.dateExpiration      ?? r.DateExpiration      ?? '',
+      estActive:           r.estActive           ?? r.EstActive           ?? false,
+      isValid:             r.isValid             ?? r.IsValid             ?? false,
     };
   }
 

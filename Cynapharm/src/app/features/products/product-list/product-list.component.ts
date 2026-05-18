@@ -8,6 +8,8 @@ import { of } from 'rxjs';
 
 import { CurrencyTNDPipe } from '../../../shared/pipes/currency-tnd.pipe';
 import { ProductService } from '../product.service';
+import { LotService } from '../../lots/lot.service';
+import { LotDto, getLotStatus, STATUS_LABEL, STATUS_CSS_CLASS } from '../../lots/lot.model';
 import { ToastService } from '../../../shared/services/toast.service';
 
 type StatusFilter = 'all' | 'active' | 'inactive' | 'archived';
@@ -58,11 +60,17 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   protected readonly Math = Math;
 
+  // ── Row-detail: expanded lots ────────────────────────
+  expandedRows   = new Set<number>();
+  lotsCache:     Record<number, LotDto[]> = {};
+  loadingLots    = new Set<number>();
+
   private readonly destroy$ = new Subject<void>();
-  private readonly router = inject(Router);
-  private readonly productService = inject(ProductService);
-  private readonly toastService = inject(ToastService);
-  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly router          = inject(Router);
+  private readonly productService  = inject(ProductService);
+  private readonly lotService      = inject(LotService);
+  private readonly toastService    = inject(ToastService);
+  private readonly cdr             = inject(ChangeDetectorRef);
 
   // ── Lifecycle ────────────────────────────────────────
 
@@ -297,5 +305,42 @@ export class ProductListComponent implements OnInit, OnDestroy {
     };
     return statusMessages[err.status] ?? err.message ?? 'Une erreur inattendue s\'est produite.';
   }
-  
+
+  // ── Row-detail ───────────────────────────────────────
+
+  toggleRow(id: number): void {
+    if (this.expandedRows.has(id)) {
+      this.expandedRows.delete(id);
+    } else {
+      this.expandedRows.add(id);
+      if (!(id in this.lotsCache)) this.fetchLots(id);
+    }
+    this.cdr.markForCheck();
+  }
+
+  isExpanded(id: number): boolean { return this.expandedRows.has(id); }
+
+  private fetchLots(productId: number): void {
+    this.loadingLots.add(productId);
+    this.cdr.markForCheck();
+    this.lotService.getLotsByProductId(productId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (lots: LotDto[]) => {
+          this.lotsCache[productId] = lots;
+          this.loadingLots.delete(productId);
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.lotsCache[productId] = [];
+          this.loadingLots.delete(productId);
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  getLots(id: number): LotDto[]      { return this.lotsCache[id] ?? []; }
+  isLoadingLots(id: number): boolean { return this.loadingLots.has(id); }
+  lotStatusText(l: LotDto):  string  { return STATUS_LABEL[getLotStatus(l)]; }
+  lotStatusClass(l: LotDto): string  { return STATUS_CSS_CLASS[getLotStatus(l)]; }
 }

@@ -171,8 +171,12 @@
           <table class="lot-table" aria-label="Liste des lots">
             <thead>
               <tr>
+                <th scope="col">N° Lot</th>
+                <th scope="col">Produit</th>
                 @for (col of columns; track col.key) {
-                  <th scope="col">{{ col.label }}</th>
+                  @if (col.key !== 'numero') {
+                    <th scope="col">{{ col.label }}</th>
+                  }
                 }
                 <th scope="col">Actions</th>
               </tr>
@@ -181,16 +185,20 @@
             <tbody>
               @for (lot of filteredLots; track lot.numero) {
                 <tr>
+                  <td>{{ lot.numero }}</td>
+                  <td>{{ getProductName(lot.idProduit) }}</td>
                   @for (col of columns; track col.key) {
-                    <td>
-                      @if (col.key === 'status') {
-                        <span [class]="'badge ' + getStatusClass(lot)">
-                          {{ getStatusText(lot) }}
-                        </span>
-                      } @else {
-                        {{ getCellValue(lot, col.key) }}
-                      }
-                    </td>
+                    @if (col.key !== 'numero') {
+                      <td>
+                        @if (col.key === 'status') {
+                          <span [class]="'badge ' + getStatusClass(lot)">
+                            {{ getStatusText(lot) }}
+                          </span>
+                        } @else {
+                          {{ getCellValue(lot, col.key) }}
+                        }
+                      </td>
+                    }
                   }
 
                   <td class="actions-cell">

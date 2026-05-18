@@ -24,11 +24,13 @@
         <thead>
           <tr>
             <th>Code</th>
-            <th>% Réduction</th>
-            <th>N° Lot</th>
-            <th>Début</th>
-            <th>Expiration</th>
-            <th>Statut</th>
+            <th>Type</th>
+            <th>Benefit</th>
+            <th>Product</th>
+            <th>Scope</th>
+            <th>Start</th>
+            <th>Expiry</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -36,13 +38,33 @@
           @for (p of promotions; track p.id_Promo) {
             <tr [class.row-expired]="isExpired(p)">
               <td class="font-mono">{{ p.codePromo }}</td>
-              <td class="text-center"><strong class="text-danger">-{{ p.pourcentage }}%</strong></td>
-              <td>{{ p.numeroLot || '—' }}</td>
+              <td>
+                <span class="chip" [class.chip-gift]="getTypeLabel(p.typePromotion) === 'Free'" [class.chip-pct]="getTypeLabel(p.typePromotion) === 'Discount'">
+                  {{ getTypeLabel(p.typePromotion) }}
+                </span>
+              </td>
+              <td>
+                @if ((p.typePromotion ?? 'Pourcentage') === 'Gratuite') {
+                  <span class="text-sm">Buy {{ p.seuilAchat ?? '?' }}, get {{ p.quantiteGratuite ?? '?' }} free</span>
+                } @else {
+                  <strong class="text-danger">-{{ p.pourcentage ?? 0 }}%</strong>
+                }
+              </td>
+              <td class="text-sm">
+                {{ getProductName(p.id_Produit) }}
+              </td>
+              <td class="text-sm">
+                @if (p.porteeSurTousLesLots) {
+                  <span title="All lots of a product">All lots</span>
+                } @else {
+                  {{ p.numeroLot || '—' }}
+                }
+              </td>
               <td>{{ p.dateDebut | date:'dd/MM/yy' }}</td>
               <td>{{ p.dateExpiration | date:'dd/MM/yy' }}</td>
               <td>
                 <span class="chip" [class.chip-active]="p.estActive && !isExpired(p)" [class.chip-inactive]="!p.estActive || isExpired(p)">
-                  {{ p.estActive && !isExpired(p) ? 'Active' : isExpired(p) ? 'Expirée' : 'Inactive' }}
+                  {{ p.estActive && !isExpired(p) ? 'Active' : isExpired(p) ? 'Expired' : 'Inactive' }}
                 </span>
               </td>
               <td class="actions-cell">

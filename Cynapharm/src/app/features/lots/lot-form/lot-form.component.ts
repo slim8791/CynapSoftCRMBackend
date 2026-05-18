@@ -44,6 +44,10 @@ export class LotFormComponent implements OnInit {
   /** Conserve la date originale pour ne pas invalider un lot déjà expiré en édition */
   originalExpirationDate = '';
 
+  /** Liste des produits pour le dropdown */
+  products: any[] = [];
+  loadingProducts = false;
+
   // ── Injection ─────────────────────────────────────────────────────────────
   private readonly destroyRef    = inject(DestroyRef);
   private readonly toastService  = inject(ToastService);
@@ -62,6 +66,7 @@ export class LotFormComponent implements OnInit {
   ngOnInit(): void {
     this.productId = Number(this.route.snapshot.queryParamMap.get('productId')) || 0;
     this.initForm();
+    this.loadProducts();
 
     this.route.params
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -119,6 +124,32 @@ export class LotFormComponent implements OnInit {
     today.setHours(0, 0, 0, 0);
 
     return selected >= today ? null : { pastDate: true };
+  }
+
+  // ── Chargement des produits ──────────────────────────────────────────────
+
+  private loadProducts(): void {
+    this.loadingProducts = true;
+    this.productService.getProducts()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (prods: any[]) => {
+          // Normalise les deux casings possibles (CamelCase API : id_Produit)
+          this.products = (prods || []).map((p: any) => ({
+            ...p,
+            idProduit: p['id_Produit'] ?? p.Id_Produit ?? p.idProduit ?? p.id ?? 0,
+            nom:       p.nom           ?? p.Nom         ?? p.name     ?? `Produit ${p['id_Produit'] ?? p.Id_Produit ?? p.id}`,
+          }));
+          this.loadingProducts = false;
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          console.error('Erreur lors du chargement des produits :', err);
+          this.products = [];
+          this.loadingProducts = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   // ── Chargement des données ────────────────────────────────────────────────
@@ -208,8 +239,12 @@ export class LotFormComponent implements OnInit {
           }, 1200);
         },
         error: (err: any) => {
+          console.error('❌ Erreur lors de la création/mise à jour du lot:', err);
+          console.error('   Status:', err.status);
+          console.error('   Message:', err.error?.message);
+          console.error('   Erreurs:', err.error?.errors);
           this.error   = err?.error?.message
-            ?? `Erreur lors de ${this.isEditMode ? 'la mise à jour' : 'la création'} du lot.`;
+            ?? `Erreur ${err.status || ''} lors de ${this.isEditMode ? 'la mise à jour' : 'la création'} du lot.`;
           this.loading = false;
           this.cdr.markForCheck(); // ✅ Mise à jour après erreur
         },

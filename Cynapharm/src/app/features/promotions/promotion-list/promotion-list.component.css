@@ -27,3 +27,7 @@
 .act-btn.view:hover   { background:#e6f1fb }
 .act-btn.edit:hover   { background:#faeeda }
 .act-btn.delete:hover { background:#fcebeb }
+.chip-gift { background:#f0fdf4; color:#065f46; }
+.chip-pct  { background:#eff6ff; color:#1e40af; }
+.text-sm   { font-size:12px; }
+.text-danger { color:#dc2626; }

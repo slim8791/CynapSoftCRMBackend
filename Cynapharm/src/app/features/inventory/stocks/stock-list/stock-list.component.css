@@ -20,3 +20,26 @@
 .act-btn{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:6px;background:#f3f4f6;cursor:pointer;text-decoration:none;font-size:13px}
 .act-btn.view:hover{background:#e6f1fb}
 .act-btn.edit:hover{background:#faeeda}
+.act-btn.delete:hover{background:#fee2e2}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fadeIn .15s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{background:#fff;border-radius:16px;padding:28px 32px;max-width:420px;width:92%;box-shadow:0 24px 60px rgba(0,0,0,.22);text-align:center;animation:popIn .18s ease-out}
+@keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.modal-icon-danger{width:52px;height:52px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.modal-icon-danger svg{width:22px;height:22px}
+.modal-title{font-size:17px;font-weight:700;color:#0a1628;margin:0 0 10px}
+.modal-body{font-size:13px;color:#4b5563;line-height:1.6;margin:0 0 20px}
+.modal-actions{display:flex;gap:10px;justify-content:center}
+.btn-cancel{padding:8px 20px;border:1px solid #d1d5db;border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#374151}
+.btn-cancel:disabled{opacity:.5}
+.btn-confirm-danger{padding:8px 20px;background:#dc2626;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-confirm-danger:hover:not(:disabled){background:#b91c1c}
+.btn-confirm-danger:disabled{opacity:.5;cursor:not-allowed}
+.spinner-sm{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+.act-btn svg{width:14px;height:14px;display:block}
+.stock-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.status-ok{background:#d1fae5;color:#065f46}
+.status-low{background:#fef3c7;color:#92400e}
+.status-out{background:#fee2e2;color:#991b1b}
+.text-center{text-align:center}
+.font-mono{font-family:'Courier New',monospace;font-weight:600;color:#0077b6}

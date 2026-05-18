@@ -13,6 +13,13 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\benjd\\\\Desktop\\\\BackendPFE\\\\CynapSoftCRMBackend\" -Directory)",
       "Bash(Get-ChildItem -Path \"c:\\\\Cynapharm\\\\CynapSoftCRMBackend\" -Directory)",
       "Bash(Get-ChildItem -Path \"c:\\\\Cynapharm\\\\CynapSoftCRMBackend\\\\.github\" -Force)"
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\benjd\\\\Desktop\\\\BackendPFE\\\\CynapSoftCRMBackend\" -Directory)",
+      "Bash(dotnet ef *)",
+      "Bash(dotnet tool *)",
+      "Bash(dotnet build *)",
+      "Bash(Remove-Item \"c:\\\\Users\\\\benjd\\\\Desktop\\\\BackendPFE\\\\CynapSoftCRMBackend\\\\CynapCRM.Services.ProductAPI\\\\Migrations\\\\20260507001308_AddFreebiePromotion_v2.cs\" -Force)",
+      "Bash(Remove-Item \"c:\\\\Users\\\\benjd\\\\Desktop\\\\BackendPFE\\\\CynapSoftCRMBackend\\\\CynapCRM.Services.ProductAPI\\\\Migrations\\\\20260507001308_AddFreebiePromotion_v2.Designer.cs\" -Force)",
+      "Bash(Write-Host \"Deleted stale migration files\")"
     ]
   }
 }
