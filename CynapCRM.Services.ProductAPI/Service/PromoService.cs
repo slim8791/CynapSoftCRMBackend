@@ -49,6 +49,16 @@ namespace CynapCRM.Services.ProductAPI.Service
 
             if (!lotExists) return null;
 
+            // FIX 8: block if this lot already has an active promotion (create path only)
+            if (promotionDto.Id_Promo == 0)
+            {
+                var hasActivePromo = await _db.Promotions
+                    .AnyAsync(p =>
+                        p.NumeroLot == promotionDto.NumeroLot &&
+                        p.EstActive);
+                if (hasActivePromo) return null;
+            }
+
             var promo = await _db.Promotions
                 .FirstOrDefaultAsync(p => p.Id_Promo == promotionDto.Id_Promo);
 

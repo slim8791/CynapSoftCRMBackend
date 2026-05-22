@@ -18,5 +18,5 @@ public class LigneCommande
     public decimal PrixUnitaire { get; set; }
     public string NumeroLot { get; set; } = string.Empty;
     public decimal Remise { get; set; }
-    public decimal SousTotal => Quantite * PrixUnitaire;
+    public decimal SousTotal => Quantite * PrixUnitaire * (1m - Remise / 100m);
 }

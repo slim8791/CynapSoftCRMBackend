@@ -61,14 +61,15 @@ export class AuthService {
   /**
    * ✅ LOGIN (OK – aligné backend)
    */
-  login(email: string, password: string): Observable<any> {
-  return this.http.post<any>(`${this.apiUrl}/login`, {
-    UserName: email,
-    password
-  }).pipe(
-    tap(res => {
-      const result = res?.result;
-      if (!result) return;
+  login(email: string, password: string, turnstileToken: string = ''): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/login`, {
+      UserName: email,
+      password,
+      turnstileToken
+    }).pipe(
+      tap(res => {
+        const result = res?.result;
+        if (!result) return;
 
         if (result?.token && result?.user) {
           if (this.isBrowser) {
@@ -110,10 +111,17 @@ export class AuthService {
   }
 
   /**
-   * ✅ AUTH CHECK
+   * ✅ AUTH CHECK — verifies token presence AND expiry
    */
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp > Date.now() / 1000;
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -138,17 +146,17 @@ export class AuthService {
     return userStr ? JSON.parse(userStr) : null;
   }
 
-/**
-   * ✅ CURRENT USER
-   */
+  /**
+     * ✅ CURRENT USER
+     */
   getCurrentUser(): User | null {
     return this.currentUserSignal();
   }
 
-/**
-   * ✅ NOUVEAU : FORGOT PASSWORD
-   * Demande un email de réinitialisation de mot de passe
-   */
+  /**
+     * ✅ NOUVEAU : FORGOT PASSWORD
+     * Demande un email de réinitialisation de mot de passe
+     */
   forgotPassword(email: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/forgot-password`, {
       Email: email

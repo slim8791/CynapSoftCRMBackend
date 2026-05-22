@@ -1,4 +1,5 @@
-﻿using CynapCRM.Services.AuthAPI.Data;
+using CynapCRM.Services.AuthAPI.Data;
+using Microsoft.AspNetCore.DataProtection;
 using CynapCRM.Services.AuthAPI.Extensions; 
 using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Service;
@@ -17,12 +18,23 @@ builder.Services.AddIdentity<Utilisateur, IdentityRole<int>>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<AppDbContext>()
+    .SetApplicationName("CynapCRM-Auth");
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(
+    options => options.TokenLifespan = TimeSpan.FromHours(24)
+);
+
 builder.AddAppAuthentication();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("ApiSettings:JwtOptions"));
+
+// Turnstile CAPTCHA verification
+builder.Services.AddHttpClient<TurnstileService>();
 
 
 builder.Services.AddControllers()

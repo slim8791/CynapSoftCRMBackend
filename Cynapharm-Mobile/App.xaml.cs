@@ -1,3 +1,4 @@
+using System.Globalization;
 using Cynapharm_Mobile.Services;
 
 namespace Cynapharm_Mobile;
@@ -9,6 +10,26 @@ public partial class App : Application
 
     public App(AuthService authService, SyncService syncService)
     {
+        // ── Global number format ────────────────────────────────────────────
+        // Enforce period as decimal separator and non-breaking space as
+        // thousands separator regardless of the device locale. This makes
+        // every XAML StringFormat (N3, #,##0.000, …) and C# ToString("N3")
+        // produce the correct Tunisian dinar display: "50.000", "1 050.000".
+        var nfi = new NumberFormatInfo
+        {
+            NumberDecimalSeparator  = ".",
+            NumberGroupSeparator    = " ", // non-breaking space
+            NumberDecimalDigits     = 3,
+            CurrencyDecimalSeparator = ".",
+            CurrencyGroupSeparator  = " ",
+            CurrencyDecimalDigits   = 3
+        };
+        var culture = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+        culture.NumberFormat   = nfi;
+        CultureInfo.DefaultThreadCurrentCulture   = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        // ───────────────────────────────────────────────────────────────────
+
         InitializeComponent();
         _authService = authService;
         _syncService  = syncService;

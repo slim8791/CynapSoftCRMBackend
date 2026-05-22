@@ -16,6 +16,8 @@ import { LotService }               from '../lot.service';
 import { LotDto, getLotStatus, STATUS_LABEL, STATUS_CSS_CLASS } from '../lot.model';
 import { InventoryService, StockDelegue } from '../../inventory/inventory.service';
 import { PromotionAdvancedService } from '../../products/services/promotion-advanced.service';
+import { ProductService }           from '../../products/product.service';
+import { UserService }              from '../../users/user.service';
 import { AuthService, UserRole }    from '../../../core/services/auth.service';
 import { ToastService }             from '../../../shared/services/toast.service';
 import { CardComponent }            from '../../../shared/components/card/card.component';
@@ -36,10 +38,12 @@ export class LotDetailComponent implements OnInit, OnDestroy {
   loading  = true;
   error    = '';
   productId: number | null = null;
+  productName = '';
 
   // ── Stock InventoryAPI ────────────────────────────────────────────────────
   inventoryStock: StockDelegue | null = null;
   loadingInventory = false;
+  delegueName = '';
 
   // ── Modal suppression ─────────────────────────────────────────────────────
   showDeleteModal = false;
@@ -61,6 +65,8 @@ export class LotDetailComponent implements OnInit, OnDestroy {
     private readonly lotService:   LotService,
     private readonly inventoryService: InventoryService,
     private readonly promoService:    PromotionAdvancedService,
+    private readonly productService:  ProductService,
+    private readonly userService:     UserService,
     private readonly authService:     AuthService,
     private readonly toastService:    ToastService,
     private readonly cdr:             ChangeDetectorRef,
@@ -104,6 +110,7 @@ export class LotDetailComponent implements OnInit, OnDestroy {
           console.log('Lot reçu :', lot); // Log pour débogage
           this.lot     = lot;    // LotDto typé, normalisé par le service
           this.loading = false;
+          this.loadProductName(lot.idProduit);
           this.cdr.markForCheck();
           this.loadInventoryStock();
         },
@@ -128,6 +135,7 @@ export class LotDetailComponent implements OnInit, OnDestroy {
         next: (stock) => {
           this.inventoryStock   = stock;
           this.loadingInventory = false;
+          if (stock?.id_User_Delegue) this.loadDelegueName(stock.id_User_Delegue);
           this.cdr.markForCheck();
         },
         error: () => {
@@ -140,6 +148,48 @@ export class LotDetailComponent implements OnInit, OnDestroy {
 
   // ── Helpers statut ────────────────────────────────────────────────────────
   // Délégués au lot.model : unicité de la logique métier
+
+  private loadProductName(id: number): void {
+    this.productName = id ? `#${id}` : '';
+    if (!id) return;
+
+    this.productService.getProductById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          const p = res?.Result ?? res?.result ?? res;
+          this.productName =
+            p?.Nom ?? p?.nom ?? p?.name ?? p?.Name ?? `#${id}`;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.productName = `#${id}`;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  private loadDelegueName(id: number): void {
+    this.delegueName = `#${id}`;
+
+    this.userService.getUserById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          const u = res?.Result ?? res?.result ?? res;
+          this.delegueName =
+            u?.fullName ?? u?.FullName ??
+            u?.name     ?? u?.Name     ??
+            u?.userName ?? u?.UserName ??
+            u?.email    ?? u?.Email    ?? `#${id}`;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.delegueName = `#${id}`;
+          this.cdr.markForCheck();
+        },
+      });
+  }
 
   getStatusText(): string {
     return this.lot ? STATUS_LABEL[getLotStatus(this.lot)] : '';
@@ -164,9 +214,24 @@ export class LotDetailComponent implements OnInit, OnDestroy {
     return map[this.getInvStatus(qte)];
   }
 
+  // ── Règles métier d'édition / suppression ────────────────────────────────
+
+  /** Lot expiré : interdiction de modifier. */
+  isEditDisabled(): boolean {
+    return !!this.lot?.isExpired;
+  }
+
+  /** Stock délégué encore disponible : interdiction de supprimer. */
+  isDeleteDisabled(): boolean {
+    return (this.inventoryStock?.qteDisponible ?? 0) > 0;
+  }
+
   // ── Modal suppression ─────────────────────────────────────────────────────
 
-  onDelete(): void   { this.showDeleteModal = true; }
+  onDelete(): void {
+    if (this.isDeleteDisabled()) return;
+    this.showDeleteModal = true;
+  }
   cancelDelete(): void { this.showDeleteModal = false; }
 
   confirmDelete(): void {
@@ -240,7 +305,7 @@ export class LotDetailComponent implements OnInit, OnDestroy {
           this.promoLoading   = false;
           this.showPromoModal = false;
           this.toastService.showSuccess('Promotion ajoutée avec succès.');
-          this.cdr.markForCheck();
+          this.loadLotDetails();
         },
         error: (err: any) => {
           this.promoError   = err?.error?.message ?? 'Erreur lors de la création de la promotion.';
@@ -285,6 +350,7 @@ export class LotDetailComponent implements OnInit, OnDestroy {
   // ── Navigation ────────────────────────────────────────────────────────────
 
   onEdit(): void {
+    if (this.isEditDisabled()) return;
     this.router.navigate(['/lots', this.numeroLot, 'edit'], {
       queryParams: this.productId ? { productId: this.productId } : {},
     });

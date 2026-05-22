@@ -1,8 +1,3 @@
-<!-- Backdrop — closes the status menu on outside click -->
-@if (activeStatusMenuId !== null) {
-  <div class="status-backdrop" (click)="closeStatusMenu()"></div>
-}
-
 <div class="ol-wrapper">
 
   <!-- ═══ EN-TÊTE ══════════════════════════════════════════ -->
@@ -85,8 +80,8 @@
           </thead>
           <tbody>
             @for (order of orders; track order.Id_Commande) {
-              <tr>
-                <td class="col-id">#{{ order.Id_Commande }}</td>
+              <tr [class.row-annulee]="svc.statutToNumber(order.Statut) === 6">
+                <td class="col-id">{{ formatOrderNum(order.Id_Commande) }}</td>
                 <td>{{ order.DateCommande | date:'dd/MM/yyyy' }}</td>
 
                 <!-- Fix 2 — Client name or "Client inconnu" -->
@@ -95,8 +90,8 @@
                 <td class="col-center">
                   <span class="badge-count">{{ getLignesCount(order) }}</span>
                 </td>
-                <td class="col-right">{{ order.MontantTotalHT | number:'1.2-2' }}</td>
-                <td class="col-right fw-bold">{{ order.MontantTTC | number:'1.2-2' }}</td>
+                <td class="col-right">{{ formatAmount(order.MontantTotalHT) }}</td>
+                <td class="col-right fw-bold">{{ formatAmount(order.MontantTTC) }}</td>
                 <td>
                   <span class="chip" [ngClass]="getEtatClass(order.Statut)">
                     {{ getEtatLabel(order.Statut) }}
@@ -112,29 +107,24 @@
                     </svg>
                   </button>
 
-                  <!-- Fix 3 — Changer statut dropdown -->
+                  <!-- Changer statut dropdown -->
                   @if (getNextStatuses(order).length > 0) {
                     <div class="status-dropdown-wrap">
                       <button
                         class="act-btn status-btn"
-                        (click)="toggleStatusMenu(order.Id_Commande)"
+                        (click)="toggleStatusMenu(order.Id_Commande); $event.stopPropagation()"
                         title="Changer le statut"
-                        [class.status-btn-open]="activeStatusMenuId === order.Id_Commande">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polyline points="17 1 21 5 17 9"/>
-                          <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-                          <polyline points="7 23 3 19 7 15"/>
-                          <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-                        </svg>
+                        [class.status-btn-open]="openStatusMenuId === order.Id_Commande">
+                        🔄
                       </button>
-                      @if (activeStatusMenuId === order.Id_Commande) {
-                        <div class="status-menu">
+                      @if (openStatusMenuId === order.Id_Commande) {
+                        <div class="status-menu" (click)="$event.stopPropagation()">
                           <p class="status-menu-label">Passer vers :</p>
                           @for (next of getNextStatuses(order); track next.value) {
                             <button
                               class="status-menu-item"
                               [ngClass]="getEtatClass(next.value)"
-                              (click)="changeStatus(order, next.value)">
+                              (click)="changeStatus(order, next.value); closeStatusMenu()">
                               {{ next.label }}
                             </button>
                           }
@@ -187,8 +177,8 @@
 
       <h3 class="modal-title">Supprimer la commande ?</h3>
       <p class="modal-body">
-        La commande <strong>#{{ deletingOrder.Id_Commande }}</strong>
-        ({{ getEtatLabel(deletingOrder.Statut) }} — {{ deletingOrder.MontantTTC | number:'1.2-2' }} TND TTC)
+        La commande <strong>{{ formatOrderNum(deletingOrder.Id_Commande) }}</strong>
+        ({{ getEtatLabel(deletingOrder.Statut) }} — {{ formatAmount(deletingOrder.MontantTTC) }} TTC)
         sera supprimée définitivement. Cette action est irréversible.
       </p>
 

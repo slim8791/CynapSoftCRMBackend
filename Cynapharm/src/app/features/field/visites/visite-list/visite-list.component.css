@@ -53,7 +53,8 @@ h1 {
   white-space: nowrap;
 }
 
-.filter-bar input {
+.filter-bar input,
+.filter-bar select {
   padding: 10px 14px;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -66,7 +67,8 @@ h1 {
   outline: none;
 }
 
-.filter-bar input:focus {
+.filter-bar input:focus,
+.filter-bar select:focus {
   border-color: #00b4d8;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(0,180,216,0.1);

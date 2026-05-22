@@ -3,17 +3,20 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <!-- ── Primary brand colors ──────────────────────────────────────────── -->
-    <Color x:Key="Primary">#1A6B3C</Color>
-    <Color x:Key="PrimaryDark">#145530</Color>
-    <Color x:Key="PrimaryLight">#EAF3DE</Color>
-    <Color x:Key="PrimaryText">#3B6D11</Color>
+    <Color x:Key="Primary">#00B4D8</Color>
+    <Color x:Key="PrimaryDark">#0096B4</Color>
+    <Color x:Key="PrimaryLight">#E1F5FB</Color>
+    <Color x:Key="PrimaryText">#007A93</Color>
+
+    <!-- ── Header Background ─────────────────────────────────────────────── -->
+    <Color x:Key="HeaderBackground">#2d6a4f</Color>
 
     <!-- ── Secondary / accent ────────────────────────────────────────────── -->
     <Color x:Key="Secondary">#F5A623</Color>
     <Color x:Key="SecondaryLight">#FAEEDA</Color>
     <Color x:Key="SecondaryText">#854F0B</Color>
 
-    <!-- ── Cyan accent ────────────────────────────────────────────────────── -->
+    <!-- ── Cyan accent (Legacy mapped to Primary) ────────────────────────── -->
     <Color x:Key="Accent">#00B4D8</Color>
     <Color x:Key="AccentLight">#E1F5FB</Color>
 
@@ -27,7 +30,7 @@
     <Color x:Key="InfoText">#0C447C</Color>
 
     <!-- ── Neutral surfaces ──────────────────────────────────────────────── -->
-    <Color x:Key="PageBackground">#EEF3F8</Color>
+    <Color x:Key="PageBackground">#EEF0F5</Color>
     <Color x:Key="CardBackground">#FFFFFF</Color>
     <Color x:Key="SurfaceBackground">#F5F5F5</Color>
     <Color x:Key="BorderColor">#E0E0E0</Color>
@@ -56,10 +59,10 @@
     <Color x:Key="WarningLight">#FAEEDA</Color>
 
     <Color x:Key="Tertiary">#1A1A1A</Color>
-    <Color x:Key="FieldBorderActive">#1A6B3C</Color>
+    <Color x:Key="FieldBorderActive">#00B4D8</Color>
     <Color x:Key="FieldBorderInactive">#E0E0E0</Color>
 
-    <Color x:Key="PageBackgroundColor">#EEF3F8</Color>
+    <Color x:Key="PageBackgroundColor">#EEF0F5</Color>
     <Color x:Key="CardBackgroundColor">#FFFFFF</Color>
     <Color x:Key="SurfaceStrokeColor">#E0E0E0</Color>
     <Color x:Key="PrimaryTextColor">#1A1A1A</Color>

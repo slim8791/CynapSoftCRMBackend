@@ -19,7 +19,7 @@ export interface ReclamationDto {
   Id_Rec:           number;
   Message:          string;
   DateReclamation:  string;
-  Statut?:          string;   // "Ouverte" | "EnCours" | "Resolue"
+  Statut?:          string | number;   // 0/Ouverte, 1/EnCours, 2/Resolue
   Id_Commande:      number;
   Id_Ligne:         number;
   Id_Client:        number;
@@ -51,16 +51,17 @@ export class ReclamationService {
     };
   }
 
-  statutToNumber(statut?: string): number {
-    const map: Record<string, number> = { Ouverte: 0, EnCours: 1, Resolue: 2 };
+  statutToNumber(statut?: string | number): number {
+    if (typeof statut === 'number') return statut;
+    const map: Record<string, number> = { Ouverte: 0, EnCours: 1, Resolue: 2, '0': 0, '1': 1, '2': 2 };
     return statut != null ? (map[statut] ?? 0) : 0;
   }
 
-  getStatutLabel(statut?: string): string {
+  getStatutLabel(statut?: string | number): string {
     return STATUT_REC_LABELS[this.statutToNumber(statut)] ?? statut ?? '—';
   }
 
-  getStatutClass(statut?: string): string {
+  getStatutClass(statut?: string | number): string {
     return STATUT_REC_CSS[this.statutToNumber(statut)] ?? 'chip-default';
   }
 

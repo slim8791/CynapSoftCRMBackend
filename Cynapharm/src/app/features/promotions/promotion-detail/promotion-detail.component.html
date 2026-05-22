@@ -20,31 +20,31 @@
             @if ((promo.typePromotion ?? 'Pourcentage') === 'Gratuite') {
               <span class="type-badge type-gift">🎁 Buy X get Y free</span>
             } @else {
-              <span class="type-badge type-pct">% Percentage discount</span>
+              <span class="type-badge type-pct">% Remise en pourcentage</span>
             }
           </span>
         </div>
 
         @if ((promo.typePromotion ?? 'Pourcentage') === 'Pourcentage') {
           <div class="detail-row">
-            <span class="dl">Discount</span>
+            <span class="dl">Réduction</span>
             <span class="dv text-red">-{{ promo.pourcentage }}%</span>
           </div>
         } @else {
           <div class="detail-row">
-            <span class="dl">Rule</span>
+            <span class="dl">Règle</span>
             <span class="dv">
-              Buy <strong>{{ promo.seuilAchat }}</strong> unit(s)
-              → get <strong>{{ promo.quantiteGratuite }}</strong> free
+              Acheter <strong>{{ promo.seuilAchat }}</strong> unité(s)
+              → obtenir <strong>{{ promo.quantiteGratuite }}</strong> gratuite(s)
             </span>
           </div>
         }
 
         <div class="detail-row">
-          <span class="dl">Scope</span>
+          <span class="dl">Portée</span>
           <span class="dv">
             @if (promo.porteeSurTousLesLots) {
-              All lots of product <strong>#{{ promo.id_Produit }}</strong>
+              Tous les lots du produit <strong>#{{ promo.id_Produit }}</strong>
             } @else {
               Lot <strong>{{ promo.numeroLot }}</strong>
             }
@@ -52,16 +52,16 @@
         </div>
 
         <div class="detail-row">
-          <span class="dl">Start</span>
+          <span class="dl">Date de début</span>
           <span class="dv">{{ promo.dateDebut | date:'dd/MM/yyyy' }}</span>
         </div>
         <div class="detail-row">
-          <span class="dl">Expiry</span>
+          <span class="dl">Date d'expiration</span>
           <span class="dv">{{ promo.dateExpiration | date:'dd/MM/yyyy' }}</span>
         </div>
 
         <div class="detail-row">
-          <span class="dl">Status</span>
+          <span class="dl">Statut</span>
           <span class="chip" [class.chip-active]="promo.estActive" [class.chip-inactive]="!promo.estActive">
             {{ promo.estActive ? 'Active' : 'Inactive' }}
           </span>
@@ -70,8 +70,8 @@
       </div>
 
       <div class="detail-actions">
-        <a routerLink="/promotions" class="btn-cancel">← Back</a>
-        <a [routerLink]="['/promotions', promo.id_Promo, 'edit']" class="btn-submit">Edit</a>
+        <a routerLink="/promotions" class="btn-cancel">← Retour</a>
+        <a [routerLink]="['/promotions', promo.id_Promo, 'edit']" class="btn-submit">Modifier</a>
       </div>
     </div>
   }

@@ -16,13 +16,14 @@ public partial class CreateOrderViewModel : BaseViewModel
     private readonly ProductService _productService;
     private readonly LocalDatabaseService _localDb;
 
-    private const string CartCacheKey = "draft_cart";
+    // Cart key is scoped per user so different accounts on the same device don't share drafts.
+    // Set to the user-specific value in InitializeAsync once userId is available.
+    private string _cartCacheKey = "draft_cart";
 
     [ObservableProperty] private int _preselectedProductId;
     [ObservableProperty] private int _currentStep = 1;
     [ObservableProperty] private string _searchQuery = string.Empty;
     [ObservableProperty] private Product? _selectedProduct;
-    [ObservableProperty] private string _deliveryNotes = string.Empty;
 
     // ── Validated quantity field ──────────────────────────────────────────────
     [ObservableProperty]
@@ -35,6 +36,7 @@ public partial class CreateOrderViewModel : BaseViewModel
         GetErrors(nameof(Quantity))
             .Cast<ValidationResult>()
             .FirstOrDefault()?.ErrorMessage ?? string.Empty;
+
 
     public ObservableCollection<CartLine> CartLines { get; } = new();
     public ObservableCollection<Product> SearchResults { get; } = new();
@@ -252,11 +254,15 @@ public partial class CreateOrderViewModel : BaseViewModel
                     Quantite     = l.Quantite,
                     PrixUnitaire = l.PrixUnitaire,
                     Remise       = l.RemisePourcentage
-                }).ToList()
+                }).ToList(),
+                IsFinalValidation = true
             };
             await _orderService.CreateOrderAsync(payload);
             ClearCartCache();
-            await Shell.Current.DisplayAlert("Succès", "Votre commande a été soumise.", "OK");
+            await Shell.Current.DisplayAlert(
+                "Succès",
+                "Votre commande a été soumise et est en attente de confirmation.",
+                "OK");
             await Shell.Current.GoToAsync("//orders");
         }
         catch (Exception) { ErrorMessage = "Erreur lors de la soumission de la commande."; }
@@ -265,6 +271,10 @@ public partial class CreateOrderViewModel : BaseViewModel
 
     private async Task InitializeAsync()
     {
+        // Scope the cart to the current user before loading the draft
+        var userId = await SecureStorage.GetAsync(StorageKeys.UserId) ?? "anonymous";
+        _cartCacheKey = $"draft_cart_{userId}";
+
         await LoadCartAsync();
 
         // Seed promotions into SQLite for offline promo calculation
@@ -284,7 +294,7 @@ public partial class CreateOrderViewModel : BaseViewModel
     {
         try
         {
-            Preferences.Set(CartCacheKey, System.Text.Json.JsonSerializer.Serialize(CartLines.ToList()));
+            Preferences.Set(_cartCacheKey, System.Text.Json.JsonSerializer.Serialize(CartLines.ToList()));
         }
         catch { }
         return Task.CompletedTask;
@@ -294,7 +304,7 @@ public partial class CreateOrderViewModel : BaseViewModel
     {
         try
         {
-            var json = Preferences.Get(CartCacheKey, string.Empty);
+            var json = Preferences.Get(_cartCacheKey, string.Empty);
             if (!string.IsNullOrEmpty(json))
             {
                 var items = System.Text.Json.JsonSerializer.Deserialize<List<CartLine>>(json);
@@ -312,5 +322,5 @@ public partial class CreateOrderViewModel : BaseViewModel
         return Task.CompletedTask;
     }
 
-    private void ClearCartCache() => Preferences.Remove(CartCacheKey);
+    private void ClearCartCache() => Preferences.Remove(_cartCacheKey);
 }

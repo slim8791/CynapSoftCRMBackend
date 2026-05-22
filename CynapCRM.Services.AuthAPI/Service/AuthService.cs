@@ -1,10 +1,12 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CynapCRM.Services.AuthAPI.Data;
 using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Models.Dto;
 using CynapCRM.Services.AuthAPI.Service.IService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace CynapCRM.Services.AuthAPI.Service
 {
@@ -344,13 +346,75 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                 };
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            // Decode the token robustly
+            var decodedToken = model.Token;
+            
+            // 1. Unescape URL and fix spaces that might have replaced '+' signs
+            decodedToken = Uri.UnescapeDataString(decodedToken).Replace(" ", "+");
+
+            // 2. ASP.NET Core Identity tokens typically start with "CfDJ"
+            if (!decodedToken.StartsWith("CfDJ"))
+            {
+                try 
+                {
+                    // Try standard Base64 decoding
+                    var bytes = Convert.FromBase64String(decodedToken);
+                    var decodedString = Encoding.UTF8.GetString(bytes);
+                    if (decodedString.StartsWith("CfDJ"))
+                    {
+                        decodedToken = decodedString;
+                    }
+                }
+                catch 
+                {
+                    try
+                    {
+                        // Try Base64Url decoding (standard ASP.NET Core approach)
+                        var bytes = WebEncoders.Base64UrlDecode(decodedToken);
+                        var decodedString = Encoding.UTF8.GetString(bytes);
+                        if (decodedString.StartsWith("CfDJ"))
+                        {
+                            decodedToken = decodedString;
+                        }
+                    }
+                    catch { }
+                }
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
             if (!result.Succeeded)
             {
+                // Separate token errors from password policy errors
+                var passwordErrors = result.Errors
+                    .Where(e => e.Code != "InvalidToken")
+                    .ToList();
+
+                if (passwordErrors.Count == 0)
+                {
+                    // Only the token itself was invalid
+                    return new ResponseDto
+                    {
+                        IsSuccess = false,
+                        Message = "Lien de réinitialisation invalide ou expiré."
+                    };
+                }
+
+                // Password does not meet the policy — return translated messages
+                var message = string.Join(" ", passwordErrors.Select(e => e.Code switch
+                {
+                    "PasswordTooShort"                => "Le mot de passe est trop court (minimum 6 caractères).",
+                    "PasswordRequiresDigit"           => "Ajoutez au moins un chiffre (0–9).",
+                    "PasswordRequiresUpper"           => "Ajoutez au moins une lettre majuscule (A–Z).",
+                    "PasswordRequiresLower"           => "Ajoutez au moins une lettre minuscule (a–z).",
+                    "PasswordRequiresNonAlphanumeric" => "Ajoutez au moins un caractère spécial (ex. @ # ! %).",
+                    "PasswordRequiresUniqueChars"     => "Utilisez des caractères plus variés.",
+                    _                                 => e.Description
+                }));
+
                 return new ResponseDto
                 {
                     IsSuccess = false,
-                    Message = "Lien de réinitialisation invalide ou expiré."
+                    Message = message
                 };
             }
 

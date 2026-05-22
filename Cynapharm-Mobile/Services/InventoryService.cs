@@ -15,8 +15,12 @@ public class InventoryService
         return _api.GetAsync<List<StockMouvement>>(query.TrimEnd('&', '?'));
     }
 
-    public Task<List<StockDelegue>?> GetStockDelegueAsync()
-        => _api.GetAsync<List<StockDelegue>>("inventory/stocks-delegue");
+    public async Task<List<StockDelegue>?> GetStockDelegueAsync()
+    {
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        if (!int.TryParse(userIdStr, out var userId)) return null;
+        return await _api.GetAsync<List<StockDelegue>>($"inventory/stocks-delegue/by-delegue/{userId}");
+    }
 
     public Task<List<StockPromo>?> GetStockPromoAsync()
         => _api.GetAsync<List<StockPromo>>("inventory/stocks-promotionnels");
@@ -27,22 +31,30 @@ public class InventoryService
     /// <summary>
     /// Records a sample distribution on the backend.
     /// Gateway: POST /inventory/distributions → InventoryAPI POST /api/distributions
+    /// Exactly one of idMedecin or idPharmacien must be non-null.
     /// </summary>
-    public Task<object?> PostDistributionAsync(
-        int productId,
+    public async Task<object?> PostDistributionAsync(
+        int stockId,
         int quantite,
-        double? latitude  = null,
-        double? longitude = null)
+        string numeroLot,
+        int? idMedecin    = null,
+        int? idPharmacien = null)
     {
-        var payload = new
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        int.TryParse(userIdStr, out var userId);
+
+        var dto = new
         {
-            ProductId          = productId,
-            QuantiteDistribuee = quantite,
-            DateDistribution   = DateTime.UtcNow,
-            Latitude           = latitude,
-            Longitude          = longitude
+            id_Distribution  = 0,
+            id_Delegue       = userId,
+            id_Medecin       = idMedecin,
+            id_Pharmacien    = idPharmacien,
+            id_Stock         = stockId,
+            qte              = quantite,
+            numeroLot        = numeroLot,
+            dateDistribution = (DateTime?)null
         };
-        return _api.PostAsync<object>("inventory/distributions", payload);
+        return await _api.PostAsync<object>("inventory/distributions", dto);
     }
 
     // ── New endpoints ─────────────────────────────────────────────────────────

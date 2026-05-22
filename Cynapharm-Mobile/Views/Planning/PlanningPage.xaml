@@ -7,44 +7,56 @@
              x:Class="Cynapharm_Mobile.Views.Planning.PlanningPage"
              x:DataType="vm:PlanningViewModel"
              Title="{Binding Title}"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
 
     <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
 
-        <!-- ── Primary header ────────────────────────────────────────────── -->
-        <Grid Grid.Row="0"
-              BackgroundColor="{StaticResource Primary}"
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
               Padding="16,48,16,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="44" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="44" />
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0"
-                    Text="‹"
-                    Command="{Binding PreviousWeekCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="White"
-                    FontSize="24"
-                    HeightRequest="44"
-                    Padding="8,0" />
+            <Border Grid.Column="0"
+                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                    VerticalOptions="Center">
+                <Label Text="‹" FontSize="22" FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding PreviousWeekCommand}" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </Border>
 
             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                 <Label Text="{Binding WeekLabel}"
-                       FontSize="18" FontAttributes="Bold"
+                       FontSize="17" FontAttributes="Bold"
+                       FontFamily="OpenSansSemibold"
                        TextColor="White"
+                       HorizontalOptions="Center" />
+                <Label Text="Semaine en cours"
+                       FontSize="11" TextColor="#CCF5FF"
                        HorizontalOptions="Center" />
             </VerticalStackLayout>
 
-            <Button Grid.Column="2"
-                    Text="›"
-                    Command="{Binding NextWeekCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="White"
-                    FontSize="24"
-                    HeightRequest="44"
-                    Padding="8,0" />
+            <Border Grid.Column="2"
+                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                    VerticalOptions="Center" HorizontalOptions="End">
+                <Label Text="›" FontSize="22" FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding NextWeekCommand}" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </Border>
         </Grid>
 
         <controls:ErrorBanner Grid.Row="1"
@@ -56,27 +68,36 @@
                            IsVisible="{Binding IsBusy}"
                            Color="{StaticResource Primary}"
                            HorizontalOptions="Center"
-                           Margin="8" />
+                           Margin="0,8" />
 
         <!-- ── Week day list ─────────────────────────────────────────────── -->
-        <CollectionView Grid.Row="3"
-                        ItemsSource="{Binding WeekDays}">
+        <CollectionView Grid.Row="3" ItemsSource="{Binding WeekDays}">
+            <CollectionView.Header>
+                <BoxView HeightRequest="10" Color="Transparent" />
+            </CollectionView.Header>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:PlanningDayGroup">
-                    <Border Margin="16,6" Style="{StaticResource CardStyle}">
+                    <Border Margin="16,0,16,10"
+                            BackgroundColor="{StaticResource CardBackground}"
+                            StrokeShape="RoundRectangle 16"
+                            Stroke="{StaticResource BorderColor}" StrokeThickness="1">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
+                        </Border.Shadow>
                         <Border.Triggers>
                             <DataTrigger TargetType="Border" Binding="{Binding IsToday}" Value="True">
-                                <Setter Property="Stroke" Value="{StaticResource Primary}" />
+                                <Setter Property="Stroke"          Value="{StaticResource Primary}" />
                                 <Setter Property="StrokeThickness" Value="2" />
                                 <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}" />
                             </DataTrigger>
                         </Border.Triggers>
 
-                        <VerticalStackLayout Spacing="10">
-                            <!-- Day header row -->
+                        <VerticalStackLayout Spacing="10" Padding="14,12">
+                            <!-- Day header -->
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="{Binding DayLabel}"
                                        FontAttributes="Bold" FontSize="14"
+                                       FontFamily="OpenSansSemibold"
                                        TextColor="{StaticResource Primary}">
                                     <Label.Triggers>
                                         <DataTrigger TargetType="Label" Binding="{Binding IsToday}" Value="True">
@@ -84,16 +105,20 @@
                                         </DataTrigger>
                                     </Label.Triggers>
                                 </Label>
-                                <Button Grid.Column="1"
-                                        Text="+"
-                                        Padding="10,4"
+                                <Border Grid.Column="1"
                                         BackgroundColor="{StaticResource Primary}"
-                                        TextColor="White"
-                                        CornerRadius="8"
-                                        FontSize="16"
-                                        HeightRequest="36"
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AddVisitCommand}"
-                                        CommandParameter="{Binding Date}" />
+                                        StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                        HeightRequest="34" WidthRequest="34">
+                                    <Label Text="+" FontSize="20" FontAttributes="Bold"
+                                           TextColor="White"
+                                           HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AddVisitCommand}"
+                                                CommandParameter="{Binding Date}" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </Border>
                             </Grid>
 
                             <!-- Planning entries -->
@@ -101,13 +126,15 @@
                                             IsVisible="{Binding HasEntries}">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate x:DataType="field:Planning">
-                                        <Border Margin="0,3" Style="{StaticResource CardStyle}">
-                                            <!-- Accent bar on left via Grid -->
-                                            <Grid ColumnDefinitions="3,*,Auto" ColumnSpacing="10">
-                                                <!-- Left accent bar: color driven by Statut -->
+                                        <Border Margin="0,0,0,6"
+                                                BackgroundColor="{StaticResource CardBackground}"
+                                                StrokeShape="RoundRectangle 10"
+                                                Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                                Padding="0">
+                                            <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="10">
                                                 <BoxView Grid.Column="0"
                                                          BackgroundColor="{StaticResource Secondary}"
-                                                         CornerRadius="2">
+                                                         CornerRadius="4,0,0,4">
                                                     <BoxView.Triggers>
                                                         <DataTrigger TargetType="BoxView"
                                                                      Binding="{Binding Statut}" Value="REALISEE">
@@ -121,37 +148,48 @@
                                                 </BoxView>
                                                 <Label Grid.Column="1"
                                                        Text="{Binding ClientNom}"
-                                                       FontSize="13"
-                                                       FontAttributes="Bold"
+                                                       FontSize="13" FontAttributes="Bold"
                                                        TextColor="{StaticResource TextPrimary}"
-                                                       VerticalOptions="Center" />
+                                                       VerticalOptions="Center"
+                                                       Margin="0,10" />
                                                 <Label Grid.Column="2"
                                                        Text="{Binding DatePlanifiee, StringFormat='{0:HH:mm}'}"
-                                                       FontSize="12"
-                                                       TextColor="{StaticResource TextSecondary}"
-                                                       VerticalOptions="Center" />
+                                                       FontSize="12" FontAttributes="Bold"
+                                                       TextColor="{StaticResource TextMuted}"
+                                                       VerticalOptions="Center"
+                                                       Margin="0,0,10,0" />
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
 
-                            <Label Text="Aucune visite planifiée"
-                                   TextColor="{StaticResource TextMuted}"
-                                   FontSize="12"
-                                   FontAttributes="Italic"
-                                   IsVisible="{Binding HasEntries, Converter={StaticResource InvertedBoolConverter}}" />
+                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                    StrokeShape="RoundRectangle 8" Stroke="Transparent"
+                                    Padding="12,8"
+                                    IsVisible="{Binding HasEntries, Converter={StaticResource InvertedBoolConverter}}">
+                                <Label Text="Aucune visite planifiée"
+                                       TextColor="{StaticResource TextMuted}"
+                                       FontSize="12" FontAttributes="Italic"
+                                       HorizontalOptions="Center" />
+                            </Border>
                         </VerticalStackLayout>
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
+            <CollectionView.Footer>
+                <BoxView HeightRequest="8" Color="Transparent" />
+            </CollectionView.Footer>
         </CollectionView>
 
-        <!-- ── FAB ───────────────────────────────────────────────────────── -->
-        <Button Grid.Row="4"
-                Text="+ Ajouter une visite"
-                Style="{StaticResource PrimaryButtonStyle}"
-                Margin="16,8" />
+        <!-- ── Sticky CTA ─────────────────────────────────────────────────── -->
+        <Grid Grid.Row="4" BackgroundColor="{StaticResource CardBackground}">
+            <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}"
+                     VerticalOptions="Start" />
+            <Button Text="+ Ajouter une visite"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Margin="16,12,16,28" />
+        </Grid>
 
     </Grid>
 </ContentPage>

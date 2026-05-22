@@ -74,17 +74,35 @@ public partial class ProfileViewModel : BaseViewModel
         }
         if (User != null)
         {
+            var result = await _authService.UpdateProfileAsync(new UpdateProfileDto
+            {
+                Name        = EditName.Trim(),
+                PhoneNumber = EditTelephone?.Trim(),
+                Adresse     = EditAdresse?.Trim(),
+                Email       = User.Email
+            });
+
+            if (!result.IsSuccess)
+            {
+                ErrorMessage = result.Message ?? "Erreur lors de la mise à jour du profil.";
+                return;
+            }
+
             User.Name      = EditName.Trim();
             User.Telephone = EditTelephone?.Trim() ?? string.Empty;
             User.Adresse   = EditAdresse?.Trim()   ?? string.Empty;
-            await SecureStorage.SetAsync(StorageKeys.UserName, User.Name);
+
+            var userId = User.Id.ToString();
+            await SecureStorage.SetAsync(StorageKeys.UserName,              User.Name);
+            await SecureStorage.SetAsync(StorageKeys.UserTelephone(userId), User.Telephone);
+            await SecureStorage.SetAsync(StorageKeys.UserAdresse(userId),   User.Adresse);
             OnPropertyChanged(nameof(User));
             OnPropertyChanged(nameof(AvatarInitials));
         }
         IsEditing = false;
         await Shell.Current.DisplayAlert(
             "Profil mis à jour",
-            "Vos informations ont été enregistrées localement.",
+            "Vos informations ont été enregistrées.",
             "OK");
     });
 

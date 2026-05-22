@@ -1,10 +1,13 @@
-﻿using CynapCRM.Services.AuthAPI.Models;
+using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Models.Dto;
+using CynapCRM.Services.AuthAPI.Service;
 using CynapCRM.Services.AuthAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace CynapCRM.Services.AuthAPI.Controllers
 {
@@ -16,12 +19,17 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         protected ResponseDto _response;
         private readonly IEmailService _emailService;
         private readonly IWebHostEnvironment _env;
-        public AuthController(IAuthService authService, IEmailService emailService, IWebHostEnvironment env)
+        private readonly TurnstileService _turnstileService;
+        private readonly IConfiguration _configuration;
+
+        public AuthController(IAuthService authService, IEmailService emailService, IWebHostEnvironment env, TurnstileService turnstileService, IConfiguration configuration)
         {
             _authService = authService;
             _response = new();
             _emailService = emailService;
             _env = env;
+            _turnstileService = turnstileService;
+            _configuration = configuration;
         }
         [HttpPost("register")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")] 
@@ -71,6 +79,24 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
+            // Verify Turnstile CAPTCHA token
+            // Vérifie Turnstile seulement si le token est fourni
+            var clientType = Request.Headers["X-Client-Type"];
+
+            if (clientType != "mobile")
+            {
+                if (string.IsNullOrEmpty(model.TurnstileToken))
+                {
+                    return BadRequest("Captcha requis");
+                }
+
+                var isHuman = await _turnstileService.VerifyAsync(model.TurnstileToken);
+                if (!isHuman)
+                {
+                    return BadRequest("Vérification échouée");
+                }
+            }
+
             var loginResponse = await _authService.Login(model);
             if (loginResponse.User == null )
             {
@@ -297,10 +323,10 @@ Inner: {ex.InnerException?.Message}";
             }
             var token = response.Result.ToString();
 
-            var encodedToken = System.Web.HttpUtility.UrlEncode(token);
+            var encodedToken = Uri.EscapeDataString(token);
 
-            // ✅ MODIF: lien vers FRONTEND Angular
-            string resetLink = $"http://localhost:4200/reset-password?email={model.Email}&token={encodedToken}";
+            var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:4200";
+            string resetLink = $"{frontendUrl}/reset-password?email={Uri.EscapeDataString(model.Email)}&token={encodedToken}";
 
             string subject = "Réinitialisation de mot de passe - CynapCRM";
             string message = $@"

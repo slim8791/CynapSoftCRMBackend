@@ -48,18 +48,14 @@ export class ForgotPasswordComponent {
     const { email } = this.forgotForm.value;
 
     this.authService.forgotPassword(email).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.loading = false;
-        if (response.IsSuccess) {
-          this.success = true;
-          this.message = response.Message || 'Un e-mail de réinitialisation a été envoyé.';
-        } else {
-          this.error = response.Message || 'Erreur lors de la demande.';
-        }
+        this.success = true;
+        this.message = response?.message ?? 'Un e-mail de réinitialisation a été envoyé.';
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading = false;
-        this.error = err.error?.Message || 'Erreur lors de la demande.';
+        this.error = err?.error?.message ?? 'Une erreur est survenue. Veuillez réessayer.';
       }
     });
   }

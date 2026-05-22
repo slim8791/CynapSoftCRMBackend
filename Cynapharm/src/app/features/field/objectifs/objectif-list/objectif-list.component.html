@@ -16,14 +16,26 @@
         <button class="retry-btn" (click)="load()">Réessayer</button>
       </div>
 
+      <div *ngIf="!loading && !error && objectifs.length > 0" class="filter-bar">
+        <label>Délégué</label>
+        <select [(ngModel)]="selectedDelegueId">
+          <option [ngValue]="null">Tous les délégués</option>
+          <option *ngFor="let d of delegues" [ngValue]="d.id ?? d.Id">{{ userName(d) }}</option>
+        </select>
+      </div>
+
       <div *ngIf="!loading && !error && objectifs.length === 0">
         <app-empty-state title="Aucun objectif" message="Commencez par créer un objectif.">
           <a routerLink="/field/objectifs/new" class="btn btn-primary">Créer un objectif</a>
         </app-empty-state>
       </div>
 
-      <div *ngIf="!loading && objectifs.length > 0" class="cards-grid">
-        <div *ngFor="let o of objectifs" class="obj-card">
+      <div *ngIf="!loading && objectifs.length > 0 && filteredObjectifs.length === 0">
+        <app-empty-state title="Aucun objectif" message="Aucun objectif pour ce délégué."></app-empty-state>
+      </div>
+
+      <div *ngIf="!loading && filteredObjectifs.length > 0" class="cards-grid">
+        <div *ngFor="let o of filteredObjectifs" class="obj-card">
           <div class="obj-top">
             <div class="obj-info">
               <span class="obj-type">{{ o.type }}</span>

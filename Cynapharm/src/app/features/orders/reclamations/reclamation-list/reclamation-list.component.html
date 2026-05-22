@@ -49,20 +49,27 @@
                 <td><a [routerLink]="['/orders', r.Id_Commande]" class="link">#{{ r.Id_Commande }}</a></td>
                 <td>#{{ r.Id_Ligne }}</td>
                 <td>#{{ r.Id_Client }}</td>
-                <td>{{ r.DateReclamation | date:'dd/MM/yy' }}</td>
+                <td>{{ r.DateReclamation | date:'dd/MM/yyyy' }}</td>
                 <td>
                   <span class="chip" [ngClass]="getStatutClass(r.Statut)">{{ getStatutLabel(r.Statut) }}</span>
                 </td>
                 @if (canManageStatus()) {
-                  <td>
-                    <select class="status-select" [disabled]="updatingId === r.Id_Rec"
-                            (change)="onUpdateStatus(r.Id_Rec, +$any($event.target).value)">
-                      @for (s of statuts; track s.value) {
-                        <option [value]="s.value" [selected]="svc.statutToNumber(r.Statut) === s.value">
-                          {{ s.label }}
-                        </option>
-                      }
-                    </select>
+                  <td class="col-actions">
+                    @if (svc.statutToNumber(r.Statut) === 0) {
+                      <button class="transition-btn"
+                              [disabled]="updatingId === r.Id_Rec"
+                              (click)="onUpdateStatus(r.Id_Rec, 1)">
+                        @if (updatingId === r.Id_Rec) { … } @else { Prendre en charge }
+                      </button>
+                    } @else if (svc.statutToNumber(r.Statut) === 1) {
+                      <button class="transition-btn transition-btn--resolve"
+                              [disabled]="updatingId === r.Id_Rec"
+                              (click)="onUpdateStatus(r.Id_Rec, 2)">
+                        @if (updatingId === r.Id_Rec) { … } @else { Marquer comme résolue }
+                      </button>
+                    } @else {
+                      <span class="resolved-tag">Résolue</span>
+                    }
                   </td>
                 }
                 <td class="col-actions">

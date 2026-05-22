@@ -21,14 +21,15 @@ public partial class AppShell : Shell
     public bool IsMedecin => Role is "MEDECIN";
 
     // ── Flyout role visibility (custom panel) ────────────────────────────
-    public bool ShowDashboard  { get; private set; }
-    public bool ShowVisites    { get; private set; }
-    public bool ShowPlanning   { get; private set; }
-    public bool ShowCatalogue  { get; private set; } = true;
-    public bool ShowOrders     { get; private set; }
-    public bool ShowDocuments  { get; private set; }
-    public bool ShowStock      { get; private set; }
-    public bool ShowObjectifs  { get; private set; }
+    public bool ShowDashboard    { get; private set; }
+    public bool ShowVisites      { get; private set; }
+    public bool ShowPlanning     { get; private set; }
+    public bool ShowCatalogue    { get; private set; } = true;
+    public bool ShowOrders       { get; private set; }
+    public bool ShowDocuments    { get; private set; }
+    public bool ShowReclamations { get; private set; }
+    public bool ShowStock        { get; private set; }
+    public bool ShowObjectifs    { get; private set; }
 
     // ── User display info for flyout header ──────────────────────────────
     public string UserName     { get; private set; } = string.Empty;
@@ -36,27 +37,29 @@ public partial class AppShell : Shell
     public string UserRole     { get; private set; } = string.Empty;
 
     // ── Navigation commands ───────────────────────────────────────────────
-    public IAsyncRelayCommand GoToDashboardCommand  { get; }
-    public IAsyncRelayCommand GoToVisitesCommand    { get; }
-    public IAsyncRelayCommand GoToPlanningCommand   { get; }
-    public IAsyncRelayCommand GoToCatalogueCommand  { get; }
-    public IAsyncRelayCommand GoToOrdersCommand     { get; }
-    public IAsyncRelayCommand GoToDocumentsCommand  { get; }
-    public IAsyncRelayCommand GoToStockCommand      { get; }
-    public IAsyncRelayCommand GoToObjectifsCommand  { get; }
-    public IAsyncRelayCommand GoToProfileCommand    { get; }
+    public IAsyncRelayCommand GoToDashboardCommand    { get; }
+    public IAsyncRelayCommand GoToVisitesCommand      { get; }
+    public IAsyncRelayCommand GoToPlanningCommand     { get; }
+    public IAsyncRelayCommand GoToCatalogueCommand    { get; }
+    public IAsyncRelayCommand GoToOrdersCommand       { get; }
+    public IAsyncRelayCommand GoToDocumentsCommand    { get; }
+    public IAsyncRelayCommand GoToReclamationsCommand { get; }
+    public IAsyncRelayCommand GoToStockCommand        { get; }
+    public IAsyncRelayCommand GoToObjectifsCommand    { get; }
+    public IAsyncRelayCommand GoToProfileCommand      { get; }
 
     public AppShell()
     {
-        GoToDashboardCommand  = new AsyncRelayCommand(() => Navigate("//dashboard"));
-        GoToVisitesCommand    = new AsyncRelayCommand(() => Navigate("//visits"));
-        GoToPlanningCommand   = new AsyncRelayCommand(() => Navigate("//planning"));
-        GoToCatalogueCommand  = new AsyncRelayCommand(() => Navigate("//products"));
-        GoToOrdersCommand     = new AsyncRelayCommand(() => Navigate("//orders"));
-        GoToDocumentsCommand  = new AsyncRelayCommand(() => Navigate("//documents"));
-        GoToStockCommand      = new AsyncRelayCommand(() => Navigate("//stock"));
-        GoToObjectifsCommand  = new AsyncRelayCommand(() => Navigate("//objectifs"));
-        GoToProfileCommand    = new AsyncRelayCommand(() => Navigate("//profile"));
+        GoToDashboardCommand    = new AsyncRelayCommand(() => Navigate("//dashboard"));
+        GoToVisitesCommand      = new AsyncRelayCommand(() => Navigate("//visits"));
+        GoToPlanningCommand     = new AsyncRelayCommand(() => Navigate("//planning"));
+        GoToCatalogueCommand    = new AsyncRelayCommand(() => Navigate("//products"));
+        GoToOrdersCommand       = new AsyncRelayCommand(() => Navigate("//orders"));
+        GoToDocumentsCommand    = new AsyncRelayCommand(() => Navigate("//documents"));
+        GoToReclamationsCommand = new AsyncRelayCommand(() => Navigate("//reclamations"));
+        GoToStockCommand        = new AsyncRelayCommand(() => Navigate("//stock"));
+        GoToObjectifsCommand    = new AsyncRelayCommand(() => Navigate("//objectifs"));
+        GoToProfileCommand      = new AsyncRelayCommand(() => Navigate("//profile"));
 
         BindingContext = this;
         InitializeComponent();
@@ -88,19 +91,23 @@ public partial class AppShell : Shell
         bool isClient  = role is "PHARMACIEN" or "GROSSISTE" or "CLIENT";
         bool isMedecin = role is "MEDECIN";
 
-        ShowDashboard  = isDelegue;
-        ShowVisites    = isDelegue;
-        ShowPlanning   = isDelegue;
-        ShowCatalogue  = isDelegue || isClient || isMedecin;
-        ShowOrders     = isClient || isDelegue;
-        ShowDocuments  = isClient;
-        ShowStock      = isDelegue;
-        ShowObjectifs  = isDelegue;
+        ShowDashboard    = isDelegue;
+        ShowVisites      = isDelegue;
+        ShowPlanning     = isDelegue;
+        ShowCatalogue    = isDelegue || isClient || isMedecin;
+        ShowOrders       = isClient || isDelegue;
+        ShowDocuments    = isClient;
+        ShowReclamations = isClient;
+        ShowStock        = isDelegue;
+        ShowObjectifs    = isDelegue;
 
         // User display for flyout header (loaded from SecureStorage)
         _ = LoadUserInfoAsync();
 
         NotifyAll();
+
+        // Flyout disabled for MEDECIN (tab-bar-only UX: Catalogue + Profil)
+        Shell.SetFlyoutBehavior(this, isMedecin ? FlyoutBehavior.Disabled : FlyoutBehavior.Flyout);
 
         // Tab bar visibility — role-specific tabs; Catalogue and Profil tabs are always visible
         if (FlyoutDashboard  is not null) FlyoutDashboard.IsVisible  = isDelegue;
@@ -109,8 +116,9 @@ public partial class AppShell : Shell
         if (FlyoutOrders     is not null) FlyoutOrders.IsVisible     = isClient || isDelegue;
         if (FlyoutDocuments  is not null) FlyoutDocuments.IsVisible  = isClient;
         // Secondary page route accessibility (FlyoutItem, not in tab bar)
-        if (FlyoutStock      is not null) FlyoutStock.IsVisible      = isDelegue;
-        if (FlyoutObjectifs  is not null) FlyoutObjectifs.IsVisible  = isDelegue;
+        if (FlyoutStock        is not null) FlyoutStock.IsVisible        = isDelegue;
+        if (FlyoutObjectifs    is not null) FlyoutObjectifs.IsVisible    = isDelegue;
+        if (FlyoutReclamations is not null) FlyoutReclamations.IsVisible = isClient;
     }
 
     private async Task LoadUserInfoAsync()
@@ -152,6 +160,7 @@ public partial class AppShell : Shell
         OnPropertyChanged(nameof(ShowCatalogue));
         OnPropertyChanged(nameof(ShowOrders));
         OnPropertyChanged(nameof(ShowDocuments));
+        OnPropertyChanged(nameof(ShowReclamations));
         OnPropertyChanged(nameof(ShowStock));
         OnPropertyChanged(nameof(ShowObjectifs));
     }

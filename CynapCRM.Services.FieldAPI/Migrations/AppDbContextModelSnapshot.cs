@@ -109,6 +109,9 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     b.Property<int>("Id_Visite")
                         .HasColumnType("int");
 
+                    b.Property<int?>("IdSuperviseurValidateur")
+                        .HasColumnType("int");
+
                     b.Property<double?>("Latitude")
                         .HasColumnType("float");
 

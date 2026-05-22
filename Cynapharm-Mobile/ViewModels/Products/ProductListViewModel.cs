@@ -23,6 +23,7 @@
         public ObservableCollection<string>   Categories { get; } = new();
 
         [ObservableProperty] private bool _canSeePrices = true;
+        private bool _useVisibleEndpoint;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ShowSearchHint))]
@@ -76,6 +77,9 @@
             ClearError();
             var role = await SecureStorage.GetAsync(StorageKeys.UserRole) ?? string.Empty;
             CanSeePrices = role is not "MEDECIN";
+            // CLIENT and MEDECIN both use /products/visible (active + non-archived, server-filtered).
+            // DELEGUE/ADMIN use /products and filter archived client-side.
+            _useVisibleEndpoint = role is "MEDECIN" or "PHARMACIEN" or "GROSSISTE" or "CLIENT";
             await LoadCatalogueAsync();
             await LoadCategoriesAsync();
         }
@@ -135,13 +139,28 @@
                     return;
                 }
 
-                var result = await _productService.GetProductsAsync();
-                if (result != null)
+                // MEDECIN and CLIENT use /products/visible (active + non-archived, server-filtered).
+                // DELEGUE/ADMIN use /products and filter archived client-side.
+                List<Product>? result;
+                if (_useVisibleEndpoint)
                 {
-                    // Only exclude archived — inactive products still show with a badge
-                    _allProducts = result.Where(p => !p.IsArchived).ToList();
-                    await _localDb.SeedProductsAsync(_allProducts);
-                    IsOffline = false;
+                    result = await _productService.GetVisibleProductsAsync();
+                    if (result != null)
+                    {
+                        _allProducts = result;
+                        await _localDb.SeedProductsAsync(_allProducts);
+                        IsOffline = false;
+                    }
+                }
+                else
+                {
+                    result = await _productService.GetProductsAsync();
+                    if (result != null)
+                    {
+                        _allProducts = result.Where(p => !p.IsArchived).ToList();
+                        await _localDb.SeedProductsAsync(_allProducts);
+                        IsOffline = false;
+                    }
                 }
 
                 await ApplyFilterAsync(skipBusy: true);

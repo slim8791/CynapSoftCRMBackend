@@ -16,8 +16,11 @@
       <form *ngIf="!loadingData" [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
         <div class="form-grid">
           <div class="field">
-            <label>Délégué (ID) *</label>
-            <input type="number" formControlName="id_User_Delegue" placeholder="ID du délégué" />
+            <label>Délégué *</label>
+            <select formControlName="id_User_Delegue">
+              <option value="">-- Sélectionner un délégué --</option>
+              <option *ngFor="let d of delegues" [value]="d.id ?? d.Id">{{ userName(d) }}</option>
+            </select>
             <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Champ requis</span>
           </div>
           <div class="field">

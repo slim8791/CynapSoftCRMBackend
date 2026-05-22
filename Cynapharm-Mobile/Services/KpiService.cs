@@ -29,11 +29,23 @@ public class KpiService
     }
 
     /// <summary>
-    /// KPI performance now recalculates dynamically from DB — always call live, no cache.
-    /// Returns an empty list for roles that have no KPI endpoint.
+    /// Returns KPI performance indicators for the current delegue.
+    /// Endpoint: GET fields/kpi/performance/{idDelegue}?debut=yyyy-MM-dd&fin=yyyy-MM-dd
+    /// Returns empty list for non-DELEGUE roles.
     /// </summary>
-    public Task<List<Kpi>?> GetKpisAsync() =>
-        Task.FromResult<List<Kpi>?>(new List<Kpi>());
+    public async Task<List<Kpi>?> GetKpisAsync(DateTime? debut = null, DateTime? fin = null)
+    {
+        var role      = await SecureStorage.GetAsync(StorageKeys.UserRole);
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+
+        if (role != "DELEGUE" || !int.TryParse(userIdStr, out var userId))
+            return new List<Kpi>();
+
+        var debut_ = debut ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        var fin_   = fin   ?? DateTime.Now;
+        return await _api.GetAsync<List<Kpi>>(
+            $"fields/kpi/performance/{userId}?debut={debut_:yyyy-MM-dd}&fin={fin_:yyyy-MM-dd}");
+    }
 
     /// <summary>
     /// Conversion rate (%) for a delegue over a date range.

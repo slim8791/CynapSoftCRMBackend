@@ -166,15 +166,15 @@
           <!-- KPI récap -->
           <div class="stock-kpi-row">
             <div class="stock-kpi-item">
-              <span class="stock-kpi-label">Disponible (InventoryAPI)</span>
+              <span class="stock-kpi-label">Stock terrain</span>
               <span class="stock-kpi-val" [class.zero]="stockDisponible === 0">{{ stockDisponible }}</span>
             </div>
             <div class="stock-kpi-item">
-              <span class="stock-kpi-label">Total lots (ProductAPI)</span>
+              <span class="stock-kpi-label">Stock total</span>
               <span class="stock-kpi-val">{{ stock }}</span>
             </div>
             <div class="stock-kpi-item">
-              <span class="stock-kpi-label">Lignes stock délégué</span>
+              <span class="stock-kpi-label">Délégués assignés</span>
               <span class="stock-kpi-val">{{ inventoryStocks.length }}</span>
             </div>
           </div>
@@ -284,17 +284,17 @@
             </div>
           } @else {
             <div class="lot-list">
-              @for (lot of lots; track lot.Numero ?? lot.numero) {
+              @for (lot of lots; track lot.numero ?? lot.Numero) {
                 <div class="lot-row" [class.lot-expired]="(lot | lotStatus) === 'Expiré'">
                   <div class="lot-left">
-                    <span class="lot-num">{{ lot.Numero ?? lot.numero ?? 'N/A' }}</span>
+                    <span class="lot-num">{{ lot.numero ?? lot.Numero ?? 'N/A' }}</span>
                     <span class="lot-qty">
-                      <strong>{{ lot.Quantite ?? lot.quantite ?? 0 }}</strong> unité(s)
+                      <strong>{{ lot.quantite ?? lot.Quantite ?? 0 }}</strong> unités
                     </span>
                   </div>
                   <div class="lot-middle">
                     <span class="lot-exp">
-                      Exp. {{ (lot.DateExpiration ?? lot.dateExpiration) | date:'dd/MM/yyyy' }}
+                      Exp. {{ (lot.dateExpiration ?? lot.DateExpiration) | date:'dd/MM/yyyy' }}
                     </span>
                     @if (getLotExpirationWarning(lot)) {
                       <span class="lot-warning" [title]="getLotExpirationWarning(lot)">
@@ -306,6 +306,11 @@
                     <span class="lot-status-badge" [ngClass]="'badge-' + (lot | lotStatus | lowercase)">
                       {{ lot | lotStatus }}
                     </span>
+                    <a class="btn-xs-outline"
+                       [routerLink]="['/lots', lot.numero ?? lot.Numero]"
+                       title="Voir le lot">
+                      Voir
+                    </a>
                   </div>
                 </div>
               }

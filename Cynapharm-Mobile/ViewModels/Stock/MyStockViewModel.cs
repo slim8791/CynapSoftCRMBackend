@@ -108,6 +108,21 @@ public partial class MyStockViewModel : BaseViewModel
             return;
         }
 
+        // ── Ask for recipient before committing any local change ──────────────
+        var recipientType = await Shell.Current.DisplayActionSheet(
+            "Distribuer à", "Annuler", null, "Médecin", "Pharmacien");
+        if (recipientType is null or "Annuler") return;
+
+        var recipientIdStr = await Shell.Current.DisplayPromptAsync(
+            $"ID du {recipientType}",
+            $"Saisissez l'identifiant du {recipientType} :",
+            keyboard: Keyboard.Numeric);
+        if (!int.TryParse(recipientIdStr, out var recipientId)) return;
+
+        int? idMedecin    = recipientType == "Médecin"    ? recipientId : (int?)null;
+        int? idPharmacien = recipientType == "Pharmacien" ? recipientId : (int?)null;
+        // ─────────────────────────────────────────────────────────────────────
+
         ClearError();
 
         var success = await _localDb.DeductStockAsync(item.ProductId, 1);
@@ -126,7 +141,11 @@ public partial class MyStockViewModel : BaseViewModel
         {
             _ = Task.Run(async () =>
             {
-                try { await _inventoryService.PostDistributionAsync(item.ProductId, 1); }
+                try
+                {
+                    await _inventoryService.PostDistributionAsync(
+                        item.StockId, 1, item.NumeroLot, idMedecin, idPharmacien);
+                }
                 catch (Exception ex)
                 {
                     Logger?.LogError($"Distribution POST failed for product {item.ProductId}", ex, nameof(MyStockViewModel));
@@ -138,7 +157,7 @@ public partial class MyStockViewModel : BaseViewModel
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
             var snackbar = Snackbar.Make(
-                $"✅ 1 unité de \"{item.ProductNom}\" distribuée",
+                $"✅ 1 unité de \"{item.ProductNom}\" distribuée à {recipientType} #{recipientId}",
                 duration: TimeSpan.FromSeconds(3));
             await snackbar.Show();
         });
@@ -154,6 +173,8 @@ public partial class MyStockViewModel : BaseViewModel
             foreach (var s in _echantillonStock)
                 StockLines.Add(new StockDisplayItem
                 {
+                    StockId          = s.Id,
+                    NumeroLot        = s.NumeroLot,
                     ProductId        = s.ProductId,
                     ProductNom       = s.ProductNom,
                     QuantiteLabel    = $"Restant : {s.QuantiteRestante}",

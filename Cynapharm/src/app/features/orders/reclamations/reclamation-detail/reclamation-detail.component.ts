@@ -41,6 +41,6 @@ export class ReclamationDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 
-  getStatutLabel = (s?: string) => this.svc.getStatutLabel(s);
-  getStatutClass = (s?: string) => this.svc.getStatutClass(s);
+  getStatutLabel = (s?: string | number) => this.svc.getStatutLabel(s);
+  getStatutClass = (s?: string | number) => this.svc.getStatutClass(s);
 }

@@ -32,5 +32,8 @@ namespace CynapCRM.Services.FieldAPI.Models
 
         [Required]
         public int Id_User_Delegue { get; set; }
+
+        // Nullable: only set when a SUPERVISEUR validates the report
+        public int? IdSuperviseurValidateur { get; set; }
     }
 }

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Reclamations"
+             xmlns:models="clr-namespace:Cynapharm_Mobile.Models.Orders"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Reclamations.ReclamationListPage"
+             x:DataType="vm:ReclamationListViewModel"
+             Title="Réclamations"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
+              Padding="20,52,20,20">
+            <VerticalStackLayout Spacing="3">
+                <Label Text="Réclamations"
+                       FontSize="22" FontAttributes="Bold"
+                       FontFamily="OpenSansSemibold"
+                       TextColor="White" />
+                <Label Text="Suivi de vos réclamations"
+                       FontSize="12" TextColor="#CCF5FF" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Error banner -->
+        <controls:ErrorBanner Grid.Row="1"
+                              Message="{Binding ErrorMessage}"
+                              Margin="16,8,16,0" />
+
+        <ActivityIndicator Grid.Row="2"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="{StaticResource Primary}"
+                           HorizontalOptions="Center"
+                           Margin="0,6" />
+
+        <!-- ── List ───────────────────────────────────────────────────────── -->
+        <RefreshView Grid.Row="3"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     RefreshColor="{StaticResource Primary}">
+            <CollectionView ItemsSource="{Binding Reclamations}">
+
+                <CollectionView.Header>
+                    <BoxView HeightRequest="8" Color="Transparent" />
+                </CollectionView.Header>
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                         Spacing="16" Padding="40" Margin="0,40,0,0">
+                        <Border BackgroundColor="{StaticResource DangerLight}"
+                                StrokeShape="RoundRectangle 50" Stroke="Transparent"
+                                WidthRequest="80" HeightRequest="80" HorizontalOptions="Center">
+                            <Label Text="✅" FontSize="38"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="Aucune réclamation"
+                               FontSize="16" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               HorizontalOptions="Center" />
+                        <Label Text="Vous n'avez soumis aucune réclamation."
+                               FontSize="13" TextColor="{StaticResource TextMuted}"
+                               HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Reclamation">
+                        <Border Margin="16,0,16,10"
+                                BackgroundColor="{StaticResource CardBackground}"
+                                StrokeShape="RoundRectangle 16"
+                                Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                Padding="0">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06" />
+                            </Border.Shadow>
+                            <Grid ColumnDefinitions="5,*">
+                                <!-- Status accent bar -->
+                                <BoxView Grid.Column="0"
+                                         BackgroundColor="{StaticResource Secondary}"
+                                         VerticalOptions="Fill">
+                                    <BoxView.Triggers>
+                                        <DataTrigger TargetType="BoxView"
+                                                     Binding="{Binding Statut}" Value="EnCours">
+                                            <Setter Property="BackgroundColor" Value="#185FA5" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="BoxView"
+                                                     Binding="{Binding Statut}" Value="Resolue">
+                                            <Setter Property="BackgroundColor" Value="#2d7a4f" />
+                                        </DataTrigger>
+                                    </BoxView.Triggers>
+                                </BoxView>
+                                <VerticalStackLayout Grid.Column="1" Padding="14,14" Spacing="6">
+                                    <Label Text="{Binding Motif}"
+                                           FontAttributes="Bold" FontSize="14"
+                                           FontFamily="OpenSansSemibold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           LineBreakMode="WordWrap" />
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                        <Label Grid.Column="0" Text="📅" FontSize="11"
+                                               VerticalOptions="Center" />
+                                        <Label Grid.Column="1"
+                                               Text="{Binding DateCreation, StringFormat='Le {0:dd/MM/yyyy}'}"
+                                               FontSize="12"
+                                               TextColor="{StaticResource TextSecondary}"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+                                    <!-- Statut badge -->
+                                    <Border StrokeShape="RoundRectangle 8"
+                                            Stroke="Transparent"
+                                            Padding="10,4"
+                                            HorizontalOptions="Start"
+                                            BackgroundColor="{StaticResource SecondaryLight}">
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding Statut}" Value="EnCours">
+                                                <Setter Property="BackgroundColor" Value="#D6E8F7" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding Statut}" Value="Resolue">
+                                                <Setter Property="BackgroundColor" Value="#D4EDDA" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label Text="{Binding Statut}"
+                                               FontSize="11" FontAttributes="Bold">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label"
+                                                             Binding="{Binding Statut}" Value="Ouverte">
+                                                    <Setter Property="TextColor" Value="#854F0B" />
+                                                    <Setter Property="Text"      Value="Ouverte" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label"
+                                                             Binding="{Binding Statut}" Value="EnCours">
+                                                    <Setter Property="TextColor" Value="#185FA5" />
+                                                    <Setter Property="Text"      Value="En cours" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label"
+                                                             Binding="{Binding Statut}" Value="Resolue">
+                                                    <Setter Property="TextColor" Value="#2d7a4f" />
+                                                    <Setter Property="Text"      Value="Résolue" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="24" Color="Transparent" />
+                </CollectionView.Footer>
+
+            </CollectionView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

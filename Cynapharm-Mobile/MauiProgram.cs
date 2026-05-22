@@ -5,6 +5,7 @@ using Cynapharm_Mobile.ViewModels.Dashboard;
 using Cynapharm_Mobile.ViewModels.Documents;
 using Cynapharm_Mobile.ViewModels.Objectifs;
 using Cynapharm_Mobile.ViewModels.Orders;
+using Cynapharm_Mobile.ViewModels.Reclamations;
 using Cynapharm_Mobile.ViewModels.Planning;
 using Cynapharm_Mobile.ViewModels.Products;
 using Cynapharm_Mobile.ViewModels.Profile;
@@ -16,6 +17,7 @@ using Cynapharm_Mobile.Views.Dashboard;
 using Cynapharm_Mobile.Views.Documents;
 using Cynapharm_Mobile.Views.Objectifs;
 using Cynapharm_Mobile.Views.Orders;
+using Cynapharm_Mobile.Views.Reclamations;
 using Cynapharm_Mobile.Views.Planning;
 using Cynapharm_Mobile.Views.Products;
 using Cynapharm_Mobile.Views.Profile;
@@ -77,6 +79,7 @@ public static class MauiProgram
         builder.Services.AddHttpClient<ApiService>(client =>
         {
             client.BaseAddress = new Uri(baseUrl);
+            client.DefaultRequestHeaders.Add("X-Client-Type", "mobile");
             // HttpClient.Timeout must exceed TotalRequestTimeout — set to infinite and let
             // the resilience pipeline manage all timeouts through its own TotalRequestTimeout.
             client.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
@@ -141,6 +144,7 @@ public static class MauiProgram
         builder.Services.AddTransient<CreateOrderViewModel>();
         builder.Services.AddTransient<DocumentListViewModel>();
         builder.Services.AddTransient<DocumentDetailViewModel>();
+        builder.Services.AddTransient<ReclamationListViewModel>();
         builder.Services.AddTransient<ProfileViewModel>();
         builder.Services.AddTransient<EditProfileViewModel>();
         builder.Services.AddTransient<ChangePasswordViewModel>();
@@ -163,6 +167,7 @@ public static class MauiProgram
         builder.Services.AddTransient<CreateOrderPage>();
         builder.Services.AddTransient<DocumentListPage>();
         builder.Services.AddTransient<DocumentDetailPage>();
+        builder.Services.AddTransient<ReclamationListPage>();
         builder.Services.AddTransient<ProfilePage>();
         builder.Services.AddTransient<EditProfilePage>();
         builder.Services.AddTransient<ChangePasswordPage>();

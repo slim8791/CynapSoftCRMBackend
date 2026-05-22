@@ -4,11 +4,11 @@ public static class ApiRoutes
 {
     public static class Auth
     {
-        public const string Login          = "api/auth/login";
-        public const string ForgotPassword = "api/auth/forgot-password";
-        public const string ChangePassword  = "api/auth/change-password";
-        public const string UpdateProfile  = "api/auth/update-profile";
-        public const string Me             = "api/auth/me";
+        public const string Login          = "auth/login";
+        public const string ForgotPassword = "auth/forgot-password";
+        public const string ChangePassword = "auth/change-password";
+        public const string UpdateProfile  = "auth/update-profile";
+        public const string Me             = "auth/me";
     }
 
     public static class Products

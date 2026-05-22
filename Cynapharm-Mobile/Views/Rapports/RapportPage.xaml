@@ -7,150 +7,157 @@
              x:Class="Cynapharm_Mobile.Views.Rapports.RapportPage"
              x:DataType="vm:RapportViewModel"
              Title="{Binding Title}"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- ── Primary header ────────────────────────────────────────────── -->
-        <Grid Grid.Row="0"
-              BackgroundColor="{StaticResource Primary}"
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
               Padding="16,48,16,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="40" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="40" />
             </Grid.ColumnDefinitions>
-
-            <Label Grid.Column="0"
-                   Text="‹"
-                   FontSize="28" FontAttributes="Bold"
-                   TextColor="White"
-                   VerticalOptions="Center"
-                   Padding="0,0,8,0" />
-
-
-            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                <Label Text="Rapport de visite"
-                       FontSize="18" FontAttributes="Bold"
+            <Border Grid.Column="0"
+                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                    VerticalOptions="Center">
+                <Label Text="‹" FontSize="24" FontAttributes="Bold"
                        TextColor="White"
-                       HorizontalOptions="Center" />
-            </VerticalStackLayout>
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+            <Label Grid.Column="1"
+                   Text="Rapport de visite"
+                   FontSize="17" FontAttributes="Bold"
+                   FontFamily="OpenSansSemibold"
+                   TextColor="White"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
         </Grid>
 
         <!-- ── Body ──────────────────────────────────────────────────────── -->
         <ScrollView Grid.Row="1">
-            <VerticalStackLayout Padding="16" Spacing="16">
+            <VerticalStackLayout Padding="16,16,16,8" Spacing="14">
 
                 <controls:ErrorBanner Message="{Binding ErrorMessage}" />
-
                 <ActivityIndicator IsRunning="{Binding IsBusy}"
                                    IsVisible="{Binding IsBusy}"
                                    Color="{StaticResource Primary}"
                                    HorizontalOptions="Center" />
 
-                <!-- ── GPS indicator ──────────────────────────────────── -->
+                <!-- GPS status banner -->
                 <Border BackgroundColor="{StaticResource PrimaryLight}"
-                        Stroke="Transparent"
+                        StrokeShape="RoundRectangle 14"
+                        Stroke="{StaticResource Primary}" StrokeThickness="0.5"
                         Padding="14,12"
                         IsVisible="{Binding GeoStatus, Converter={StaticResource IsNotNullOrEmptyConverter}}">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="10" />
-                    </Border.StrokeShape>
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                        <ActivityIndicator Grid.Column="0"
-                                           IsRunning="{Binding IsCapturingLocation}"
-                                           IsVisible="{Binding IsCapturingLocation}"
-                                           Color="{StaticResource Primary}"
-                                           HeightRequest="18" WidthRequest="18" />
-                        <Label Grid.Column="0"
-                               Text="📍"
-                               FontSize="16"
-                               VerticalOptions="Center"
-                               IsVisible="{Binding IsCapturingLocation, Converter={StaticResource InvertedBoolConverter}}" />
+                    <Grid ColumnDefinitions="36,*" ColumnSpacing="12">
+                        <Border Grid.Column="0"
+                                BackgroundColor="{StaticResource Primary}"
+                                StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                WidthRequest="36" HeightRequest="36">
+                            <ActivityIndicator IsRunning="{Binding IsCapturingLocation}"
+                                               IsVisible="{Binding IsCapturingLocation}"
+                                               Color="White"
+                                               HeightRequest="18" WidthRequest="18"
+                                               HorizontalOptions="Center" VerticalOptions="Center" />
+                            <Label Text="📍" FontSize="17"
+                                   HorizontalOptions="Center" VerticalOptions="Center"
+                                   IsVisible="{Binding IsCapturingLocation, Converter={StaticResource InvertedBoolConverter}}" />
+                        </Border>
                         <Label Grid.Column="1"
                                Text="{Binding GeoStatus}"
-                               FontSize="13"
+                               FontSize="13" FontAttributes="Bold"
                                TextColor="{StaticResource PrimaryText}"
                                VerticalOptions="Center" />
                     </Grid>
                 </Border>
 
-                <!-- ── Report content card ────────────────────────────── -->
-                <Border Style="{StaticResource CardStyle}">
+                <!-- ── Report content ─────────────────────────────────────── -->
+                <Border Style="{StaticResource CardStyle}" Padding="16,14">
                     <VerticalStackLayout Spacing="16">
 
-                        <Label Text="Compte-rendu de visite"
-                               Style="{StaticResource SectionTitleStyle}" />
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                            <BoxView Grid.Column="0" BackgroundColor="{StaticResource Primary}"
+                                     CornerRadius="2" WidthRequest="4" />
+                            <Label Grid.Column="1" Text="Compte-rendu de visite"
+                                   FontSize="13" FontAttributes="Bold"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </Grid>
                         <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
 
-                        <!-- Content field -->
+                        <!-- Contenu -->
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="Contenu du rapport *"
-                                   FontSize="12"
+                            <Label Text="Contenu du rapport *" FontSize="12" FontAttributes="Bold"
                                    TextColor="{StaticResource TextSecondary}" />
-                            <Border Stroke="{StaticResource BorderColor}"
-                                    BackgroundColor="{StaticResource SurfaceBackground}"
-                                    StrokeThickness="1"
-                                    Padding="12,10">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="10" />
-                                </Border.StrokeShape>
+                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                    StrokeShape="RoundRectangle 12"
+                                    Stroke="{StaticResource FieldBorderInactive}"
+                                    StrokeThickness="1.5" Padding="14,12">
                                 <Editor Placeholder="Décrivez le déroulement de la visite…"
                                         Text="{Binding Contenu}"
-                                        MinimumHeightRequest="100"
+                                        MinimumHeightRequest="110"
                                         BackgroundColor="Transparent"
                                         TextColor="{StaticResource TextPrimary}"
                                         PlaceholderColor="{StaticResource TextMuted}" />
                             </Border>
                             <Label Text="{Binding ContenuError}"
-                                   TextColor="{StaticResource Danger}"
-                                   FontSize="12"
+                                   TextColor="{StaticResource Danger}" FontSize="12"
                                    IsVisible="{Binding ContenuError, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
-                            <Label Text="Minimum 20 caractères"
-                                   FontSize="11"
-                                   TextColor="{StaticResource TextMuted}" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="Minimum 20 caractères"
+                                       FontSize="11" TextColor="{StaticResource TextMuted}" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Contenu.Length, StringFormat='{0} car.'}"
+                                       FontSize="11" TextColor="{StaticResource TextMuted}" />
+                            </Grid>
                         </VerticalStackLayout>
 
-                        <!-- Result selector -->
+                        <!-- Résultat -->
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="Résultat *"
-                                   FontSize="12"
+                            <Label Text="Résultat *" FontSize="12" FontAttributes="Bold"
                                    TextColor="{StaticResource TextSecondary}" />
-                            <Border Stroke="{StaticResource BorderColor}"
-                                    BackgroundColor="{StaticResource SurfaceBackground}"
-                                    StrokeThickness="1"
-                                    Padding="12,0" HeightRequest="48">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="10" />
-                                </Border.StrokeShape>
-                                <Picker ItemsSource="{Binding ResultatOptions}"
-                                        SelectedItem="{Binding Resultat}"
-                                        BackgroundColor="Transparent"
-                                        TextColor="{StaticResource TextPrimary}"
-                                        VerticalOptions="Center" />
+                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                    StrokeShape="RoundRectangle 12"
+                                    Stroke="{StaticResource FieldBorderInactive}"
+                                    StrokeThickness="1.5" Padding="14,0" HeightRequest="52">
+                                <Grid ColumnDefinitions="22,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="📊" FontSize="17"
+                                           VerticalOptions="Center" />
+                                    <Picker Grid.Column="1"
+                                            ItemsSource="{Binding ResultatOptions}"
+                                            SelectedItem="{Binding Resultat}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{StaticResource TextPrimary}"
+                                            VerticalOptions="Center" />
+                                </Grid>
                             </Border>
                         </VerticalStackLayout>
-
-                        <!-- Char count -->
-                        <Label Text="{Binding Contenu.Length, StringFormat='{0} caractère(s)'}"
-                               TextColor="{StaticResource TextMuted}"
-                               FontSize="11"
-                               HorizontalOptions="End" />
 
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- ── Products discussed card ───────────────────────── -->
-                <Border Style="{StaticResource CardStyle}">
+                <!-- ── Products discussed ─────────────────────────────────── -->
+                <Border Style="{StaticResource CardStyle}" Padding="16,14">
                     <VerticalStackLayout Spacing="12">
 
-                        <Label Text="Produits discutés"
-                               Style="{StaticResource SectionTitleStyle}" />
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                            <BoxView Grid.Column="0" BackgroundColor="{StaticResource Secondary}"
+                                     CornerRadius="2" WidthRequest="4" />
+                            <Label Grid.Column="1" Text="Produits discutés"
+                                   FontSize="13" FontAttributes="Bold"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </Grid>
                         <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
 
                         <Label Text="Sélectionnez les produits abordés lors de cette visite"
-                               FontSize="13"
-                               TextColor="{StaticResource TextSecondary}" />
+                               FontSize="13" TextColor="{StaticResource TextSecondary}" />
 
                         <CollectionView ItemsSource="{Binding ProduitsDiscutes}"
                                         SelectionMode="None">
@@ -161,16 +168,16 @@
                             </CollectionView.EmptyView>
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="products:ProductCheckItem">
-                                    <Border Margin="0,3" Padding="10,8"
+                                    <Border Margin="0,0,0,6" Padding="12,10"
                                             BackgroundColor="{StaticResource SurfaceBackground}"
                                             Stroke="{StaticResource BorderColor}"
-                                            StrokeThickness="1">
+                                            StrokeThickness="1.5">
                                         <Border.StrokeShape>
-                                            <RoundRectangle CornerRadius="8" />
+                                            <RoundRectangle CornerRadius="12" />
                                         </Border.StrokeShape>
                                         <Border.Triggers>
                                             <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                                <Setter Property="Stroke" Value="{StaticResource Primary}" />
+                                                <Setter Property="Stroke"          Value="{StaticResource Primary}" />
                                                 <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}" />
                                             </DataTrigger>
                                         </Border.Triggers>
@@ -183,8 +190,8 @@
                                                        FontSize="14" FontAttributes="Bold"
                                                        TextColor="{StaticResource TextPrimary}" />
                                                 <Label Text="{Binding ProductReference}"
-                                                       FontSize="11"
-                                                       TextColor="{StaticResource TextSecondary}" />
+                                                       FontSize="11" TextColor="{StaticResource TextSecondary}"
+                                                       IsVisible="{Binding ProductReference, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
                                             </VerticalStackLayout>
                                         </Grid>
                                     </Border>
@@ -195,30 +202,37 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- ── Submit button ──────────────────────────────────── -->
-                <Button Text="Soumettre le rapport"
-                        Command="{Binding SubmitCommand}"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        IsEnabled="{Binding CanSubmit}">
-                    <Button.Triggers>
-                        <DataTrigger TargetType="Button"
-                                     Binding="{Binding CanSubmit}"
-                                     Value="False">
-                            <Setter Property="Opacity" Value="0.45" />
-                        </DataTrigger>
-                    </Button.Triggers>
-                </Button>
-
-                <Label Text="Le rapport doit contenir au moins 20 caractères avant d'être soumis."
-                       FontSize="12"
-                       TextColor="{StaticResource TextSecondary}"
-                       HorizontalOptions="Center"
-                       HorizontalTextAlignment="Center"
-                       IsVisible="{Binding CanSubmit, Converter={StaticResource InvertedBoolConverter}}"
-                       Margin="0,0,0,24" />
+                <!-- Hint when disabled -->
+                <Border BackgroundColor="{StaticResource SecondaryLight}"
+                        StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                        Padding="14,10"
+                        IsVisible="{Binding CanSubmit, Converter={StaticResource InvertedBoolConverter}}">
+                    <Label Text="Le rapport doit contenir au moins 20 caractères avant d'être soumis."
+                           FontSize="12" FontAttributes="Bold"
+                           TextColor="{StaticResource SecondaryText}"
+                           HorizontalTextAlignment="Center"
+                           HorizontalOptions="Center" />
+                </Border>
 
             </VerticalStackLayout>
         </ScrollView>
+
+        <!-- ── Sticky submit ─────────────────────────────────────────────── -->
+        <Grid Grid.Row="2" BackgroundColor="{StaticResource CardBackground}">
+            <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}"
+                     VerticalOptions="Start" />
+            <Button Text="Soumettre le rapport"
+                    Command="{Binding SubmitCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Margin="16,12,16,28"
+                    IsEnabled="{Binding CanSubmit}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding CanSubmit}" Value="False">
+                        <Setter Property="Opacity" Value="0.45" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+        </Grid>
 
     </Grid>
 </ContentPage>

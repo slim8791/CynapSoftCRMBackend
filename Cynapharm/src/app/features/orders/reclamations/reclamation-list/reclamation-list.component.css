@@ -27,6 +27,12 @@
 .chip-success { background: #d1fae5; color: #065f46; }
 .status-select { font-size: 12px; border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 8px; background: white; cursor: pointer; }
 .status-select:disabled { opacity: 0.5; }
+.transition-btn { padding: 5px 12px; font-size: 12px; font-weight: 600; border: none; border-radius: 7px; cursor: pointer; background: #eff6ff; color: #1d4ed8; transition: background 0.15s; white-space: nowrap; }
+.transition-btn:hover:not(:disabled) { background: #dbeafe; }
+.transition-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.transition-btn--resolve { background: #f0fdf4; color: #166534; }
+.transition-btn--resolve:hover:not(:disabled) { background: #dcfce7; }
+.resolved-tag { font-size: 11px; font-weight: 600; color: #065f46; background: #d1fae5; padding: 3px 10px; border-radius: 20px; }
 .act-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 6px; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: #6b7280; }
 .act-btn svg { width: 15px; height: 15px; }
 .act-btn.view:hover   { background: #dbeafe; color: #1e40af; }

@@ -159,6 +159,7 @@
 
 .ol-table tr:last-child td { border-bottom: none; }
 .ol-table tr:hover td { background: #f8fafc; }
+.row-annulee td { opacity: 0.6; }
 
 /* ── Cell variants ───────────────────────────────────── */
 .col-id {
@@ -232,12 +233,6 @@
 .act-btn.status-btn-open   { border-color: #8b5cf6; background: #f5f3ff; color: #7c3aed; }
 
 /* ── Status change dropdown ──────────────────────────── */
-.status-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-}
-
 .status-dropdown-wrap {
   position: relative;
   display: inline-block;

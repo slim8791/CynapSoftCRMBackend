@@ -31,12 +31,13 @@ namespace CynapCRM.Services.FieldAPI.Service
             {
                 objectif = new Objectif_Delegue
                 {
-                    Type = dto.Type,
-                    ValeurCible = dto.ValeurCible,
-                    ValeurRealisee = 0,
-                    Periode = dto.Periode,
-                    //Ownership guaranteed (injected from the JWT into the controller)
-                    Id_User_Delegue = dto.Id_User_Delegue
+                    Type            = dto.Type,
+                    ValeurCible     = dto.ValeurCible,
+                    ValeurRealisee  = 0,
+                    Periode         = dto.Periode,
+                    Id_User_Delegue = dto.Id_User_Delegue,
+                    DateDebut       = dto.DateDebut ?? DateTime.UtcNow,
+                    DateFin         = dto.DateFin   ?? DateTime.UtcNow
                 };
 
                 _db.Objectifs.Add(objectif);
@@ -52,10 +53,11 @@ namespace CynapCRM.Services.FieldAPI.Service
                 if (objectif == null)
                     return null;
 
-                // Editable fields
-                objectif.Type = dto.Type;
+                objectif.Type       = dto.Type;
                 objectif.ValeurCible = dto.ValeurCible;
-                objectif.Periode = dto.Periode;
+                objectif.Periode    = dto.Periode;
+                if (dto.DateDebut.HasValue) objectif.DateDebut = dto.DateDebut.Value;
+                if (dto.DateFin.HasValue)   objectif.DateFin   = dto.DateFin.Value;
             }
             await _db.SaveChangesAsync();
             return _mapper.Map<ObjectifDelegueDto>(objectif);

@@ -38,7 +38,7 @@
     <Style TargetType="Button">
         <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
         <Setter Property="TextColor"       Value="White" />
-        <Setter Property="CornerRadius"    Value="10" />
+        <Setter Property="CornerRadius"    Value="12" />
         <Setter Property="HeightRequest"   Value="50" />
         <Setter Property="FontAttributes"  Value="Bold" />
         <Setter Property="FontSize"        Value="15" />
@@ -52,7 +52,7 @@
         <Setter Property="StrokeThickness" Value="1" />
         <Setter Property="StrokeShape">
             <Setter.Value>
-                <RoundRectangle CornerRadius="16" />
+                <RoundRectangle CornerRadius="14" />
             </Setter.Value>
         </Setter>
         <Setter Property="Padding" Value="14" />
@@ -72,7 +72,7 @@
         <Setter Property="FontAttributes"  Value="Bold" />
         <Setter Property="FontSize"        Value="15" />
         <Setter Property="HeightRequest"   Value="50" />
-        <Setter Property="CornerRadius"    Value="10" />
+        <Setter Property="CornerRadius"    Value="12" />
         <Setter Property="Margin"          Value="0,8,0,0" />
     </Style>
 
@@ -83,7 +83,7 @@
         <Setter Property="BorderWidth"     Value="1" />
         <Setter Property="FontSize"        Value="14" />
         <Setter Property="HeightRequest"   Value="44" />
-        <Setter Property="CornerRadius"    Value="10" />
+        <Setter Property="CornerRadius"    Value="12" />
     </Style>
 
     <!-- Danger button -->
@@ -95,7 +95,7 @@
         <Setter Property="FontSize"        Value="14" />
         <Setter Property="FontAttributes"  Value="Bold" />
         <Setter Property="HeightRequest"   Value="48" />
-        <Setter Property="CornerRadius"    Value="10" />
+        <Setter Property="CornerRadius"    Value="12" />
     </Style>
 
     <!-- ── Typography helpers ──────────────────────────────────────────── -->

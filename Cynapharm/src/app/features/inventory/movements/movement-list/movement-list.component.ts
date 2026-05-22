@@ -15,11 +15,15 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
   styleUrls: ['./movement-list.component.css']
 })
 export class MovementListComponent implements OnInit, OnDestroy {
+  allMovements: StockMovementDto[] = [];
   movements: StockMovementDto[] = [];
   loading = false;
   error = '';
   filterStockId: number | null = null;
   activeStockId: number | null = null;
+  dateDebut = '';
+  dateFin = '';
+  typeMovement = '';
 
   private destroy$ = new Subject<void>();
 
@@ -43,7 +47,12 @@ export class MovementListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = '';
     this.svc.getMovements(this.activeStockId).pipe(takeUntil(this.destroy$)).subscribe({
-      next: data => { this.movements = data; this.loading = false; this.cdr.markForCheck(); },
+      next: data => {
+        this.allMovements = data;
+        this.applyClientFilters();
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
       error: () => { this.error = 'Impossible de charger les mouvements.'; this.loading = false; this.cdr.markForCheck(); }
     });
   }
@@ -51,8 +60,33 @@ export class MovementListComponent implements OnInit, OnDestroy {
   clearFilter(): void {
     this.filterStockId = null;
     this.activeStockId = null;
+    this.dateDebut = '';
+    this.dateFin = '';
+    this.typeMovement = '';
+    this.allMovements = [];
     this.movements = [];
     this.error = '';
+  }
+
+  applyClientFilters(): void {
+    let result = this.allMovements;
+
+    if (this.dateDebut) {
+      const start = new Date(`${this.dateDebut}T00:00:00`);
+      result = result.filter(m => m.dateMovement && new Date(m.dateMovement) >= start);
+    }
+
+    if (this.dateFin) {
+      const end = new Date(`${this.dateFin}T23:59:59`);
+      result = result.filter(m => m.dateMovement && new Date(m.dateMovement) <= end);
+    }
+
+    if (this.typeMovement) {
+      result = result.filter(m => m.typeMovement?.toLowerCase() === this.typeMovement.toLowerCase());
+    }
+
+    this.movements = result;
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }

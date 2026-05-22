@@ -148,6 +148,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
             Id_Produit:    raw?.id_Produit    ?? raw?.Id_Produit,
             Nom:           raw?.nom           ?? raw?.Nom,
             Description:   raw?.description   ?? raw?.Description,
+            Categorie:     raw?.categorie     ?? raw?.Categorie     ?? '',
             Prix_Vente:    raw?.prixVente     ?? raw?.PrixVente     ?? 0,
             Prix_Creation: raw?.prix_Creation ?? raw?.Prix_Creation ?? 0,
             TVA:           raw?.tva           ?? raw?.TVA           ?? 0,

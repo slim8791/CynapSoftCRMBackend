@@ -174,10 +174,12 @@
                   <td>
                     <span class="chip" [ngClass]="getRecClass(r.Statut)">{{ getRecLabel(r.Statut) }}</span>
                   </td>
-                  @if (isAdmin) {
+                  @if (isAdmin && canDeleteReclamation(r)) {
                     <td>
                       <button class="act-btn delete" (click)="onDeleteRec(r.Id_Rec)" title="Supprimer">🗑</button>
                     </td>
+                  } @else if (isAdmin) {
+                    <td></td>
                   }
                 </tr>
               }

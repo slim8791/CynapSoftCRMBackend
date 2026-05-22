@@ -7,20 +7,29 @@ public class OrderService
     private readonly ApiService _api;
     public OrderService(ApiService api) { _api = api; }
 
-    public Task<List<Order>?> GetOrdersAsync(string? status, int page = 1, int size = 20)
-        => _api.GetAsync<List<Order>>($"orders?status={status}&page={page}&size={size}");
-
-    /// <summary>GET orders/by-status?statut={status}&page={page}&pageSize={size}</summary>
-    public Task<List<Order>?> GetOrdersByStatusAsync(string? status, int page = 1, int size = 20)
+    /// <summary>GET orders?page={page}&amp;pageSize={pageSize}&amp;statut={statut} — DELEGUE/ADMIN/SUPERVISEUR</summary>
+    public Task<List<Order>?> GetOrdersAsync(int? statut = null, int page = 1, int pageSize = 20)
     {
-        var url = $"{ApiRoutes.Orders.ByStatus}?page={page}&pageSize={size}";
-        if (!string.IsNullOrEmpty(status)) url += $"&statut={status}";
+        var url = $"orders?page={page}&pageSize={pageSize}";
+        if (statut.HasValue) url += $"&statut={statut.Value}";
         return _api.GetAsync<List<Order>>(url);
     }
 
-    /// <summary>GET orders/by-client/{id}?page={page}&pageSize={size}</summary>
-    public Task<List<Order>?> GetOrdersByClientAsync(int clientId, int page = 1, int size = 20)
-        => _api.GetAsync<List<Order>>($"{ApiRoutes.Orders.ByClient}/{clientId}?page={page}&pageSize={size}");
+    /// <summary>GET orders/by-status?statut={statut}&amp;page={page}&amp;pageSize={size}</summary>
+    public Task<List<Order>?> GetOrdersByStatusAsync(int? statut, int page = 1, int size = 20)
+    {
+        var url = $"{ApiRoutes.Orders.ByStatus}?page={page}&pageSize={size}";
+        if (statut.HasValue) url += $"&statut={statut.Value}";
+        return _api.GetAsync<List<Order>>(url);
+    }
+
+    /// <summary>GET orders/by-client/{id}?page={page}&amp;pageSize={size}[&amp;statut={statut}]</summary>
+    public Task<List<Order>?> GetOrdersByClientAsync(int clientId, int? statut = null, int page = 1, int size = 20)
+    {
+        var url = $"{ApiRoutes.Orders.ByClient}/{clientId}?page={page}&pageSize={size}";
+        if (statut.HasValue) url += $"&statut={statut.Value}";
+        return _api.GetAsync<List<Order>>(url);
+    }
 
     public Task<Order?> GetOrderByIdAsync(int id)
         => _api.GetAsync<Order>($"orders/{id}");
@@ -45,4 +54,8 @@ public class OrderService
 
     public Task<List<Reclamation>?> GetReclamationsAsync(int? orderId)
         => _api.GetAsync<List<Reclamation>>($"orders/reclamations?orderId={orderId}");
+
+    /// <summary>GET orders/reclamations/by-client/{clientId} — all reclamations for a client</summary>
+    public Task<List<Reclamation>?> GetReclamationsByClientAsync(int clientId)
+        => _api.GetAsync<List<Reclamation>>($"orders/reclamations/by-client/{clientId}");
 }

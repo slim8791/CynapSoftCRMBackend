@@ -53,7 +53,8 @@ h1 {
   letter-spacing: 0.04em;
 }
 
-.search-field input {
+.search-field input,
+.search-field select {
   padding: 11px 14px;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -66,7 +67,8 @@ h1 {
   outline: none;
 }
 
-.search-field input:focus {
+.search-field input:focus,
+.search-field select:focus {
   border-color: #00b4d8;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(0,180,216,0.1);

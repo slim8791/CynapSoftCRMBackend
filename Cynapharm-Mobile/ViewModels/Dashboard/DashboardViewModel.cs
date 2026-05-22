@@ -63,9 +63,10 @@ public partial class DashboardViewModel : BaseViewModel
 
         try
         {
-            var today = DateTime.Today;
+            var today      = DateTime.Today;
+            var monthStart = new DateTime(today.Year, today.Month, 1);
 
-            var kpis = await _kpiService.GetKpisAsync();
+            var kpis = await _kpiService.GetKpisAsync(monthStart, today);
             KpiItems.Clear();
             if (kpis != null)
             {

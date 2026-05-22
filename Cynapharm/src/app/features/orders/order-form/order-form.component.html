@@ -21,9 +21,16 @@
 
               <div class="ligne-fields">
                 <div class="field-sm">
-                  <label class="label">ID Produit *</label>
-                  <input type="number" formControlName="Id_Produit" class="input"
-                         [class.invalid]="inv($any(ligne), 'Id_Produit')" min="1" placeholder="Ex: 5">
+                  <label class="label">Produit *</label>
+                  <select formControlName="Id_Produit" class="input"
+                          [class.invalid]="inv($any(ligne), 'Id_Produit')">
+                    <option value="">-- Sélectionner --</option>
+                    @for (p of products; track productId(p)) {
+                      <option [value]="productId(p)">
+                        {{ productName(p) }} — {{ productPrice(p) | currency:'TND' }}
+                      </option>
+                    }
+                  </select>
                 </div>
                 <div class="field-sm">
                   <label class="label">Quantité *</label>

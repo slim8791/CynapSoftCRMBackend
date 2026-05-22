@@ -2,6 +2,10 @@ namespace Cynapharm_Mobile.Models.Inventory;
 
 public class StockDisplayItem
 {
+    // Backend stock identifier — required to build the correct EchantillonDto on distribution
+    public int StockId { get; set; }
+    public string NumeroLot { get; set; } = string.Empty;
+
     public int ProductId { get; set; }
     public string ProductNom { get; set; } = string.Empty;
     public string QuantiteLabel { get; set; } = string.Empty;

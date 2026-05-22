@@ -137,7 +137,7 @@
               id="Prix_Vente"
               formControlName="Prix_Vente"
               class="form-control has-prefix"
-              [class.is-invalid]="isInvalid('Prix_Vente')"
+              [class.is-invalid]="isInvalid('Prix_Vente') || hasPriceOrderError"
               placeholder="0.000"
               (input)="formatDecimal($event, 'Prix_Vente')" />
           </div>
@@ -162,7 +162,7 @@
               id="Prix_Creation"
               formControlName="Prix_Creation"
               class="form-control has-prefix"
-              [class.is-invalid]="isInvalid('Prix_Creation')"
+              [class.is-invalid]="isInvalid('Prix_Creation') || hasPriceOrderError"
               placeholder="0.000"
               (input)="formatDecimal($event, 'Prix_Creation')" />
           </div>
@@ -203,6 +203,16 @@
         </div>
 
       </div>
+
+      @if (hasPriceOrderError) {
+        <div class="field-error">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Le prix de vente ne peut pas être inférieur au prix de création.
+        </div>
+      }
 
       <hr class="section-divider" />
 

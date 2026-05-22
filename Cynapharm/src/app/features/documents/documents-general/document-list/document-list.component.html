@@ -25,7 +25,7 @@
             <tr>
               <td class="mono">{{ d.numeroDoc }}</td>
               <td>{{ d.type }}</td>
-              <td>#{{ d.id_Client }}</td>
+              <td>{{ clientName(d.id_Client) }}</td>
               <td>{{ d.id_Commande ? '#' + d.id_Commande : '—' }}</td>
               <td>{{ d.dateDocument | date:'dd/MM/yy' }}</td>
             </tr>

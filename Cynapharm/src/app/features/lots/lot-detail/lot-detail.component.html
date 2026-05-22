@@ -36,7 +36,7 @@
         </div>
 
         <div class="detail-item">
-          <span class="detail-label">Quantité (ProductAPI)</span>
+          <span class="detail-label">Quantité</span>
           <span class="detail-val">{{ lot.quantite }}</span>
         </div>
 
@@ -46,26 +46,22 @@
         </div>
 
         <div class="detail-item">
-          <span class="detail-label">ID Produit</span>
-          <span class="detail-val">{{ lot.idProduit }}</span>
+          <span class="detail-label">Produit</span>
+          <span class="detail-val">
+            {{ productName || 'Chargement…' }}
+            <span class="detail-val-hint">#{{ lot.idProduit }}</span>
+          </span>
         </div>
 
-        <!-- Champs calculés backend : affichage uniquement, jamais modifiables -->
         <div class="detail-item">
-          <span class="detail-label">
-            Expiré
-            <span class="computed-tag" title="Calculé par le backend">backend</span>
-          </span>
+          <span class="detail-label">Expiré</span>
           <span [class]="lot.isExpired ? 'flag-true' : 'flag-false'">
             {{ lot.isExpired ? 'Oui' : 'Non' }}
           </span>
         </div>
 
         <div class="detail-item">
-          <span class="detail-label">
-            Rupture de stock
-            <span class="computed-tag" title="Calculé par le backend">backend</span>
-          </span>
+          <span class="detail-label">Rupture de stock</span>
           <span [class]="lot.isOutOfStock ? 'flag-true' : 'flag-false'">
             {{ lot.isOutOfStock ? 'Oui' : 'Non' }}
           </span>
@@ -74,15 +70,22 @@
         <!-- Affichage de la promotion -->
         <div class="detail-item">
           <span class="detail-label">Promotion</span>
-          <span class="detail-val">{{ getFormattedPromotion() }}</span>
+          @if (lot.promotions && lot.promotions.length > 0) {
+            <span class="detail-val">{{ getFormattedPromotion() }}</span>
+          } @else {
+            <span class="detail-val detail-val--empty">Aucune promotion</span>
+            <span class="detail-hint">
+              Cliquez sur « Ajouter une promotion » pour associer une réduction à ce lot.
+            </span>
+          }
         </div>
 
       </div>
 
 
-      <!-- ── Stock InventoryAPI ────────────────────────────────────────── -->
+      <!-- ── Stock délégué ─────────────────────────────────────────────── -->
       <div class="inv-section">
-        <h3 class="section-title">Stock InventoryAPI (temps réel)</h3>
+        <h3 class="section-title">Stock délégué (temps réel)</h3>
 
         @if (loadingInventory) {
           <div class="inv-loading" aria-busy="true">
@@ -115,8 +118,9 @@
               <span class="inv-kpi-val reserved">{{ inventoryStock.qteReservee }}</span>
             </div>
             <div class="inv-kpi">
-              <span class="inv-kpi-label">Délégué (ID)</span>
-              <span class="inv-kpi-val">{{ inventoryStock.id_User_Delegue }}</span>
+              <span class="inv-kpi-label">Délégué</span>
+              <span class="inv-kpi-val inv-kpi-val--name">{{ delegueName || 'Chargement…' }}</span>
+              <span class="inv-kpi-hint">#{{ inventoryStock.id_User_Delegue }}</span>
             </div>
             <div class="inv-kpi">
               <span class="inv-kpi-label">Statut stock</span>
@@ -133,8 +137,24 @@
         <button class="btn btn-secondary" (click)="onBackToList()">
           ← Retour à la liste
         </button>
-        <app-button label="Modifier"  variant="primary" (clicked)="onEdit()"></app-button>
-        <app-button label="Supprimer" variant="danger"  (clicked)="onDelete()"></app-button>
+
+        <span class="btn-tooltip-wrap"
+              [title]="isEditDisabled() ? 'Impossible de modifier un lot expiré.' : ''">
+          <app-button
+            label="Modifier"
+            variant="primary"
+            [disabled]="isEditDisabled()"
+            (clicked)="onEdit()"></app-button>
+        </span>
+
+        <span class="btn-tooltip-wrap"
+              [title]="isDeleteDisabled() ? 'Impossible de supprimer un lot avec du stock disponible.' : ''">
+          <app-button
+            label="Supprimer"
+            variant="danger"
+            [disabled]="isDeleteDisabled()"
+            (clicked)="onDelete()"></app-button>
+        </span>
 
         @if (canManagePromo) {
           <button class="btn btn-promo" (click)="openPromoModal()"

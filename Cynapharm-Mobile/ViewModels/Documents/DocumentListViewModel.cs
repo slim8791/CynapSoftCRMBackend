@@ -68,6 +68,20 @@ public partial class DocumentListViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task OpenDocumentAsync(DocumentSummary? doc)
+    {
+        if (doc == null || string.IsNullOrWhiteSpace(doc.Url)) return;
+        try
+        {
+            await Launcher.OpenAsync(new Uri(doc.Url));
+        }
+        catch
+        {
+            await Shell.Current.DisplayAlert("Erreur", "Impossible d'ouvrir le document.", "OK");
+        }
+    }
+
+    [RelayCommand]
     private void SetTypeIndex(string index)
     {
         if (int.TryParse(index, out var i)) SelectedTypeIndex = i;

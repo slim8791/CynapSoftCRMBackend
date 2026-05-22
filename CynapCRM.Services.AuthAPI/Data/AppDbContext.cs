@@ -1,16 +1,19 @@
 ﻿using CynapCRM.Services.AuthAPI.Models;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CynapCRM.Services.AuthAPI.Data
 {
-    public class AppDbContext : IdentityDbContext<Utilisateur, IdentityRole<int>, int>
+    public class AppDbContext : IdentityDbContext<Utilisateur, IdentityRole<int>, int>, IDataProtectionKeyContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
 
         }
+
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

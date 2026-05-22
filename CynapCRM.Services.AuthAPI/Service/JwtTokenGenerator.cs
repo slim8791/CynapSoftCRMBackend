@@ -21,7 +21,9 @@ namespace CynapCRM.Services.AuthAPI.Service
         public string GenerateToken(Utilisateur user, IEnumerable<string> roles)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_jwtOptions.Secret);
+            // FIX 11: env var takes precedence over appsettings secret
+            var secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? _jwtOptions.Secret;
+            var key = Encoding.UTF8.GetBytes(secret);
 
             var claims = new List<Claim>
     {

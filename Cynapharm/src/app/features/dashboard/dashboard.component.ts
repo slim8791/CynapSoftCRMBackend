@@ -118,10 +118,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.commandesEnAttente  = stats.countEnAttente;
     this.caTotal             = stats.totalCA;
 
-    // Taux de livraison = Livrées / (Total - Annulées) × 100
-    const denominator = stats.totalOrders - stats.countAnnulees;
-    this.tauxLivraison = denominator > 0
-      ? Math.round((stats.countLivrees / denominator) * 100)
+    // Taux de livraison = Livrées / total commandes × 100
+    this.tauxLivraison = stats.totalOrders > 0
+      ? Math.round((stats.countLivrees / stats.totalOrders) * 100)
       : 0;
 
     // Barres horizontales : commandes par statut

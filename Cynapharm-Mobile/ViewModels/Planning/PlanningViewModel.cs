@@ -68,7 +68,7 @@ public partial class PlanningViewModel : BaseViewModel
 
     [RelayCommand]
     private async Task AddVisitAsync(DateTime date)
-        => await Shell.Current.GoToAsync("///visits/detail");
+        => await Shell.Current.GoToAsync("//visits/detail");
 }
 
 public class PlanningDayGroup

@@ -63,6 +63,16 @@ public class ProductService
         return _api.GetAsync<List<Promotion>>(url);
     }
 
+    /// <summary>GET products/visible — active, non-archived products only (MEDECIN endpoint).</summary>
+    public async Task<List<Product>?> GetVisibleProductsAsync()
+    {
+        var result = await _api.GetAsync<List<Product>>("products/visible");
+        if (result != null)
+            foreach (var p in result)
+                p.ImageUrl ??= ExtractImageUrl(p);
+        return result;
+    }
+
     public Task<List<string>?> GetCategoriesAsync()
         => _api.GetAsync<List<string>>("products/categories");
 

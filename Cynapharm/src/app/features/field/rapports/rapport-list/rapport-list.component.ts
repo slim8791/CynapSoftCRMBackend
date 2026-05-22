@@ -6,6 +6,8 @@ import { takeUntil } from 'rxjs/operators';
 import { RapportService, RapportDto } from '../services/rapport.service';
 import { UserService } from '../../../../features/users/user.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { VisiteService, VisiteDto } from '../../visites/services/visite.service';
+import { VisiteType } from '../../../../core/models/enums';
 
 @Component({
   selector: 'app-rapport-list',
@@ -20,12 +22,14 @@ export class RapportListComponent implements OnInit, OnDestroy {
   error     = '';
 
   delegueNames: Record<number, string> = {};
+  visiteDetails: Record<number, VisiteDto> = {};
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private svc:     RapportService,
     private userSvc: UserService,
+    private visiteSvc: VisiteService,
     private cdr:     ChangeDetectorRef
   ) {}
 
@@ -47,12 +51,40 @@ export class RapportListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error   = '';
     this.svc.getAll().pipe(takeUntil(this.destroy$)).subscribe({
-      next: data => { this.rapports = data; this.loading = false; this.cdr.markForCheck(); },
+      next: data => {
+        this.rapports = data;
+        this.loadVisiteDetails(data);
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
       error: () => { this.error = 'Impossible de charger les rapports.'; this.loading = false; this.cdr.markForCheck(); }
     });
   }
 
   getDelegrueName(id: number): string { return this.delegueNames[id] ?? `#${id}`; }
+
+  visiteDate(visite: VisiteDto): string {
+    return (visite as any).dateVisite ?? visite.date;
+  }
+
+  visiteTypeLabel(type: VisiteType): string {
+    switch (type) {
+      case VisiteType.Medecin: return 'Médecin';
+      case VisiteType.Pharmacien: return 'Pharmacien';
+      default: return 'Autre';
+    }
+  }
+
+  private loadVisiteDetails(rapports: RapportDto[]): void {
+    [...new Set(rapports.map(r => r.id_Visite).filter(id => id > 0))]
+      .filter(id => !this.visiteDetails[id])
+      .forEach(id => {
+        this.visiteSvc.getById(id).pipe(takeUntil(this.destroy$)).subscribe({
+          next: visite => { this.visiteDetails[id] = visite; this.cdr.markForCheck(); },
+          error: () => {}
+        });
+      });
+  }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 }

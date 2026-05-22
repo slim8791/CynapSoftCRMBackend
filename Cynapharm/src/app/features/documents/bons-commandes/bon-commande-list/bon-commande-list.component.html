@@ -24,10 +24,12 @@
             <tr>
               <td>{{ b.numero_Doc }}</td>
               <td>{{ b.nom_Doc ?? '-' }}</td>
-              <td>{{ b.id_Client ?? '-' }}</td>
+              <td>{{ clientName(b.id_Client) }}</td>
               <td>{{ b.id_Commande ?? '-' }}</td>
               <td>{{ b.dateCreation | date:'dd/MM/yyyy' }}</td>
               <td class="ac">
+                <a class="ab view" [routerLink]="['/documents/bons-commandes', b.numero_Doc]" title="Voir">👁</a>
+                <button class="ab pdf" (click)="download(b)" title="Télécharger">⬇</button>
                 <button class="ab del" (click)="delete(b.numero_Doc)" title="Supprimer">🗑</button>
               </td>
             </tr>

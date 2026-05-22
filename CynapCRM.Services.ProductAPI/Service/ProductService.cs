@@ -70,6 +70,10 @@ namespace CynapCRM.Services.ProductAPI.Service
 
         public async Task<ProduitDto> CreateOrUpdateProductAsync(ProduitDto produitDto)
         {
+            // FIX 7: price must be > 0
+            if (produitDto.PrixVente <= 0)
+                return null!;
+
             var product = await _db.Produits
                 .FirstOrDefaultAsync(p => p.Id_Produit == produitDto.Id_Produit);
 
@@ -95,6 +99,10 @@ namespace CynapCRM.Services.ProductAPI.Service
             var product = await _db.Produits.FindAsync(produitId);
             if (product == null) return false;
 
+            // FIX 5: block archiving if stock > 0
+            var canArchive = await CanArchiveProductAsync(produitId);
+            if (!canArchive) return false;
+
             product.IsArchived = true;
             product.IsActive = false;
 
@@ -108,6 +116,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             if (product == null) return false;
 
             product.IsArchived = false;
+            product.IsActive   = false; // FIX 6: stays inactive — ADMIN must activate explicitly
             await _db.SaveChangesAsync();
             return true;
         }

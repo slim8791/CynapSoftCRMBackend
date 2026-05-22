@@ -1,22 +1,32 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace Cynapharm_Mobile.Models.Orders;
 
-public class CartLine
+public class CartLine : ObservableObject
 {
-    public int ProductId { get; set; }
-    public string ProductNom { get; set; } = string.Empty;
-    public int Quantite { get; set; }
+    public int     ProductId  { get; set; }
+    public string  ProductNom { get; set; } = string.Empty;
 
-    // PrixOriginal = base price before any discount
-    public decimal PrixOriginal { get; set; }
+    private int _quantite;
+    public int Quantite
+    {
+        get => _quantite;
+        set
+        {
+            if (SetProperty(ref _quantite, value))
+            {
+                OnPropertyChanged(nameof(SousTotal));
+                OnPropertyChanged(nameof(EconomieTotale));
+            }
+        }
+    }
 
-    // PrixUnitaire = effective price sent to the server (may equal PrixOriginal when no promo)
-    public decimal PrixUnitaire { get; set; }
+    public decimal  PrixOriginal       { get; set; }
+    public decimal  PrixUnitaire       { get; set; }
+    public decimal  RemisePourcentage  { get; set; }
+    public string?  PromoTitre         { get; set; }
 
-    // 0 means no active promotion
-    public decimal RemisePourcentage { get; set; }
-    public string? PromoTitre { get; set; }
-
-    public bool HasPromo => RemisePourcentage > 0;
-    public decimal SousTotal => Quantite * PrixUnitaire;
+    public bool    HasPromo       => RemisePourcentage > 0;
+    public decimal SousTotal      => Quantite * PrixUnitaire;
     public decimal EconomieTotale => Quantite * (PrixOriginal - PrixUnitaire);
 }

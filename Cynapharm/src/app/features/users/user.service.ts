@@ -27,10 +27,14 @@ export class UserService {
   }
 
   getUsersByRole(role: string): Observable<any[]> {
-    return this.apiService.get<any>(`${this.baseUrl}/users/role/${encodeURIComponent(role)}`).pipe(
+    return this.getUsers().pipe(
       map((r: any) => {
-        const raw = r?.Result ?? r?.result ?? r;
-        return Array.isArray(raw) ? raw : [];
+        const raw = Array.isArray(r) ? r : (r?.Result ?? r?.result ?? []);
+        if (!Array.isArray(raw)) return [];
+        return raw.filter((u: any) => {
+          const userRole = u?.role ?? u?.Role ?? '';
+          return userRole.toUpperCase() === role.toUpperCase();
+        });
       })
     );
   }
@@ -49,11 +53,11 @@ export class UserService {
 
   
   disableUser(email: string): Observable<any> {
-    return this.apiService.put<any>(`${this.baseUrl}/disable`, { Email: email });
+    return this.apiService.put<any>(`${this.baseUrl}/delete-user/${encodeURIComponent(email)}`, {});
   }
 
   enableUser(email: string): Observable<any> {
-    return this.apiService.put<any>(`${this.baseUrl}/enable`, { Email: email });
+    return this.apiService.put<any>(`${this.baseUrl}/enable-user/${encodeURIComponent(email)}`, {});
   }
 
   /** Recherche backend (keyword >= 3 chars). isActive=true→actifs, false→désactivés, undefined→tous */

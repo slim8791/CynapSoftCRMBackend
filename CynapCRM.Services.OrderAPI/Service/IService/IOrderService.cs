@@ -19,7 +19,7 @@ public interface IOrderService
     Task<CommandeDto> GetOrderByIdAsync(int orderId);
 
     Task<IEnumerable<CommandeDto>> GetOrdersByClientIdAsync(
-        int clientId, int page = 1, int pageSize = 20);
+        int clientId, EtatCommande? statut = null, int page = 1, int pageSize = 20);
     Task<CommandeDto> CreateOrderAsync(CreateOrderDto orderDto);
 
     Task<bool> UpdateOrderStatusAsync(UpdateOrderStatusDto dto);

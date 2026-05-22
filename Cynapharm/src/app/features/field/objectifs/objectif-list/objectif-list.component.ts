@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ObjectifService, ObjectifDto } from '../services/objectif.service';
@@ -10,7 +11,7 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 @Component({
   selector: 'app-objectif-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, EmptyStateComponent],
+  imports: [CommonModule, RouterLink, FormsModule, EmptyStateComponent],
   templateUrl: './objectif-list.component.html',
   styleUrls: ['./objectif-list.component.css']
 })
@@ -20,6 +21,8 @@ export class ObjectifListComponent implements OnInit, OnDestroy {
   error     = '';
 
   delegueNames: Record<number, string> = {};
+  delegues: any[] = [];
+  selectedDelegueId: number | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -33,6 +36,7 @@ export class ObjectifListComponent implements OnInit, OnDestroy {
     this.load();
     this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$)).subscribe({
       next: users => {
+        this.delegues = users;
         users.forEach(u => {
           const id = u?.id ?? u?.Id;
           if (id != null) this.delegueNames[id] = u?.name ?? u?.Name ?? u?.email ?? `#${id}`;
@@ -53,6 +57,16 @@ export class ObjectifListComponent implements OnInit, OnDestroy {
   }
 
   getDelegrueName(id: number): string { return this.delegueNames[id] ?? `#${id}`; }
+
+  get filteredObjectifs(): ObjectifDto[] {
+    return this.selectedDelegueId
+      ? this.objectifs.filter(o => o.id_User_Delegue === this.selectedDelegueId)
+      : this.objectifs;
+  }
+
+  userName(u: any): string {
+    return u?.name ?? u?.Name ?? u?.fullName ?? u?.FullName ?? u?.email ?? u?.Email ?? `#${u?.id ?? u?.Id}`;
+  }
 
   progressPct(realise: number, cible: number): number {
     if (!cible || cible <= 0) return 0;

@@ -19,9 +19,11 @@ public partial class DocumentDetailViewModel : BaseViewModel
     [ObservableProperty] private BonCommande? _bonCommande;
     [ObservableProperty] private BonLivraison? _bonLivraison;
 
-    public bool IsFacture     => DocumentType == "facture";
-    public bool IsBonCommande => DocumentType == "bon-commande";
-    public bool IsBonLivraison => DocumentType == "bon-livraison";
+    public bool IsFacture      => string.Equals(DocumentType, "facture",      StringComparison.OrdinalIgnoreCase);
+    public bool IsBonCommande  => string.Equals(DocumentType, "bon-commande", StringComparison.OrdinalIgnoreCase)
+                               || string.Equals(DocumentType, "BC",           StringComparison.OrdinalIgnoreCase);
+    public bool IsBonLivraison => string.Equals(DocumentType, "bon-livraison", StringComparison.OrdinalIgnoreCase)
+                               || string.Equals(DocumentType, "BL",            StringComparison.OrdinalIgnoreCase);
 
     public DocumentDetailViewModel(DocumentService documentService)
     {
@@ -46,17 +48,19 @@ public partial class DocumentDetailViewModel : BaseViewModel
     private Task LoadAsync() => ExecuteAsync(async () =>
     {
         if (!await CheckConnectivityAsync()) return;
-        switch (DocumentType)
+        switch (DocumentType.ToLowerInvariant())
         {
             case "facture":
                 Facture = await _documentService.GetFactureByIdAsync(DocumentId);
                 if (Facture != null) Title = $"Facture {Facture.NumeroFacture}";
                 break;
             case "bon-commande":
+            case "bc":
                 BonCommande = await _documentService.GetBonCommandeByIdAsync(DocumentId);
                 if (BonCommande != null) Title = $"BC {BonCommande.NumeroBon}";
                 break;
             case "bon-livraison":
+            case "bl":
                 BonLivraison = await _documentService.GetBonLivraisonByIdAsync(DocumentId);
                 if (BonLivraison != null) Title = $"BL {BonLivraison.NumeroBon}";
                 break;
@@ -68,12 +72,12 @@ public partial class DocumentDetailViewModel : BaseViewModel
     [RelayCommand]
     private Task ShareAsync() => ExecuteAsync(async () =>
     {
-        var text = DocumentType switch
+        var text = DocumentType.ToLowerInvariant() switch
         {
-            "facture"       when Facture     != null => $"Facture {Facture.NumeroFacture} — {Facture.MontantTTC:C2} — {Facture.Statut}",
-            "bon-commande"  when BonCommande != null => $"Bon de commande {BonCommande.NumeroBon} — {BonCommande.MontantTotal:C2}",
-            "bon-livraison" when BonLivraison != null => $"Bon de livraison {BonLivraison.NumeroBon} — {BonLivraison.Statut}",
-            _                                        => "Document Cynapharm"
+            "facture"                          when Facture      != null => $"Facture {Facture.NumeroFacture} — {Facture.MontantTTC:C2} — {Facture.Statut}",
+            "bon-commande" or "bc"             when BonCommande  != null => $"Bon de commande {BonCommande.NumeroBon} — {BonCommande.MontantTotal:C2}",
+            "bon-livraison" or "bl"            when BonLivraison != null => $"Bon de livraison {BonLivraison.NumeroBon} — {BonLivraison.Statut}",
+            _                                                            => "Document Cynapharm"
         };
         await Share.RequestAsync(new ShareTextRequest { Text = text, Title = Title });
     });

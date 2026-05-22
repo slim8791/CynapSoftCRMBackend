@@ -26,12 +26,14 @@
             <tr>
               <td>{{ f.numero_Doc }}</td>
               <td>{{ f.nom_Doc ?? '-' }}</td>
-              <td>{{ f.id_Client ?? '-' }}</td>
+              <td>{{ clientName(f.id_Client) }}</td>
               <td>{{ f.id_Commande ?? '-' }}</td>
               <td>{{ f.dateFacture | date:'dd/MM/yyyy' }}</td>
               <td class="tr">{{ f.montantHT != null ? (f.montantHT | currencyTND) : '-' }}</td>
               <td class="tr fw">{{ f.montantTTC != null ? (f.montantTTC | currencyTND) : '-' }}</td>
               <td class="ac">
+                <a class="ab view" [routerLink]="['/documents/factures', f.numero_Doc]" title="Voir">👁</a>
+                <button class="ab pdf" (click)="download(f)" title="Télécharger">⬇</button>
                 <button class="ab del" (click)="delete(f.numero_Doc)" title="Supprimer">🗑</button>
               </td>
             </tr>

@@ -76,14 +76,15 @@ namespace CynapCRM.Services.OrderAPI.Service
         }
         //toutes les commandes d'un client
         public async Task<IEnumerable<CommandeDto>> GetOrdersByClientIdAsync(
-    int clientId, int page = 1, int pageSize = 20)
+            int clientId, EtatCommande? statut = null, int page = 1, int pageSize = 20)
         {
             var orders = await _db.Commandes
-                .Where(c => c.Id_Client == clientId)
+                .Where(c => c.Id_Client == clientId
+                         && (statut == null || c.Statut == statut))
                 .Include(c => c.Lignes)
                 .Include(c => c.Reclamations)
                 .AsNoTracking()
-                .OrderByDescending(c => c.DateCommande) // ✅ tri par date
+                .OrderByDescending(c => c.DateCommande)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -264,10 +265,7 @@ namespace CynapCRM.Services.OrderAPI.Service
                 order.Statut != EtatCommande.Annulee)
                 return false;
 
-            // Soft delete
-            order.IsDeleted = true; // si le champ existe
-                                    // ou suppression physique si IsDeleted n'existe pas
-            _db.Commandes.Remove(order);
+            order.IsDeleted = true;
             await _db.SaveChangesAsync();
             return true;
         }

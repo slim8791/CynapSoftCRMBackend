@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, UserRole } from '../../../core/services/auth.service'; // ✅ MODIF : import UserRole
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { TurnstileComponent } from '../../../shared/components/turnstile/turnstile.component';
 import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
@@ -16,17 +17,25 @@ import { ChangeDetectorRef } from '@angular/core';
     ReactiveFormsModule,
     RouterLink,
     CardComponent,
-    ButtonComponent
+    ButtonComponent,
+    TurnstileComponent
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
 
+  @ViewChild('turnstileWidget') turnstileWidget!: TurnstileComponent;
+
   loginForm: FormGroup;
   loading = false;
   error = '';
   showPassword = false;
+
+  // Turnstile CAPTCHA
+  turnstileToken: string = '';
+  turnstileError: boolean = false;
+  isTurnstileValid: boolean = false;
 
   // ✅ MODIF : fallback si pas de returnUrl
   private defaultRoute = '/dashboard';
@@ -51,15 +60,32 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  onTurnstileResolved(token: string): void {
+    this.turnstileToken = token;
+    this.isTurnstileValid = token.length > 0;
+    this.turnstileError = false;
+  }
+
+  onTurnstileError(): void {
+    this.turnstileToken = '';
+    this.isTurnstileValid = false;
+    this.turnstileError = true;
+  }
+
   onLogin(): void {
     if (this.loginForm.invalid) return;
+
+    if (!this.isTurnstileValid) {
+      this.error = 'Veuillez compléter la vérification de sécurité.';
+      return;
+    }
 
     this.loading = true;
     this.error = '';
 
     const { email, password } = this.loginForm.value;
 
-    this.authService.login(email, password).subscribe({
+    this.authService.login(email, password, this.turnstileToken).subscribe({
       next: () => {
         this.loading = false;
         this.cdr.detectChanges(); // Ensure UI updates
@@ -74,8 +100,11 @@ export class LoginComponent implements OnInit {
       },
       error: (err: any) => {
         this.loading = false;
-        this.error = 'Login failed';
+        this.error = err?.error?.message || 'Login failed';
         console.error(err);
+        this.turnstileWidget.reset();
+        this.isTurnstileValid = false;
+        this.turnstileToken = '';
         this.cdr.detectChanges(); // Ensure UI updates
       }
     });
@@ -87,7 +116,7 @@ export class LoginComponent implements OnInit {
   private getRedirectByRole(role?: UserRole): string {
     switch (role) {
       case UserRole.ADMIN:
-        return '/users';
+        return '/dashboard';
 
       case UserRole.SUPERVISEUR:
         return '/dashboard';
@@ -96,10 +125,10 @@ export class LoginComponent implements OnInit {
         return '/dashboard';
 
       case UserRole.MEDECIN:
-        return '/dashboard';
+        return '/products';
 
       case UserRole.CLIENT:
-        return '/home';
+        return '/orders';
 
       default:
         return this.defaultRoute;

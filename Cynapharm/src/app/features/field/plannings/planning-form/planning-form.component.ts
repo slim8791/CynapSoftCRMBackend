@@ -7,6 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { PlanningService, PlanningDto } from '../services/planning.service';
 import { EtatPlanning, PLANNING_STATUS_LABELS } from '../../../../core/models/enums/index';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { UserService } from '../../../users/user.service';
 
 @Component({
   selector: 'app-planning-form',
@@ -24,6 +25,7 @@ export class PlanningFormComponent implements OnInit, OnDestroy {
   fetchError = '';
   submitError = '';
   successMsg = '';
+  delegues: any[] = [];
 
   etatOptions = [
     { value: EtatPlanning.EnAttente, label: PLANNING_STATUS_LABELS[EtatPlanning.EnAttente] },
@@ -38,6 +40,7 @@ export class PlanningFormComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private svc: PlanningService,
+    private userSvc: UserService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -49,6 +52,9 @@ export class PlanningFormComponent implements OnInit, OnDestroy {
       heureFin:        [''],
       etatPlanning:    [EtatPlanning.EnAttente]
     });
+
+    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$))
+      .subscribe({ next: users => { this.delegues = users; this.cdr.markForCheck(); }, error: () => {} });
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
@@ -71,6 +77,10 @@ export class PlanningFormComponent implements OnInit, OnDestroy {
 
   get f() { return this.form.controls; }
 
+  userName(u: any): string {
+    return u?.name ?? u?.Name ?? u?.fullName ?? u?.FullName ?? u?.email ?? u?.Email ?? `#${u?.id ?? u?.Id}`;
+  }
+
   submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
@@ -78,8 +88,10 @@ export class PlanningFormComponent implements OnInit, OnDestroy {
     this.submitError = '';
     this.successMsg = '';
 
+    const v = this.form.value;
     const dto: PlanningDto = {
-      ...this.form.value,
+      ...v,
+      id_User_Delegue: +v.id_User_Delegue,
       ...(this.isEdit && this.editId ? { idPlanning: this.editId } : {})
     };
 

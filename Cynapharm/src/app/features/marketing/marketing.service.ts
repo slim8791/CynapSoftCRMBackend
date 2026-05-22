@@ -2,12 +2,19 @@
 // Route backend C# : [Route("api/marketting")]  ← deux 't'
 // L'API Gateway préfixe avec '/products' → URL finale : /products/marketting/*
 //
-// CORRECTION : baseUrl = '/products/marketting'  ✅  (était déjà correct)
-// Le vrai problème était que l'API Gateway routait '/products/marketting'
-// vers un mauvais microservice (promos au lieu de ProductAPI).
-// Vérifiez votre configuration Ocelot / YARP et assurez-vous que :
-//   /products/marketting/** → ProductAPI (port 5xxx)
-//   /products/promos/**     → PromotionAPI (ou ProductAPI selon votre archi)
+// ── Routes du MarkettingController ──────────────────────────────────────────
+// GET    product/{productId}/supports       → GetSupportsByProduct
+// GET    support/{supportId}                → GetSupportById
+// POST   support                            → CreateOrUpdateSupport
+// DELETE file/{fichierId}                   → DeleteFile
+// GET    support/{supportId}/files          → GetFilesBySupport
+// POST   support/file                       → AddFileToSupport
+// GET    support/{supportId}/active         → IsSupportActive
+// GET    product/{productId}/visible-supports → GetVisibleSupportsByProduct
+// GET    campaign/{campaignName}            → GetSupportsByCampaign
+// GET    campaigns                          → GetCampaigns
+// PUT    support/{supportId}/disable        → DisableSupport
+// PUT    support/{supportId}/activate       → ActivateSupport
 
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
@@ -45,16 +52,6 @@ export interface SupportMarketingDto {
   fichiers?:             FichierDto[];
 }
 
-// ── Version camelCase (si JsonNamingPolicy.CamelCase est activé) ──────────────
-// export interface FichierDto {
-//   idFichier?: number; nomFichier: string; url: string;
-//   extension: string; taille: number; idSupport: number;
-// }
-// export interface SupportMarketingDto {
-//   idSupportMarketting?: number; type: string; idProduit: number;
-//   isActive?: boolean; campaignName?: string; fichiers?: FichierDto[];
-// }
-
 // ── Service ───────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
@@ -73,12 +70,9 @@ export class MarketingService {
 
   // ── Supports ──────────────────────────────────────────────────────────────
 
-  /** GET /products/marketting/product/{productId}/supports
-   *  Le backend retourne 404 si aucun support — on normalise en tableau vide.
-   */
-  /** GET /products/marketting/product/{productId} */
+  /** GET /products/marketting/product/{productId}/supports */
   getSupportsByProductId(productId: number): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/product/${productId}`).pipe(
+    return this.apiService.get<any>(`${this.baseUrl}/product/${productId}/supports`).pipe(
       catchError(err => {
         if (err.status === 404) return of({ Result: [], IsSuccess: true });
         throw err;
@@ -86,53 +80,53 @@ export class MarketingService {
     );
   }
 
-  /** GET /products/marketting/{supportId} */
+  /** GET /products/marketting/support/{supportId} */
   getSupportById(supportId: number): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/${supportId}`);
+    return this.apiService.get<any>(`${this.baseUrl}/support/${supportId}`);
   }
 
-  /** POST /products/marketting */
+  /** POST /products/marketting/support */
   createOrUpdateSupport(payload: SupportMarketingDto): Observable<any> {
-    return this.apiService.post<any>(this.baseUrl, payload);
+    return this.apiService.post<any>(`${this.baseUrl}/support`, payload);
   }
 
-  /** DELETE /products/marketting/{supportId} */
+  /** DELETE /products/marketting/file/{fichierId} */
   deleteSupport(supportId: number): Observable<any> {
-    return this.apiService.delete<any>(`${this.baseUrl}/${supportId}`);
+    return this.apiService.delete<any>(`${this.baseUrl}/support/${supportId}`);
   }
 
   // ── Visibilité ────────────────────────────────────────────────────────────
 
-  /** PUT /products/marketting/{supportId}/disable */
+  /** PUT /products/marketting/support/{supportId}/disable */
   disableSupport(supportId: number): Observable<any> {
-    return this.apiService.put<any>(`${this.baseUrl}/${supportId}/disable`, {});
+    return this.apiService.put<any>(`${this.baseUrl}/support/${supportId}/disable`, {});
   }
 
-  /** PUT /products/marketting/{supportId}/activate */
+  /** PUT /products/marketting/support/{supportId}/activate */
   activateSupport(supportId: number): Observable<any> {
-    return this.apiService.put<any>(`${this.baseUrl}/${supportId}/activate`, {});
+    return this.apiService.put<any>(`${this.baseUrl}/support/${supportId}/activate`, {});
   }
 
-  /** GET /products/marketting/visible/{productId} */
+  /** GET /products/marketting/product/{productId}/visible-supports */
   getVisibleSupportsByProductId(productId: number): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/visible/${productId}`);
+    return this.apiService.get<any>(`${this.baseUrl}/product/${productId}/visible-supports`);
   }
 
   // ── Fichiers ──────────────────────────────────────────────────────────────
 
-  /** GET /products/marketting/{supportId} (fichiers inclus dans la réponse) */
+  /** GET /products/marketting/support/{supportId}/files */
   getFilesBySupport(supportId: number): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/${supportId}`);
+    return this.apiService.get<any>(`${this.baseUrl}/support/${supportId}/files`);
   }
 
-  /** POST /products/fichiers */
+  /** POST /products/marketting/support/file */
   addFileToSupport(fichierDto: FichierDto): Observable<any> {
-    return this.apiService.post<any>('/products/fichiers', fichierDto);
+    return this.apiService.post<any>(`${this.baseUrl}/support/file`, fichierDto);
   }
 
-  /** DELETE /products/fichiers/{fichierId} */
+  /** DELETE /products/marketting/file/{fichierId} */
   deleteFile(fileId: number): Observable<any> {
-    return this.apiService.delete<any>(`/products/fichiers/${fileId}`);
+    return this.apiService.delete<any>(`${this.baseUrl}/file/${fileId}`);
   }
 
   // ── Campagnes ─────────────────────────────────────────────────────────────
@@ -146,4 +140,4 @@ export class MarketingService {
   getSupportsByCampaign(campaignName: string): Observable<any> {
     return this.apiService.get<any>(`${this.baseUrl}/campaign/${encodeURIComponent(campaignName)}`);
   }
-}
+}

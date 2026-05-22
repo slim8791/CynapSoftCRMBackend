@@ -37,7 +37,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   totalArchived = 0;
   // ── Filtres & pagination ─────────────────────────────
   searchTerm = '';
-  statusFilter: StatusFilter = 'all';
+  statusFilter: StatusFilter = 'active';
   categoryFilter = '';
   currentPage = 1;
   pageSize = 10;
@@ -215,10 +215,47 @@ export class ProductListComponent implements OnInit, OnDestroy {
   // ── Actions avec confirmation ─────────────────────────
 
   onDelete(id: number):      void { this.openConfirm(id, 'deactivate'); }
-  onArchive(id: number):     void { this.openConfirm(id, 'archive'); }
   onActivate(id: number):    void { this.openConfirm(id, 'activate'); }
   onUnarchive(id: number):   void { this.openConfirm(id, 'unarchive'); }
   onHardDelete(id: number):  void { this.openConfirm(id, 'harddelete'); }
+
+  onArchive(id: number): void {
+    this.error = '';
+    const cached = this.lotsCache[id];
+    if (cached !== undefined) {
+      this.checkStockThenArchive(id, cached);
+      return;
+    }
+    // Lots not yet loaded — fetch them first so we can check stock.
+    this.loadingLots.add(id);
+    this.cdr.markForCheck();
+    this.lotService.getLotsByProductId(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (lots: LotDto[]) => {
+          this.lotsCache[id] = lots;
+          this.loadingLots.delete(id);
+          this.checkStockThenArchive(id, lots);
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loadingLots.delete(id);
+          // Could not verify stock — let the backend be the final guard.
+          this.openConfirm(id, 'archive');
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private checkStockThenArchive(id: number, lots: LotDto[]): void {
+    const stock = lots.reduce((sum, l) => sum + (l.quantite ?? 0), 0);
+    if (stock > 0) {
+      this.error = `Archivage impossible : ce produit possède encore ${stock} unité(s) en stock.`;
+      this.cdr.markForCheck();
+    } else {
+      this.openConfirm(id, 'archive');
+    }
+  }
   private openConfirm(id: number, action: ConfirmAction): void {
     const product = this.products.find(p => p.Id_Produit === id);
     this.confirmProductId   = id;

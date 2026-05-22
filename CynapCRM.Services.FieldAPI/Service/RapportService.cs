@@ -140,6 +140,7 @@ namespace CynapCRM.Services.FieldAPI.Service
             if (rapport?.Visite == null)
                 return false;
 
+            rapport.IdSuperviseurValidateur = idSuperviseur;
             rapport.Visite.IsCompleted = true;
             await _db.SaveChangesAsync();
             return true;

@@ -13,29 +13,37 @@ public partial class OrderDetailViewModel : BaseViewModel
 {
     private readonly OrderService    _orderService;
     private readonly DocumentService _documentService;
+    private readonly ProductService  _productService;
 
-    [ObservableProperty] private int    _orderId;
-    [ObservableProperty] private Order? _order;
-    [ObservableProperty] private string _reclamationMotif       = string.Empty;
-    [ObservableProperty] private string _reclamationDescription = string.Empty;
-    [ObservableProperty] private bool   _showReclamationForm;
-    [ObservableProperty] private bool   _hasLinkedDocuments;
+    [ObservableProperty] private int              _orderId;
+    [ObservableProperty] private Order?           _order;
+    [ObservableProperty] private string           _reclamationMotif       = string.Empty;
+    [ObservableProperty] private string           _reclamationDescription = string.Empty;
+    [ObservableProperty] private bool             _showReclamationForm;
+    [ObservableProperty] private bool             _hasLinkedDocuments;
+    [ObservableProperty] private LigneCommande?   _selectedLigne;
 
     public ObservableCollection<LigneCommande>   Lignes         { get; } = new();
     public ObservableCollection<DocumentSummary> LinkedFactures { get; } = new();
     public ObservableCollection<DocumentSummary> LinkedBC       { get; } = new();
     public ObservableCollection<DocumentSummary> LinkedBL       { get; } = new();
 
-    public OrderDetailViewModel(OrderService orderService, DocumentService documentService)
+    public OrderDetailViewModel(
+        OrderService    orderService,
+        DocumentService documentService,
+        ProductService  productService)
     {
         _orderService    = orderService;
         _documentService = documentService;
+        _productService  = productService;
         Title = "Commande";
     }
 
-    public bool IsDelivered => Order?.Statut == "LIVREE";
-    public bool IsAnnulee   => Order?.Statut == "ANNULEE";
-    public bool CanCancel   => Order?.Statut is "BROUILLON" or "EN_ATTENTE" or "CONFIRMEE";
+    public bool IsDelivered          => Order?.Statut == 5;
+    public bool IsAnnulee            => Order?.Statut == 6;
+    public bool CanCancel            => Order?.Statut is 0 or 1 or 2;
+    public bool CanCreateReclamation => Order?.Statut is 4 or 5;
+    public bool HasReclamations      => Order?.Reclamations?.Count > 0;
 
     partial void OnOrderIdChanged(int value)
     {
@@ -47,22 +55,39 @@ public partial class OrderDetailViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsDelivered));
         OnPropertyChanged(nameof(IsAnnulee));
         OnPropertyChanged(nameof(CanCancel));
+        OnPropertyChanged(nameof(CanCreateReclamation));
+        OnPropertyChanged(nameof(HasReclamations));
     }
 
     [RelayCommand]
     private Task LoadAsync() => ExecuteAsync(async () =>
     {
         if (!await CheckConnectivityAsync()) return;
-        var order = await _orderService.GetOrderByIdAsync(OrderId);
-        if (order != null)
-        {
-            Order = order;
-            Title = $"Commande #{order.NumeroCommande}";
-            Lignes.Clear();
-            foreach (var l in order.Lignes) Lignes.Add(l);
 
-            await LoadLinkedDocumentsAsync(order.Id);
+        var order = await _orderService.GetOrderByIdAsync(OrderId);
+        if (order == null) return;
+
+        Order = order;
+        Title = $"Commande #{order.NumeroCommande}";
+
+        Lignes.Clear();
+        var productIds = order.Lignes.Select(l => l.ProductId).Distinct().ToList();
+        var productNames = new Dictionary<int, string>();
+        foreach (var id in productIds)
+        {
+            var product = await _productService.GetProductByIdAsync(id);
+            if (product != null)
+                productNames[id] = product.Nom;
         }
+        foreach (var ligne in order.Lignes)
+        {
+            ligne.ProductNom = productNames.TryGetValue(ligne.ProductId, out var nom)
+                ? nom
+                : $"Produit #{ligne.ProductId}";
+            Lignes.Add(ligne);
+        }
+
+        await LoadLinkedDocumentsAsync(order.Id);
     });
 
     private async Task LoadLinkedDocumentsAsync(int commandeId)
@@ -127,6 +152,10 @@ public partial class OrderDetailViewModel : BaseViewModel
         if (motif == null) return;
 
         await _orderService.CancelOrderAsync(OrderId, motif.Trim());
+        await Shell.Current.DisplayAlert(
+            "Commande annulée",
+            "Votre commande a été annulée avec succès.",
+            "OK");
         await LoadAsync();
     });
 
@@ -148,13 +177,14 @@ public partial class OrderDetailViewModel : BaseViewModel
         await _orderService.CreateReclamationAsync(new Reclamation
         {
             CommandeId   = OrderId,
-            LigneId      = Lignes.FirstOrDefault()?.Id ?? 0,
+            LigneId      = SelectedLigne?.Id ?? Lignes.FirstOrDefault()?.Id ?? 0,
             Motif        = message,
             DateCreation = DateTime.UtcNow
         });
         ShowReclamationForm    = false;
         ReclamationMotif       = string.Empty;
         ReclamationDescription = string.Empty;
+        SelectedLigne          = null;
         await Shell.Current.DisplayAlert("Succès", "Votre réclamation a été soumise.", "OK");
     });
 }

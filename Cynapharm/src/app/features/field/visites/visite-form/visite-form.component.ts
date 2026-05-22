@@ -7,6 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { VisiteService, VisiteDto } from '../services/visite.service';
 import { VisiteType } from '../../../../core/models/enums/index';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { UserService } from '../../../users/user.service';
 
 @Component({
   selector: 'app-visite-form',
@@ -24,6 +25,9 @@ export class VisiteFormComponent implements OnInit, OnDestroy {
   fetchError = '';
   submitError = '';
   successMsg = '';
+  delegues: any[] = [];
+  medecins: any[] = [];
+  pharmaciens: any[] = [];
 
   typeOptions = [
     { value: VisiteType.Medecin,    label: 'Médecin' },
@@ -38,6 +42,7 @@ export class VisiteFormComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private svc: VisiteService,
+    private userSvc: UserService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -49,6 +54,8 @@ export class VisiteFormComponent implements OnInit, OnDestroy {
       id_Medecin:      [null],
       id_Pharmacien:   [null]
     });
+
+    this.loadUsers();
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
@@ -68,6 +75,10 @@ export class VisiteFormComponent implements OnInit, OnDestroy {
 
   get f() { return this.form.controls; }
 
+  userName(u: any): string {
+    return u?.name ?? u?.Name ?? u?.fullName ?? u?.FullName ?? u?.email ?? u?.Email ?? `#${u?.id ?? u?.Id}`;
+  }
+
   submit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
@@ -75,8 +86,12 @@ export class VisiteFormComponent implements OnInit, OnDestroy {
     this.submitError = '';
     this.successMsg = '';
 
+    const v = this.form.value;
     const dto: VisiteDto = {
-      ...this.form.value,
+      ...v,
+      id_User_Delegue: +v.id_User_Delegue,
+      id_Medecin: v.id_Medecin ? +v.id_Medecin : null,
+      id_Pharmacien: v.id_Pharmacien ? +v.id_Pharmacien : null,
       ...(this.isEdit && this.editId ? { idVisite: this.editId } : {})
     };
 
@@ -89,6 +104,15 @@ export class VisiteFormComponent implements OnInit, OnDestroy {
       },
       error: () => { this.submitError = 'Erreur lors de l\'enregistrement.'; this.saving = false; this.cdr.markForCheck(); }
     });
+  }
+
+  private loadUsers(): void {
+    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$))
+      .subscribe({ next: users => { this.delegues = users; this.cdr.markForCheck(); }, error: () => {} });
+    this.userSvc.getUsersByRole('MEDECIN').pipe(takeUntil(this.destroy$))
+      .subscribe({ next: users => { this.medecins = users; this.cdr.markForCheck(); }, error: () => {} });
+    this.userSvc.getUsersByRole('PHARMACIEN').pipe(takeUntil(this.destroy$))
+      .subscribe({ next: users => { this.pharmaciens = users; this.cdr.markForCheck(); }, error: () => {} });
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }

@@ -97,7 +97,7 @@ export class ReclamationListComponent implements OnInit, OnDestroy {
 
   onView(id: number):   void { this.router.navigate(['/orders/reclamations', id]); }
 
-  getStatutLabel = (s?: string) => this.svc.getStatutLabel(s);
-  getStatutClass = (s?: string) => this.svc.getStatutClass(s);
+  getStatutLabel = (s?: string | number) => this.svc.getStatutLabel(s);
+  getStatutClass = (s?: string | number) => this.svc.getStatutClass(s);
   canManageStatus(): boolean { return this.isAdmin || this.isSuperviseur; }
 }

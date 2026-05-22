@@ -9,6 +9,23 @@
           <label>ID Stock</label>
           <input type="number" [(ngModel)]="filterStockId" placeholder="Ex: 12" (keyup.enter)="applyFilter()" />
         </div>
+        <div class="search-field">
+          <label>Date début</label>
+          <input type="date" [(ngModel)]="dateDebut" (ngModelChange)="applyClientFilters()" />
+        </div>
+        <div class="search-field">
+          <label>Date fin</label>
+          <input type="date" [(ngModel)]="dateFin" (ngModelChange)="applyClientFilters()" />
+        </div>
+        <div class="search-field">
+          <label>Type mouvement</label>
+          <select [(ngModel)]="typeMovement" (ngModelChange)="applyClientFilters()">
+            <option value="">Tous</option>
+            <option value="Increment">Increment</option>
+            <option value="Decrement">Decrement</option>
+            <option value="Transfer">Transfer</option>
+          </select>
+        </div>
         <button class="btn btn-primary" (click)="applyFilter()" [disabled]="!filterStockId">Filtrer</button>
         <button class="btn btn-secondary" (click)="clearFilter()" *ngIf="activeStockId">Effacer</button>
       </div>

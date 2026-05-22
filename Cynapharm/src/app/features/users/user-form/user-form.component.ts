@@ -183,7 +183,8 @@ export class UserFormComponent implements OnInit, AfterViewInit {
 
   private onError(err: any): void {
     this.loading = false;
-    this.error = 'Operation failed';
+    this.error = err?.error?.message ?? err?.error?.Message ?? err?.message ?? 'Une erreur est survenue.';
     console.error(err);
+    this.cdr.detectChanges();
   }
 }

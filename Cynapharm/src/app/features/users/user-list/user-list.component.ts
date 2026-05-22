@@ -27,7 +27,7 @@ export class UserListComponent implements OnInit, OnDestroy {
 
   // ── Recherche & filtres ──────────────────────────────
   searchTerm:   string       = '';
-  statusFilter: StatusFilter = 'all';
+  statusFilter: StatusFilter = 'active';
   roleFilter:   RoleFilter   = 'all';
 
   readonly ROLES: RoleFilter[] = ['ADMIN', 'SUPERVISEUR', 'DELEGUE', 'MEDECIN', 'CLIENT'];

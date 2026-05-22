@@ -283,7 +283,8 @@
   border: 1px solid #e2e8f0;
   border-radius: 20px;
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Empty state */
@@ -319,6 +320,7 @@
 .ul-table td {
   padding: 16px 20px;
   border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
   color: #374151;
   vertical-align: middle;
 }
@@ -643,6 +645,3 @@ span.role-badge.role-default     { background: #f8fafc; color: #64748b; border: 
   .results-count { margin-left: 0; }
 }
 
-@media (max-width: 680px) {
-  .col-phone, .col-email { display: none; }
-}

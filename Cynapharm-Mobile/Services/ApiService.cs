@@ -138,10 +138,27 @@ public class ApiService
             HandleUnauthorized();
             return default;
         }
-        
+
         if (!response.IsSuccessStatusCode)
         {
-            var message = response.StatusCode switch
+            // Try to extract the backend's own error message before falling back.
+            string? backendMessage = null;
+            try
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                if (!string.IsNullOrWhiteSpace(body))
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(body);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("message", out var m) && m.ValueKind == System.Text.Json.JsonValueKind.String)
+                        backendMessage = m.GetString();
+                    else if (root.TryGetProperty("Message", out var mPascal) && mPascal.ValueKind == System.Text.Json.JsonValueKind.String)
+                        backendMessage = mPascal.GetString();
+                }
+            }
+            catch { }
+
+            var fallback = response.StatusCode switch
             {
                 System.Net.HttpStatusCode.BadRequest          => "Requête invalide.",
                 System.Net.HttpStatusCode.Unauthorized        => "Authentification requise.",
@@ -152,29 +169,19 @@ public class ApiService
                 System.Net.HttpStatusCode.RequestTimeout      => "La requête a expiré. Vérifiez votre connexion.",
                 _                                             => $"Erreur de communication ({(int)response.StatusCode})."
             };
-            throw new ApiException(message, null, response.StatusCode);
+            throw new ApiException(backendMessage ?? fallback, null, response.StatusCode);
         }
 
         var json = await response.Content.ReadAsStringAsync();
         if (string.IsNullOrWhiteSpace(json)) return default;
 
-        // Try wrapped ResponseDto first ({"Result":...,"IsSuccess":true})
-        // Fall back to direct deserialization if the JSON doesn't look like a wrapper
-        try
-        {
-            var wrapper = JsonSerializer.Deserialize<ApiResponse<T>>(json, _jsonOptions);
-            if (wrapper != null && (wrapper.Result != null || json.Contains("\"IsSuccess\"", StringComparison.OrdinalIgnoreCase)))
-            {
-                if (!wrapper.IsSuccess)
-                    throw new HttpRequestException(wrapper.Message ?? "Erreur du serveur.");
-                return wrapper.Result;
-            }
-        }
-        catch (HttpRequestException) { throw; }
-        catch { /* not a wrapped response — fall through to direct deserialization */ }
-
-        // Direct deserialization for endpoints that return plain JSON
-        return JsonSerializer.Deserialize<T>(json, _jsonOptions);
+        // All API endpoints return ApiResponse<T> { "result": ..., "isSuccess": true, "message": "" }.
+        // Always deserialize as the wrapper and return Result.
+        var wrapped = JsonSerializer.Deserialize<ApiResponse<T>>(json, _jsonOptions);
+        if (wrapped is null) return default;
+        if (!wrapped.IsSuccess)
+            throw new ApiException(wrapped.Message ?? "Erreur du serveur.");
+        return wrapped.Result;
     }
 
     // Reused across calls — avoids socket exhaustion for external (CDN) downloads.

@@ -109,5 +109,27 @@ export class PromoStockDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  historyEntries(data: unknown): any[] {
+    const raw = data as any;
+    const history = raw?.historique ?? raw?.Historique ?? raw?.history ?? raw?.History ?? [];
+    return Array.isArray(history) ? history : [];
+  }
+
+  historyDate(entry: any): string | null {
+    return entry?.date ?? entry?.Date ?? entry?.dateMovement ?? entry?.DateMovement ?? entry?.createdAt ?? entry?.CreatedAt ?? null;
+  }
+
+  historyType(entry: any): string {
+    return entry?.type ?? entry?.Type ?? entry?.typeMovement ?? entry?.TypeMovement ?? entry?.action ?? entry?.Action ?? '—';
+  }
+
+  historyQuantity(entry: any): string {
+    return String(entry?.quantite ?? entry?.Quantite ?? entry?.qte ?? entry?.Qte ?? '—');
+  }
+
+  historyDescription(entry: any): string {
+    return entry?.description ?? entry?.Description ?? entry?.detail ?? entry?.Detail ?? '—';
+  }
+
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 }

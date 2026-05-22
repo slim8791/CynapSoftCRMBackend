@@ -26,6 +26,11 @@
     .info-row strong { color: #111; }
     .info-row strong.mono { font-family: monospace; font-size: 12px; }
     .info-row strong.highlight { color: #6366f1; font-size: 15px; }
+    .history-block { margin: 14px 0 8px; overflow-x: auto; }
+    .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .history-table th { text-align: left; color: #6b7280; background: #f9fafb; padding: 8px; border-bottom: 1px solid #e5e7eb; }
+    .history-table td { padding: 8px; border-bottom: 1px solid #f3f4f6; color: #374151; vertical-align: top; }
+    .history-chip { display: inline-flex; padding: 3px 8px; border-radius: 999px; background: #eef2ff; color: #4338ca; font-weight: 600; }
     .no-data { font-size: 13px; color: #9ca3af; margin-bottom: 16px; }
     .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .field { display: flex; flex-direction: column; gap: 4px; }

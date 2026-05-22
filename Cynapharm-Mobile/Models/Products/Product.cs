@@ -1,9 +1,18 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 
 namespace Cynapharm_Mobile.Models.Products;
 
 public class Product
 {
+    // Fixed format: period as decimal separator, space as thousands separator, 3 decimal places.
+    private static readonly NumberFormatInfo _tndFormat = new()
+    {
+        NumberDecimalSeparator = ".",
+        NumberGroupSeparator   = " ",
+        NumberDecimalDigits    = 3
+    };
+
     [JsonPropertyName("id_Produit")]
     public int Id { get; set; }
 
@@ -12,8 +21,13 @@ public class Product
     public string? Description { get; set; }
     public string Categorie { get; set; } = string.Empty;
 
-    [JsonPropertyName("prix_Vente")]
+    [JsonPropertyName("prixVente")]
     public decimal PrixUnitaire { get; set; }
+
+    public bool   IsPriceDefined => PrixUnitaire > 0;
+    public string PrixDisplay    => PrixUnitaire > 0
+        ? PrixUnitaire.ToString("N", _tndFormat) + " TND"
+        : "Prix non défini";
 
     public string? ImageUrl { get; set; }
 

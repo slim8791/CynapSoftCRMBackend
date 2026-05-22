@@ -120,13 +120,24 @@ export class OrderService {
       DateCommande:     o.DateCommande   ?? o.dateCommande   ?? '',
       MontantTotalHT:   o.MontantTotalHT ?? o.montantTotalHT ?? o.montantTotalHt ?? 0,
       MontantTTC:       o.MontantTTC     ?? o.montantTTC     ?? o.montantTtc    ?? 0,
-      Statut:           o.Statut         ?? o.statut         ?? '',
+      Statut:           this.toStatutString(o.Statut ?? o.statut ?? ''),
       Id_Client:        o.Id_Client      ?? o.id_Client      ?? o.idClient      ?? 0,
       Lignes:           (o.Lignes ?? o.lignes ?? []).map((l: any) => this.normalizeLigne(l)),
       MotifAnnulation:  o.MotifAnnulation ?? o.motifAnnulation ?? null,
       IsDeleted:        o.IsDeleted ?? o.isDeleted ?? false,
       Reclamations:     o.Reclamations ?? o.reclamations ?? [],
     };
+  }
+
+  private toStatutString(s: any): string {
+    if (typeof s === 'number') {
+      const names: Record<number, string> = {
+        0: 'Brouillon', 1: 'EnAttente', 2: 'Confirmee',
+        3: 'EnPreparation', 4: 'Expediee', 5: 'Livree', 6: 'Annulee',
+      };
+      return names[s] ?? '';
+    }
+    return String(s ?? '');
   }
 
   private normalizeLigne(l: any): LigneCommandeDto {

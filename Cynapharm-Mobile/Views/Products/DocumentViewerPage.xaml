@@ -6,78 +6,77 @@
              x:Class="Cynapharm_Mobile.Views.Products.DocumentViewerPage"
              x:DataType="vm:DocumentViewerViewModel"
              Title="{Binding Title}"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="Black">
 
     <Grid RowDefinitions="Auto,*">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0"
-              BackgroundColor="{StaticResource Primary}"
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
               Padding="16,48,16,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="40" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="36" />
+                <ColumnDefinition Width="40" />
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0"
-                    Text="‹"
-                    TextColor="White"
-                    BackgroundColor="Transparent"
-                    FontSize="24" FontAttributes="Bold"
-                    Padding="0"
-                    Command="{Binding GoBackCommand}" />
+            <Border Grid.Column="0"
+                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                    VerticalOptions="Center">
+                <Label Text="‹" FontSize="24" FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoBackCommand}" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </Border>
 
             <Label Grid.Column="1"
                    Text="{Binding NomFichier}"
-                   FontSize="16" FontAttributes="Bold"
+                   FontSize="15" FontAttributes="Bold"
+                   FontFamily="OpenSansSemibold"
                    TextColor="White"
                    VerticalOptions="Center"
                    HorizontalOptions="Center"
                    LineBreakMode="TailTruncation" />
 
-            <!-- ti-download (U+EA96): open externally -->
-            <Label Grid.Column="2"
-                   FontFamily="Tabler"
-                   Text="&#xea96;"
-                   FontSize="22"
-                   TextColor="White"
-                   VerticalOptions="Center"
-                   HorizontalOptions="Center">
-                <Label.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding OpenExternalCommand}" />
-                </Label.GestureRecognizers>
-            </Label>
+            <!-- Download button -->
+            <Border Grid.Column="2"
+                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                    VerticalOptions="Center" HorizontalOptions="End">
+                <Label FontFamily="Tabler" Text="&#xea96;"
+                       FontSize="20" TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenExternalCommand}" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </Border>
         </Grid>
 
-        <!-- ── Content area ───────────────────────────────────────────────── -->
+        <!-- ── Content ───────────────────────────────────────────────────── -->
         <Grid Grid.Row="1">
-
-            <!-- PDF / other files: WebView with Google Docs viewer -->
-            <!-- Hidden when IsImage = true -->
             <WebView Source="{Binding PdfViewerUrl}"
                      IsVisible="{Binding IsImage, Converter={StaticResource InvertedBoolConverter}}"
                      VerticalOptions="FillAndExpand"
                      HorizontalOptions="FillAndExpand" />
-
-            <!-- Image files: direct URL -->
-            <!-- Hidden when IsImage = false -->
             <ScrollView IsVisible="{Binding IsImage}"
-                        VerticalOptions="FillAndExpand">
+                        VerticalOptions="FillAndExpand"
+                        BackgroundColor="Black">
                 <Image Source="{Binding Url}"
                        Aspect="AspectFit"
                        VerticalOptions="FillAndExpand"
                        HorizontalOptions="FillAndExpand"
                        MinimumHeightRequest="300" />
             </ScrollView>
-
-            <!-- Loading indicator -->
             <ActivityIndicator IsRunning="{Binding IsBusy}"
                                IsVisible="{Binding IsBusy}"
                                Color="{StaticResource Primary}"
                                VerticalOptions="Center"
                                HorizontalOptions="Center" />
-
         </Grid>
 
     </Grid>

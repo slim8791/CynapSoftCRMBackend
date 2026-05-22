@@ -1,14 +1,18 @@
+using System.Text.Json.Serialization;
+
 namespace Cynapharm_Mobile.Models.Common;
 
 public class ApiResponse<T>
 {
-    // Primary properties — match backend ResponseDto field names (case-insensitive JSON deserialization)
+    [JsonPropertyName("isSuccess")]
     public bool IsSuccess { get; set; } = true;
-    public T? Result { get; set; }
-    public string? Message { get; set; }
-    public List<string>? Errors { get; set; }
 
-    // Aliases for any code that uses the old names
-    public bool Success => IsSuccess;
-    public T? Data => Result;
+    [JsonPropertyName("result")]
+    public T? Result { get; set; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
+
+    [JsonPropertyName("errors")]
+    public List<string>? Errors { get; set; }
 }

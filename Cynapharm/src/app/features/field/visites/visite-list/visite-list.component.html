@@ -8,8 +8,11 @@
       </div>
 
       <div class="filter-bar">
-        <label>ID Délégué</label>
-        <input type="number" [(ngModel)]="delegueId" placeholder="Ex: 3" (keyup.enter)="load()" />
+        <label>Délégué</label>
+        <select [(ngModel)]="delegueId" (ngModelChange)="load()">
+          <option [ngValue]="null">-- Sélectionner un délégué --</option>
+          <option *ngFor="let d of delegues" [ngValue]="d.id ?? d.Id">{{ userName(d) }}</option>
+        </select>
         <button class="btn btn-outline" (click)="load()" [disabled]="!delegueId || loading">Rechercher</button>
       </div>
 
@@ -39,7 +42,7 @@
           <tbody>
             <tr *ngFor="let v of visites">
               <td class="mono">{{ v.idVisite }}</td>
-              <td>{{ v.id_User_Delegue }}</td>
+              <td>{{ delegueName(v.id_User_Delegue) }}</td>
               <td>{{ v.date | date:'dd/MM/yyyy' }}</td>
               <td>
                 <span class="type-chip"

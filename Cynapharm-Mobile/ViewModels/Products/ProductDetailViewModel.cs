@@ -15,7 +15,13 @@ public partial class ProductDetailViewModel : BaseViewModel
 
     [ObservableProperty] private int      _productId;
     [ObservableProperty] private Product? _product;
-    [ObservableProperty] private bool     _canSeePrices = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasInformations))]
+    private bool _canSeePrices = true;
+
+    /// <summary>True for all roles except MEDECIN — gates the INFORMATIONS card.</summary>
+    public bool HasInformations => CanSeePrices;
 
     public ObservableCollection<Lot>            Lots       { get; } = new();
     public ObservableCollection<Promotion>      Promotions { get; } = new();
@@ -56,10 +62,21 @@ public partial class ProductDetailViewModel : BaseViewModel
 
             Supports.Clear();
             if (product.Supports != null)
+            {
+                var imageExts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    { "jpg", "jpeg", "png", "webp", "gif" };
+
                 foreach (var s in product.Supports.Where(s =>
                     s.IsActive &&
                     !string.Equals(s.Type, "Image", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (!CanSeePrices && s.Fichiers != null)
+                        s.Fichiers = s.Fichiers
+                            .Where(f => !imageExts.Contains(f.Extension))
+                            .ToList();
                     Supports.Add(s);
+                }
+            }
         }
 
         // Lots and promotions: 404 for MEDECIN — silently skip, no error banner.
@@ -148,5 +165,16 @@ public partial class ProductDetailViewModel : BaseViewModel
 
     [RelayCommand]
     private async Task AddToOrderAsync()
-        => await Shell.Current.GoToAsync($"//orders/create?productId={ProductId}");
+    {
+        var role = await SecureStorage.GetAsync(StorageKeys.UserRole);
+        if (role == "MEDECIN")
+        {
+            await Shell.Current.DisplayAlert(
+                "Accès refusé",
+                "Les médecins ne peuvent pas passer commande. Contactez votre délégué Cynapharm.",
+                "OK");
+            return;
+        }
+        await Shell.Current.GoToAsync($"//orders/create?productId={ProductId}");
+    }
 }

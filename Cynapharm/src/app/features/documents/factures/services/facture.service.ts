@@ -13,6 +13,8 @@ export interface FactureDto {
   montantTTC?:   number;
   dateFacture?:  string;
   typeDocument?: string;
+  cloudinaryUrl?: string;
+  url?:          string;
 }
 
 @Injectable({ providedIn: 'root' })

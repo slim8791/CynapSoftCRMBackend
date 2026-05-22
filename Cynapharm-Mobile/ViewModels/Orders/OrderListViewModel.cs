@@ -13,9 +13,21 @@ public partial class OrderListViewModel : BaseViewModel
 
     public ObservableCollection<Order> Orders { get; } = new();
 
+    // French display labels for the filter chips
     public List<string> StatusOptions { get; } = new()
     {
-        "Tous", "EN_ATTENTE", "CONFIRMEE", "EN_PREPARATION", "EXPEDIEE", "LIVREE", "ANNULEE"
+        "Tous", "En attente", "Confirmée", "En préparation", "Expédiée", "Livrée", "Annulée"
+    };
+
+    // Maps French display label → EtatCommande integer value
+    private static readonly Dictionary<string, int?> _statusCodeMap = new()
+    {
+        { "En attente",     1 },
+        { "Confirmée",      2 },
+        { "En préparation", 3 },
+        { "Expédiée",       4 },
+        { "Livrée",         5 },
+        { "Annulée",        6 },
     };
 
     [ObservableProperty] private string _statusFilter = "Tous";
@@ -40,10 +52,17 @@ public partial class OrderListViewModel : BaseViewModel
     {
         var role = await SecureStorage.GetAsync(StorageKeys.UserRole) ?? string.Empty;
         IsGrossiste = role is "GROSSISTE";
-        _isClient   = role is "PHARMACIEN" or "GROSSISTE";
+        _isClient   = role is "PHARMACIEN" or "GROSSISTE" or "CLIENT";
 
         var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
-        int.TryParse(userIdStr, out _clientId);
+        if (!int.TryParse(userIdStr, out _clientId) || _clientId <= 0)
+        {
+            if (_isClient)
+            {
+                ErrorMessage = "Impossible d'identifier votre compte client. Veuillez vous reconnecter.";
+                return;
+            }
+        }
 
         if (!await CheckConnectivityAsync()) return;
         _currentPage = 1;
@@ -52,7 +71,8 @@ public partial class OrderListViewModel : BaseViewModel
         var result = await FetchPageAsync(_currentPage);
         if (result != null)
         {
-            foreach (var o in result) Orders.Add(o);
+            var filtered = result.Where(o => o.Statut != 0).ToList();
+            foreach (var o in filtered) Orders.Add(o);
             HasMore = result.Count == 20;
         }
     });
@@ -67,7 +87,8 @@ public partial class OrderListViewModel : BaseViewModel
             var result = await FetchPageAsync(_currentPage);
             if (result != null)
             {
-                foreach (var o in result) Orders.Add(o);
+                var filtered = result.Where(o => o.Statut != 0).ToList();
+                foreach (var o in filtered) Orders.Add(o);
                 HasMore = result.Count == 20;
             }
         });
@@ -75,10 +96,15 @@ public partial class OrderListViewModel : BaseViewModel
 
     private Task<List<Order>?> FetchPageAsync(int page)
     {
-        var status = StatusFilter == "Tous" ? null : StatusFilter;
+        // Convert French display label → EtatCommande int (null = no filter = "Tous")
+        _statusCodeMap.TryGetValue(StatusFilter, out var statut);
+
+        // CLIENT/PHARMACIEN/GROSSISTE → their own orders, filtered by status
         if (_isClient && _clientId > 0)
-            return _orderService.GetOrdersByClientAsync(_clientId, page, 20);
-        return _orderService.GetOrdersByStatusAsync(status, page, 20);
+            return _orderService.GetOrdersByClientAsync(_clientId, statut, page, 20);
+
+        // DELEGUE/ADMIN/SUPERVISEUR → all orders via GET /orders
+        return _orderService.GetOrdersAsync(statut, page, 20);
     }
 
     [RelayCommand]

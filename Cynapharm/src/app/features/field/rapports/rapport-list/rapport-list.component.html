@@ -38,7 +38,13 @@
       <tbody>
         <tr *ngFor="let r of rapports">
           <td>{{ getDelegrueName(r.id_User_Delegue) }}</td>
-          <td>#{{ r.id_Visite }}</td>
+          <td>
+            @if (visiteDetails[r.id_Visite]; as visite) {
+              {{ visiteDate(visite) | date:'dd/MM/yyyy' }} ({{ visiteTypeLabel(visite.type) }})
+            } @else {
+              Chargement…
+            }
+          </td>
           <td>{{ r.dateRapport ? (r.dateRapport | date:'dd/MM/yyyy') : '—' }}</td>
           <td class="truncate" [title]="r.commentaire">{{ r.commentaire }}</td>
           <td>{{ r.resultat }}</td>

@@ -38,7 +38,7 @@ export class LotService {
   /** Récupère un lot par son numéro (normalise PascalCase → camelCase) */
   getLotByNumero(numeroLot: string): Observable<LotDto> {
     return this.apiService
-      .get<ApiResponse<LotDto>>(`${this.baseUrl}/${numeroLot}`)
+      .get<ApiResponse<LotDto>>(`${this.baseUrl}/lot/${numeroLot}`)
       .pipe(map(res => {
         const raw: any = res?.Result ?? res?.result ?? res;
         return {

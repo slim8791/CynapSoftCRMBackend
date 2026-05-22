@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 
 namespace Cynapharm_Mobile.Services;
 
@@ -24,6 +25,16 @@ public class HttpLoggingHandler : DelegatingHandler
         sw.Stop();
         var icon = response.IsSuccessStatusCode ? "✓" : "✗";
         Debug.WriteLine($"[HTTP {icon}] {(int)response.StatusCode} {request.RequestUri} ({sw.ElapsedMilliseconds}ms)");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            // Buffer the body so downstream code (ApiService) can still read it.
+            var body = await response.Content.ReadAsStringAsync(ct);
+            var mediaType = response.Content.Headers.ContentType?.MediaType ?? "application/json";
+            response.Content = new StringContent(body, Encoding.UTF8, mediaType);
+            Debug.WriteLine($"[HTTP ✗ Body] {body}");
+        }
+
         return response;
     }
 }

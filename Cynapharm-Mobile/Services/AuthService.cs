@@ -16,7 +16,7 @@ public class AuthService
 
     public async Task<LoginResponse?> LoginAsync(LoginRequest request)
     {
-        var result = await _api.PostAsync<LoginResponse>("auth/login", request);
+        var result = await _api.PostAsync<LoginResponse>(ApiRoutes.Auth.Login, request);
         if (result != null && result.User != null)
         {
             await SecureStorage.SetAsync(StorageKeys.JwtToken, result.Token);
@@ -45,10 +45,10 @@ public class AuthService
     }
 
     public async Task ForgotPasswordAsync(string email)
-        => await _api.PostAsync<object>("auth/forgot-password", new { Email = email });
+        => await _api.PostAsync<object>(ApiRoutes.Auth.ForgotPassword, new { Email = email });
 
     public async Task ChangePasswordAsync(ChangePasswordRequest request)
-        => await _api.PutAsync<object>("auth/change-password", request);
+        => await _api.PutAsync<object>(ApiRoutes.Auth.ChangePassword, request);
 
     public async Task<ApiResponse<object>> UpdateProfileAsync(UpdateProfileDto request)
     {

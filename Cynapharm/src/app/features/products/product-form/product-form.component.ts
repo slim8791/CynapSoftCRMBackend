@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, DestroyRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -45,7 +45,7 @@ export class ProductFormComponent implements OnInit {
       Prix_Creation: ['', [Validators.required, Validators.min(0)]],
       TVA:           [19, [Validators.required, Validators.min(0), Validators.max(100)]],
       isActive:      [true]
-    });
+    }, { validators: this.priceOrderValidator });
   }
 
   ngOnInit(): void {
@@ -113,6 +113,21 @@ export class ProductFormComponent implements OnInit {
 
   ctrl(field: string): AbstractControl {
     return this.productForm.get(field)!;
+  }
+
+  get hasPriceOrderError(): boolean {
+    const touched = !!(this.ctrl('Prix_Vente').touched || this.ctrl('Prix_Creation').touched);
+    return touched && !!this.productForm.errors?.['priceBelowCreation'];
+  }
+
+  private priceOrderValidator(group: AbstractControl): ValidationErrors | null {
+    const venteRaw = group.get('Prix_Vente')?.value;
+    const creationRaw = group.get('Prix_Creation')?.value;
+    const prixVente = parseFloat(String(venteRaw ?? '').replace(',', '.'));
+    const prixCreation = parseFloat(String(creationRaw ?? '').replace(',', '.'));
+
+    if (Number.isNaN(prixVente) || Number.isNaN(prixCreation)) return null;
+    return prixVente < prixCreation ? { priceBelowCreation: true } : null;
   }
 
   formatDecimal(event: Event, controlName: string): void {

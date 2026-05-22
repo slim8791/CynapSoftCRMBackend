@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CynapCRM.Services.ProductAPI.Models;
 using CynapCRM.Services.ProductAPI.Models.Dto;
 
@@ -16,12 +16,16 @@ namespace CynapCRM.Services.ProductAPI
 
             // Lot
             CreateMap<Lot, LotDto>()
+                .ForMember(dest => dest.Numero, 
+                           opt => opt.MapFrom(src => src.NumeroLot))
                 .ForMember(dest => dest.IsExpired,
                            opt => opt.MapFrom(src =>
                                src.DateExpiration < DateTime.UtcNow))
                 .ForMember(dest => dest.IsOutOfStock,
                            opt => opt.MapFrom(src => src.Quantite <= 0));
             CreateMap<LotDto, Lot>()
+                .ForMember(dest => dest.NumeroLot, 
+                           opt => opt.MapFrom(src => src.Numero))
                 .ForMember(dest => dest.Promotions, opt => opt.Ignore())
                 .ForMember(dest => dest.Produit, opt => opt.Ignore());
 

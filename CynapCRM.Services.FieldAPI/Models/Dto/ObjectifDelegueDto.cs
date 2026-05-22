@@ -20,6 +20,7 @@ namespace CynapCRM.Services.FieldAPI.Models.Dto
         // Injecté depuis le JWT (Claim‑Based Identity)
         public int Id_User_Delegue { get; set; }
 
-
+        public DateTime? DateDebut { get; set; }
+        public DateTime? DateFin   { get; set; }
     }
 }

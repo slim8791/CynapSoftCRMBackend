@@ -416,3 +416,16 @@
     display: none;
   }
 }
+
+/* Turnstile CAPTCHA widget */
+
+.turnstile-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.turnstile-error {
+  margin-top: 0;
+  margin-bottom: 16px;
+}

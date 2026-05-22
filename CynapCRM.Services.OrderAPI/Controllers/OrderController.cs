@@ -92,6 +92,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> GetOrdersByClientId(
             int clientId,
+            [FromQuery] EtatCommande? statut = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
         {
@@ -104,7 +105,7 @@ namespace CynapCRM.Services.OrderAPI.Controllers
                     return BadRequest(_response);
                 }
                 var result = await _orderService
-                    .GetOrdersByClientIdAsync(clientId, page, pageSize);
+                    .GetOrdersByClientIdAsync(clientId, statut, page, pageSize);
                 _response.Result = result;
                 return Ok(_response);
             }

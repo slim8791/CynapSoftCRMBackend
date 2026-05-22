@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { OrderService } from '../order.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { ProductService } from '../../products/product.service';
 
 @Component({
   selector: 'app-order-form',
@@ -19,6 +20,7 @@ export class OrderFormComponent implements OnInit, OnDestroy {
   form!:   FormGroup;
   loading  = false;
   error    = '';
+  products: any[] = [];
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -26,6 +28,7 @@ export class OrderFormComponent implements OnInit, OnDestroy {
     private router: Router,
     private svc:    OrderService,
     private toast:  ToastService,
+    private productService: ProductService,
   ) {}
 
   ngOnInit(): void {
@@ -33,6 +36,7 @@ export class OrderFormComponent implements OnInit, OnDestroy {
       IsFinalValidation: [false],
       Lignes: this.fb.array([this.newLigne()]),
     });
+    this.loadProducts();
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
@@ -46,6 +50,27 @@ export class OrderFormComponent implements OnInit, OnDestroy {
       PrixUnitaire: ['', [Validators.required, Validators.min(0)]],
       Remise:       [0,  [Validators.min(0), Validators.max(100)]],
     });
+  }
+
+  private loadProducts(): void {
+    this.productService.getProducts()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: products => { this.products = products ?? []; },
+        error: () => { this.products = []; }
+      });
+  }
+
+  productId(product: any): number {
+    return product?.id_Produit ?? product?.Id_Produit ?? product?.idProduit ?? product?.id ?? 0;
+  }
+
+  productName(product: any): string {
+    return product?.nom ?? product?.Nom ?? product?.name ?? `Produit #${this.productId(product)}`;
+  }
+
+  productPrice(product: any): number {
+    return product?.prixVente ?? product?.PrixVente ?? product?.Prix_Vente ?? product?.prix_Vente ?? 0;
   }
 
   addLigne():       void { this.lignes.push(this.newLigne()); }

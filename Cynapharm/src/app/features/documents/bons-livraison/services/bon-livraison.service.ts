@@ -11,6 +11,8 @@ export interface BonLivraisonDto {
   id_Commande?:     number;
   dateCreation?:    string;
   typeDocument?:    string;
+  cloudinaryUrl?:   string;
+  url?:             string;
 }
 
 @Injectable({ providedIn: 'root' })

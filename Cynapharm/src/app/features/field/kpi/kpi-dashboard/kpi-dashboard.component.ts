@@ -28,7 +28,12 @@ export class KpiDashboardComponent implements OnInit, OnDestroy {
 
   private d$ = new Subject<void>();
   constructor(private svc: KpiService, private cdr: ChangeDetectorRef) {}
-  ngOnInit() {}
+  ngOnInit(): void {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    this.dateDebut = firstDay.toISOString().split('T')[0];
+    this.dateFin   = now.toISOString().split('T')[0];
+  }
   ngOnDestroy() { this.d$.next(); this.d$.complete(); }
 
   load(): void {
@@ -61,5 +66,17 @@ export class KpiDashboardComponent implements OnInit, OnDestroy {
         this.loaded     = true;
         this.cdr.markForCheck();
       });
+  }
+
+  historiqueDate(entry: any): string | null {
+    return entry?.date ?? entry?.Date ?? entry?.dateAction ?? entry?.DateAction ?? entry?.createdAt ?? entry?.CreatedAt ?? null;
+  }
+
+  historiqueAction(entry: any): string {
+    return entry?.action ?? entry?.Action ?? entry?.type ?? entry?.Type ?? entry?.event ?? entry?.Event ?? '—';
+  }
+
+  historiqueDetail(entry: any): string {
+    return entry?.detail ?? entry?.Detail ?? entry?.description ?? entry?.Description ?? entry?.message ?? entry?.Message ?? '—';
   }
 }

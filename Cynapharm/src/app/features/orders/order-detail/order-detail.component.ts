@@ -192,9 +192,61 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.showStatusModal = false;
     this.svc.updateOrderStatus({ Id_Commande: this.order.Id_Commande, NouveauStatut: newStatus })
       .pipe(takeUntil(this.destroy$)).subscribe({
-        next: () => { this.toast.showSuccess('Statut mis à jour.'); this.loadOrder(); },
+        next: () => {
+          this.toast.showSuccess('Statut mis à jour.');
+          // Automatic document creation on status transitions
+          if (newStatus === EtatCommande.Confirmee)     this.autoCreateBC();
+          else if (newStatus === EtatCommande.Expediee) this.autoCreateBL();
+          else if (newStatus === EtatCommande.Livree)   this.autoCreateFacture();
+          this.loadOrder();
+        },
         error: () => this.toast.showError('Erreur lors de la mise à jour du statut.'),
       });
+  }
+
+  private autoCreateBC(): void {
+    if (!this.order) return;
+    if (this.bonsCommandes.length > 0) return;
+    this.bcSvc.createOrUpdate({
+      numero_Doc:  0,
+      nom_Doc:     `BC-${this.order.Id_Commande}`,
+      id_Commande: this.orderId,
+      id_Client:   this.order.Id_Client,
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => { this.toast.showSuccess('Bon de commande créé automatiquement.'); this.loadDocuments(); },
+      error: () => this.toast.showError('Erreur lors de la création automatique du BC.'),
+    });
+  }
+
+  private autoCreateBL(): void {
+    if (!this.order) return;
+    if (this.bonsLivraison.length > 0) return;
+    this.blSvc.createOrUpdate({
+      numero_Doc:  0,
+      nom_Doc:     `BL-${this.order.Id_Commande}`,
+      id_Commande: this.orderId,
+      id_Client:   this.order.Id_Client,
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => { this.toast.showSuccess('Bon de livraison créé automatiquement.'); this.loadDocuments(); },
+      error: () => this.toast.showError('Erreur lors de la création automatique du BL.'),
+    });
+  }
+
+  private autoCreateFacture(): void {
+    if (!this.order) return;
+    if (this.factures.length > 0) return;
+    this.factureSvc.createOrUpdate({
+      numero_Doc:  0,
+      nom_Doc:     `FAC-${this.order.Id_Commande}`,
+      id_Commande: this.orderId,
+      id_Client:   this.order.Id_Client,
+      montantHT:   this.order.MontantTotalHT ?? 0,
+      montantTTC:  this.order.MontantTTC     ?? 0,
+      dateFacture: new Date().toISOString(),
+    }).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => { this.toast.showSuccess('Facture créée automatiquement.'); this.loadDocuments(); },
+      error: () => this.toast.showError('Erreur lors de la création automatique de la facture.'),
+    });
   }
 
   closeCancelModal(): void { this.showCancelModal = false; this.cancelMotif = ''; }
@@ -239,6 +291,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  canDeleteReclamation(rec: ReclamationDto): boolean {
+    const statut = (rec as any).Statut ?? (rec as any).statut;
+    return statut === 0 || statut === '0' || statut === 'Ouverte';
+  }
+
   // ── Documents ──────────────────────────────────────────
 
   private loadDocuments(): void {
@@ -258,7 +315,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   createBC(): void {
     if (!this.order) return;
     this.creatingBC = true;
-    this.bcSvc.createOrUpdate({ numero_Doc: 0, id_Commande: this.orderId, id_Client: this.order.Id_Client })
+    this.bcSvc.createOrUpdate({ numero_Doc: 0, nom_Doc: `BC-${this.orderId}`, id_Commande: this.orderId, id_Client: this.order.Id_Client })
       .pipe(takeUntil(this.destroy$)).subscribe({
         next: () => { this.toast.showSuccess('Bon de commande créé.'); this.creatingBC = false; this.loadDocuments(); },
         error: () => { this.toast.showError('Erreur lors de la création du BC.'); this.creatingBC = false; this.cdr.markForCheck(); },
@@ -322,6 +379,6 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   getEtatLabel  = (s: string | number) => this.svc.getEtatLabel(s);
   getEtatClass  = (s: string | number) => this.svc.getEtatClass(s);
-  getRecLabel   = (s?: string) => this.recSvc.getStatutLabel(s);
-  getRecClass   = (s?: string) => this.recSvc.getStatutClass(s);
+  getRecLabel   = (s?: string | number) => this.recSvc.getStatutLabel(s);
+  getRecClass   = (s?: string | number) => this.recSvc.getStatutClass(s);
 }

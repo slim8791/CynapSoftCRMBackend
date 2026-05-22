@@ -117,7 +117,25 @@
             <a routerLink="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
           </div>
 
-          <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || loading">
+          <!-- Cloudflare Turnstile CAPTCHA -->
+          <div class="turnstile-wrapper">
+            <app-turnstile
+              #turnstileWidget
+              (resolved)="onTurnstileResolved($event)"
+              (errored)="onTurnstileError()">
+            </app-turnstile>
+          </div>
+
+          <div *ngIf="turnstileError" class="error-alert turnstile-error">
+            <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            Vérification de sécurité échouée. Veuillez réessayer.
+          </div>
+
+          <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || !isTurnstileValid || loading">
             <span *ngIf="!loading">Se connecter</span>
             <span *ngIf="loading" class="btn-spinner"></span>
           </button>

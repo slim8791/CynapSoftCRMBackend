@@ -23,12 +23,12 @@
 
             <!-- Back button -->
             <Border Grid.Column="0"
-                    BackgroundColor="#22FFFFFF"
-                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="#26FFFFFF"
+                    StrokeShape="RoundRectangle 12"
                     Stroke="Transparent"
-                    HeightRequest="36" WidthRequest="36"
+                    HeightRequest="38" WidthRequest="38"
                     VerticalOptions="Center">
-                <Label Text="‹" FontSize="22" FontAttributes="Bold"
+                <Label Text="‹" FontSize="24" FontAttributes="Bold"
                        TextColor="White"
                        HorizontalOptions="Center" VerticalOptions="Center">
                     <Label.GestureRecognizers>
@@ -41,14 +41,15 @@
             <Label Grid.Column="1"
                    Text="Fiche produit"
                    FontSize="17" FontAttributes="Bold"
+                   FontFamily="OpenSansSemibold"
                    TextColor="White"
                    HorizontalOptions="Center" VerticalOptions="Center" />
 
-            <!-- Active / Inactive badge -->
+            <!-- Active / Inactive badge (hidden for MEDECIN) -->
             <Border Grid.Column="2"
-                    StrokeShape="RoundRectangle 8"
+                    StrokeShape="RoundRectangle 12"
                     Stroke="Transparent"
-                    Padding="10,4"
+                    Padding="12,5"
                     VerticalOptions="Center"
                     IsVisible="{Binding Product, Converter={StaticResource IsNotNullOrEmptyConverter}}">
                 <Border.BackgroundColor>
@@ -57,6 +58,9 @@
                 <Border.Triggers>
                     <DataTrigger TargetType="Border" Binding="{Binding Product.Actif}" Value="False">
                         <Setter Property="BackgroundColor" Value="#44E24B4A" />
+                    </DataTrigger>
+                    <DataTrigger TargetType="Border" Binding="{Binding CanSeePrices}" Value="False">
+                        <Setter Property="IsVisible" Value="False" />
                     </DataTrigger>
                 </Border.Triggers>
                 <Label FontSize="11" FontAttributes="Bold" TextColor="White">
@@ -84,13 +88,13 @@
                                IsVisible="{Binding IsBusy}"
                                Color="{StaticResource Primary}"
                                HorizontalOptions="Center"
-                               Margin="0,16" />
+                               Margin="0,20" />
 
-            <!-- ── Hero image (edge-to-edge, no horizontal padding) ──────── -->
-            <Grid HeightRequest="220"
+            <!-- ── Hero ─────────────────────────────────────────────────── -->
+            <Grid HeightRequest="200"
                   IsVisible="{Binding Product, Converter={StaticResource IsNotNullOrEmptyConverter}}">
 
-                <!-- Placeholder when no image -->
+                <!-- Placeholder (no image) -->
                 <Border Stroke="Transparent" BackgroundColor="{StaticResource Primary}">
                     <Border.StrokeShape><RoundRectangle CornerRadius="0" /></Border.StrokeShape>
                     <Border.Triggers>
@@ -100,45 +104,58 @@
                             <Setter Property="IsVisible" Value="False" />
                         </DataTrigger>
                     </Border.Triggers>
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
-                        <Label Text="Rx" FontSize="56" FontAttributes="Bold"
-                               TextColor="White" Opacity="0.75"
-                               HorizontalOptions="Center" />
-                        <Label Text="Produit pharmaceutique" FontSize="13"
-                               TextColor="White" Opacity="0.50"
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="12">
+                        <!-- Large icon pill -->
+                        <Border BackgroundColor="#26FFFFFF"
+                                StrokeShape="RoundRectangle 36"
+                                Stroke="Transparent"
+                                WidthRequest="96" HeightRequest="96"
+                                HorizontalOptions="Center">
+                            <Label Text="💊" FontSize="48"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="Rx"
+                               FontSize="22" FontAttributes="Bold"
+                               TextColor="White" Opacity="0.9"
                                HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Product image -->
+                <!-- Actual product image -->
                 <Border Stroke="Transparent"
                         IsVisible="{Binding Product.ImageUrl, Converter={StaticResource IsNotNullOrEmptyConverter}}">
                     <Border.StrokeShape><RoundRectangle CornerRadius="0" /></Border.StrokeShape>
                     <Image Source="{Binding Product.ImageUrl}"
                            Aspect="AspectFill"
-                           HeightRequest="220" />
+                           HeightRequest="200" />
                 </Border>
 
+                <!-- Gradient overlay at bottom for readability -->
+                <BoxView VerticalOptions="End"
+                         HeightRequest="60"
+                         BackgroundColor="{StaticResource PageBackground}"
+                         Opacity="0.55" />
             </Grid>
 
             <!-- ── Padded body content ────────────────────────────────────── -->
-            <VerticalStackLayout Padding="16" Spacing="12"
+            <VerticalStackLayout Padding="16,12" Spacing="12"
                                  IsVisible="{Binding Product, Converter={StaticResource IsNotNullOrEmptyConverter}}">
 
-                <!-- ── Product name + badges + price card ──────────────── -->
-                <Border Style="{StaticResource CardStyle}">
+                <!-- ── Name + badges + price ──────────────────────────────── -->
+                <Border Style="{StaticResource CardStyle}" Padding="16,14">
                     <VerticalStackLayout Spacing="12">
 
-                        <!-- Name -->
+                        <!-- Product name -->
                         <Label Text="{Binding Product.Nom}"
                                FontSize="22" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
                                TextColor="{StaticResource TextPrimary}" />
 
                         <!-- Category + reference chips -->
                         <HorizontalStackLayout Spacing="8">
                             <Border BackgroundColor="{StaticResource AccentLight}"
                                     Stroke="{StaticResource Accent}" StrokeThickness="1"
-                                    Padding="10,4" StrokeShape="RoundRectangle 12"
+                                    Padding="10,5" StrokeShape="RoundRectangle 12"
                                     IsVisible="{Binding Product.Categorie, Converter={StaticResource IsNotNullOrEmptyConverter}}">
                                 <Label Text="{Binding Product.Categorie}"
                                        FontSize="11" FontAttributes="Bold"
@@ -146,7 +163,7 @@
                             </Border>
                             <Border BackgroundColor="{StaticResource SurfaceBackground}"
                                     Stroke="{StaticResource BorderColor}" StrokeThickness="1"
-                                    Padding="10,4" StrokeShape="RoundRectangle 12"
+                                    Padding="10,5" StrokeShape="RoundRectangle 12"
                                     IsVisible="{Binding Product.Reference, Converter={StaticResource IsNotNullOrEmptyConverter}}">
                                 <Label Text="{Binding Product.Reference, StringFormat='Réf. {0}'}"
                                        FontSize="11" TextColor="{StaticResource TextSecondary}" />
@@ -156,26 +173,61 @@
                         <!-- Price block (hidden for MEDECIN) -->
                         <Border BackgroundColor="{StaticResource PrimaryLight}"
                                 Stroke="Transparent"
-                                StrokeShape="RoundRectangle 12"
-                                Padding="14,12"
+                                StrokeShape="RoundRectangle 14"
+                                Padding="16,14"
                                 IsVisible="{Binding CanSeePrices}">
                             <Grid ColumnDefinitions="*,Auto">
                                 <VerticalStackLayout Grid.Column="0" Spacing="2">
                                     <Label Text="Prix unitaire"
-                                           FontSize="11"
-                                           TextColor="{StaticResource TextMuted}" />
-                                    <Label Text="{Binding Product.PrixUnitaire, StringFormat='{0:N3}'}"
-                                           FontSize="30" FontAttributes="Bold"
-                                           TextColor="{StaticResource Primary}" />
+                                           FontSize="11" TextColor="{StaticResource TextMuted}" />
+                                    <Grid>
+                                        <!-- Price defined: large number + TND unit -->
+                                        <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="6"
+                                              IsVisible="{Binding Product.IsPriceDefined}">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding Product.PrixUnitaire, StringFormat='{0:#,##0.000}'}"
+                                                   FontSize="32" FontAttributes="Bold"
+                                                   TextColor="{StaticResource Primary}" />
+                                            <Label Grid.Column="1"
+                                                   Text="TND"
+                                                   FontSize="14" FontAttributes="Bold"
+                                                   TextColor="{StaticResource PrimaryText}"
+                                                   VerticalOptions="End"
+                                                   Margin="0,0,0,6" />
+                                        </Grid>
+                                        <!-- Price not defined -->
+                                        <Label Text="Prix non défini"
+                                               FontSize="18" FontAttributes="Italic"
+                                               TextColor="#AAAAAA"
+                                               IsVisible="{Binding Product.IsPriceDefined, Converter={StaticResource InvertedBoolConverter}}" />
+                                    </Grid>
                                 </VerticalStackLayout>
+                                <!-- Status pill on the right -->
                                 <Border Grid.Column="1"
-                                        BackgroundColor="{StaticResource Primary}"
+                                        StrokeShape="RoundRectangle 12"
                                         Stroke="Transparent"
-                                        StrokeShape="RoundRectangle 8"
                                         Padding="12,6"
                                         VerticalOptions="Center">
-                                    <Label Text="TND" FontSize="14" FontAttributes="Bold"
-                                           TextColor="White" />
+                                    <Border.BackgroundColor>
+                                        <Color>#2200C853</Color>
+                                    </Border.BackgroundColor>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding Product.Actif}" Value="False">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource DangerLight}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label FontSize="12" FontAttributes="Bold">
+                                        <Label.TextColor>
+                                            <Color>#00C853</Color>
+                                        </Label.TextColor>
+                                        <Label.Text>✓ Actif</Label.Text>
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Product.Actif}" Value="False">
+                                                <Setter Property="Text" Value="✕ Inactif" />
+                                                <Setter Property="TextColor" Value="{StaticResource Danger}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
                                 </Border>
                             </Grid>
                         </Border>
@@ -183,40 +235,58 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- ── Description card ────────────────────────────────── -->
-                <Border Style="{StaticResource CardStyle}"
+                <!-- ── Description card ───────────────────────────────────── -->
+                <Border Style="{StaticResource CardStyle}" Padding="16,14"
                         IsVisible="{Binding Product.Description, Converter={StaticResource IsNotNullOrEmptyConverter}}">
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="DESCRIPTION"
-                               FontSize="11" FontAttributes="Bold"
-                               TextColor="{StaticResource TextMuted}"
-                               CharacterSpacing="0.5" />
+                    <VerticalStackLayout Spacing="10">
+                        <!-- Section header with left accent bar -->
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                            <BoxView Grid.Column="0"
+                                     BackgroundColor="{StaticResource Primary}"
+                                     CornerRadius="2"
+                                     VerticalOptions="Fill" WidthRequest="4" />
+                            <Label Grid.Column="1"
+                                   Text="Description"
+                                   FontSize="13" FontAttributes="Bold"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </Grid>
                         <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
                         <Label Text="{Binding Product.Description}"
                                FontSize="14"
                                TextColor="{StaticResource TextPrimary}"
-                               LineHeight="1.5" />
+                               LineHeight="1.55" />
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- ── Informations card ────────────────────────────────── -->
-                <Border Style="{StaticResource CardStyle}">
+                <!-- ── Informations card (hidden for MEDECIN) ────────────── -->
+                <Border Style="{StaticResource CardStyle}"
+                        IsVisible="{Binding HasInformations}">
                     <VerticalStackLayout Spacing="0">
-                        <Label Text="INFORMATIONS"
-                               FontSize="11" FontAttributes="Bold"
-                               TextColor="{StaticResource TextMuted}"
-                               CharacterSpacing="0.5"
-                               Margin="0,0,0,8" />
+                        <!-- Section header -->
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10" Margin="0,0,0,10">
+                            <BoxView Grid.Column="0"
+                                     BackgroundColor="{StaticResource Secondary}"
+                                     CornerRadius="2"
+                                     VerticalOptions="Fill" WidthRequest="4" />
+                            <Label Grid.Column="1"
+                                   Text="Informations"
+                                   FontSize="13" FontAttributes="Bold"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </Grid>
                         <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" Margin="0,0,0,4" />
 
                         <!-- Catégorie row -->
-                        <Grid ColumnDefinitions="36,*" ColumnSpacing="12" Padding="2,8"
+                        <Grid ColumnDefinitions="44,*" ColumnSpacing="12" Padding="2,10"
                               IsVisible="{Binding Product.Categorie, Converter={StaticResource IsNotNullOrEmptyConverter}}">
                             <Border Grid.Column="0"
                                     BackgroundColor="{StaticResource AccentLight}"
-                                    StrokeShape="RoundRectangle 10" Stroke="Transparent"
-                                    HeightRequest="36" WidthRequest="36">
-                                <Label Text="🏷️" FontSize="15"
+                                    StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                                    HeightRequest="40" WidthRequest="40">
+                                <Label Text="🏷️" FontSize="16"
                                        HorizontalOptions="Center" VerticalOptions="Center" />
                             </Border>
                             <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
@@ -227,16 +297,25 @@
                             </VerticalStackLayout>
                         </Grid>
 
-                        <!-- Statut row -->
                         <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}"
-                                 Margin="48,0,0,0"
-                                 IsVisible="{Binding Product.Categorie, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
-                        <Grid ColumnDefinitions="36,*" ColumnSpacing="12" Padding="2,8">
+                                 Margin="56,0,0,0"
+                                 IsVisible="{Binding Product.Categorie, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                            <BoxView.Triggers>
+                                <DataTrigger TargetType="BoxView"
+                                             Binding="{Binding CanSeePrices}" Value="False">
+                                    <Setter Property="IsVisible" Value="False" />
+                                </DataTrigger>
+                            </BoxView.Triggers>
+                        </BoxView>
+
+                        <!-- Statut row (hidden for MEDECIN) -->
+                        <Grid ColumnDefinitions="44,*" ColumnSpacing="12" Padding="2,10"
+                              IsVisible="{Binding CanSeePrices}">
                             <Border Grid.Column="0"
                                     BackgroundColor="{StaticResource PrimaryLight}"
-                                    StrokeShape="RoundRectangle 10" Stroke="Transparent"
-                                    HeightRequest="36" WidthRequest="36">
-                                <Label FontSize="15"
+                                    StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                                    HeightRequest="40" WidthRequest="40">
+                                <Label FontSize="16"
                                        HorizontalOptions="Center" VerticalOptions="Center">
                                     <Label.Text>✅</Label.Text>
                                     <Label.Triggers>
@@ -263,55 +342,92 @@
 
                         <!-- Prix vente row (hidden for MEDECIN) -->
                         <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}"
-                                 Margin="48,0,0,0" IsVisible="{Binding CanSeePrices}" />
-                        <Grid ColumnDefinitions="36,*" ColumnSpacing="12" Padding="2,8"
+                                 Margin="56,0,0,0" IsVisible="{Binding CanSeePrices}" />
+                        <Grid ColumnDefinitions="44,*" ColumnSpacing="12" Padding="2,10"
                               IsVisible="{Binding CanSeePrices}">
                             <Border Grid.Column="0"
                                     BackgroundColor="{StaticResource PrimaryLight}"
-                                    StrokeShape="RoundRectangle 10" Stroke="Transparent"
-                                    HeightRequest="36" WidthRequest="36">
-                                <Label Text="💰" FontSize="15"
+                                    StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                                    HeightRequest="40" WidthRequest="40">
+                                <Label Text="💰" FontSize="16"
                                        HorizontalOptions="Center" VerticalOptions="Center" />
                             </Border>
                             <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                                 <Label Text="Prix vente" FontSize="11" TextColor="{StaticResource TextMuted}" />
-                                <Label Text="{Binding Product.PrixUnitaire, StringFormat='{0:N3} TND'}"
-                                       FontSize="14" FontAttributes="Bold"
-                                       TextColor="{StaticResource Primary}" />
+                                <Label Text="{Binding Product.PrixDisplay}"
+                                       FontSize="14" FontAttributes="Bold">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label"
+                                                     Binding="{Binding Product.IsPriceDefined}"
+                                                     Value="True">
+                                            <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label"
+                                                     Binding="{Binding Product.IsPriceDefined}"
+                                                     Value="False">
+                                            <Setter Property="TextColor" Value="#AAAAAA" />
+                                            <Setter Property="FontAttributes" Value="Italic" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
                             </VerticalStackLayout>
                         </Grid>
 
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- ── MEDECIN info banner ──────────────────────────────── -->
+                <!-- ── MEDECIN info banner ─────────────────────────────────── -->
                 <Border BackgroundColor="{StaticResource InfoBackground}"
-                        StrokeShape="RoundRectangle 12" Stroke="Transparent"
-                        Padding="14,14"
+                        StrokeShape="RoundRectangle 14"
+                        Stroke="{StaticResource InfoText}" StrokeThickness="0.5"
+                        Padding="16,14"
                         IsVisible="{Binding CanSeePrices, Converter={StaticResource InvertedBoolConverter}}">
-                    <Grid ColumnDefinitions="32,*" ColumnSpacing="12">
-                        <Label Grid.Column="0" Text="💊" FontSize="22"
-                               VerticalOptions="Center" HorizontalOptions="Center" />
+                    <Grid ColumnDefinitions="38,*" ColumnSpacing="12">
+                        <Border Grid.Column="0"
+                                BackgroundColor="#1A0C447C"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent"
+                                WidthRequest="38" HeightRequest="38">
+                            <Label Text="💊" FontSize="20"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
                         <Label Grid.Column="1"
                                Text="Pour toute demande d'échantillons, contactez votre délégué Cynapharm."
-                               FontSize="13" TextColor="{StaticResource InfoText}" LineHeight="1.4" />
+                               FontSize="13" TextColor="{StaticResource InfoText}" LineHeight="1.5"
+                               VerticalOptions="Center" />
                     </Grid>
                 </Border>
 
-                <!-- ── Documents card ──────────────────────────────────── -->
+                <!-- ── Documents card ─────────────────────────────────────── -->
                 <Border Style="{StaticResource CardStyle}">
                     <VerticalStackLayout Spacing="12">
 
-                        <Label Text="DOCUMENTS"
-                               FontSize="11" FontAttributes="Bold"
-                               TextColor="{StaticResource TextMuted}"
-                               CharacterSpacing="0.5" />
+                        <!-- Section header -->
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                            <BoxView Grid.Column="0"
+                                     BackgroundColor="{StaticResource Primary}"
+                                     CornerRadius="2"
+                                     VerticalOptions="Fill" WidthRequest="4" />
+                            <Label Grid.Column="1"
+                                   Text="Documents"
+                                   FontSize="13" FontAttributes="Bold"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </Grid>
                         <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" Margin="0,-4,0,0" />
 
                         <!-- Empty state -->
-                        <VerticalStackLayout HorizontalOptions="Center" Spacing="6" Margin="0,8"
+                        <VerticalStackLayout HorizontalOptions="Center" Spacing="8" Margin="0,8"
                                              IsVisible="{Binding HasSupports, Converter={StaticResource InvertedBoolConverter}}">
-                            <Label Text="📄" FontSize="32" HorizontalOptions="Center" />
+                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                    StrokeShape="RoundRectangle 40"
+                                    Stroke="Transparent"
+                                    WidthRequest="64" HeightRequest="64"
+                                    HorizontalOptions="Center">
+                                <Label Text="📄" FontSize="30"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
                             <Label Text="Aucun document disponible"
                                    FontSize="13" TextColor="{StaticResource TextSecondary}"
                                    HorizontalOptions="Center" />
@@ -326,25 +442,30 @@
                                     <VerticalStackLayout Spacing="8">
 
                                         <!-- Support type header -->
-                                        <Grid ColumnDefinitions="30,*" ColumnSpacing="10">
-                                            <Label Grid.Column="0"
-                                                   FontFamily="Tabler" FontSize="20"
-                                                   TextColor="{StaticResource Accent}"
-                                                   VerticalOptions="Center" HorizontalOptions="Center">
-                                                <Label.Text>&#xea5f;</Label.Text>
-                                                <Label.Triggers>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding Type}" Value="Video">
-                                                        <Setter Property="Text" Value="&#xed22;" />
-                                                    </DataTrigger>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding Type}" Value="Presentation">
-                                                        <Setter Property="Text" Value="&#xeb70;" />
-                                                    </DataTrigger>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding Type}" Value="PDF">
-                                                        <Setter Property="Text" Value="&#xea5f;" />
-                                                    </DataTrigger>
-                                                </Label.Triggers>
-                                            </Label>
-                                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                        <Grid ColumnDefinitions="32,*" ColumnSpacing="10">
+                                            <Border Grid.Column="0"
+                                                    BackgroundColor="{StaticResource AccentLight}"
+                                                    StrokeShape="RoundRectangle 8"
+                                                    Stroke="Transparent"
+                                                    WidthRequest="32" HeightRequest="32">
+                                                <Label FontFamily="Tabler" FontSize="18"
+                                                       TextColor="{StaticResource Accent}"
+                                                       HorizontalOptions="Center" VerticalOptions="Center">
+                                                    <Label.Text>&#xea5f;</Label.Text>
+                                                    <Label.Triggers>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding Type}" Value="Video">
+                                                            <Setter Property="Text" Value="&#xed22;" />
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding Type}" Value="Presentation">
+                                                            <Setter Property="Text" Value="&#xeb70;" />
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding Type}" Value="PDF">
+                                                            <Setter Property="Text" Value="&#xea5f;" />
+                                                        </DataTrigger>
+                                                    </Label.Triggers>
+                                                </Label>
+                                            </Border>
+                                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                                                 <Label Text="{Binding Type}"
                                                        FontSize="13" FontAttributes="Bold"
                                                        TextColor="{StaticResource TextPrimary}" />
@@ -364,8 +485,8 @@
                                                             Stroke="{StaticResource BorderColor}"
                                                             StrokeThickness="1"
                                                             Padding="12,10"
-                                                            StrokeShape="RoundRectangle 10">
-                                                        <Grid ColumnDefinitions="*,36,36" ColumnSpacing="6">
+                                                            StrokeShape="RoundRectangle 12">
+                                                        <Grid ColumnDefinitions="*,38,38" ColumnSpacing="8">
 
                                                             <!-- File name + extension -->
                                                             <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
@@ -379,12 +500,12 @@
                                                                        IsVisible="{Binding Extension, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
                                                             </VerticalStackLayout>
 
-                                                            <!-- ti-eye: open in-app viewer -->
+                                                            <!-- View in-app -->
                                                             <Border Grid.Column="1"
                                                                     BackgroundColor="{StaticResource AccentLight}"
                                                                     Stroke="Transparent"
-                                                                    StrokeShape="RoundRectangle 8"
-                                                                    HeightRequest="34" WidthRequest="34">
+                                                                    StrokeShape="RoundRectangle 10"
+                                                                    HeightRequest="36" WidthRequest="36">
                                                                 <Label FontFamily="Tabler" Text="&#xea9a;"
                                                                        FontSize="18"
                                                                        TextColor="{StaticResource Accent}"
@@ -397,12 +518,12 @@
                                                                 </Label>
                                                             </Border>
 
-                                                            <!-- ti-download: open externally -->
+                                                            <!-- Download / open externally -->
                                                             <Border Grid.Column="2"
                                                                     BackgroundColor="{StaticResource PrimaryLight}"
                                                                     Stroke="Transparent"
-                                                                    StrokeShape="RoundRectangle 8"
-                                                                    HeightRequest="34" WidthRequest="34">
+                                                                    StrokeShape="RoundRectangle 10"
+                                                                    HeightRequest="36" WidthRequest="36">
                                                                 <Label FontFamily="Tabler" Text="&#xea96;"
                                                                        FontSize="18"
                                                                        TextColor="{StaticResource Primary}"
@@ -429,21 +550,27 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- ── Lots section ─────────────────────────────────────── -->
-                <Label Text="LOTS DISPONIBLES"
-                       FontSize="11" FontAttributes="Bold"
-                       TextColor="{StaticResource TextMuted}"
-                       CharacterSpacing="0.5"
-                       Margin="0,4,0,0"
-                       IsVisible="{Binding CanSeePrices}" />
+                <!-- ── Lots section ───────────────────────────────────────── -->
+                <Grid ColumnDefinitions="4,*" ColumnSpacing="10" Margin="0,4,0,0"
+                      IsVisible="{Binding CanSeePrices}">
+                    <BoxView Grid.Column="0"
+                             BackgroundColor="{StaticResource Primary}"
+                             CornerRadius="2" WidthRequest="4" />
+                    <Label Grid.Column="1"
+                           Text="Lots disponibles"
+                           FontSize="13" FontAttributes="Bold"
+                           FontFamily="OpenSansSemibold"
+                           TextColor="{StaticResource TextPrimary}"
+                           VerticalOptions="Center" />
+                </Grid>
 
                 <CollectionView ItemsSource="{Binding Lots}" IsVisible="{Binding CanSeePrices}">
                     <CollectionView.EmptyView>
                         <Border BackgroundColor="{StaticResource SurfaceBackground}"
                                 Stroke="{StaticResource BorderColor}" StrokeThickness="1"
-                                StrokeShape="RoundRectangle 12" Padding="16,20">
-                            <VerticalStackLayout HorizontalOptions="Center" Spacing="6">
-                                <Label Text="📦" FontSize="28" HorizontalOptions="Center" />
+                                StrokeShape="RoundRectangle 14" Padding="16,22">
+                            <VerticalStackLayout HorizontalOptions="Center" Spacing="8">
+                                <Label Text="📦" FontSize="30" HorizontalOptions="Center" />
                                 <Label Text="Aucun lot disponible"
                                        FontSize="13" TextColor="{StaticResource TextSecondary}"
                                        HorizontalOptions="Center" />
@@ -452,62 +579,84 @@
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="models:Lot">
-                            <Border Margin="0,0,0,8" Style="{StaticResource CardStyle}">
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-
-                                    <VerticalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
-                                        <Label Text="{Binding NumeroLot, StringFormat='Lot N° {0}'}"
-                                               FontAttributes="Bold" FontSize="15"
-                                               TextColor="{StaticResource TextPrimary}" />
-                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4">
-                                            <Label Grid.Column="0" Text="📅" FontSize="11"
-                                                   VerticalOptions="Center" />
-                                            <Label Grid.Column="1"
-                                                   Text="{Binding DateExpiration, StringFormat='Exp. {0:dd/MM/yyyy}'}"
-                                                   FontSize="12"
-                                                   TextColor="{StaticResource TextSecondary}"
-                                                   VerticalOptions="Center" />
-                                        </Grid>
-                                    </VerticalStackLayout>
-
-                                    <Border Grid.Column="1"
-                                            BackgroundColor="{StaticResource Primary}"
-                                            Stroke="Transparent"
-                                            StrokeShape="RoundRectangle 12"
-                                            Padding="14,10"
-                                            VerticalOptions="Center">
-                                        <VerticalStackLayout Spacing="0" HorizontalOptions="Center">
-                                            <Label Text="{Binding QuantiteDisponible}"
-                                                   FontAttributes="Bold" FontSize="20"
-                                                   TextColor="White"
-                                                   HorizontalOptions="Center" />
-                                            <Label Text="unités" FontSize="10"
-                                                   TextColor="White" Opacity="0.75"
-                                                   HorizontalOptions="Center" />
+                            <Border Margin="0,0,0,8"
+                                    BackgroundColor="{StaticResource CardBackground}"
+                                    Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 14"
+                                    Padding="0">
+                                <Border.Shadow>
+                                    <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
+                                </Border.Shadow>
+                                <!-- Left accent + content -->
+                                <Grid ColumnDefinitions="5,*">
+                                    <BoxView Grid.Column="0"
+                                             BackgroundColor="{StaticResource Primary}"
+                                             VerticalOptions="Fill" />
+                                    <Grid Grid.Column="1"
+                                          ColumnDefinitions="*,Auto"
+                                          ColumnSpacing="12"
+                                          Padding="14,14">
+                                        <VerticalStackLayout Grid.Column="0" Spacing="5" VerticalOptions="Center">
+                                            <Label Text="{Binding NumeroLot, StringFormat='Lot N° {0}'}"
+                                                   FontAttributes="Bold" FontSize="15"
+                                                   FontFamily="OpenSansSemibold"
+                                                   TextColor="{StaticResource TextPrimary}" />
+                                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                                <Label Grid.Column="0" Text="📅" FontSize="12"
+                                                       VerticalOptions="Center" />
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding DateExpiration, StringFormat='Exp. {0:dd/MM/yyyy}'}"
+                                                       FontSize="12"
+                                                       TextColor="{StaticResource TextSecondary}"
+                                                       VerticalOptions="Center" />
+                                            </Grid>
                                         </VerticalStackLayout>
-                                    </Border>
 
+                                        <!-- Quantity badge -->
+                                        <Border Grid.Column="1"
+                                                BackgroundColor="{StaticResource Primary}"
+                                                Stroke="Transparent"
+                                                StrokeShape="RoundRectangle 14"
+                                                Padding="16,12"
+                                                VerticalOptions="Center">
+                                            <VerticalStackLayout Spacing="0" HorizontalOptions="Center">
+                                                <Label Text="{Binding QuantiteDisponible}"
+                                                       FontAttributes="Bold" FontSize="22"
+                                                       TextColor="White"
+                                                       HorizontalOptions="Center" />
+                                                <Label Text="unités" FontSize="10"
+                                                       TextColor="White" Opacity="0.75"
+                                                       HorizontalOptions="Center" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </Grid>
                                 </Grid>
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
 
-                <!-- ── Promotions section ───────────────────────────────── -->
-                <Label Text="PROMOTIONS ACTIVES"
-                       FontSize="11" FontAttributes="Bold"
-                       TextColor="{StaticResource TextMuted}"
-                       CharacterSpacing="0.5"
-                       Margin="0,4,0,0"
-                       IsVisible="{Binding CanSeePrices}" />
+                <!-- ── Promotions section ──────────────────────────────────── -->
+                <Grid ColumnDefinitions="4,*" ColumnSpacing="10" Margin="0,4,0,0"
+                      IsVisible="{Binding CanSeePrices}">
+                    <BoxView Grid.Column="0"
+                             BackgroundColor="{StaticResource Secondary}"
+                             CornerRadius="2" WidthRequest="4" />
+                    <Label Grid.Column="1"
+                           Text="Promotions actives"
+                           FontSize="13" FontAttributes="Bold"
+                           FontFamily="OpenSansSemibold"
+                           TextColor="{StaticResource TextPrimary}"
+                           VerticalOptions="Center" />
+                </Grid>
 
                 <CollectionView ItemsSource="{Binding Promotions}" IsVisible="{Binding CanSeePrices}">
                     <CollectionView.EmptyView>
                         <Border BackgroundColor="{StaticResource SurfaceBackground}"
                                 Stroke="{StaticResource BorderColor}" StrokeThickness="1"
-                                StrokeShape="RoundRectangle 12" Padding="16,20">
-                            <VerticalStackLayout HorizontalOptions="Center" Spacing="6">
-                                <Label Text="🎁" FontSize="28" HorizontalOptions="Center" />
+                                StrokeShape="RoundRectangle 14" Padding="16,22">
+                            <VerticalStackLayout HorizontalOptions="Center" Spacing="8">
+                                <Label Text="🎁" FontSize="30" HorizontalOptions="Center" />
                                 <Label Text="Aucune promotion active"
                                        FontSize="13" TextColor="{StaticResource TextSecondary}"
                                        HorizontalOptions="Center" />
@@ -517,36 +666,56 @@
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="models:Promotion">
                             <Border Margin="0,0,0,8"
-                                    BackgroundColor="White"
+                                    BackgroundColor="{StaticResource CardBackground}"
                                     Stroke="{StaticResource BorderColor}" StrokeThickness="1"
-                                    StrokeShape="RoundRectangle 12"
+                                    StrokeShape="RoundRectangle 14"
                                     Padding="0">
-                                <!-- Left accent stripe + content -->
+                                <Border.Shadow>
+                                    <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
+                                </Border.Shadow>
                                 <Grid ColumnDefinitions="5,*">
                                     <BoxView Grid.Column="0"
                                              BackgroundColor="{StaticResource Secondary}"
                                              VerticalOptions="Fill" />
-                                    <VerticalStackLayout Grid.Column="1" Padding="14,12" Spacing="6">
-                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                            <Label Grid.Column="0"
-                                                   Text="{Binding Titre}"
+                                    <Grid Grid.Column="1"
+                                          ColumnDefinitions="*,Auto"
+                                          ColumnSpacing="10"
+                                          Padding="14,14">
+                                        <VerticalStackLayout Grid.Column="0" Spacing="5" VerticalOptions="Center">
+                                            <Label Text="{Binding Titre}"
                                                    FontAttributes="Bold" FontSize="14"
+                                                   FontFamily="OpenSansSemibold"
                                                    TextColor="{StaticResource TextPrimary}"
-                                                   VerticalOptions="Center" />
-                                            <Border Grid.Column="1"
-                                                    BackgroundColor="{StaticResource Secondary}"
-                                                    Stroke="Transparent"
-                                                    StrokeShape="RoundRectangle 12"
-                                                    Padding="10,5">
+                                                   LineBreakMode="TailTruncation" />
+                                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                                <Label Grid.Column="0" Text="🗓️" FontSize="11"
+                                                       VerticalOptions="Center" />
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding DateFin, StringFormat='Valable jusqu\'au {0:dd/MM/yyyy}'}"
+                                                       FontSize="12"
+                                                       TextColor="{StaticResource TextSecondary}"
+                                                       VerticalOptions="Center" />
+                                            </Grid>
+                                        </VerticalStackLayout>
+
+                                        <!-- Discount badge -->
+                                        <Border Grid.Column="1"
+                                                BackgroundColor="{StaticResource Secondary}"
+                                                Stroke="Transparent"
+                                                StrokeShape="RoundRectangle 14"
+                                                Padding="14,10"
+                                                VerticalOptions="Center">
+                                            <VerticalStackLayout HorizontalOptions="Center" Spacing="0">
                                                 <Label Text="{Binding RemisePourcentage, StringFormat='-{0}%'}"
-                                                       FontAttributes="Bold" FontSize="13"
-                                                       TextColor="White" />
-                                            </Border>
-                                        </Grid>
-                                        <Label Text="{Binding DateFin, StringFormat='Valable jusqu\'au {0:dd/MM/yyyy}'}"
-                                               FontSize="12"
-                                               TextColor="{StaticResource TextSecondary}" />
-                                    </VerticalStackLayout>
+                                                       FontAttributes="Bold" FontSize="18"
+                                                       TextColor="White"
+                                                       HorizontalOptions="Center" />
+                                                <Label Text="remise"
+                                                       FontSize="10" TextColor="White" Opacity="0.8"
+                                                       HorizontalOptions="Center" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </Grid>
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -554,7 +723,7 @@
                 </CollectionView>
 
                 <!-- Bottom padding -->
-                <BoxView HeightRequest="8" Color="Transparent" />
+                <BoxView HeightRequest="12" Color="Transparent" />
 
             </VerticalStackLayout>
 
@@ -562,16 +731,42 @@
         </ScrollView>
         </RefreshView>
 
-        <!-- ── Sticky CTA ─────────────────────────────────────────────── -->
-        <VerticalStackLayout Grid.Row="2"
-                             BackgroundColor="{StaticResource CardBackground}"
-                             IsVisible="{Binding CanSeePrices}">
-            <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
-            <Button Text="Ajouter à une commande"
-                    Command="{Binding AddToOrderCommand}"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    Margin="16,12,16,28" />
-        </VerticalStackLayout>
+        <!-- ── Sticky CTA ─────────────────────────────────────────────────── -->
+        <Grid Grid.Row="2"
+              BackgroundColor="{StaticResource CardBackground}"
+              IsVisible="{Binding CanSeePrices}">
+            <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}"
+                     VerticalOptions="Start" />
+            <Grid ColumnDefinitions="*,Auto" Padding="16,12,16,28" ColumnSpacing="12">
+                <!-- Price recap -->
+                <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="1">
+                    <Label Text="Prix unitaire" FontSize="11" TextColor="{StaticResource TextMuted}" />
+                    <Label Text="{Binding Product.PrixDisplay}"
+                           FontSize="16" FontAttributes="Bold">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label"
+                                         Binding="{Binding Product.IsPriceDefined}"
+                                         Value="True">
+                                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Label"
+                                         Binding="{Binding Product.IsPriceDefined}"
+                                         Value="False">
+                                <Setter Property="TextColor" Value="#AAAAAA" />
+                                <Setter Property="FontAttributes" Value="Italic" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </VerticalStackLayout>
+                <!-- CTA -->
+                <Button Grid.Column="1"
+                        Text="Ajouter à commande"
+                        Command="{Binding AddToOrderCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        HeightRequest="46"
+                        Margin="0" />
+            </Grid>
+        </Grid>
 
     </Grid>
 </ContentPage>

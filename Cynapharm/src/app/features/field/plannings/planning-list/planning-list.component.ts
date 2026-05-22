@@ -7,6 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { PlanningService, PlanningDto } from '../services/planning.service';
 import { EtatPlanning, PLANNING_STATUS_LABELS } from '../../../../core/models/enums/index';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { UserService } from '../../../users/user.service';
 
 @Component({
   selector: 'app-planning-list',
@@ -22,12 +23,26 @@ export class PlanningListComponent implements OnInit, OnDestroy {
   searched = false;
   delegueId: number | null = null;
   EtatPlanning = EtatPlanning;
+  delegues: any[] = [];
+  delegueNames: Record<number, string> = {};
 
   private destroy$ = new Subject<void>();
 
-  constructor(private svc: PlanningService, private cdr: ChangeDetectorRef) {}
+  constructor(private svc: PlanningService, private userSvc: UserService, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$)).subscribe({
+      next: users => {
+        this.delegues = users;
+        users.forEach(u => {
+          const id = u?.id ?? u?.Id;
+          if (id != null) this.delegueNames[id] = this.userName(u);
+        });
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+  }
 
   load(): void {
     if (!this.delegueId) return;
@@ -42,6 +57,14 @@ export class PlanningListComponent implements OnInit, OnDestroy {
 
   statusLabel(e: EtatPlanning): string {
     return PLANNING_STATUS_LABELS[e] ?? String(e);
+  }
+
+  userName(u: any): string {
+    return u?.name ?? u?.Name ?? u?.fullName ?? u?.FullName ?? u?.email ?? u?.Email ?? `#${u?.id ?? u?.Id}`;
+  }
+
+  delegueName(id: number): string {
+    return this.delegueNames[id] ?? `#${id}`;
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
