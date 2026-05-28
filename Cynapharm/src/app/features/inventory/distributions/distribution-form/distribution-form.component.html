@@ -14,9 +14,9 @@
       <div class="field">
         <label>Délégué *</label>
         <select formControlName="id_Delegue">
-          <option [value]="null">-- Sélectionner un délégué --</option>
+          <option [ngValue]="null">-- Sélectionner un délégué --</option>
           @for (u of delegues; track u.id) {
-            <option [value]="u.id">{{ userName(u) }}</option>
+            <option [ngValue]="u.id">{{ userName(u) }}</option>
           }
         </select>
         <span *ngIf="f['id_Delegue'].touched && f['id_Delegue'].invalid" class="field-error">Délégué requis</span>
@@ -25,35 +25,40 @@
       <!-- Stock (cascading from delegue) -->
       <div class="field">
         <label>Stock *</label>
-        <select formControlName="id_Stock" [attr.disabled]="!f['id_Delegue'].value ? true : null">
-          <option [value]="null">
-            @if (!f['id_Delegue'].value) { -- Sélectionner d'abord un délégué -- }
-            @else if (loadingStocks) { Chargement… }
-            @else { -- Sélectionner un stock -- }
-          </option>
-          @for (s of stocks; track s.id_stock) {
-            <option [value]="s.id_stock">
-              Lot {{ s.numeroLot }} — Dispo: {{ s.qteDisponible }}
+        @if (loadingStocks) {
+          <div class="select-loading"><span class="spinner-xs"></span> Chargement des stocks…</div>
+        } @else {
+          <select formControlName="id_Stock">
+            <option [ngValue]="null">
+              @if (!f['id_Delegue'].value) { -- Sélectionner d'abord un délégué -- }
+              @else { -- Sélectionner un stock -- }
             </option>
-          }
-        </select>
+            @for (s of stocks; track s.id_stock) {
+              <option [ngValue]="s.id_stock">
+                Lot {{ s.numeroLot }} — Dispo: {{ s.qteDisponible }}
+              </option>
+            }
+          </select>
+        }
         @if (stocks.length === 0 && f['id_Delegue'].value && !loadingStocks) {
-          <span class="field-hint">Aucun stock pour ce délégué.</span>
+          <span class="field-hint">Aucun stock disponible pour ce délégué.</span>
         }
         <span *ngIf="f['id_Stock'].touched && f['id_Stock'].invalid" class="field-error">Stock requis</span>
       </div>
 
-      <!-- Numéro de lot (auto-filled) -->
+      <!-- Numéro de lot (auto-filled readonly) -->
       <div class="field">
-        <label>Numéro de lot *</label>
-        <input type="text" formControlName="numeroLot" placeholder="Auto-rempli depuis le stock" readonly />
-        <span *ngIf="f['numeroLot'].touched && f['numeroLot'].invalid" class="field-error">Sélectionnez un stock</span>
+        <label>Numéro de lot</label>
+        <div class="date-display" [class.empty]="!f['numeroLot'].value">
+          {{ f['numeroLot'].value || '— auto-rempli depuis le stock sélectionné —' }}
+        </div>
+        <input type="hidden" formControlName="numeroLot" />
       </div>
 
       <!-- Quantité -->
       <div class="field">
         <label>Quantité *</label>
-        <input type="number" formControlName="qte" placeholder="0" min="1" />
+        <input type="number" formControlName="qte" placeholder="1" min="1" />
         <span *ngIf="f['qte'].touched && f['qte'].invalid" class="field-error">Valeur invalide (min 1)</span>
       </div>
 
@@ -61,9 +66,9 @@
       <div class="field">
         <label>Médecin <span class="opt">optionnel</span></label>
         <select formControlName="id_Medecin">
-          <option [value]="null">-- Aucun --</option>
+          <option [ngValue]="null">-- Aucun --</option>
           @for (u of medecins; track u.id) {
-            <option [value]="u.id">{{ userName(u) }}</option>
+            <option [ngValue]="u.id">{{ userName(u) }}</option>
           }
         </select>
       </div>
@@ -72,9 +77,9 @@
       <div class="field">
         <label>Pharmacien <span class="opt">optionnel</span></label>
         <select formControlName="id_Pharmacien">
-          <option [value]="null">-- Aucun --</option>
+          <option [ngValue]="null">-- Aucun --</option>
           @for (u of pharmaciens; track u.id) {
-            <option [value]="u.id">{{ userName(u) }}</option>
+            <option [ngValue]="u.id">{{ userName(u) }}</option>
           }
         </select>
       </div>
@@ -82,12 +87,12 @@
     </div>
 
     @if (recipientError) {
-      <div class="error-banner" style="margin-top:12px">
+      <div class="error-banner mt-sm">
         Au moins un destinataire est requis : sélectionnez un médecin ou un pharmacien.
       </div>
     }
-    <div *ngIf="submitError" class="error-banner" style="margin-top:12px">{{ submitError }}</div>
-    <div *ngIf="successMsg"  class="success-banner">{{ successMsg }}</div>
+    <div *ngIf="submitError" class="error-banner mt-sm">{{ submitError }}</div>
+    <div *ngIf="successMsg"  class="success-banner mt-sm">{{ successMsg }}</div>
 
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" [disabled]="saving">

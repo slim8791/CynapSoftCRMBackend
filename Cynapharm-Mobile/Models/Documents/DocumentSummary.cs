@@ -20,7 +20,7 @@ public class DocumentSummary
     public int CommandeId { get; set; }
 
     // url_Document — present when backend includes it (Cloudinary or storage link)
-    [JsonPropertyName("url_Document")]
+    [JsonPropertyName("cloudinaryUrl")]
     public string? Url { get; set; }
 
     // Statut not in backend DocumentDto — kept for XAML compiled-binding compatibility

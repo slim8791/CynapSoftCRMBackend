@@ -28,11 +28,14 @@ public class VisiteService
     public Task<Visite?> GetVisiteByIdAsync(int id)
         => _api.GetAsync<Visite>($"fields/visites/{id}");
 
-    public Task<Visite?> CreateVisiteAsync(Visite visite)
-        => _api.PostAsync<Visite>("fields/visites", visite);
+    public Task<Visite?> CreateVisiteAsync(CreateVisiteDto dto)
+        => _api.PostAsync<Visite>("fields/visites", dto);
 
-    public Task<Visite?> UpdateVisiteAsync(int id, Visite visite)
-        => _api.PutAsync<Visite>($"fields/visites/{id}", visite);
+    public Task<Visite?> UpdateVisiteAsync(int id, CreateVisiteDto dto)
+    {
+        dto.IdVisite = id;          // IdVisite > 0 signals UPDATE to the backend
+        return _api.PostAsync<Visite>("fields/visites", dto);
+    }
 
     public Task<bool> DeleteVisiteAsync(int id)
         => _api.DeleteAsync($"fields/visites/{id}");
@@ -53,21 +56,27 @@ public class VisiteService
     /// </summary>
     public async Task<Rapport?> CreateRapportAsync(Rapport rapport)
     {
-        // Read the delegate ID stored at login time — required by the backend
-        // ownership check: visite.Id_User_Delegue must equal dto.Id_User_Delegue.
-        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
-        int.TryParse(userIdStr, out var userId);
+        // Prefer the IdDelegue already set on the model (validated before calling this method).
+        // Fall back to SecureStorage only when the caller didn't populate it.
+        var delegueId = rapport.IdDelegue;
+        if (delegueId <= 0)
+        {
+            var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+            int.TryParse(userIdStr, out delegueId);
+        }
 
         // Build a payload that matches the backend's RapportVisiteDto exactly.
+        // Property names must match the DTO (case-insensitive on the backend).
         var payload = new
         {
-            Id_Rapport      = rapport.Id,          // 0 = create, >0 = update
-            Id_Visite       = rapport.VisiteId,
-            Commentaire     = rapport.Contenu,     // mobile uses "Contenu", backend uses "Commentaire"
-            Resultat        = rapport.Resultat,
-            Id_User_Delegue = userId,
-            Latitude        = rapport.Latitude,    // null when GPS was unavailable or refused
-            Longitude       = rapport.Longitude
+            Id_Rapport       = rapport.Id,          // 0 = create, >0 = update
+            Id_Visite        = rapport.VisiteId,
+            Commentaire      = rapport.Contenu,     // mobile: "Contenu", backend DTO: "Commentaire"
+            Resultat         = rapport.Resultat,
+            Id_User_Delegue  = delegueId,           // ownership check on backend
+            Latitude         = rapport.Latitude,    // null when GPS unavailable
+            Longitude        = rapport.Longitude,
+            ProduitsDiscutes = rapport.ProduitsDiscutes  // JSON array or null
         };
 
         return await _api.PostAsync<Rapport>("fields/rapports/createUpdate", payload);

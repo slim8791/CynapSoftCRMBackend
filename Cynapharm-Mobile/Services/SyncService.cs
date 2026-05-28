@@ -46,11 +46,17 @@ public class SyncService
                         VisiteId         = entry.VisiteId,
                         Contenu          = entry.Contenu,
                         Resultat         = entry.Resultat,
-                        ProduitsDiscutes = entry.ProduitsDiscutes,
                         DateSoumission   = new DateTime(entry.DateSoumissionTicks),
                         Latitude         = entry.Latitude,
-                        Longitude        = entry.Longitude
+                        Longitude        = entry.Longitude,
+                        ProduitsDiscutes = entry.ProduitsDiscutes   // ISSUE #17 fix: was missing
                     };
+
+                    // ISSUE #18 fix: set IdDelegue explicitly instead of relying on
+                    // the silent SecureStorage fallback inside CreateRapportAsync
+                    var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+                    if (int.TryParse(userIdStr, out var uid) && uid > 0)
+                        rapport.IdDelegue = uid;
 
                     await _visiteService.CreateRapportAsync(rapport);
                     await _localDb.MarkRapportSyncedAsync(entry.Id);

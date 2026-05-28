@@ -7,43 +7,54 @@ public class Objectif
     [JsonPropertyName("id_Objectif")]
     public int Id { get; set; }
 
-    [JsonPropertyName("id_User_Delegue")]
-    public int DelegueId { get; set; }
-
-    // Backend serializes TypeObjectif enum as int: 1=Visites, 2=ChiffreAffaires,
-    // 3=NouveauxClients, 4=Fidelisation
     [JsonPropertyName("type")]
     public int TypeCode { get; set; }
 
-    public string TypeObjectif => TypeCode switch
-    {
-        1 => "Visites",
-        2 => "Chiffre d'affaires",
-        3 => "Nouveaux clients",
-        4 => "Fidélisation",
-        _ => TypeCode > 0 ? $"Type {TypeCode}" : string.Empty
-    };
-
-    public decimal ValeurCible { get; set; }
-
-    // Backend field is ValeurRealisee; mobile displays as ValeurActuelle
-    [JsonPropertyName("valeurRealisee")]
-    public decimal? ValeurActuelle { get; set; }
-
-    // Backend serializes PeriodeObjectif enum as int: 1=Mensuel, 2=Trimestriel, 3=Annuel
     [JsonPropertyName("periode")]
     public int PeriodeCode { get; set; }
 
-    public string Periode => PeriodeCode switch
+    [JsonPropertyName("valeurCible")]
+    public int ValeurCible { get; set; }
+
+    // Nullable so ViewModel's (o.ValeurActuelle ?? 0) keeps compiling unchanged
+    [JsonPropertyName("valeurRealisee")]
+    public int? ValeurActuelle { get; set; }
+
+    [JsonPropertyName("id_User_Delegue")]
+    public int IdDelegue { get; set; }
+
+    [JsonPropertyName("dateDebut")]
+    public DateTime DateDebut { get; set; }
+
+    [JsonPropertyName("dateFin")]
+    public DateTime DateFin { get; set; }
+
+    [JsonIgnore]
+    public string TypeObjectif => TypeCode switch
     {
-        1 => "Mensuel",
-        2 => "Trimestriel",
-        3 => "Annuel",
-        _ => PeriodeCode > 0 ? $"Période {PeriodeCode}" : string.Empty
+        0 => "Visites",
+        1 => "Chiffre d'affaires",
+        2 => "Nouveaux clients",
+        3 => "Fidélisation",
+        _ => $"Type {TypeCode}"
     };
 
+    [JsonIgnore]
+    public string Periode => PeriodeCode switch
+    {
+        0 => "Mensuel",
+        1 => "Trimestriel",
+        2 => "Annuel",
+        _ => $"Période {PeriodeCode}"
+    };
+
+    [JsonIgnore]
     public double ProgressValue =>
         ValeurCible > 0
-            ? Math.Min((double)(ValeurActuelle ?? 0) / (double)ValeurCible, 1.0)
+            ? Math.Min(1.0, (ValeurActuelle ?? 0) / (double)ValeurCible)
             : 0;
+
+    [JsonIgnore]
+    public string ProgressLabel =>
+        $"{ValeurActuelle ?? 0} / {ValeurCible}";
 }

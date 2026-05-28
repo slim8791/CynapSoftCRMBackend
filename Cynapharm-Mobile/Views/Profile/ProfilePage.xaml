@@ -13,6 +13,21 @@
 
         <!-- ── Hero header ────────────────────────────────────────────────── -->
         <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}">
+
+            <!-- Hamburger overlay (top-right, within safe-area padding) -->
+            <Border BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                    HorizontalOptions="End" VerticalOptions="Start"
+                    Margin="0,52,16,0"
+                    ZIndex="10">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnHamburgerTapped" />
+                </Border.GestureRecognizers>
+                <Label Text="≡" FontSize="22" FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+
             <VerticalStackLayout Spacing="0" Padding="20,52,20,28">
 
                 <!-- Avatar with white ring -->
@@ -160,7 +175,7 @@
                             <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                                 <Label Text="Région" FontSize="11"
                                        TextColor="{StaticResource TextMuted}" />
-                                <Label Text="{Binding User.RegionId}"
+                                <Label Text="{Binding WilayaLabel}"
                                        FontSize="14" FontAttributes="Bold"
                                        TextColor="{StaticResource TextPrimary}" />
                             </VerticalStackLayout>
@@ -229,19 +244,19 @@
                             <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                                 <Label Text="Wilaya" FontSize="11"
                                        TextColor="{StaticResource TextMuted}" />
-                                <!-- Value when set -->
-                                <Label Text="{Binding User.RegionId}"
+                                <!-- Resolved region name (set by ProfileViewModel.LoadAsync) -->
+                                <Label Text="{Binding WilayaLabel}"
                                        FontSize="14" FontAttributes="Bold"
                                        TextColor="{StaticResource TextPrimary}"
-                                       IsVisible="{Binding User.RegionId, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
-                                <!-- Placeholder when null/empty -->
+                                       IsVisible="{Binding WilayaLabel, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+                                <!-- Placeholder when region not resolved -->
                                 <Label Text="Non renseigné"
                                        FontSize="14"
                                        TextColor="#AAAAAA"
                                        IsVisible="False">
                                     <Label.Triggers>
                                         <DataTrigger TargetType="Label"
-                                                     Binding="{Binding User.RegionId, Converter={StaticResource IsNotNullOrEmptyConverter}}"
+                                                     Binding="{Binding WilayaLabel, Converter={StaticResource IsNotNullOrEmptyConverter}}"
                                                      Value="False">
                                             <Setter Property="IsVisible" Value="True" />
                                         </DataTrigger>

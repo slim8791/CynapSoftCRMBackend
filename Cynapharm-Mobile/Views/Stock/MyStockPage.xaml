@@ -14,17 +14,10 @@
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
-              Padding="20,52,20,20">
-            <VerticalStackLayout Spacing="3">
-                <Label Text="Mon stock"
-                       FontSize="22" FontAttributes="Bold"
-                       FontFamily="OpenSansSemibold"
-                       TextColor="White" />
-                <Label Text="Échantillons, promos et historique"
-                       FontSize="12" TextColor="#CCF5FF" />
-            </VerticalStackLayout>
-        </Grid>
+        <controls:AppHeader Grid.Row="0"
+                            Title="Mon stock"
+                            Subtitle="Échantillons, promos et historique"
+                            ShowHamburger="True" />
 
         <!-- Error banner -->
         <controls:ErrorBanner Grid.Row="1"
@@ -178,7 +171,7 @@
                                 <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
                             </Border.Shadow>
                             <Border.Triggers>
-                                <DataTrigger TargetType="Border" Binding="{Binding CanDistribute}" Value="False">
+                                <DataTrigger TargetType="Border" Binding="{Binding ShowLowStockWarning}" Value="True">
                                     <Setter Property="Stroke" Value="{StaticResource Danger}" />
                                 </DataTrigger>
                             </Border.Triggers>
@@ -195,20 +188,20 @@
                                             StrokeShape="RoundRectangle 12"
                                             Stroke="Transparent" VerticalOptions="Center">
                                         <Border.Triggers>
-                                            <DataTrigger TargetType="Border" Binding="{Binding CanDistribute}" Value="True">
+                                            <DataTrigger TargetType="Border" Binding="{Binding ShowLowStockWarning}" Value="False">
                                                 <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}" />
                                             </DataTrigger>
-                                            <DataTrigger TargetType="Border" Binding="{Binding CanDistribute}" Value="False">
+                                            <DataTrigger TargetType="Border" Binding="{Binding ShowLowStockWarning}" Value="True">
                                                 <Setter Property="BackgroundColor" Value="{StaticResource DangerLight}" />
                                             </DataTrigger>
                                         </Border.Triggers>
                                         <Label Text="{Binding QuantiteLabel}"
                                                FontAttributes="Bold" FontSize="13">
                                             <Label.Triggers>
-                                                <DataTrigger TargetType="Label" Binding="{Binding CanDistribute}" Value="True">
+                                                <DataTrigger TargetType="Label" Binding="{Binding ShowLowStockWarning}" Value="False">
                                                     <Setter Property="TextColor" Value="{StaticResource Primary}" />
                                                 </DataTrigger>
-                                                <DataTrigger TargetType="Label" Binding="{Binding CanDistribute}" Value="False">
+                                                <DataTrigger TargetType="Label" Binding="{Binding ShowLowStockWarning}" Value="True">
                                                     <Setter Property="TextColor" Value="{StaticResource Danger}" />
                                                 </DataTrigger>
                                             </Label.Triggers>
@@ -337,17 +330,17 @@
                                 <Grid Grid.Column="1"
                                       ColumnDefinitions="56,*,Auto,Auto"
                                       ColumnSpacing="10" Padding="12,12">
-                                    <!-- Date block -->
+                                    <!-- Date block — uses guarded DateDay/DateYear (shows "—" for unset dates) -->
                                     <Border Grid.Column="0"
                                             BackgroundColor="{StaticResource SurfaceBackground}"
                                             StrokeShape="RoundRectangle 10" Stroke="{StaticResource BorderColor}"
                                             Padding="8,6" VerticalOptions="Center">
                                         <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
-                                            <Label Text="{Binding DateMouvement, StringFormat='{0:dd/MM}'}"
+                                            <Label Text="{Binding DateDay}"
                                                    FontSize="13" FontAttributes="Bold"
                                                    TextColor="{StaticResource TextPrimary}"
                                                    HorizontalOptions="Center" />
-                                            <Label Text="{Binding DateMouvement, StringFormat='{0:yyyy}'}"
+                                            <Label Text="{Binding DateYear}"
                                                    FontSize="10" TextColor="{StaticResource TextMuted}"
                                                    HorizontalOptions="Center" />
                                         </VerticalStackLayout>
@@ -386,14 +379,22 @@
                                                TextColor="{StaticResource TextPrimary}" />
                                     </Border>
 
-                                    <!-- Quantity -->
+                                    <!-- Quantity — signed label (+5 / -3) coloured by direction -->
                                     <Label Grid.Column="3"
-                                           Text="{Binding Quantite}"
+                                           Text="{Binding QuantiteLabel}"
                                            FontSize="18" FontAttributes="Bold"
-                                           TextColor="{StaticResource Primary}"
                                            VerticalOptions="Center"
                                            HorizontalOptions="End"
-                                           MinimumWidthRequest="30" />
+                                           MinimumWidthRequest="30">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsPositive}" Value="True">
+                                                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsPositive}" Value="False">
+                                                <Setter Property="TextColor" Value="{StaticResource Danger}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
                                 </Grid>
                             </Grid>
                         </Border>

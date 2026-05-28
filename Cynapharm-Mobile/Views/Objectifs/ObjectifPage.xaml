@@ -20,16 +20,30 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <VerticalStackLayout Grid.Row="0" Spacing="3">
-                <Label Text="Mes objectifs"
-                       FontSize="22" FontAttributes="Bold"
-                       FontFamily="OpenSansSemibold"
-                       TextColor="White"
-                       HorizontalOptions="Center" />
-                <Label Text="Suivi de performance mensuel"
-                       FontSize="12" TextColor="#CCF5FF"
-                       HorizontalOptions="Center" />
-            </VerticalStackLayout>
+            <Grid Grid.Row="0" ColumnDefinitions="44,*,44">
+                <VerticalStackLayout Grid.Column="1" Spacing="3">
+                    <Label Text="Mes objectifs"
+                           FontSize="20" FontAttributes="Bold"
+                           FontFamily="OpenSansSemibold"
+                           TextColor="White"
+                           HorizontalOptions="Center" />
+                    <Label Text="Suivi de performance mensuel"
+                           FontSize="12" TextColor="#CCF5FF"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <Border Grid.Column="2"
+                        BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                        Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                        VerticalOptions="Center" HorizontalOptions="End">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnHamburgerTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="≡" FontSize="22" FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+            </Grid>
 
             <!-- Global achievement pill -->
             <Border Grid.Row="1"

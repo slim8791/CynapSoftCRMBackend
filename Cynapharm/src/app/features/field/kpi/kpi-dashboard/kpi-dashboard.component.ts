@@ -5,6 +5,9 @@ import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, catchError, of } from 'rxjs';
 import { KpiService } from '../services/kpi.service';
+import { UserService } from '../../../users/user.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { VisiteService } from '../../visites/services/visite.service';
 
 @Component({
   selector: 'app-kpi-dashboard',
@@ -25,14 +28,47 @@ export class KpiDashboardComponent implements OnInit, OnDestroy {
   tauxConversion: number | null = null;
   loadingTaux      = false;
   historique: any[] = [];
+  performances: any[] = [];
+  delegues: { id: number; nom: string }[] = [];
 
   private d$ = new Subject<void>();
-  constructor(private svc: KpiService, private cdr: ChangeDetectorRef) {}
+
+  get isAdmin():       boolean { return this.authSvc.getUserRole()?.toUpperCase() === 'ADMIN'; }
+  get isSuperviseur(): boolean { return this.authSvc.getUserRole()?.toUpperCase() === 'SUPERVISEUR'; }
+  get isDelegue():     boolean { return this.authSvc.getUserRole()?.toUpperCase() === 'DELEGUE'; }
+
+  constructor(
+    private svc: KpiService,
+    private userSvc: UserService,
+    private authSvc: AuthService,
+    private visiteSvc: VisiteService,
+    private cdr: ChangeDetectorRef
+  ) {}
   ngOnInit(): void {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     this.dateDebut = firstDay.toISOString().split('T')[0];
     this.dateFin   = now.toISOString().split('T')[0];
+
+    if (this.isDelegue) {
+      this.idDelegue = this.authSvc.getUserId();
+      this.load();
+      return;
+    }
+
+    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.d$)).subscribe({
+      next: users => {
+        if (!users.length) {
+          this.loadDeleguesFromVisites();
+          return;
+        }
+        this.delegues = users
+          .map(u => this.userSvc.toUserOption(u))
+          .filter((d): d is { id: number; nom: string } => d !== null);
+        this.cdr.markForCheck();
+      },
+      error: () => this.loadDeleguesFromVisites()
+    });
   }
   ngOnDestroy() { this.d$.next(); this.d$.complete(); }
 
@@ -58,6 +94,13 @@ export class KpiDashboardComponent implements OnInit, OnDestroy {
       this.tauxConversion = null;
     }
 
+    this.svc.getPerformance(id)
+      .pipe(takeUntil(this.d$), catchError(() => of([])))
+      .subscribe(p => {
+        this.performances = Array.isArray(p) ? p : [];
+        this.cdr.markForCheck();
+      });
+
     this.svc.getHistorique(id)
       .pipe(takeUntil(this.d$), catchError(() => of([])))
       .subscribe(h => {
@@ -78,5 +121,25 @@ export class KpiDashboardComponent implements OnInit, OnDestroy {
 
   historiqueDetail(entry: any): string {
     return entry?.detail ?? entry?.Detail ?? entry?.description ?? entry?.Description ?? entry?.message ?? entry?.Message ?? '—';
+  }
+
+  private loadDeleguesFromVisites(): void {
+    this.visiteSvc.getAll().pipe(takeUntil(this.d$)).subscribe({
+      next: visites => this.resolveDelegueOptions(visites.map(v => v.id_User_Delegue)),
+      error: () => {}
+    });
+  }
+
+  private resolveDelegueOptions(ids: number[]): void {
+    const uniqueIds = [...new Set(ids.filter(id => id > 0))];
+    if (!uniqueIds.length) return;
+
+    this.userSvc.getDisplayNamesByIds(uniqueIds).pipe(takeUntil(this.d$)).subscribe({
+      next: names => {
+        this.delegues = uniqueIds.map(id => ({ id, nom: names[id] ?? `#${id}` }));
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
   }
 }

@@ -36,7 +36,7 @@ describe('VisiteService', () => {
   }));
 
   it('createOrUpdate should POST to /fields/visites', () => new Promise<void>((resolve) => {
-    const dto = { id_User_Delegue: 1, date: '2024-01-01', type: VisiteType.Medecin };
+    const dto = { id_User_Delegue: 1, dateVisite: '2024-01-01', type: VisiteType.Medecin };
     apiMock.post.mockReturnValue(of(dto));
     service.createOrUpdate(dto).subscribe(() => resolve());
     expect(apiMock.post).toHaveBeenCalledWith('/fields/visites', dto);

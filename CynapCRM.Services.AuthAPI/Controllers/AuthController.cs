@@ -418,6 +418,14 @@ Inner: {ex.InnerException?.Message}";
             _response.Message = "Utilisateur supprimé.";
             return Ok(_response);
         }
+        [HttpGet("users/by-role/{role}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetUsersByRole(string role)
+        {
+            var result = await _authService.GetUsersByRoleAsync(role);
+            return Ok(new ResponseDto { IsSuccess = true, Result = result });
+        }
+
         [HttpGet("users/{id}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> GetUserById(int id)

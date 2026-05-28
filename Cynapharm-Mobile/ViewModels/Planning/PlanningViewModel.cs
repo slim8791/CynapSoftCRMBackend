@@ -15,7 +15,9 @@ public partial class PlanningViewModel : BaseViewModel
 
     [ObservableProperty] private DateTime _weekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
 
-    public string WeekLabel => $"{WeekStart:dd MMM} – {WeekStart.AddDays(6):dd MMM yyyy}";
+    // ISSUE #1 fix: label matches the 6-day (Mon→Sat) display — AddDays(5) = Saturday
+    public string WeekLabel => $"{WeekStart:dd MMM} – {WeekStart.AddDays(5):dd MMM yyyy}";
+
     public ObservableCollection<PlanningDayGroup> WeekDays { get; } = new();
 
     public PlanningViewModel(PlanningService planningService)
@@ -46,29 +48,48 @@ public partial class PlanningViewModel : BaseViewModel
     [RelayCommand]
     private async Task LoadWeekAsync(CancellationToken ct = default)
     {
-        SetBusy(true);
         WeekDays.Clear();
-        if (!await CheckConnectivityAsync()) { SetBusy(false); return; }
-        try
+        if (!await CheckConnectivityAsync()) return;
+
+        await ExecuteAsync(async () =>
         {
             ct.ThrowIfCancellationRequested();
             var entries = await _planningService.GetPlanningAsync(WeekStart) ?? new List<PlanningModel>();
             ct.ThrowIfCancellationRequested();
-            for (int i = 0; i < 7; i++)
+
+            // 6 days: Monday → Saturday (Tunisian working week)
+            WeekDays.Clear();
+            for (int i = 0; i < 6; i++)
             {
                 var day = WeekStart.AddDays(i);
                 var dayEntries = entries.Where(e => e.DatePlanifiee.Date == day.Date).ToList();
                 WeekDays.Add(new PlanningDayGroup(day, dayEntries));
             }
-        }
-        catch (OperationCanceledException) { }
-        catch (Exception) { ErrorMessage = "Erreur lors du chargement du planning."; }
-        finally { SetBusy(false); }
+        });
     }
 
+    /// <summary>
+    /// Called by the "+" button on each day row (CommandParameter = day date)
+    /// AND by the sticky "+ Ajouter" button (CommandParameter = default → today).
+    /// Passes idPlanning when a planning entry exists for that day (ISSUE #3/#4 fix).
+    /// </summary>
     [RelayCommand]
     private async Task AddVisitAsync(DateTime date)
-        => await Shell.Current.GoToAsync("//visits/detail");
+    {
+        var effectiveDate = date != default ? date : DateTime.Today;
+        var dateStr = effectiveDate.ToString("yyyy-MM-dd");
+
+        // Find the first planning entry for this day in the current week view
+        var planning = WeekDays
+            .FirstOrDefault(g => g.Date.Date == effectiveDate.Date)
+            ?.Entries.FirstOrDefault();
+
+        var route = planning != null
+            ? $"//visits/detail?prefillDate={dateStr}&idPlanning={planning.Id}"
+            : $"//visits/detail?prefillDate={dateStr}";
+
+        await Shell.Current.GoToAsync(route);
+    }
 }
 
 public class PlanningDayGroup

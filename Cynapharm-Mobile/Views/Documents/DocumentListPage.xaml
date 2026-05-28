@@ -13,17 +13,10 @@
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
-              Padding="20,52,20,20">
-            <VerticalStackLayout Spacing="3">
-                <Label Text="Documents"
-                       FontSize="22" FontAttributes="Bold"
-                       FontFamily="OpenSansSemibold"
-                       TextColor="White" />
-                <Label Text="Factures, bons de commande et livraison"
-                       FontSize="12" TextColor="#CCF5FF" />
-            </VerticalStackLayout>
-        </Grid>
+        <controls:AppHeader Grid.Row="0"
+                            Title="Documents"
+                            Subtitle="Factures, bons de commande et livraison"
+                            ShowHamburger="True" />
 
         <!-- Error banner -->
         <controls:ErrorBanner Grid.Row="1"

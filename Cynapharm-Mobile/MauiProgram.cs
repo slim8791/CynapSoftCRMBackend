@@ -125,6 +125,7 @@ public static class MauiProgram
         builder.Services.AddTransient<PlanningService>();
         builder.Services.AddTransient<KpiService>();
         builder.Services.AddTransient<DocumentService>();
+        builder.Services.AddTransient<UserService>();
 
         // ── ViewModels ────────────────────────────────────────────────────────
         builder.Services.AddTransient<LoginViewModel>();

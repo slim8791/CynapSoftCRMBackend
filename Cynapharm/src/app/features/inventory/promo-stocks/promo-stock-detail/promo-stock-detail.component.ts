@@ -1,12 +1,29 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule, FormBuilder, FormGroup, Validators,
+  AbstractControl, ValidationErrors
+} from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PromoStockService, StockGratuiteDto, StockEchantillonDto } from '../services/promo-stock.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+
+function dateRangeValidator(form: AbstractControl): ValidationErrors | null {
+  const debut = form.get('dateDebut')?.value;
+  const fin   = form.get('dateFin')?.value;
+  if (debut && fin && fin < debut) return { dateRange: true };
+  return null;
+}
+
+function gratuiteRuleValidator(form: AbstractControl): ValidationErrors | null {
+  const achat    = +(form.get('quantiteAchat')?.value  ?? 0);
+  const gratuite = +(form.get('quantiteGratuite')?.value ?? 0);
+  if (achat > 0 && gratuite >= achat) return { gratuiteTooHigh: true };
+  return null;
+}
 
 @Component({
   selector: 'app-promo-stock-detail',
@@ -16,10 +33,14 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
   styleUrls: ['./promo-stock-detail.component.css']
 })
 export class PromoStockDetailComponent implements OnInit, OnDestroy {
-  stockId: number | null = null;
-  loadingLookup = false;
-  lookupError = '';
-  searched = false;
+  activeTab: 'gratuite' | 'echantillon' = 'gratuite';
+
+  allGratuite: StockGratuiteDto[] = [];
+  allEchantillon: StockEchantillonDto[] = [];
+  selectedGratuiteId: number | null = null;
+  selectedEchantillonId: number | null = null;
+  loadingGratuite = false;
+  loadingEchantillon = false;
 
   gratuiteData: StockGratuiteDto | null = null;
   echantillonData: StockEchantillonDto | null = null;
@@ -43,92 +64,113 @@ export class PromoStockDetailComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.gratuiteForm = this.fb.group({
-      id_User_Delegue: [null, Validators.required],
-      id_Produit:      [null, Validators.required],
-      numeroLot:       ['',   Validators.required],
-      qteDisponible:   [0,    [Validators.required, Validators.min(0)]],
-      qteReservee:     [0,    [Validators.required, Validators.min(0)]],
-      qteGratuite:     [0,    [Validators.required, Validators.min(0)]],
-      typePromotion:   ['',   Validators.required]
+    this.loadingGratuite = true;
+    this.svc.getAllGratuite().pipe(takeUntil(this.destroy$)).subscribe({
+      next: data => { this.allGratuite = data; this.loadingGratuite = false; this.cdr.markForCheck(); },
+      error: ()   => { this.loadingGratuite = false; this.cdr.markForCheck(); }
     });
+
+    this.loadingEchantillon = true;
+    this.svc.getAllEchantillon().pipe(takeUntil(this.destroy$)).subscribe({
+      next: data => { this.allEchantillon = data; this.loadingEchantillon = false; this.cdr.markForCheck(); },
+      error: ()   => { this.loadingEchantillon = false; this.cdr.markForCheck(); }
+    });
+
+    this.gratuiteForm = this.fb.group({
+      id_User_Delegue:  [null, Validators.required],
+      id_Produit:       [null, Validators.required],
+      numeroLot:        ['',   Validators.required],
+      qteDisponible:    [0,    [Validators.required, Validators.min(0)]],
+      qteReservee:      [0,    [Validators.required, Validators.min(0)]],
+      qteGratuite:      [0,    [Validators.required, Validators.min(1)]],
+      typePromotion:    ['Gratuite'],
+      quantiteAchat:    [0,    Validators.min(1)],
+      quantiteGratuite: [0,    Validators.min(1)],
+      dateDebut:        [null],
+      dateFin:          [null]
+    }, { validators: [dateRangeValidator, gratuiteRuleValidator] });
+
     this.echantillonForm = this.fb.group({
       id_User_Delegue: [null, Validators.required],
       id_Produit:      [null, Validators.required],
       numeroLot:       ['',   Validators.required],
       qteDisponible:   [0,    [Validators.required, Validators.min(0)]],
       qteReservee:     [0,    [Validators.required, Validators.min(0)]],
-      qteEchantillon:  [0,    [Validators.required, Validators.min(0)]]
-    });
+      qteEchantillon:  [0,    [Validators.required, Validators.min(1)]],
+      description:     [null],
+      dateDebut:       [null],
+      dateFin:         [null]
+    }, { validators: dateRangeValidator });
   }
 
-  lookup(): void {
-    if (!this.stockId) return;
-    this.loadingLookup = true;
-    this.lookupError = '';
-    this.searched = true;
-    this.gratuiteData = null;
-    this.echantillonData = null;
+  onSelectGratuite(id: any): void {
+    const numId = +id;
+    if (!numId) { this.gratuiteData = null; return; }
+    this.gratuiteData = this.allGratuite.find(g => g.id_stock === numId) ?? null;
+    if (this.gratuiteData) this.gratuiteForm.patchValue({ ...this.gratuiteData });
+    this.gratuiteSuccess = '';
+    this.gratuiteError = '';
+    this.cdr.markForCheck();
+  }
 
-    const id = this.stockId;
-
-    this.svc.getGratuite(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: d => { this.gratuiteData = d; if (d) this.gratuiteForm.patchValue({ ...d, id_stock: undefined }); this.loadingLookup = false; this.cdr.markForCheck(); },
-      error: () => { this.loadingLookup = false; this.cdr.markForCheck(); }
-    });
-
-    this.svc.getEchantillon(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: d => { this.echantillonData = d; if (d) this.echantillonForm.patchValue({ ...d, id_stock: undefined }); this.cdr.markForCheck(); },
-      error: () => { this.cdr.markForCheck(); }
-    });
+  onSelectEchantillon(id: any): void {
+    const numId = +id;
+    if (!numId) { this.echantillonData = null; return; }
+    this.echantillonData = this.allEchantillon.find(e => e.id_stock === numId) ?? null;
+    if (this.echantillonData) this.echantillonForm.patchValue({ ...this.echantillonData });
+    this.echantillonSuccess = '';
+    this.echantillonError = '';
+    this.cdr.markForCheck();
   }
 
   saveGratuite(): void {
     this.gratuiteForm.markAllAsTouched();
-    if (this.gratuiteForm.invalid || !this.stockId) return;
+    if (this.gratuiteForm.invalid || !this.selectedGratuiteId) return;
     this.savingGratuite = true;
     this.gratuiteError = '';
     this.gratuiteSuccess = '';
-    const dto: StockGratuiteDto = { ...this.gratuiteForm.value, id_stock: this.stockId };
+    const dto: StockGratuiteDto = { ...this.gratuiteForm.value, id_stock: this.selectedGratuiteId };
     this.svc.createOrUpdateGratuite(dto).pipe(takeUntil(this.destroy$)).subscribe({
-      next: d => { this.gratuiteData = d; this.savingGratuite = false; this.gratuiteSuccess = 'Enregistré.'; this.cdr.markForCheck(); },
+      next: d => {
+        this.gratuiteData = d;
+        const idx = this.allGratuite.findIndex(g => g.id_stock === d.id_stock);
+        if (idx >= 0) this.allGratuite[idx] = d;
+        this.savingGratuite = false;
+        this.gratuiteSuccess = 'Modifications enregistrées.';
+        this.cdr.markForCheck();
+      },
       error: () => { this.gratuiteError = 'Erreur lors de l\'enregistrement.'; this.savingGratuite = false; this.cdr.markForCheck(); }
     });
   }
 
   saveEchantillon(): void {
     this.echantillonForm.markAllAsTouched();
-    if (this.echantillonForm.invalid || !this.stockId) return;
+    if (this.echantillonForm.invalid || !this.selectedEchantillonId) return;
     this.savingEchantillon = true;
     this.echantillonError = '';
     this.echantillonSuccess = '';
-    const dto: StockEchantillonDto = { ...this.echantillonForm.value, id_stock: this.stockId };
+    const dto: StockEchantillonDto = { ...this.echantillonForm.value, id_stock: this.selectedEchantillonId };
     this.svc.createOrUpdateEchantillon(dto).pipe(takeUntil(this.destroy$)).subscribe({
-      next: d => { this.echantillonData = d; this.savingEchantillon = false; this.echantillonSuccess = 'Enregistré.'; this.cdr.markForCheck(); },
+      next: d => {
+        this.echantillonData = d;
+        const idx = this.allEchantillon.findIndex(e => e.id_stock === d.id_stock);
+        if (idx >= 0) this.allEchantillon[idx] = d;
+        this.savingEchantillon = false;
+        this.echantillonSuccess = 'Modifications enregistrées.';
+        this.cdr.markForCheck();
+      },
       error: () => { this.echantillonError = 'Erreur lors de l\'enregistrement.'; this.savingEchantillon = false; this.cdr.markForCheck(); }
     });
   }
 
-  historyEntries(data: unknown): any[] {
-    const raw = data as any;
-    const history = raw?.historique ?? raw?.Historique ?? raw?.history ?? raw?.History ?? [];
-    return Array.isArray(history) ? history : [];
+  getDistributed(item: any): number {
+    if (!item?.qteEchantillon) return 0;
+    return Math.max(0, item.qteEchantillon - (item.qteDisponible ?? 0));
   }
 
-  historyDate(entry: any): string | null {
-    return entry?.date ?? entry?.Date ?? entry?.dateMovement ?? entry?.DateMovement ?? entry?.createdAt ?? entry?.CreatedAt ?? null;
-  }
-
-  historyType(entry: any): string {
-    return entry?.type ?? entry?.Type ?? entry?.typeMovement ?? entry?.TypeMovement ?? entry?.action ?? entry?.Action ?? '—';
-  }
-
-  historyQuantity(entry: any): string {
-    return String(entry?.quantite ?? entry?.Quantite ?? entry?.qte ?? entry?.Qte ?? '—');
-  }
-
-  historyDescription(entry: any): string {
-    return entry?.description ?? entry?.Description ?? entry?.detail ?? entry?.Detail ?? '—';
+  getUsagePercent(item: any): number {
+    if (!item?.qteEchantillon) return 0;
+    return Math.min(100, (this.getDistributed(item) / item.qteEchantillon) * 100);
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }

@@ -119,9 +119,10 @@ export class OrderListComponent implements OnInit, OnDestroy {
 
   private loadDashboard(): void {
     this.recSvc.getAll().pipe(takeUntil(this.destroy$)).subscribe({
-      next: recs => {
+      next: (response: any) => {
+        const recs: any[] = response?.result ?? response?.Result ?? (Array.isArray(response) ? response : []);
         this.reclamationsTotal = recs.filter(
-          r => this.recSvc.statutToNumber(r.Statut) === StatutReclamation.Ouverte
+          (r: any) => this.recSvc.statutToNumber(r.statut ?? r.Statut) === StatutReclamation.Ouverte
         ).length;
         this.cdr.markForCheck();
       },
@@ -161,6 +162,15 @@ export class OrderListComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
       });
+  }
+
+  get pageNumbers(): number[] {
+    const last  = this.hasMore ? this.currentPage + 1 : this.currentPage;
+    const win   = 5;
+    let start   = Math.max(1, this.currentPage - Math.floor(win / 2));
+    let end     = Math.min(last, start + win - 1);
+    start       = Math.max(1, end - win + 1);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
   onPageChange(page: number): void { this.currentPage = page; this.load(); }

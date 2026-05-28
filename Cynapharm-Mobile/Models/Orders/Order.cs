@@ -1,18 +1,22 @@
 using System.Text.Json.Serialization;
 
 namespace Cynapharm_Mobile.Models.Orders;
+
 public class Order
 {
     [JsonPropertyName("id_Commande")]
     public int Id { get; set; }
 
+    [JsonIgnore]
     public string NumeroCommande => $"CMD-{Id:D5}";
 
+    [JsonPropertyName("dateCommande")]
     public DateTime DateCommande { get; set; }
 
     // EtatCommande: 0=Brouillon 1=EnAttente 2=Confirmee 3=EnPreparation 4=Expediee 5=Livree 6=Annulee
     public int Statut { get; set; }
 
+    [JsonIgnore]
     public string StatutFrançais => Statut switch
     {
         0 => "Brouillon",

@@ -1,0 +1,86 @@
+<div class="page">
+  <div class="page-header">
+    <a routerLink="/inventory/movements" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Retour
+    </a>
+    <h1>Nouveau mouvement de stock</h1>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+
+    <!-- Type de mouvement -->
+    <div class="field">
+      <label class="field-label">Type de mouvement *</label>
+      <div class="radio-group">
+        <label class="radio-option" [class.radio-selected]="form.get('type')?.value === 'Decrement'">
+          <input type="radio" formControlName="type" value="Decrement" />
+          <span class="radio-badge badge-red">Decrement</span>
+          <span class="radio-desc">Diminuer le stock disponible</span>
+        </label>
+        <label class="radio-option" [class.radio-selected]="form.get('type')?.value === 'Increment'">
+          <input type="radio" formControlName="type" value="Increment" />
+          <span class="radio-badge badge-green">Increment</span>
+          <span class="radio-desc">Augmenter le stock disponible</span>
+        </label>
+        <label class="radio-option" [class.radio-selected]="form.get('type')?.value === 'Transfer'">
+          <input type="radio" formControlName="type" value="Transfer" />
+          <span class="radio-badge badge-blue">Transfer</span>
+          <span class="radio-desc">Transférer vers un autre stock</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-grid">
+
+      <!-- ID Stock source -->
+      <div class="field">
+        <label class="field-label">
+          {{ isTransfer ? 'ID Stock source *' : 'ID Stock *' }}
+        </label>
+        <input type="number" formControlName="idStock" min="1"
+               [class.field-invalid]="fieldInvalid('idStock')"
+               placeholder="Ex: 12" />
+        <span *ngIf="fieldInvalid('idStock')" class="field-error">
+          L'ID stock est requis (min 1).
+        </span>
+      </div>
+
+      <!-- ID Stock destination — Transfer uniquement -->
+      <div class="field" *ngIf="isTransfer">
+        <label class="field-label">ID Stock destination *</label>
+        <input type="number" formControlName="idStockDest" min="1"
+               [class.field-invalid]="fieldInvalid('idStockDest')"
+               placeholder="Ex: 15" />
+        <span *ngIf="fieldInvalid('idStockDest')" class="field-error">
+          L'ID stock destination est requis.
+        </span>
+      </div>
+
+      <!-- Quantité -->
+      <div class="field">
+        <label class="field-label">Quantité *</label>
+        <input type="number" formControlName="qte" min="1"
+               [class.field-invalid]="fieldInvalid('qte')"
+               placeholder="Ex: 10" />
+        <span *ngIf="fieldInvalid('qte')" class="field-error">
+          La quantité est requise (min 1).
+        </span>
+      </div>
+
+    </div>
+
+    <div *ngIf="submitError" class="error-banner">{{ submitError }}</div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="submitting">
+        <span *ngIf="submitting" class="btn-spinner"></span>
+        {{ submitting ? 'Enregistrement...' : 'Enregistrer le mouvement' }}
+      </button>
+      <a routerLink="/inventory/movements" class="btn btn-secondary">Annuler</a>
+    </div>
+
+  </form>
+</div>

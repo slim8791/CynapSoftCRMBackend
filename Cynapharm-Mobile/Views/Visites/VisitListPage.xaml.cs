@@ -17,4 +17,7 @@ public partial class VisitListPage : ContentPage
         base.OnAppearing();
         if (BindingContext is VisitListViewModel vm) _ = vm.LoadVisitesCommand.ExecuteAsync(null);
     }
+
+    private void OnHamburgerTapped(object sender, EventArgs e)
+        => Shell.Current.FlyoutIsPresented = true;
 }

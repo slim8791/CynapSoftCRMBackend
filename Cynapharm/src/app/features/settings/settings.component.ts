@@ -22,6 +22,13 @@ export class SettingsComponent implements OnInit {
   activeTab: Tab = 'profile';
   currentUser: User | null = null;
 
+  // ── Formulaire édition du profil ───────────────────────
+  profileForm!: FormGroup;
+  isEditingProfile = false;
+  profileLoading = false;
+  profileError = '';
+  profileSuccess = false;
+
   // ── Formulaire changement de mot de passe ──────────────
   pwForm!: FormGroup;
   pwLoading  = false;
@@ -43,10 +50,16 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
 
+    this.profileForm = this.fb.group({
+      name:        ['', Validators.required],
+      phoneNumber: [''],
+      adresse:     ['']
+    });
+
     this.pwForm = this.fb.group(
       {
         currentPassword: ['', [Validators.required, Validators.minLength(6)]],
-        newPassword:      ['', [Validators.required, Validators.minLength(6)]],
+        newPassword:      ['', [Validators.required, Validators.minLength(6), Validators.pattern(/(?=.*[^a-zA-Z0-9])/)]],
         confirmPassword:  ['', Validators.required]
       },
       { validators: this.passwordsMatchValidator }
@@ -64,6 +77,67 @@ export class SettingsComponent implements OnInit {
     this.activeTab = tab;
     this.pwError   = '';
     this.pwSuccess = false;
+    if (tab === 'profile') {
+      this.isEditingProfile = false;
+      this.profileError = '';
+      this.profileSuccess = false;
+    }
+  }
+
+  onEditProfile(): void {
+    this.isEditingProfile = true;
+    this.profileError = '';
+    this.profileSuccess = false;
+    this.profileForm.patchValue({
+      name:        this.currentUser?.name        ?? '',
+      phoneNumber: this.currentUser?.phoneNumber ?? '',
+      adresse:     this.currentUser?.adresse     ?? ''
+    });
+  }
+
+  onCancelEditProfile(): void {
+    this.isEditingProfile = false;
+    this.profileError = '';
+    this.profileSuccess = false;
+    this.profileForm.reset();
+  }
+
+  onSaveProfile(): void {
+    if (this.profileForm.invalid) { this.profileForm.markAllAsTouched(); return; }
+    const email = this.currentUser?.email;
+    if (!email) {
+      this.profileError = 'Utilisateur non identifié. Veuillez vous reconnecter.';
+      return;
+    }
+    this.profileLoading = true;
+    this.profileError = '';
+    this.profileSuccess = false;
+    const { name, phoneNumber, adresse } = this.profileForm.value;
+    this.authService.updateProfile({ email, name, phoneNumber, adresse }).subscribe({
+      next: () => {
+        this.profileLoading = false;
+        this.profileSuccess = true;
+        this.authService.updateCurrentUser({ name, phoneNumber, adresse });
+        this.currentUser = this.authService.getCurrentUser();
+        this.toast.showSuccess('Profil mis à jour avec succès.');
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.isEditingProfile = false;
+          this.profileSuccess = false;
+          this.cdr.markForCheck();
+        }, 1200);
+      },
+      error: (err: any) => {
+        this.profileLoading = false;
+        this.profileError = err?.error?.message ?? err?.error?.Message ?? 'Une erreur est survenue.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  isProfileFieldInvalid(field: string): boolean {
+    const c = this.profileForm.get(field);
+    return !!(c?.invalid && c?.touched);
   }
 
   isInvalid(field: string): boolean {

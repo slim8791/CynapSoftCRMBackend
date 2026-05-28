@@ -7,7 +7,7 @@
       <p class="ps">Document #{{ doc?.numero_Doc ?? doc?.numeroDoc ?? '-' }}</p>
     </div>
     @if (doc) {
-      <button class="btn-p" (click)="download()">⬇ Télécharger</button>
+      <button class="btn-p" (click)="print()">🖨 Imprimer / PDF</button>
     }
   </div>
 

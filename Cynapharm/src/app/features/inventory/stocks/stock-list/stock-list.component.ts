@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -16,17 +17,21 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 @Component({
   selector: 'app-stock-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, PaginatorComponent, EmptyStateComponent],
+  imports: [CommonModule, FormsModule, RouterLink, PaginatorComponent, EmptyStateComponent],
   templateUrl: './stock-list.component.html',
   styleUrls: ['./stock-list.component.css']
 })
 export class StockListComponent implements OnInit, OnDestroy {
-  stocks:   StockDelegueDto[] = [];
+  stocks:    StockDelegueDto[] = [];
+  allStocks: StockDelegueDto[] = [];
   loading   = false;
   error     = '';
   page      = 1;
   pageSize  = 20;
   total     = 0;
+
+  filterDelegueId: number | null = null;
+  filterProduitId:  number | null = null;
 
   // resolved display names / dates
   delegueNames: Record<number, string> = {};
@@ -56,11 +61,10 @@ export class StockListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.svc.getAll(this.page, this.pageSize).pipe(takeUntil(this.destroy$)).subscribe({
       next: data => {
-        this.stocks  = data;
-        this.total   = data.length;
-        this.loading = false;
+        this.allStocks = data;
+        this.loading   = false;
         this.loadRelatedData(data);
-        this.cdr.markForCheck();
+        this.applyFilters();
       },
       error: () => { this.error = 'Erreur lors du chargement.'; this.loading = false; this.cdr.markForCheck(); }
     });
@@ -73,11 +77,13 @@ export class StockListComponent implements OnInit, OnDestroy {
   openDelete(s: StockDelegueDto): void {
     this.deletingStock   = s;
     this.showDeleteModal = true;
+    this.cdr.markForCheck();
   }
 
   cancelDelete(): void {
     this.showDeleteModal = false;
     this.deletingStock   = null;
+    this.cdr.markForCheck();
   }
 
   confirmDelete(): void {
@@ -143,4 +149,33 @@ export class StockListComponent implements OnInit, OnDestroy {
   getDelegrueName(id: number): string { return this.delegueNames[id] ?? `#${id}`; }
   getProductName(id: number):  string { return this.productNames[id] ?? `#${id}`; }
   getLotDate(num: string, fallback: string): string { return this.lotDates[num] ?? fallback; }
+
+  applyFilters(): void {
+    let result = this.allStocks;
+    if (this.filterDelegueId) {
+      result = result.filter(s => s.id_User_Delegue === +this.filterDelegueId!);
+    }
+    if (this.filterProduitId) {
+      result = result.filter(s => s.id_Produit === +this.filterProduitId!);
+    }
+    this.stocks = result;
+    this.total  = result.length;
+    this.cdr.markForCheck();
+  }
+
+  clearFilters(): void {
+    this.filterDelegueId = null;
+    this.filterProduitId  = null;
+    this.stocks = this.allStocks;
+    this.total  = this.allStocks.length;
+    this.cdr.markForCheck();
+  }
+
+  getDelegueEntries(): { id: number; name: string }[] {
+    return Object.entries(this.delegueNames).map(([id, name]) => ({ id: +id, name }));
+  }
+
+  getProductEntries(): { id: number; name: string }[] {
+    return Object.entries(this.productNames).map(([id, name]) => ({ id: +id, name }));
+  }
 }

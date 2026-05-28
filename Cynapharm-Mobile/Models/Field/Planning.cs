@@ -14,15 +14,25 @@ public class Planning
     [JsonPropertyName("date")]
     public DateTime DatePlanifiee { get; set; }
 
+    [JsonPropertyName("heureDebut")]
     public TimeSpan HeureDebut { get; set; }
+
+    [JsonPropertyName("heureFin")]
     public TimeSpan HeureFin { get; set; }
 
-    // Etat is an enum on the backend (e.g. PLANIFIE, VALIDE); stored as string here
-    public string Etat { get; set; } = string.Empty;
+    // EtatPlanning: EnAttente=0, Confirme=1, Annule=2
+    [JsonPropertyName("etat")]
+    public int Etat { get; set; }
 
     // These fields don't come from the backend list response but are kept
     // for local use (e.g. when creating a new planning entry)
     public string ClientNom { get; set; } = string.Empty;
     public string? Objectif { get; set; }
     public int? VisiteId { get; set; }
+
+    /// <summary>
+    /// Formatted time range for display (e.g., "09:00 – 10:30")
+    /// </summary>
+    [JsonIgnore]
+    public string TimeRange => $"{HeureDebut:hh\\:mm} – {HeureFin:hh\\:mm}";
 }

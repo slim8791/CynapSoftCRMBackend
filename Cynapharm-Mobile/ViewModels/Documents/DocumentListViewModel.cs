@@ -46,16 +46,55 @@ public partial class DocumentListViewModel : BaseViewModel
     {
         if (!await CheckConnectivityAsync()) return;
 
-        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
-        if (!int.TryParse(userIdStr, out var clientId)) return;
-
         if (!_apiTypeMap.TryGetValue(DocumentType, out var apiType)) return;
 
-        var docs = await _documentService.GetDocumentsByClientAndTypeAsync(clientId, apiType);
+        var role = await SecureStorage.GetAsync(StorageKeys.UserRole);
+
+        // MÉDECIN only accesses marketing documents, not order documents
+        if (role == "MEDECIN")
+        {
+            await Shell.Current.GoToAsync("//products");
+            return;
+        }
+
+        var isAdmin = role is "ADMIN" or "SUPERVISEUR";
+
         Documents.Clear();
-        if (docs != null)
-            foreach (var d in docs)
-                Documents.Add(d);
+
+        if (isAdmin)
+        {
+            switch (apiType)
+            {
+                case "FACTURE":
+                    var factures = await _documentService.GetFacturesAsync(1, 50);
+                    if (factures != null)
+                        foreach (var f in factures)
+                            Documents.Add(new DocumentSummary { Id = f.Id, Numero = f.NumeroFacture, Date = f.DateFacture, Type = "FACTURE", CommandeId = f.CommandeId });
+                    break;
+                case "BC":
+                    var bcs = await _documentService.GetBonsCommandeAsync(1, 50);
+                    if (bcs != null)
+                        foreach (var b in bcs)
+                            Documents.Add(new DocumentSummary { Id = b.Id, Numero = b.NumeroBon, Date = b.DateEmission, Type = "BC", CommandeId = b.CommandeId });
+                    break;
+                case "BL":
+                    var bls = await _documentService.GetBonsLivraisonAsync(1, 50);
+                    if (bls != null)
+                        foreach (var b in bls)
+                            Documents.Add(new DocumentSummary { Id = b.Id, Numero = b.NumeroBon, Date = b.DateLivraison, Type = "BL", CommandeId = b.CommandeId });
+                    break;
+            }
+        }
+        else
+        {
+            var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+            if (!int.TryParse(userIdStr, out var clientId)) return;
+
+            var docs = await _documentService.GetDocumentsByClientAndTypeAsync(clientId, apiType);
+            if (docs != null)
+                foreach (var d in docs)
+                    Documents.Add(d);
+        }
     });
 
     protected override Task RetryAsync() => LoadAsync();

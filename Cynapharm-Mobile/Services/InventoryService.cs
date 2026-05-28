@@ -23,7 +23,7 @@ public class InventoryService
     }
 
     public Task<List<StockPromo>?> GetStockPromoAsync()
-        => _api.GetAsync<List<StockPromo>>("inventory/stocks-promotionnels");
+        => _api.GetAsync<List<StockPromo>>("inventory/stocks-promotionnels/echantillon");
 
     public Task<object?> GetDistributionAsync()
         => _api.GetAsync<object>("inventory/distributions");
@@ -52,7 +52,7 @@ public class InventoryService
             id_Stock         = stockId,
             qte              = quantite,
             numeroLot        = numeroLot,
-            dateDistribution = (DateTime?)null
+            dateDistribution = DateTime.UtcNow
         };
         return await _api.PostAsync<object>("inventory/distributions", dto);
     }

@@ -69,7 +69,7 @@ export class UserFormComponent implements OnInit, AfterViewInit {
       this.loadUser();
     } else {
       // ✅ création → mot de passe obligatoire
-      this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+      this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6), Validators.pattern(/(?=.*[^a-zA-Z0-9])/)]);
       this.userForm.get('password')?.updateValueAndValidity();
     }
   }

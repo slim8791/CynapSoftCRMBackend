@@ -271,6 +271,18 @@ public partial class CreateOrderViewModel : BaseViewModel
 
     private async Task InitializeAsync()
     {
+        // MÉDECIN cannot create orders
+        var role = await SecureStorage.GetAsync(StorageKeys.UserRole);
+        if (role == "MEDECIN")
+        {
+            await Shell.Current.DisplayAlert(
+                "Accès refusé",
+                "Vous ne pouvez pas créer de commande.",
+                "OK");
+            await Shell.Current.GoToAsync("..");
+            return;
+        }
+
         // Scope the cart to the current user before loading the draft
         var userId = await SecureStorage.GetAsync(StorageKeys.UserId) ?? "anonymous";
         _cartCacheKey = $"draft_cart_{userId}";

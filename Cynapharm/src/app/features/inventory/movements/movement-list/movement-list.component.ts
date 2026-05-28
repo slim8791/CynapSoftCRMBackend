@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { StockMovementService, StockMovementDto } from '../../movements/services/stock-movement.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 
 @Component({
@@ -29,8 +30,9 @@ export class MovementListComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private svc: StockMovementService,
-    private cdr: ChangeDetectorRef
+    private svc:   StockMovementService,
+    private auth:  AuthService,
+    private cdr:   ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -38,6 +40,20 @@ export class MovementListComponent implements OnInit, OnDestroy {
     if (idStock) {
       this.filterStockId = Number(idStock);
       this.applyFilter();
+    } else {
+      const userId = this.auth.getCurrentUser()?.id;
+      if (userId) {
+        this.loading = true;
+        this.svc.getMovementsByDelegue(userId).pipe(takeUntil(this.destroy$)).subscribe({
+          next: data => {
+            this.allMovements = data;
+            this.applyClientFilters();
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => { this.loading = false; this.cdr.markForCheck(); }
+        });
+      }
     }
   }
 

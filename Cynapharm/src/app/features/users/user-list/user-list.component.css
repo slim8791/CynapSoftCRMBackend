@@ -384,6 +384,7 @@
 .avatar.role-delegue     { background: #0f766e; }
 .avatar.role-medecin     { background: #c2410c; }
 .avatar.role-client      { background: #374151; }
+.avatar.role-grossiste   { background: #0369a1; }
 .avatar.role-default     { background: #94a3b8; }
 
 /* Badge rôle texte (bg clair, moderne) */
@@ -392,6 +393,7 @@ span.role-badge.role-superviseur { background: #ede9fe; color: #6d28d9; border: 
 span.role-badge.role-delegue     { background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; }
 span.role-badge.role-medecin     { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
 span.role-badge.role-client      { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+span.role-badge.role-grossiste   { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
 span.role-badge.role-default     { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
 
 /* Badge statut */

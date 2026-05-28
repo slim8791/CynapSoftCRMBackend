@@ -12,50 +12,13 @@
     <Grid RowDefinitions="Auto,*">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
-              Padding="16,48,16,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="40" />
-            </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0"
-                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
-                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
-                    VerticalOptions="Center">
-                <Label Text="‹" FontSize="24" FontAttributes="Bold"
-                       TextColor="White"
-                       HorizontalOptions="Center" VerticalOptions="Center">
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding GoBackCommand}" />
-                    </Label.GestureRecognizers>
-                </Label>
-            </Border>
-
-            <Label Grid.Column="1"
-                   Text="{Binding NomFichier}"
-                   FontSize="15" FontAttributes="Bold"
-                   FontFamily="OpenSansSemibold"
-                   TextColor="White"
-                   VerticalOptions="Center"
-                   HorizontalOptions="Center"
-                   LineBreakMode="TailTruncation" />
-
-            <!-- Download button -->
-            <Border Grid.Column="2"
-                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
-                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
-                    VerticalOptions="Center" HorizontalOptions="End">
-                <Label FontFamily="Tabler" Text="&#xea96;"
-                       FontSize="20" TextColor="White"
-                       HorizontalOptions="Center" VerticalOptions="Center">
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding OpenExternalCommand}" />
-                    </Label.GestureRecognizers>
-                </Label>
-            </Border>
-        </Grid>
+        <controls:AppHeader Grid.Row="0"
+                            Title="{Binding NomFichier}"
+                            ShowBackButton="True"
+                            BackCommand="{Binding GoBackCommand}"
+                            RightIconGlyph="&#xea96;"
+                            RightIconFontFamily="Tabler"
+                            RightCommand="{Binding OpenExternalCommand}" />
 
         <!-- ── Content ───────────────────────────────────────────────────── -->
         <Grid Grid.Row="1">

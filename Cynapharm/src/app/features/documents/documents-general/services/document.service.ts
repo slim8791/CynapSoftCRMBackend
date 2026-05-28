@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 import { ApiService } from '../../../../core/services/api.service';
 
 export interface DocumentDto {
-  numeroDoc?:    string;
+  numero_Doc?:   number;
   type:          string;
   id_Client:     number;
   id_Commande?:  number | null;

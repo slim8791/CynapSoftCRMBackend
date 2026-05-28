@@ -14,28 +14,9 @@
     <Grid RowDefinitions="Auto,*">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
-              Padding="16,48,16,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="40" />
-            </Grid.ColumnDefinitions>
-            <Border Grid.Column="0"
-                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
-                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
-                    VerticalOptions="Center">
-                <Label Text="‹" FontSize="24" FontAttributes="Bold"
-                       TextColor="White"
-                       HorizontalOptions="Center" VerticalOptions="Center" />
-            </Border>
-            <Label Grid.Column="1"
-                   Text="Détail commande"
-                   FontSize="17" FontAttributes="Bold"
-                   FontFamily="OpenSansSemibold"
-                   TextColor="White"
-                   HorizontalOptions="Center" VerticalOptions="Center" />
-        </Grid>
+        <controls:AppHeader Grid.Row="0"
+                            Title="Détail commande"
+                            ShowBackButton="True" />
 
         <!-- ── Body ──────────────────────────────────────────────────────── -->
         <RefreshView Grid.Row="1"

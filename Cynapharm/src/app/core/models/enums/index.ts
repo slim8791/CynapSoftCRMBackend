@@ -53,10 +53,10 @@ export enum PeriodeObjectif {
 }
 
 export enum TypeObjectif {
-  Visites        = 'Visites',
-  ChiffreAffaires= 'ChiffreAffaires',
-  NouveauxClients= 'NouveauxClients',
-  Fidelisation   = 'Fidelisation',
+  Visites         = 0,
+  ChiffreAffaires = 1,
+  NouveauxClients = 2,
+  Fidelisation    = 3,
 }
 
 export enum DocumentType {

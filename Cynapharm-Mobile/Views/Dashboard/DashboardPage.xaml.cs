@@ -17,4 +17,7 @@ public partial class DashboardPage : ContentPage
         base.OnAppearing();
         if (BindingContext is DashboardViewModel vm) _ = vm.LoadDashboardCommand.ExecuteAsync(null);
     }
+
+    private void OnHamburgerTapped(object sender, EventArgs e)
+        => Shell.Current.FlyoutIsPresented = true;
 }

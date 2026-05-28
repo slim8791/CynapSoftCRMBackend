@@ -38,3 +38,5 @@
 .act-btn.view:hover   { background: #dbeafe; color: #1e40af; }
 .act-btn.delete:hover { background: #fee2e2; color: #991b1b; }
 .retry-btn { margin-left: 12px; padding: 4px 12px; background: #991b1b; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.filter-select { padding: 7px 12px; border: 1.5px solid #d1d5db; border-radius: 9px; font-size: 13px; background: white; color: #374151; cursor: pointer; outline: none; }
+.filter-select:focus { border-color: #0077b6; box-shadow: 0 0 0 3px rgba(0,119,182,0.1); }

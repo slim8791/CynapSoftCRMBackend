@@ -41,7 +41,7 @@ public class OrderService
         => _api.PostAsync<Order>("orders", request);
 
     public Task<Order?> UpdateOrderStatusAsync(int id, string status)
-        => _api.PutAsync<Order>($"orders/{id}/status", new { Status = status });
+        => _api.PutAsync<Order>($"orders/{id}/status", new { NouveauStatut = status });
 
     /// <summary>PUT orders/{id}/cancel?motif={motif}</summary>
     public Task<object?> CancelOrderAsync(int id, string motif)
@@ -53,7 +53,7 @@ public class OrderService
         => _api.PostAsync<Reclamation>("orders/reclamations", reclamation);
 
     public Task<List<Reclamation>?> GetReclamationsAsync(int? orderId)
-        => _api.GetAsync<List<Reclamation>>($"orders/reclamations?orderId={orderId}");
+        => _api.GetAsync<List<Reclamation>>($"orders/reclamations/by-commande/{orderId}");
 
     /// <summary>GET orders/reclamations/by-client/{clientId} — all reclamations for a client</summary>
     public Task<List<Reclamation>?> GetReclamationsByClientAsync(int clientId)

@@ -213,7 +213,7 @@ export class StockFormComponent implements OnInit, OnDestroy {
         setTimeout(() => this.router.navigate(['/inventory/stocks']), 1200);
       },
       error: () => {
-        this.submitError = 'Error saving stock.';
+        this.submitError = 'Erreur lors de l\'enregistrement du stock.';
         this.saving      = false;
         this.cdr.markForCheck();
       }

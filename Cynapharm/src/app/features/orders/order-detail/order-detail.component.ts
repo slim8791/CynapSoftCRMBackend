@@ -25,7 +25,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 export class OrderDetailComponent implements OnInit, OnDestroy {
 
   order:         CommandeDto | null = null;
-  reclamations:  ReclamationDto[]   = [];
+  reclamations:  any[]              = [];
   factures:      FactureDto[]       = [];
   bonsCommandes: BonCommandeDto[]   = [];
   bonsLivraison: BonLivraisonDto[]  = [];
@@ -48,8 +48,9 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   // Modals
   showStatusModal = false;
   showDeleteModal = false;
-  showCancelModal = false;
-  cancelMotif     = '';
+  showCancelModal  = false;
+  cancelMotif      = '';
+  cancelMotifError = '';
   deleting        = false;
   statusOptions: { label: string; value: EtatCommande }[] = [];
 
@@ -57,6 +58,15 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   creatingBC      = false;
   creatingBL      = false;
   creatingFacture = false;
+
+  // Lot assignment modal
+  showLotModal    = false;
+  lotInput        = '';
+  lotInputError   = '';
+  assigningLot    = false;
+  availableLots:  any[] = [];
+  loadingLots     = false;
+  private lotLigne: import('../order.service').LigneCommandeDto | null = null;
 
   private orderId = 0;
   private destroy$ = new Subject<void>();
@@ -128,6 +138,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return this.productNames[id] ?? `Produit #${id}`;
   }
 
+
   // Fix 2 — load single user name by id
   private loadClientName(id: number): void {
     if (!id || id === 0) { this.clientName = 'Client inconnu'; return; }
@@ -152,10 +163,21 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return this.svc.statutToNumber(this.order?.Statut ?? '');
   }
 
-  /** Fix 1 — only Brouillon(0) or Annulee(6) can be deleted */
+  /** Only Brouillon(0) or Annulee(6) can be deleted */
   canDelete(): boolean {
     const n = this.statutNumber;
     return n === EtatCommande.Brouillon || n === EtatCommande.Annulee;
+  }
+
+  /** Brouillon(0) → EnPreparation(3) can be cancelled */
+  canCancel(): boolean {
+    const n = this.statutNumber;
+    return n >= 0 && n <= 3;
+  }
+
+  openCancelModal(): void {
+    this.cancelMotif     = '';
+    this.showCancelModal = true;
   }
 
   /**
@@ -189,6 +211,21 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       this.showCancelModal = true;
       return;
     }
+
+    if (newStatus === EtatCommande.Expediee) {
+      const lignesSansLot = (this.order.Lignes ?? []).filter((l: any) => {
+        const lot = l.NumeroLot ?? l.numeroLot ?? l.numero_lot;
+        return !lot || String(lot).trim() === '';
+      });
+      if (lignesSansLot.length > 0) {
+        this.toast.showError(
+          `Impossible d'expédier : ${lignesSansLot.length} ligne(s) sans numéro de lot assigné.`
+        );
+        this.showStatusModal = false;
+        return;
+      }
+    }
+
     this.showStatusModal = false;
     this.svc.updateOrderStatus({ Id_Commande: this.order.Id_Commande, NouveauStatut: newStatus })
       .pipe(takeUntil(this.destroy$)).subscribe({
@@ -249,11 +286,18 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  closeCancelModal(): void { this.showCancelModal = false; this.cancelMotif = ''; }
+  closeCancelModal(): void { this.showCancelModal = false; this.cancelMotif = ''; this.cancelMotifError = ''; }
 
   confirmCancel(): void {
     if (!this.order) return;
-    this.svc.cancelOrder(this.order.Id_Commande, this.cancelMotif)
+    const motif = this.cancelMotif.trim();
+    if (motif.length < 10) {
+      this.cancelMotifError = 'Le motif doit contenir au moins 10 caractères.';
+      this.cdr.markForCheck();
+      return;
+    }
+    this.cancelMotifError = '';
+    this.svc.cancelOrder(this.order.Id_Commande, motif)
       .pipe(takeUntil(this.destroy$)).subscribe({
         next: () => { this.showCancelModal = false; this.toast.showSuccess('Commande annulée.'); this.loadOrder(); },
         error: () => this.toast.showError('Erreur lors de l\'annulation.'),
@@ -278,8 +322,12 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   private loadReclamations(): void {
     this.loadingRec = true;
     this.recSvc.getByOrder(this.orderId).pipe(takeUntil(this.destroy$)).subscribe({
-      next: data => { this.reclamations = data; this.loadingRec = false; this.cdr.markForCheck(); },
-      error: ()   => { this.reclamations = []; this.loadingRec = false; this.cdr.markForCheck(); },
+      next: (response: any) => {
+        this.reclamations = response?.result ?? response?.Result ?? (Array.isArray(response) ? response : []);
+        this.loadingRec = false;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.reclamations = []; this.loadingRec = false; this.cdr.markForCheck(); },
     });
   }
 
@@ -291,7 +339,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  canDeleteReclamation(rec: ReclamationDto): boolean {
+  canDeleteReclamation(rec: any): boolean {
     const statut = (rec as any).Statut ?? (rec as any).statut;
     return statut === 0 || statut === '0' || statut === 'Ouverte';
   }
@@ -371,7 +419,73 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Lot assignment ────────────────────────────────────
+
+  canAssignLot(ligne: import('../order.service').LigneCommandeDto): boolean {
+    return this.isAdmin && !ligne.NumeroLot && this.statutNumber === 3;
+  }
+
+  async openLotModal(ligne: import('../order.service').LigneCommandeDto): Promise<void> {
+    this.lotLigne      = ligne;
+    this.lotInput      = '';
+    this.lotInputError = '';
+    this.availableLots = [];
+    this.showLotModal  = true;
+    this.loadingLots   = true;
+    this.cdr.markForCheck();
+    try {
+      const lots = await this.productSvc.getLotsByProduct(ligne.Id_Produit).toPromise();
+      this.availableLots = (lots ?? []).filter((l: any) =>
+        !l.isExpired && !l.isOutOfStock && (l.quantite ?? 0) > 0
+      );
+    } catch {
+      this.availableLots = [];
+    } finally {
+      this.loadingLots = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  closeLotModal(): void {
+    this.showLotModal  = false;
+    this.lotLigne      = null;
+    this.lotInput      = '';
+    this.lotInputError = '';
+    this.availableLots = [];
+  }
+
+  confirmAssignLot(): void {
+    const lot = this.lotInput?.trim();
+    if (!lot) { this.lotInputError = 'Veuillez sélectionner un lot.'; return; }
+    if (!this.lotLigne) return;
+
+    this.assigningLot = true;
+    this.svc.assignLot(this.lotLigne, lot).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.assigningLot = false;
+        this.showLotModal = false;
+        this.toast.showSuccess('Numéro de lot assigné avec succès.');
+        this.loadOrder();
+      },
+      error: (err: any) => {
+        this.assigningLot  = false;
+        this.lotInputError = err?.error?.Message ?? 'Erreur lors de l\'assignation du lot.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
   // ── Helpers ───────────────────────────────────────────
+
+  viewDocument(type: string, id: number): void {
+    const routeMap: Record<string, string> = {
+      'BC':      '/documents/bons-commandes',
+      'BL':      '/documents/bons-livraison',
+      'FACTURE': '/documents/factures',
+    };
+    const base = routeMap[type];
+    if (base) this.router.navigate([base, id]);
+  }
 
   get totalDocs(): number { return this.factures.length + this.bonsCommandes.length + this.bonsLivraison.length; }
   setTab(t: 'info' | 'lignes' | 'reclamations' | 'documents'): void { this.activeTab = t; }

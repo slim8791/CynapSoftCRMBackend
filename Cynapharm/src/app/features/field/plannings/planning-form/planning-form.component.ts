@@ -29,8 +29,8 @@ export class PlanningFormComponent implements OnInit, OnDestroy {
 
   etatOptions = [
     { value: EtatPlanning.EnAttente, label: PLANNING_STATUS_LABELS[EtatPlanning.EnAttente] },
-    { value: EtatPlanning.Confirme,  label: PLANNING_STATUS_LABELS[EtatPlanning.Confirme] },
-    { value: EtatPlanning.Annule,    label: PLANNING_STATUS_LABELS[EtatPlanning.Annule] }
+    { value: EtatPlanning.Confirme, label: PLANNING_STATUS_LABELS[EtatPlanning.Confirme] },
+    { value: EtatPlanning.Annule, label: PLANNING_STATUS_LABELS[EtatPlanning.Annule] }
   ];
 
   private destroy$ = new Subject<void>();
@@ -42,19 +42,19 @@ export class PlanningFormComponent implements OnInit, OnDestroy {
     private svc: PlanningService,
     private userSvc: UserService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.form = this.fb.group({
       id_User_Delegue: [null, [Validators.required]],
-      date:            ['',   [Validators.required]],
-      heureDebut:      [''],
-      heureFin:        [''],
-      etatPlanning:    [EtatPlanning.EnAttente]
+      date: ['', [Validators.required]],
+      heureDebut: [''],
+      heureFin: [''],
+      etat: [EtatPlanning.EnAttente]
     });
 
     this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$))
-      .subscribe({ next: users => { this.delegues = users; this.cdr.markForCheck(); }, error: () => {} });
+      .subscribe({ next: users => { this.delegues = users; this.cdr.markForCheck(); }, error: () => { } });
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
@@ -63,10 +63,15 @@ export class PlanningFormComponent implements OnInit, OnDestroy {
       this.loadingData = true;
       this.svc.getById(id).pipe(takeUntil(this.destroy$)).subscribe({
         next: data => {
-          this.form.patchValue({
-            ...data,
-            date: data.date?.substring(0, 10) ?? ''
-          });
+          if (data) {
+            this.form.patchValue({
+              id_User_Delegue: data.id_User_Delegue,
+              date: data.date?.substring(0, 10) ?? '',
+              heureDebut: data.heureDebut?.substring(0, 5) ?? '',
+              heureFin: data.heureFin?.substring(0, 5) ?? '',
+              etat: data.etat ?? EtatPlanning.EnAttente
+            });
+          }
           this.loadingData = false;
           this.cdr.markForCheck();
         },
@@ -78,7 +83,7 @@ export class PlanningFormComponent implements OnInit, OnDestroy {
   get f() { return this.form.controls; }
 
   userName(u: any): string {
-    return u?.name ?? u?.Name ?? u?.fullName ?? u?.FullName ?? u?.email ?? u?.Email ?? `#${u?.id ?? u?.Id}`;
+    return this.userSvc.displayName(u, this.userSvc.userId(u) ?? undefined);
   }
 
   submit(): void {

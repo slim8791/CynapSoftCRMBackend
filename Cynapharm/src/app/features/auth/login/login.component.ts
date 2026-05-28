@@ -100,7 +100,7 @@ export class LoginComponent implements OnInit {
       },
       error: (err: any) => {
         this.loading = false;
-        this.error = err?.error?.message || 'Login failed';
+        this.error = err?.error?.message || 'Identifiants incorrects. Veuillez réessayer.';
         console.error(err);
         this.turnstileWidget.reset();
         this.isTurnstileValid = false;

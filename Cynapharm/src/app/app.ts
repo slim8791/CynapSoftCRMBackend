@@ -45,6 +45,10 @@ export class App {
     return this.authService.getUserRole() === UserRole.SUPERVISEUR;
   }
 
+  get isDelegue(): boolean {
+    return this.authService.getUserRole() === UserRole.DELEGUE;
+  }
+
   constructor() {
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))

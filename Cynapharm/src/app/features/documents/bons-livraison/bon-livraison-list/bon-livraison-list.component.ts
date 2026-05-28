@@ -6,7 +6,6 @@ import { takeUntil } from 'rxjs/operators';
 import { BonLivraisonService, BonLivraisonDto } from '../services/bon-livraison.service';
 import { PaginatorComponent } from '../../../../shared/components/paginator/paginator.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
-import { PdfService } from '../../../../shared/services/pdf.service';
 import { UserService } from '../../../users/user.service';
 
 @Component({
@@ -21,7 +20,7 @@ export class BonLivraisonListComponent implements OnInit, OnDestroy {
   loading = false; error = ''; page = 1; pageSize = 20; total = 0;
   clientNames: Record<number, string> = {};
   private d$ = new Subject<void>();
-  constructor(private svc: BonLivraisonService, private cdr: ChangeDetectorRef, private pdf: PdfService, private userSvc: UserService) {}
+  constructor(private svc: BonLivraisonService, private cdr: ChangeDetectorRef, private userSvc: UserService) {}
   ngOnInit() { this.load(); }
   ngOnDestroy() { this.d$.next(); this.d$.complete(); }
   load() {

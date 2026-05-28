@@ -118,6 +118,15 @@ export class ProductService {
       .pipe(map(r => this.unwrapResult<any[]>(r) ?? []));
   }
 
+  getLotsByProduct(productId: number): Observable<any[]> {
+    return this.apiService
+      .get<any>(`${this.endpoint}/lots/product/${productId}`)
+      .pipe(
+        map(r => this.unwrapResult<any[]>(r) ?? []),
+        catchError(() => of([]))
+      );
+  }
+
   // ── Filtre paginé — aligne sur FilterProductsAsync ────
   filterProducts(
     page: number,

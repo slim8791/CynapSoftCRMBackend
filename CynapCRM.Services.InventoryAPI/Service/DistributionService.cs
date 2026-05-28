@@ -29,18 +29,47 @@ namespace CynapCRM.Services.InventoryAPI.Service
                 if (echantillon.Id_Medecin == null && echantillon.Id_Pharmacien == null)
                     return false;
 
-                // FIX 1+2+3: load stock and validate before creating distribution
-                var stock = await _db.StocksDelegues
-                    .FirstOrDefaultAsync(s => s.Id_stock == echantillon.Id_Stock && !s.IsDeleted);
-                if (stock == null) return false;
+                // STEP 1 — log inputs
+                Console.WriteLine($"[DIST] Id_Stock={echantillon.Id_Stock} Qte={echantillon.Qte}");
 
-                // FIX 3: lot expiration check
+                // STEP 2 — regular query (applies TPH discriminator filter)
+                var stock = await _db.StocksDelegues
+                    .FirstOrDefaultAsync(s =>
+                        s.Id_stock == echantillon.Id_Stock &&
+                        !s.IsDeleted);
+
+                Console.WriteLine(
+                    $"[DIST] Stock found: {stock != null}" +
+                    $" QteDisponible={stock?.QteDisponible}" +
+                    $" IsDeleted={stock?.IsDeleted}");
+
+                // STEP 3 — same query without TPH discriminator filter (detects TPH mismatch)
+                var stockRaw = await _db.StocksDelegues
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(s => s.Id_stock == echantillon.Id_Stock);
+
+                Console.WriteLine(
+                    $"[DIST] IgnoreFilters: {stockRaw != null}" +
+                    $" QteDisponible={stockRaw?.QteDisponible}");
+
+                if (stock == null)
+                {
+                    Console.WriteLine("[DIST] BLOCKED: stock null");
+                    return false;
+                }
+
+                if (stock.QteDisponible < echantillon.Qte)
+                {
+                    Console.WriteLine(
+                        $"[DIST] BLOCKED: {stock.QteDisponible} < {echantillon.Qte}");
+                    return false;
+                }
+
+                Console.WriteLine("[DIST] PASSED all validations");
+
+                // lot expiration check
                 if (stock.DateExpiration != default(DateTime) &&
                     stock.DateExpiration.Date < DateTime.UtcNow.Date)
-                    return false;
-
-                // FIX 2: quantity check
-                if (stock.QteDisponible < echantillon.Qte)
                     return false;
 
                 echantillon.DateDistribution = DateTime.UtcNow;
@@ -49,9 +78,31 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
                 // FIX 1: decrement available stock
                 stock.QteDisponible -= echantillon.Qte;
+
+                // FIX 5: record distribution movement
+                _db.StockMovements.Add(new StockMovement
+                {
+                    Id_Stock     = stock.Id_stock,
+                    Quantite     = -echantillon.Qte,
+                    TypeMovement = "Distribution",
+                    DateMovement = DateTime.UtcNow,
+                    Description  = $"Distribution vers médecin#{echantillon.Id_Medecin}/pharmacien#{echantillon.Id_Pharmacien}"
+                });
             }
             else
             {
+                // FIX 4: apply qty delta to stock when updating
+                var stock = await _db.StocksDelegues
+                    .FirstOrDefaultAsync(s => s.Id_stock == distribution.Id_Stock && !s.IsDeleted);
+
+                if (stock != null)
+                {
+                    int delta = echantillon.Qte - distribution.Qte;
+                    if (delta > 0 && stock.QteDisponible < delta)
+                        return false;
+                    stock.QteDisponible -= delta;
+                }
+
                 _mapper.Map(echantillon, distribution);
             }
 
@@ -106,7 +157,18 @@ namespace CynapCRM.Services.InventoryAPI.Service
             var stock = await _db.StocksDelegues
                 .FirstOrDefaultAsync(s => s.Id_stock == distribution.Id_Stock && !s.IsDeleted);
             if (stock != null)
+            {
                 stock.QteDisponible += distribution.Qte;
+
+                _db.StockMovements.Add(new StockMovement
+                {
+                    Id_Stock     = stock.Id_stock,
+                    Quantite     = distribution.Qte,
+                    TypeMovement = "Distribution-Annulée",
+                    DateMovement = DateTime.UtcNow,
+                    Description  = $"Annulation distribution #{idDistribution}"
+                });
+            }
 
             distribution.IsDeleted = true;
             await _db.SaveChangesAsync();

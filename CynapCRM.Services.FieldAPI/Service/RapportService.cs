@@ -72,15 +72,18 @@ namespace CynapCRM.Services.FieldAPI.Service
 
                 rapport = new Rapport_Visite
                 {
-                    Id_Visite       = dto.Id_Visite,
-                    Commentaire     = dto.Commentaire,
-                    Resultat        = dto.Resultat,
-                    DateRapport     = DateTime.UtcNow,
-                    Id_User_Delegue = dto.Id_User_Delegue,
+                    Id_Visite        = dto.Id_Visite,
+                    Commentaire      = dto.Commentaire,
+                    Resultat         = dto.Resultat,
+                    DateRapport      = DateTime.UtcNow,
+                    Id_User_Delegue  = dto.Id_User_Delegue,
 
                     // GPS coordinates — stored as-is; null when GPS was unavailable
-                    Latitude  = dto.Latitude,
-                    Longitude = dto.Longitude
+                    Latitude         = dto.Latitude,
+                    Longitude        = dto.Longitude,
+
+                    // Products presented during the visit (JSON array, may be null)
+                    ProduitsDiscutes = dto.ProduitsDiscutes
                 };
 
                 _db.Rapports.Add(rapport);
@@ -96,12 +99,15 @@ namespace CynapCRM.Services.FieldAPI.Service
                 if (rapport == null)
                     return null;
 
-                rapport.Commentaire = dto.Commentaire;
-                rapport.Resultat    = dto.Resultat;
+                rapport.Commentaire      = dto.Commentaire;
+                rapport.Resultat         = dto.Resultat;
 
                 // Allow coordinates to be updated (e.g., if GPS was unavailable on first save)
-                rapport.Latitude  = dto.Latitude;
-                rapport.Longitude = dto.Longitude;
+                rapport.Latitude         = dto.Latitude;
+                rapport.Longitude        = dto.Longitude;
+
+                // Update products discussed (delegate may have changed selection)
+                rapport.ProduitsDiscutes = dto.ProduitsDiscutes;
             }
 
             await _db.SaveChangesAsync();

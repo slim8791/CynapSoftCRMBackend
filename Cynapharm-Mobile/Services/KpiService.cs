@@ -29,21 +29,20 @@ public class KpiService
     }
 
     /// <summary>
-    /// Returns KPI performance indicators for the current delegue.
-    /// Endpoint: GET fields/kpi/performance/{idDelegue}?debut=yyyy-MM-dd&fin=yyyy-MM-dd
-    /// Returns empty list for non-DELEGUE roles.
+    /// Returns KPI performance indicators for the current user.
+    /// Endpoint: GET fields/kpi/performance/{idUser}?debut=yyyy-MM-dd&fin=yyyy-MM-dd
+    /// Returns list of PerformanceDto matching backend structure.
+    /// Backend handles authorization per role — no client-side role restriction.
     /// </summary>
-    public async Task<List<Kpi>?> GetKpisAsync(DateTime? debut = null, DateTime? fin = null)
+    public async Task<List<PerformanceDto>?> GetPerformanceAsync(DateTime? debut = null, DateTime? fin = null)
     {
-        var role      = await SecureStorage.GetAsync(StorageKeys.UserRole);
         var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
-
-        if (role != "DELEGUE" || !int.TryParse(userIdStr, out var userId))
-            return new List<Kpi>();
+        if (!int.TryParse(userIdStr, out var userId))
+            return new List<PerformanceDto>();
 
         var debut_ = debut ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
         var fin_   = fin   ?? DateTime.Now;
-        return await _api.GetAsync<List<Kpi>>(
+        return await _api.GetAsync<List<PerformanceDto>>(
             $"fields/kpi/performance/{userId}?debut={debut_:yyyy-MM-dd}&fin={fin_:yyyy-MM-dd}");
     }
 

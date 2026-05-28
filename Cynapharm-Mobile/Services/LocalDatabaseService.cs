@@ -159,7 +159,10 @@ public class LocalDatabaseService
     public Task<StockEntry?> GetStockByProductAsync(int productId)
         => _db.Table<StockEntry>().Where(s => s.ProductId == productId).FirstOrDefaultAsync();
 
-    // Atomically deducts qty from local stock. Returns false if insufficient.
+    public Task<StockEntry?> GetStockByStockIdAsync(int stockId)
+        => _db.Table<StockEntry>().Where(s => s.Id == stockId).FirstOrDefaultAsync();
+
+    // Atomically deducts qty from local stock by ProductId. Returns false if insufficient.
     public async Task<bool> DeductStockAsync(int productId, int qty)
     {
         var entry = await GetStockByProductAsync(productId);
@@ -167,6 +170,32 @@ public class LocalDatabaseService
         entry.QuantiteRestante -= qty;
         await _db.UpdateAsync(entry);
         return true;
+    }
+
+    /// <summary>
+    /// Atomically deducts qty from the specific stock lot identified by stockId (Id_stock).
+    /// Use this instead of <see cref="DeductStockAsync"/> when a product has multiple lots,
+    /// so the correct lot is decremented.
+    /// </summary>
+    public async Task<bool> DeductStockByStockIdAsync(int stockId, int qty)
+    {
+        var entry = await GetStockByStockIdAsync(stockId);
+        if (entry == null || entry.QuantiteRestante < qty) return false;
+        entry.QuantiteRestante -= qty;
+        await _db.UpdateAsync(entry);
+        return true;
+    }
+
+    /// <summary>
+    /// Reverses a previous deduction for the given stock lot.
+    /// Used to roll back the local optimistic decrement when the backend POST fails.
+    /// </summary>
+    public async Task IncrementStockByStockIdAsync(int stockId, int qty)
+    {
+        var entry = await GetStockByStockIdAsync(stockId);
+        if (entry == null) return;
+        entry.QuantiteRestante += qty;
+        await _db.UpdateAsync(entry);
     }
 
     // ── Promotions ────────────────────────────────────────────────────────────
@@ -181,8 +210,8 @@ public class LocalDatabaseService
             ProductId           = p.ProductId ?? 0,
             Titre               = p.Titre,
             RemisePourcentage   = (double)(p.RemisePourcentage ?? 0),
-            DateDebutTicks      = p.DateDebut.Ticks,
-            DateFinTicks        = p.DateFin.Ticks
+            DateDebutTicks      = ((DateTime)p.DateDebut).Ticks,
+            DateFinTicks        = ((DateTime)p.DateFin).Ticks
         }));
     }
 
@@ -222,6 +251,9 @@ public class LocalDatabaseService
     public Task MarkRapportSyncedAsync(int localId)
         => _db.ExecuteAsync(
             "UPDATE Pending_Rapports SET IsSynced = 1 WHERE Id = ?", localId);
+
+    public Task DeletePendingRapportAsync(int id)
+        => _db.DeleteAsync<PendingRapportEntry>(id);
 
     // ── App Logs ──────────────────────────────────────────────────────────────
 

@@ -18,16 +18,16 @@ import { VisiteService, VisiteDto } from '../../../field/visites/services/visite
 })
 export class RapportFormComponent implements OnInit, OnDestroy {
   form!: FormGroup;
-  isEdit      = false;
+  isEdit = false;
   editId: number | null = null;
   loadingData = false;
-  saving      = false;
-  fetchError  = '';
+  saving = false;
+  fetchError = '';
   submitError = '';
-  successMsg  = '';
+  successMsg = '';
 
-  delegues:  any[]       = [];
-  visites:   VisiteDto[] = [];
+  delegues: any[] = [];
+  visites: VisiteDto[] = [];
   loadingVisites = false;
 
   readonly resultats = ['POSITIF', 'NEGATIF', 'EN_ATTENTE'];
@@ -35,26 +35,26 @@ export class RapportFormComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private fb:       FormBuilder,
-    private route:    ActivatedRoute,
-    private router:   Router,
-    private svc:      RapportService,
-    private userSvc:  UserService,
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
+    private svc: RapportService,
+    private userSvc: UserService,
     private visiteSvc: VisiteService,
-    private cdr:      ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.form = this.fb.group({
       id_User_Delegue: [null, [Validators.required]],
-      id_Visite:       [null, [Validators.required]],
-      commentaire:     ['',   [Validators.required]],
-      resultat:        ['',   [Validators.required]]
+      id_Visite: [null, [Validators.required]],
+      commentaire: ['', [Validators.required]],
+      resultat: ['', [Validators.required]]
     });
 
     // Load delegues
     this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$))
-      .subscribe({ next: u => { this.delegues = u; this.cdr.markForCheck(); }, error: () => {} });
+      .subscribe({ next: u => { this.delegues = u; this.cdr.markForCheck(); }, error: () => { } });
 
     // When delegue changes, reload visites
     this.form.get('id_User_Delegue')!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(id => {
@@ -91,7 +91,7 @@ export class RapportFormComponent implements OnInit, OnDestroy {
   }
 
   userName(u: any): string {
-    return u?.name ?? u?.Name ?? u?.fullName ?? u?.email ?? `#${u?.id}`;
+    return this.userSvc.displayName(u, this.userSvc.userId(u) ?? undefined);
   }
 
   get f() { return this.form.controls; }
@@ -101,12 +101,12 @@ export class RapportFormComponent implements OnInit, OnDestroy {
     if (this.form.invalid) return;
     this.saving = true;
     this.submitError = '';
-    this.successMsg  = '';
+    this.successMsg = '';
 
     const dto: RapportDto = {
       ...this.form.value,
       id_User_Delegue: +this.form.value.id_User_Delegue,
-      id_Visite:       +this.form.value.id_Visite,
+      id_Visite: +this.form.value.id_Visite,
       ...(this.isEdit && this.editId ? { idRapport: this.editId } : {})
     };
 

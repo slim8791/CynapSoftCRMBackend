@@ -12,28 +12,9 @@
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
-              Padding="16,48,16,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="40" />
-            </Grid.ColumnDefinitions>
-            <Border Grid.Column="0"
-                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
-                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
-                    VerticalOptions="Center">
-                <Label Text="‹" FontSize="24" FontAttributes="Bold"
-                       TextColor="White"
-                       HorizontalOptions="Center" VerticalOptions="Center" />
-            </Border>
-            <Label Grid.Column="1"
-                   Text="Visite"
-                   FontSize="17" FontAttributes="Bold"
-                   FontFamily="OpenSansSemibold"
-                   TextColor="White"
-                   HorizontalOptions="Center" VerticalOptions="Center" />
-        </Grid>
+        <controls:AppHeader Grid.Row="0"
+                            Title="Visite"
+                            ShowBackButton="True" />
 
         <!-- ── Body ──────────────────────────────────────────────────────── -->
         <ScrollView Grid.Row="1">
@@ -44,6 +25,29 @@
                                    IsVisible="{Binding IsBusy}"
                                    Color="{StaticResource Primary}"
                                    HorizontalOptions="Center" />
+
+                <!-- FIX-6: Read-only banner when visite is completed -->
+                <Border IsVisible="{Binding IsCompleted}"
+                        BackgroundColor="#E8F5E9"
+                        StrokeShape="RoundRectangle 12"
+                        Stroke="#81C784" StrokeThickness="1"
+                        Padding="16,10">
+                    <Label Text="✓ Visite terminée "
+                           TextColor="#2E7D32"
+                           FontSize="13" FontAttributes="Bold"
+                           HorizontalOptions="Center" />
+                </Border>
+
+                <!-- Planning association indicator -->
+                <Border BackgroundColor="#E8F4FD"
+                        StrokeShape="RoundRectangle 8"
+                        Stroke="Transparent"
+                        Padding="10"
+                        IsVisible="{Binding HasPlanningLabel}">
+                    <Label Text="{Binding PlanningLabel}"
+                           TextColor="#1565C0"
+                           FontSize="13" />
+                </Border>
 
                 <!-- ── Visit info form ────────────────────────────────────── -->
                 <Border Style="{StaticResource CardStyle}" Padding="16,14">
@@ -60,30 +64,6 @@
                         </Grid>
                         <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
 
-                        <!-- Client -->
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="Client *" FontSize="12" FontAttributes="Bold"
-                                   TextColor="{StaticResource TextSecondary}" />
-                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
-                                    StrokeShape="RoundRectangle 12"
-                                    Stroke="{StaticResource FieldBorderInactive}"
-                                    StrokeThickness="1.5"
-                                    Padding="14,0" HeightRequest="52">
-                                <Grid ColumnDefinitions="22,*" ColumnSpacing="10">
-                                    <Label Grid.Column="0" Text="🏪" FontSize="17"
-                                           VerticalOptions="Center" />
-                                    <Entry Grid.Column="1"
-                                           Placeholder="Nom du client ou pharmacie"
-                                           Text="{Binding ClientName}"
-                                           BackgroundColor="Transparent"
-                                           TextColor="{StaticResource TextPrimary}"
-                                           PlaceholderColor="{StaticResource TextMuted}"
-                                           HeightRequest="52"
-                                           Margin="0" VerticalOptions="Center" />
-                                </Grid>
-                            </Border>
-                        </VerticalStackLayout>
-
                         <!-- Date -->
                         <VerticalStackLayout Spacing="6">
                             <Label Text="Date de la visite *" FontSize="12" FontAttributes="Bold"
@@ -99,6 +79,7 @@
                                     <DatePicker Grid.Column="1"
                                                 Date="{Binding VisiteDate}"
                                                 Format="dd/MM/yyyy"
+                                                IsEnabled="{Binding CanEdit}"
                                                 BackgroundColor="Transparent"
                                                 TextColor="{StaticResource TextPrimary}"
                                                 VerticalOptions="Center" />
@@ -106,9 +87,9 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Statut -->
+                        <!-- Type de visite -->
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="Statut" FontSize="12" FontAttributes="Bold"
+                            <Label Text="Type de visite *" FontSize="12" FontAttributes="Bold"
                                    TextColor="{StaticResource TextSecondary}" />
                             <Border BackgroundColor="{StaticResource SurfaceBackground}"
                                     StrokeShape="RoundRectangle 12"
@@ -119,8 +100,9 @@
                                     <Label Grid.Column="0" Text="🔖" FontSize="17"
                                            VerticalOptions="Center" />
                                     <Picker Grid.Column="1"
-                                            ItemsSource="{Binding StatutOptions}"
-                                            SelectedItem="{Binding Statut}"
+                                            ItemsSource="{Binding VisiteTypeOptions}"
+                                            SelectedItem="{Binding SelectedTypeLabel}"
+                                            IsEnabled="{Binding CanEdit}"
                                             BackgroundColor="Transparent"
                                             TextColor="{StaticResource TextPrimary}"
                                             VerticalOptions="Center" />
@@ -128,33 +110,90 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Notes -->
+                        <!-- Notes (optionnel) -->
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="Notes" FontSize="12" FontAttributes="Bold"
+                            <Label Text="Notes (optionnel)" FontSize="12" FontAttributes="Bold"
                                    TextColor="{StaticResource TextSecondary}" />
                             <Border BackgroundColor="{StaticResource SurfaceBackground}"
                                     StrokeShape="RoundRectangle 12"
                                     Stroke="{StaticResource FieldBorderInactive}"
                                     StrokeThickness="1.5"
-                                    Padding="14,12">
-                                <Editor Placeholder="Notes sur le déroulement de la visite…"
-                                        Text="{Binding Notes}"
-                                        MinimumHeightRequest="100"
+                                    Padding="14,10">
+                                <Editor Text="{Binding Notes}"
+                                        Placeholder="Ajouter des notes..."
+                                        PlaceholderColor="{StaticResource TextMuted}"
+                                        AutoSize="TextChanges"
+                                        MaxLength="500"
+                                        MinimumHeightRequest="72"
+                                        IsEnabled="{Binding CanEdit}"
                                         BackgroundColor="Transparent"
-                                        TextColor="{StaticResource TextPrimary}"
-                                        PlaceholderColor="{StaticResource TextMuted}" />
+                                        TextColor="{StaticResource TextPrimary}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Médecin (optionnel) -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Médecin (optionnel)" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextSecondary}" />
+                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                    StrokeShape="RoundRectangle 12"
+                                    Stroke="{StaticResource FieldBorderInactive}"
+                                    StrokeThickness="1.5"
+                                    Padding="14,0" HeightRequest="52">
+                                <Grid ColumnDefinitions="22,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="🩺" FontSize="17"
+                                           VerticalOptions="Center" />
+                                    <Picker Grid.Column="1"
+                                            ItemsSource="{Binding Medecins}"
+                                            ItemDisplayBinding="{Binding Nom}"
+                                            SelectedItem="{Binding SelectedMedecin}"
+                                            Title="Sélectionner un médecin"
+                                            IsEnabled="{Binding CanEdit}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{StaticResource TextPrimary}"
+                                            TitleColor="{StaticResource TextMuted}"
+                                            VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Pharmacien (optionnel) -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Pharmacien (optionnel)" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextSecondary}" />
+                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                    StrokeShape="RoundRectangle 12"
+                                    Stroke="{StaticResource FieldBorderInactive}"
+                                    StrokeThickness="1.5"
+                                    Padding="14,0" HeightRequest="52">
+                                <Grid ColumnDefinitions="22,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="💊" FontSize="17"
+                                           VerticalOptions="Center" />
+                                    <Picker Grid.Column="1"
+                                            ItemsSource="{Binding Pharmaciens}"
+                                            ItemDisplayBinding="{Binding Nom}"
+                                            SelectedItem="{Binding SelectedPharmacien}"
+                                            Title="Sélectionner un pharmacien"
+                                            IsEnabled="{Binding CanEdit}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{StaticResource TextPrimary}"
+                                            TitleColor="{StaticResource TextMuted}"
+                                            VerticalOptions="Center" />
+                                </Grid>
                             </Border>
                         </VerticalStackLayout>
 
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Rapport button -->
+                <!-- ── Rapport action — three mutually exclusive states ──────── -->
+
+                <!-- STATE 1: no rapport yet → CREATE -->
                 <Border BackgroundColor="{StaticResource PrimaryLight}"
                         StrokeShape="RoundRectangle 14"
                         Stroke="{StaticResource Primary}" StrokeThickness="1"
                         Padding="14,14"
-                        IsVisible="{Binding IsExisting}">
+                        IsVisible="{Binding ShowSubmitRapport}">
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
                         <Border Grid.Column="0"
                                 BackgroundColor="{StaticResource Primary}"
@@ -183,18 +222,87 @@
                     </Border.GestureRecognizers>
                 </Border>
 
-                <!-- Delete (danger) -->
+                <!-- STATE 2: rapport exists, not yet validated → EDIT (amber) -->
+                <Border BackgroundColor="#FFF8E1"
+                        StrokeShape="RoundRectangle 14"
+                        Stroke="#FF8F00" StrokeThickness="1"
+                        Padding="14,14"
+                        IsVisible="{Binding ShowEditRapport}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Border Grid.Column="0"
+                                BackgroundColor="#FF8F00"
+                                StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                WidthRequest="38" HeightRequest="38">
+                            <Label Text="✏️" FontSize="18"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="Modifier le rapport"
+                                   FontSize="14" FontAttributes="Bold"
+                                   TextColor="#E65100" />
+                            <Label Text="Le superviseur n'a pas encore validé"
+                                   FontSize="11" TextColor="#FF8F00" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="›" FontSize="22"
+                               TextColor="#FF8F00"
+                               VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToRapportCommand}" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToRapportCommand}" />
+                    </Border.GestureRecognizers>
+                </Border>
+
+                <!-- STATE 3: rapport locked by superviseur validation → VIEW (gray) -->
+                <Border BackgroundColor="#F5F5F5"
+                        StrokeShape="RoundRectangle 14"
+                        Stroke="#9E9E9E" StrokeThickness="1"
+                        Padding="14,14"
+                        IsVisible="{Binding ShowViewRapport}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Border Grid.Column="0"
+                                BackgroundColor="#757575"
+                                StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                WidthRequest="38" HeightRequest="38">
+                            <Label Text="👁" FontSize="18"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="Voir le rapport"
+                                   FontSize="14" FontAttributes="Bold"
+                                   TextColor="#424242" />
+                            <Label Text="Rapport validé — lecture seule"
+                                   FontSize="11" TextColor="#757575" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="›" FontSize="22"
+                               TextColor="#9E9E9E"
+                               VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToRapportCommand}" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToRapportCommand}" />
+                    </Border.GestureRecognizers>
+                </Border>
+
+                <!-- Delete (danger) — hidden for completed or new visites -->
                 <Button Text="Supprimer la visite"
                         Command="{Binding DeleteCommand}"
                         Style="{StaticResource DangerButtonStyle}"
                         Margin="0,4,0,0"
-                        IsVisible="{Binding IsExisting}" />
+                        IsVisible="{Binding CanDelete}" />
 
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- ── Sticky save ────────────────────────────────────────────────── -->
-        <Grid Grid.Row="2" BackgroundColor="{StaticResource CardBackground}">
+        <!-- ── Sticky save — hidden when visite is completed (read-only) ─── -->
+        <Grid Grid.Row="2" BackgroundColor="{StaticResource CardBackground}"
+              IsVisible="{Binding CanEdit}">
             <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}"
                      VerticalOptions="Start" />
             <Button Text="Enregistrer la visite"

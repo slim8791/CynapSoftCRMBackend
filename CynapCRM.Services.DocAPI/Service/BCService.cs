@@ -32,8 +32,8 @@ namespace CynapCRM.Services.DocAPI.Service
         public async Task<IEnumerable<BonCommandeDto>> GetBonsCommandeByClientAsync(
             int idClient)
         {
-            // FIX: ajout filtre IsDeleted
             var bons = await _db.BonsCommandes
+                .OfType<BonCommande>()
                 .Where(bc => bc.Id_Client == idClient && !bc.IsDeleted)
                 .AsNoTracking()
                 .OrderByDescending(bc => bc.DateCreation)
@@ -99,7 +99,8 @@ namespace CynapCRM.Services.DocAPI.Service
                     Id_Commande = bcDto.Id_Commande,
                     Id_Client = bcDto.Id_Client,
                     TypeDocument = "BC",
-                    DateCreation = DateTime.UtcNow
+                    DateCreation = DateTime.UtcNow,
+                    CloudinaryUrl = bcDto.CloudinaryUrl
                 };
                 _db.BonsCommandes.Add(bc);
             }
@@ -111,6 +112,7 @@ namespace CynapCRM.Services.DocAPI.Service
                 if (bc == null) return null;
 
                 bc.Nom_Doc = bcDto.Nom_Doc;
+                bc.CloudinaryUrl = bcDto.CloudinaryUrl;
             }
 
             await _db.SaveChangesAsync();
@@ -122,7 +124,8 @@ namespace CynapCRM.Services.DocAPI.Service
                 DateCreation = bc.DateCreation,
                 Id_Commande = bc.Id_Commande,
                 Id_Client = bc.Id_Client,
-                TypeDocument = "BC"
+                TypeDocument = "BC",
+                CloudinaryUrl = bc.CloudinaryUrl
             };
         }
 

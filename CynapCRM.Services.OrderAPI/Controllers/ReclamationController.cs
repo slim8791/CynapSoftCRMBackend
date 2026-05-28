@@ -48,7 +48,6 @@ namespace CynapCRM.Services.OrderAPI.Controllers
 
         // FIX: ajout rôles CLIENT pour voir leurs propres réclamations
         [HttpGet("by-commande/{orderId:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> GetReclamationsByOrder(int orderId)
         {
             try
@@ -73,7 +72,6 @@ namespace CynapCRM.Services.OrderAPI.Controllers
 
         // FIX: ajout rôles CLIENT
         [HttpGet("by-client/{idClient:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> GetReclamationsByClient(int idClient)
         {
             try
@@ -98,7 +96,6 @@ namespace CynapCRM.Services.OrderAPI.Controllers
 
         // FIX: ajout rôles CLIENT
         [HttpGet("{idReclamation:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> GetReclamationById(int idReclamation)
         {
             try
@@ -128,7 +125,6 @@ namespace CynapCRM.Services.OrderAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> CreateUpdateReclamation(
             [FromBody] ReclamationDto reclamationDto)
         {

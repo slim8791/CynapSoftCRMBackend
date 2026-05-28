@@ -25,7 +25,9 @@ public class StockDelegue
     [JsonPropertyName("qteReservee")]
     public int QuantiteReservee { get; set; }
 
-    // Display-only — enriched from product catalog, not in backend StockDelegueDto
+    // Enriched from product catalog — backend StockDelegueDto does not include this field;
+    // [JsonPropertyName] is kept as a forward-compat hint in case the API adds it later.
+    [JsonPropertyName("nomProduit")]
     public string ProductNom { get; set; } = string.Empty;
 
     // Kept for offline SQLite compatibility

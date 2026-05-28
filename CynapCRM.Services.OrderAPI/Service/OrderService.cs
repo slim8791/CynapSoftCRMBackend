@@ -53,6 +53,7 @@ namespace CynapCRM.Services.OrderAPI.Service
         public async Task<IEnumerable<CommandeDto>> GetAllOrdersAsync(int page, int pageSize)
         {
             var commandes = await _db.Commandes
+                .Where(c => !c.IsDeleted)
                 .Include(c => c.Lignes)
                 .AsNoTracking()
                 .Skip((page - 1) * pageSize)
@@ -156,9 +157,8 @@ namespace CynapCRM.Services.OrderAPI.Service
                 .FirstOrDefaultAsync(o => o.Id_Commande == idCommande);
             if (order == null) return false;
 
-            // Seules Brouillon, EnAttente et Confirmee sont annulables
-            if (order.Statut == EtatCommande.Livree ||
-                order.Statut == EtatCommande.Annulee)
+            // Brouillon(0)–EnPreparation(3) are cancellable; Expediee(4) and above are not
+            if (order.Statut >= EtatCommande.Expediee)
                 return false;
 
             order.Statut = EtatCommande.Annulee;
@@ -212,7 +212,7 @@ namespace CynapCRM.Services.OrderAPI.Service
     EtatCommande statut, int page = 1, int pageSize = 20)
         {
             var orders = await _db.Commandes
-                .Where(c => c.Statut == statut)
+                .Where(c => !c.IsDeleted && c.Statut == statut)
                 .Include(c => c.Lignes)
                 .AsNoTracking()
                 .OrderByDescending(c => c.DateCommande)

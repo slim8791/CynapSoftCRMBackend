@@ -1,126 +1,288 @@
 <div class="page">
-      <div class="page-header">
-        <a routerLink="/inventory/promo-stocks" class="back-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Retour
-        </a>
-        <h1>Stocks promotionnels</h1>
-      </div>
 
-      <div class="lookup-bar">
-        <label>ID du stock</label>
-        <input type="number" [(ngModel)]="stockId" placeholder="Ex: 5" (keyup.enter)="lookup()" />
-        <button class="btn btn-primary" (click)="lookup()" [disabled]="!stockId || loadingLookup">
-          <span *ngIf="loadingLookup" class="btn-spinner"></span>
-          Rechercher
-        </button>
-      </div>
-
-      <div *ngIf="lookupError" class="error-banner">{{ lookupError }}</div>
-
-      <div class="cards-grid" *ngIf="gratuiteData || echantillonData">
-        <!-- Gratuite card -->
-        <div class="promo-card">
-          <div class="card-header">
-            <span class="card-badge badge-purple">Gratuite</span>
-            <h2>Stock gratuite</h2>
-          </div>
-          <div *ngIf="gratuiteData" class="info-list">
-            <div class="info-row"><span>Délégué (ID)</span><strong>{{ gratuiteData.id_User_Delegue }}</strong></div>
-            <div class="info-row"><span>Produit (ID)</span><strong>{{ gratuiteData.id_Produit }}</strong></div>
-            <div class="info-row"><span>N° lot</span><strong class="mono">{{ gratuiteData.numeroLot }}</strong></div>
-            <div class="info-row"><span>Qté disponible</span><strong>{{ gratuiteData.qteDisponible }}</strong></div>
-            <div class="info-row"><span>Qté réservée</span><strong>{{ gratuiteData.qteReservee }}</strong></div>
-            <div class="info-row"><span>Qté gratuite</span><strong class="highlight">{{ gratuiteData.qteGratuite }}</strong></div>
-            <div class="info-row"><span>Type promo</span><strong>{{ gratuiteData.typePromotion }}</strong></div>
-          </div>
-          <div *ngIf="gratuiteData && historyEntries(gratuiteData).length > 0" class="history-block">
-            <h3>Historique</h3>
-            <table class="history-table">
-              <thead><tr><th>Date</th><th>Type</th><th>Quantité</th><th>Description</th></tr></thead>
-              <tbody>
-                <tr *ngFor="let h of historyEntries(gratuiteData)">
-                  <td>{{ historyDate(h) ? (historyDate(h) | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
-                  <td><span class="history-chip">{{ historyType(h) }}</span></td>
-                  <td>{{ historyQuantity(h) }}</td>
-                  <td>{{ historyDescription(h) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div *ngIf="!gratuiteData && searched" class="no-data">Aucune donnée gratuite</div>
-          <hr *ngIf="gratuiteData" />
-          <h3>Mettre à jour</h3>
-          <form [formGroup]="gratuiteForm" (ngSubmit)="saveGratuite()" novalidate>
-            <div class="mini-grid">
-              <div class="field"><label>Délégué (ID)*</label><input type="number" formControlName="id_User_Delegue" /></div>
-              <div class="field"><label>Produit (ID)*</label><input type="number" formControlName="id_Produit" /></div>
-              <div class="field"><label>N° lot*</label><input type="text" formControlName="numeroLot" /></div>
-              <div class="field"><label>Qté disponible*</label><input type="number" formControlName="qteDisponible" min="0" /></div>
-              <div class="field"><label>Qté réservée*</label><input type="number" formControlName="qteReservee" min="0" /></div>
-              <div class="field"><label>Qté gratuite*</label><input type="number" formControlName="qteGratuite" min="0" /></div>
-              <div class="field"><label>Type promo*</label><input type="text" formControlName="typePromotion" /></div>
-            </div>
-            <div *ngIf="gratuiteSuccess" class="success-banner">{{ gratuiteSuccess }}</div>
-            <div *ngIf="gratuiteError" class="error-banner-sm">{{ gratuiteError }}</div>
-            <button type="submit" class="btn btn-primary btn-sm" [disabled]="savingGratuite">
-              {{ savingGratuite ? 'Enregistrement...' : 'Enregistrer gratuite' }}
-            </button>
-          </form>
-        </div>
-
-        <!-- Echantillon card -->
-        <div class="promo-card">
-          <div class="card-header">
-            <span class="card-badge badge-teal">Echantillon</span>
-            <h2>Stock échantillon</h2>
-          </div>
-          <div *ngIf="echantillonData" class="info-list">
-            <div class="info-row"><span>Délégué (ID)</span><strong>{{ echantillonData.id_User_Delegue }}</strong></div>
-            <div class="info-row"><span>Produit (ID)</span><strong>{{ echantillonData.id_Produit }}</strong></div>
-            <div class="info-row"><span>N° lot</span><strong class="mono">{{ echantillonData.numeroLot }}</strong></div>
-            <div class="info-row"><span>Qté disponible</span><strong>{{ echantillonData.qteDisponible }}</strong></div>
-            <div class="info-row"><span>Qté réservée</span><strong>{{ echantillonData.qteReservee }}</strong></div>
-            <div class="info-row"><span>Qté échantillon</span><strong class="highlight">{{ echantillonData.qteEchantillon }}</strong></div>
-          </div>
-          <div *ngIf="echantillonData && historyEntries(echantillonData).length > 0" class="history-block">
-            <h3>Historique</h3>
-            <table class="history-table">
-              <thead><tr><th>Date</th><th>Type</th><th>Quantité</th><th>Description</th></tr></thead>
-              <tbody>
-                <tr *ngFor="let h of historyEntries(echantillonData)">
-                  <td>{{ historyDate(h) ? (historyDate(h) | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
-                  <td><span class="history-chip">{{ historyType(h) }}</span></td>
-                  <td>{{ historyQuantity(h) }}</td>
-                  <td>{{ historyDescription(h) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div *ngIf="!echantillonData && searched" class="no-data">Aucune donnée échantillon</div>
-          <hr *ngIf="echantillonData" />
-          <h3>Mettre à jour</h3>
-          <form [formGroup]="echantillonForm" (ngSubmit)="saveEchantillon()" novalidate>
-            <div class="mini-grid">
-              <div class="field"><label>Délégué (ID)*</label><input type="number" formControlName="id_User_Delegue" /></div>
-              <div class="field"><label>Produit (ID)*</label><input type="number" formControlName="id_Produit" /></div>
-              <div class="field"><label>N° lot*</label><input type="text" formControlName="numeroLot" /></div>
-              <div class="field"><label>Qté disponible*</label><input type="number" formControlName="qteDisponible" min="0" /></div>
-              <div class="field"><label>Qté réservée*</label><input type="number" formControlName="qteReservee" min="0" /></div>
-              <div class="field"><label>Qté échantillon*</label><input type="number" formControlName="qteEchantillon" min="0" /></div>
-            </div>
-            <div *ngIf="echantillonSuccess" class="success-banner">{{ echantillonSuccess }}</div>
-            <div *ngIf="echantillonError" class="error-banner-sm">{{ echantillonError }}</div>
-            <button type="submit" class="btn btn-teal btn-sm" [disabled]="savingEchantillon">
-              {{ savingEchantillon ? 'Enregistrement...' : 'Enregistrer échantillon' }}
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <div *ngIf="!searched" class="hint-panel">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg>
-        <p>Entrez un ID de stock pour voir et gérer ses données promotionnelles.</p>
-      </div>
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1>Stocks Promotionnels</h1>
+      <p class="page-subtitle">Gérez les stocks gratuités et échantillons</p>
     </div>
-  
+    <a routerLink="/inventory/promo-stocks/new" class="btn btn-primary">
+      + Nouveau stock promo
+    </a>
+  </div>
+
+  <!-- Tabs — same pattern as distribution-list -->
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'gratuite'" (click)="activeTab = 'gratuite'">
+      Gratuités
+    </button>
+    <button class="tab" [class.active]="activeTab === 'echantillon'" (click)="activeTab = 'echantillon'">
+      Échantillons
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════ GRATUITÉ TAB ══ -->
+  @if (activeTab === 'gratuite') {
+
+    @if (loadingGratuite) {
+      <div class="loading-wrap">
+        <div class="spinner"></div>
+        <span>Chargement...</span>
+      </div>
+    } @else if (allGratuite.length === 0) {
+      <app-empty-state
+        title="Aucun stock gratuité"
+        message="Créez votre premier stock gratuité via le bouton ci-dessus.">
+      </app-empty-state>
+    } @else {
+
+      <div class="filter-row">
+        <label>Stock gratuité</label>
+        <select [(ngModel)]="selectedGratuiteId" (ngModelChange)="onSelectGratuite($event)">
+          <option [ngValue]="null">-- Sélectionner --</option>
+          @for (g of allGratuite; track g.id_stock) {
+            <option [ngValue]="g.id_stock">
+              Lot {{ g.numeroLot }}
+              — Achetez {{ g.quantiteAchat }} → {{ g.quantiteGratuite }} offert(s)
+              — Stock: {{ g.qteGratuite }}
+            </option>
+          }
+        </select>
+      </div>
+
+      @if (gratuiteData) {
+        <div class="detail-card">
+
+          <!-- Summary grid -->
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Règle</span>
+              <span class="value">
+                <span class="badge badge-purple">
+                  🎁 Achetez {{ gratuiteData.quantiteAchat }}
+                  → {{ gratuiteData.quantiteGratuite }} offert(s)
+                </span>
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Stock disponible</span>
+              <span class="value qty">{{ gratuiteData.qteGratuite }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Numéro de lot</span>
+              <span class="value mono">{{ gratuiteData.numeroLot }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Délégué ID</span>
+              <span class="value">#{{ gratuiteData.id_User_Delegue }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Produit ID</span>
+              <span class="value">#{{ gratuiteData.id_Produit }}</span>
+            </div>
+            @if (gratuiteData.dateDebut) {
+              <div class="detail-item">
+                <span class="label">Période</span>
+                <span class="value">
+                  {{ gratuiteData.dateDebut | date:'dd/MM/yyyy' }}
+                  @if (gratuiteData.dateFin) { → {{ gratuiteData.dateFin | date:'dd/MM/yyyy' }} }
+                </span>
+              </div>
+            }
+          </div>
+
+          <!-- Update form -->
+          <h3 class="section-title">Modifier ce stock gratuité</h3>
+          <form [formGroup]="gratuiteForm" (ngSubmit)="saveGratuite()" class="form-grid" novalidate>
+
+            <div class="field">
+              <label>Stock disponible *</label>
+              <input type="number" formControlName="qteGratuite" min="0" />
+            </div>
+            <div class="field">
+              <label>Achat déclencheur *</label>
+              <input type="number" formControlName="quantiteAchat" min="1" />
+              <small class="field-hint">Nbre d'unités à acheter</small>
+            </div>
+            <div class="field">
+              <label>Quantité offerte *</label>
+              <input type="number" formControlName="quantiteGratuite" min="1" />
+            </div>
+            <div class="field">
+              <label>Date début</label>
+              <input type="date" formControlName="dateDebut" />
+            </div>
+            <div class="field">
+              <label>Date fin</label>
+              <input type="date" formControlName="dateFin" />
+            </div>
+
+            @if (gratuiteForm.get('quantiteAchat')?.value > 0 && gratuiteForm.get('quantiteGratuite')?.value > 0) {
+              <div class="gratuite-preview">
+                🎁 Achetez {{ gratuiteForm.get('quantiteAchat')?.value }}
+                → recevez {{ gratuiteForm.get('quantiteGratuite')?.value }} gratuit(s)
+              </div>
+            }
+            @if (gratuiteForm.errors?.['dateRange'] && gratuiteForm.touched) {
+              <div class="field-error-banner">
+                La date de fin doit être après la date de début.
+              </div>
+            }
+            @if (gratuiteForm.errors?.['gratuiteTooHigh']) {
+              <div class="field-error-banner">
+                La quantité offerte doit être inférieure à la quantité d'achat.
+              </div>
+            }
+            @if (gratuiteError) {
+              <div class="error-banner">{{ gratuiteError }}</div>
+            }
+            @if (gratuiteSuccess) {
+              <div class="success-banner">{{ gratuiteSuccess }}</div>
+            }
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" [disabled]="savingGratuite">
+                @if (savingGratuite) { Enregistrement... } @else { Enregistrer }
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+    }
+  }
+
+  <!-- ════════════════════════════════════ ÉCHANTILLON TAB ══ -->
+  @if (activeTab === 'echantillon') {
+
+    @if (loadingEchantillon) {
+      <div class="loading-wrap">
+        <div class="spinner"></div>
+        <span>Chargement...</span>
+      </div>
+    } @else if (allEchantillon.length === 0) {
+      <app-empty-state
+        title="Aucun stock échantillon"
+        message="Créez votre premier stock échantillon via le bouton ci-dessus.">
+      </app-empty-state>
+    } @else {
+
+      <div class="filter-row">
+        <label>Stock échantillon</label>
+        <select [(ngModel)]="selectedEchantillonId" (ngModelChange)="onSelectEchantillon($event)">
+          <option [ngValue]="null">-- Sélectionner --</option>
+          @for (e of allEchantillon; track e.id_stock) {
+            <option [ngValue]="e.id_stock">
+              Lot {{ e.numeroLot }}
+              — {{ e.description || 'Sans description' }}
+              — {{ e.qteEchantillon }} alloués
+            </option>
+          }
+        </select>
+      </div>
+
+      @if (echantillonData) {
+        <div class="detail-card">
+
+          <!-- Stats -->
+          <div class="stats-row">
+            <div class="stat-box">
+              <span class="stat-value primary">{{ echantillonData.qteEchantillon }}</span>
+              <span class="stat-label">Total alloués</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-value success">{{ echantillonData.qteDisponible }}</span>
+              <span class="stat-label">Disponibles</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-value warning">{{ getDistributed(echantillonData) }}</span>
+              <span class="stat-label">Distribués</span>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="usage-section">
+            <div class="usage-header">
+              <span>Utilisation</span>
+              <span>{{ getUsagePercent(echantillonData) | number:'1.0-0' }}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getUsagePercent(echantillonData)"></div>
+            </div>
+          </div>
+
+          <!-- Info grid -->
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Numéro de lot</span>
+              <span class="value mono">{{ echantillonData.numeroLot }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Délégué ID</span>
+              <span class="value">#{{ echantillonData.id_User_Delegue }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Produit ID</span>
+              <span class="value">#{{ echantillonData.id_Produit }}</span>
+            </div>
+            @if (echantillonData.description) {
+              <div class="detail-item">
+                <span class="label">Campagne</span>
+                <span class="value">{{ echantillonData.description }}</span>
+              </div>
+            }
+            @if (echantillonData.dateDebut) {
+              <div class="detail-item">
+                <span class="label">Période</span>
+                <span class="value">
+                  {{ echantillonData.dateDebut | date:'dd/MM/yyyy' }}
+                  @if (echantillonData.dateFin) { → {{ echantillonData.dateFin | date:'dd/MM/yyyy' }} }
+                </span>
+              </div>
+            }
+          </div>
+
+          <!-- Update form -->
+          <h3 class="section-title">Modifier ce stock échantillon</h3>
+          <form [formGroup]="echantillonForm" (ngSubmit)="saveEchantillon()" class="form-grid" novalidate>
+
+            <div class="field">
+              <label>Quantité allouée *</label>
+              <input type="number" formControlName="qteEchantillon" min="1" />
+            </div>
+            <div class="field">
+              <label>Description campagne</label>
+              <input type="text" formControlName="description" placeholder="Ex: Lancement produit X" />
+            </div>
+            <div class="field">
+              <label>Date début</label>
+              <input type="date" formControlName="dateDebut" />
+            </div>
+            <div class="field">
+              <label>Date fin</label>
+              <input type="date" formControlName="dateFin" />
+            </div>
+
+            @if (echantillonForm.errors?.['dateRange'] && echantillonForm.touched) {
+              <div class="field-error-banner">
+                La date de fin doit être après la date de début.
+              </div>
+            }
+            @if (echantillonError) {
+              <div class="error-banner">{{ echantillonError }}</div>
+            }
+            @if (echantillonSuccess) {
+              <div class="success-banner">{{ echantillonSuccess }}</div>
+            }
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" [disabled]="savingEchantillon">
+                @if (savingEchantillon) { Enregistrement... } @else { Enregistrer }
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+    }
+  }
+
+</div>

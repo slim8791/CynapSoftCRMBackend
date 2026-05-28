@@ -23,9 +23,9 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty] private double          _tauxConversion;
     [ObservableProperty] private StockSummaryDto? _stockSummary;
 
-    public ObservableCollection<Kpi>        KpiItems      { get; } = new();
-    public ObservableCollection<Objectif>   ObjectifItems { get; } = new();
-    public ObservableCollection<RegionModel> Regions      { get; } = new();
+    public ObservableCollection<Objectif>         ObjectifItems { get; } = new();
+    public ObservableCollection<PerformanceDto>   PerformanceItems { get; } = new();
+    public ObservableCollection<RegionModel>      Regions       { get; } = new();
 
     public DashboardViewModel(
         VisiteService    visiteService,
@@ -66,28 +66,25 @@ public partial class DashboardViewModel : BaseViewModel
             var today      = DateTime.Today;
             var monthStart = new DateTime(today.Year, today.Month, 1);
 
-            var kpis = await _kpiService.GetKpisAsync(monthStart, today);
-            KpiItems.Clear();
-            if (kpis != null)
-            {
-                foreach (var k in kpis) KpiItems.Add(k);
-                await SaveCacheAsync("dashboard_kpis", kpis);
-            }
-
-            // Always loaded fresh — performance endpoint now recalculates dynamically from DB
-            var objectifs = await _kpiService.GetObjectifsAsync();
-            ObjectifItems.Clear();
-            if (objectifs != null)
-                foreach (var o in objectifs) ObjectifItems.Add(o);
+            // Start performance + objectifs in parallel regardless of role
+            // (BUG-03 removed the DELEGUE-only guard from KpiService)
+            var perfTask = _kpiService.GetPerformanceAsync(monthStart, today);
+            var objTask  = _kpiService.GetObjectifsAsync();
 
             if (IsSuperviseur)
             {
-                var regions = await _kpiService.GetRegionsAsync();
+                // Load regions in parallel with perf + objectifs
+                var regionTask = _kpiService.GetRegionsAsync();
+                await Task.WhenAll(perfTask, objTask, regionTask);
+
                 Regions.Clear();
-                if (regions != null) foreach (var r in regions) Regions.Add(r);
+                if (regionTask.Result != null)
+                    foreach (var r in regionTask.Result) Regions.Add(r);
             }
             else
             {
+                await Task.WhenAll(perfTask, objTask);
+
                 var visites = await _visiteService.GetVisitesAsync(today, today, null);
                 TodayVisitCount = visites?.Count ?? 0;
 
@@ -99,11 +96,24 @@ public partial class DashboardViewModel : BaseViewModel
                         var debut = new DateTime(today.Year, today.Month, 1);
                         var taux  = await _kpiService.GetTauxConversionAsync(userId, debut, today);
                         TauxConversion = taux ?? 0;
-
                         StockSummary = await _inventoryService.GetStockSummaryAsync(userId);
                     }
                 }
             }
+
+            // Populate collections from completed tasks
+            var kpis = perfTask.Result;
+            PerformanceItems.Clear();
+            if (kpis != null)
+            {
+                foreach (var k in kpis) PerformanceItems.Add(k);
+                await SaveCacheAsync("dashboard_kpis", kpis);
+            }
+
+            var objectifs = objTask.Result;
+            ObjectifItems.Clear();
+            if (objectifs != null)
+                foreach (var o in objectifs) ObjectifItems.Add(o);
 
             IsOffline = false;
         }
@@ -116,11 +126,11 @@ public partial class DashboardViewModel : BaseViewModel
 
     private async Task LoadFromCacheAsync()
     {
-        var kpis = await LoadCacheAsync<List<Kpi>>("dashboard_kpis");
-        KpiItems.Clear();
-        if (kpis != null) foreach (var k in kpis) KpiItems.Add(k);
+        var kpis = await LoadCacheAsync<List<PerformanceDto>>("dashboard_kpis");
+        PerformanceItems.Clear();
+        if (kpis != null) foreach (var k in kpis) PerformanceItems.Add(k);
 
-        if (KpiItems.Count > 0)
+        if (PerformanceItems.Count > 0)
         {
             IsOffline    = true;
             ErrorMessage = "Mode hors ligne — données du dernier chargement.";

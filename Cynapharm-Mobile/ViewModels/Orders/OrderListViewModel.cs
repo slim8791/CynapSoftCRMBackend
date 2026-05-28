@@ -51,6 +51,14 @@ public partial class OrderListViewModel : BaseViewModel
     private Task LoadAsync() => ExecuteAsync(async () =>
     {
         var role = await SecureStorage.GetAsync(StorageKeys.UserRole) ?? string.Empty;
+
+        // MÉDECIN has no orders — redirect immediately
+        if (role == "MEDECIN")
+        {
+            await Shell.Current.GoToAsync("//products");
+            return;
+        }
+
         IsGrossiste = role is "GROSSISTE";
         _isClient   = role is "PHARMACIEN" or "GROSSISTE" or "CLIENT";
 

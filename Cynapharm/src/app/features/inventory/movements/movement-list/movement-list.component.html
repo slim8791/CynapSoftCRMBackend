@@ -1,7 +1,12 @@
 <div class="page">
       <div class="page-header">
-        <h1>Mouvements de stock</h1>
-        <p class="subtitle">Historique des mouvements</p>
+        <div>
+          <h1>Mouvements de stock</h1>
+          <p class="subtitle">Historique des mouvements</p>
+        </div>
+        <div class="header-actions">
+          <a routerLink="/inventory/movements/new" class="btn btn-primary">+ Nouveau mouvement</a>
+        </div>
       </div>
 
       <div class="filter-bar">
@@ -23,7 +28,8 @@
             <option value="">Tous</option>
             <option value="Increment">Increment</option>
             <option value="Decrement">Decrement</option>
-            <option value="Transfer">Transfer</option>
+            <option value="Transfer-Out">Transfer-Out (Sortie)</option>
+            <option value="Transfer-In">Transfer-In (Entrée)</option>
           </select>
         </div>
         <button class="btn btn-primary" (click)="applyFilter()" [disabled]="!filterStockId">Filtrer</button>
@@ -36,7 +42,7 @@
 
       <div *ngIf="error && !loading" class="error-banner">{{ error }}</div>
 
-      <div *ngIf="!loading && !error && movements.length === 0 && activeStockId">
+      <div *ngIf="!loading && !error && movements.length === 0 && (activeStockId || allMovements.length > 0)">
         <app-empty-state title="Aucun mouvement" message="Aucun mouvement trouvé pour ce stock."></app-empty-state>
       </div>
 
@@ -62,15 +68,16 @@
               <td class="mono">{{ m.id_Movement }}</td>
               <td>{{ m.id_Stock }}</td>
               <td>
-                <span class="qty-badge" [class.positive]="m.typeMovement?.toLowerCase() === 'increment'"
-                      [class.negative]="m.typeMovement?.toLowerCase() === 'decrement'">
+                <span class="qty-badge"
+                      [class.positive]="m.typeMovement?.toLowerCase() === 'increment' || m.typeMovement?.toLowerCase() === 'transfer-in'"
+                      [class.negative]="m.typeMovement?.toLowerCase() === 'decrement' || m.typeMovement?.toLowerCase() === 'transfer-out'">
                   {{ m.quantite }}
                 </span>
               </td>
               <td>
-                <span class="type-chip" [class.chip-in]="m.typeMovement?.toLowerCase() === 'increment'"
-                      [class.chip-out]="m.typeMovement?.toLowerCase() === 'decrement'"
-                      [class.chip-other]="m.typeMovement?.toLowerCase() === 'transfer'">
+                <span class="type-chip"
+                      [class.chip-in]="m.typeMovement?.toLowerCase() === 'increment' || m.typeMovement?.toLowerCase() === 'transfer-in'"
+                      [class.chip-out]="m.typeMovement?.toLowerCase() === 'decrement' || m.typeMovement?.toLowerCase() === 'transfer-out'">
                   {{ m.typeMovement }}
                 </span>
               </td>

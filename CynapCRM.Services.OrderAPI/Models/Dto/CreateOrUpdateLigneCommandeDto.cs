@@ -23,5 +23,8 @@ namespace CynapCRM.Services.OrderAPI.Models.Dto
         // FIX: validation prix
         [Range(0.01, double.MaxValue, ErrorMessage = "Le prix unitaire doit être positif.")]
         public decimal PrixUnitaire { get; set; }
+
+        // Lot assignment — optional, only set when explicitly provided
+        public string? NumeroLot { get; set; }
     }
 }

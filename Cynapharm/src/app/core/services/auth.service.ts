@@ -131,6 +131,10 @@ export class AuthService {
     return this.currentUserSignal()?.role ?? null;
   }
 
+  getUserId(): number {
+    return this.currentUserSignal()?.id ?? 0;
+  }
+
   hasRole(roles: UserRole[]): boolean {
     const role = this.getUserRole();
     return role ? roles.includes(role) : false;
@@ -185,5 +189,24 @@ export class AuthService {
       CurrentPassword: currentPassword,
       NewPassword: newPassword
     });
+  }
+
+  updateProfile(payload: { email: string; name?: string; phoneNumber?: string; adresse?: string }): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/update-profile`, {
+      Email: payload.email,
+      Name: payload.name,
+      PhoneNumber: payload.phoneNumber,
+      Adresse: payload.adresse
+    });
+  }
+
+  updateCurrentUser(fields: Partial<User>): void {
+    const current = this.currentUserSignal();
+    if (!current) return;
+    const merged: User = { ...current, ...fields };
+    if (this.isBrowser) {
+      localStorage.setItem('user', JSON.stringify(merged));
+    }
+    this.currentUserSignal.set(merged);
   }
 }

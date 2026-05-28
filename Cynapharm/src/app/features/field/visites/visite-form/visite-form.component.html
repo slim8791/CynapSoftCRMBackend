@@ -18,8 +18,8 @@
           <div class="field">
             <label>Délégué *</label>
             <select formControlName="id_User_Delegue">
-              <option value="">-- Sélectionner un délégué --</option>
-              <option *ngFor="let d of delegues" [value]="d.id ?? d.Id">{{ userName(d) }}</option>
+              <option [ngValue]="null">-- Sélectionner un délégué --</option>
+              <option *ngFor="let d of delegues" [ngValue]="d.id ?? d.Id">{{ userName(d) }}</option>
             </select>
             <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Champ requis</span>
           </div>
@@ -31,23 +31,23 @@
           <div class="field full">
             <label>Type de visite *</label>
             <select formControlName="type">
-              <option value="">-- Sélectionner --</option>
-              <option *ngFor="let t of typeOptions" [value]="t.value">{{ t.label }}</option>
+              <option [ngValue]="null">-- Sélectionner --</option>
+              <option *ngFor="let t of typeOptions" [ngValue]="t.value">{{ t.label }}</option>
             </select>
             <span *ngIf="f['type'].touched && f['type'].invalid" class="field-error">Champ requis</span>
           </div>
           <div class="field">
             <label>Médecin <span class="opt">optionnel</span></label>
             <select formControlName="id_Medecin">
-              <option value="">-- Aucun --</option>
-              <option *ngFor="let m of medecins" [value]="m.id ?? m.Id">{{ userName(m) }}</option>
+              <option [ngValue]="null">— Aucun —</option>
+              <option *ngFor="let m of medecins" [ngValue]="m.id">{{ m.nom }}</option>
             </select>
           </div>
           <div class="field">
             <label>Pharmacien <span class="opt">optionnel</span></label>
             <select formControlName="id_Pharmacien">
-              <option value="">-- Aucun --</option>
-              <option *ngFor="let p of pharmaciens" [value]="p.id ?? p.Id">{{ userName(p) }}</option>
+              <option [ngValue]="null">— Aucun —</option>
+              <option *ngFor="let p of pharmaciens" [ngValue]="p.id">{{ p.nom }}</option>
             </select>
           </div>
         </div>

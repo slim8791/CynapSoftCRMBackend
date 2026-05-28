@@ -5,6 +5,7 @@
              xmlns:products="clr-namespace:Cynapharm_Mobile.Models.Products"
              xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
              x:Class="Cynapharm_Mobile.Views.Rapports.RapportPage"
+             x:Name="PageRoot"
              x:DataType="vm:RapportViewModel"
              Title="{Binding Title}"
              Shell.NavBarIsVisible="False"
@@ -13,28 +14,9 @@
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
-              Padding="16,48,16,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="40" />
-            </Grid.ColumnDefinitions>
-            <Border Grid.Column="0"
-                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
-                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
-                    VerticalOptions="Center">
-                <Label Text="‹" FontSize="24" FontAttributes="Bold"
-                       TextColor="White"
-                       HorizontalOptions="Center" VerticalOptions="Center" />
-            </Border>
-            <Label Grid.Column="1"
-                   Text="Rapport de visite"
-                   FontSize="17" FontAttributes="Bold"
-                   FontFamily="OpenSansSemibold"
-                   TextColor="White"
-                   HorizontalOptions="Center" VerticalOptions="Center" />
-        </Grid>
+        <controls:AppHeader Grid.Row="0"
+                            Title="{Binding Title}"
+                            ShowBackButton="True" />
 
         <!-- ── Body ──────────────────────────────────────────────────────── -->
         <ScrollView Grid.Row="1">
@@ -45,6 +27,53 @@
                                    IsVisible="{Binding IsBusy}"
                                    Color="{StaticResource Primary}"
                                    HorizontalOptions="Center" />
+
+                <!-- Read-only lock banner (view mode) -->
+                <Border BackgroundColor="#F5F5F5"
+                        StrokeShape="RoundRectangle 12"
+                        Stroke="#9E9E9E" StrokeThickness="1"
+                        Padding="14,12"
+                        IsVisible="{Binding IsReadOnly}">
+                    <Grid ColumnDefinitions="36,*" ColumnSpacing="12">
+                        <Border Grid.Column="0"
+                                BackgroundColor="#757575"
+                                StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                WidthRequest="36" HeightRequest="36">
+                            <Label Text="🔒" FontSize="17"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Grid.Column="1"
+                               Text="Rapport verrouillé — le superviseur a validé cette visite."
+                               FontSize="13" FontAttributes="Bold"
+                               TextColor="#424242"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- GPS disabled warning banner -->
+                <Border BackgroundColor="#FFF3E0"
+                        StrokeShape="RoundRectangle 12"
+                        Stroke="#FF8F00" StrokeThickness="1"
+                        Padding="14,10"
+                        IsVisible="{Binding IsGpsWarningVisible}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Label Grid.Column="0" Text="⚠️" FontSize="18"
+                               VerticalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="{Binding GpsWarningMessage}"
+                               FontSize="12" TextColor="#E65100"
+                               VerticalOptions="Center" />
+                        <Button Grid.Column="2"
+                                Text="Paramètres"
+                                FontSize="11"
+                                BackgroundColor="#FF8F00"
+                                TextColor="White"
+                                CornerRadius="8"
+                                Padding="8,4"
+                                HeightRequest="36"
+                                Command="{Binding OpenGpsSettingsCommand}" />
+                    </Grid>
+                </Border>
 
                 <!-- GPS status banner -->
                 <Border BackgroundColor="{StaticResource PrimaryLight}"
@@ -74,7 +103,48 @@
                     </Grid>
                 </Border>
 
-                <!-- ── Report content ─────────────────────────────────────── -->
+                <!-- ── 1. Résultat ──────────────────────────────────────────── -->
+                <Border Style="{StaticResource CardStyle}" Padding="16,14">
+                    <VerticalStackLayout Spacing="16">
+
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                            <BoxView Grid.Column="0" BackgroundColor="{StaticResource Primary}"
+                                     CornerRadius="2" WidthRequest="4" />
+                            <Label Grid.Column="1" Text="Résultat de la visite"
+                                   FontSize="13" FontAttributes="Bold"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                        <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
+
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Résultat *" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextSecondary}" />
+                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                    StrokeShape="RoundRectangle 12"
+                                    Stroke="{StaticResource FieldBorderInactive}"
+                                    StrokeThickness="1.5" Padding="14,0" HeightRequest="52">
+                                <Grid ColumnDefinitions="22,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="📊" FontSize="17"
+                                           VerticalOptions="Center" />
+                                    <Picker Grid.Column="1"
+                                            Title="Sélectionner un résultat"
+                                            ItemsSource="{Binding ResultatOptions}"
+                                            SelectedItem="{Binding SelectedResultat}"
+                                            IsEnabled="{Binding IsNotReadOnly}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{StaticResource TextPrimary}"
+                                            TitleColor="{StaticResource TextMuted}"
+                                            VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── 2. Contenu du rapport ──────────────────────────────── -->
                 <Border Style="{StaticResource CardStyle}" Padding="16,14">
                     <VerticalStackLayout Spacing="16">
 
@@ -89,7 +159,6 @@
                         </Grid>
                         <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
 
-                        <!-- Contenu -->
                         <VerticalStackLayout Spacing="6">
                             <Label Text="Contenu du rapport *" FontSize="12" FontAttributes="Bold"
                                    TextColor="{StaticResource TextSecondary}" />
@@ -99,6 +168,7 @@
                                     StrokeThickness="1.5" Padding="14,12">
                                 <Editor Placeholder="Décrivez le déroulement de la visite…"
                                         Text="{Binding Contenu}"
+                                        IsEnabled="{Binding IsNotReadOnly}"
                                         MinimumHeightRequest="110"
                                         BackgroundColor="Transparent"
                                         TextColor="{StaticResource TextPrimary}"
@@ -107,7 +177,9 @@
                             <Label Text="{Binding ContenuError}"
                                    TextColor="{StaticResource Danger}" FontSize="12"
                                    IsVisible="{Binding ContenuError, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
-                            <Grid ColumnDefinitions="*,Auto">
+                            <!-- Character counter hidden in read-only mode -->
+                            <Grid ColumnDefinitions="*,Auto"
+                                  IsVisible="{Binding IsNotReadOnly}">
                                 <Label Grid.Column="0"
                                        Text="Minimum 20 caractères"
                                        FontSize="11" TextColor="{StaticResource TextMuted}" />
@@ -117,31 +189,10 @@
                             </Grid>
                         </VerticalStackLayout>
 
-                        <!-- Résultat -->
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="Résultat *" FontSize="12" FontAttributes="Bold"
-                                   TextColor="{StaticResource TextSecondary}" />
-                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
-                                    StrokeShape="RoundRectangle 12"
-                                    Stroke="{StaticResource FieldBorderInactive}"
-                                    StrokeThickness="1.5" Padding="14,0" HeightRequest="52">
-                                <Grid ColumnDefinitions="22,*" ColumnSpacing="10">
-                                    <Label Grid.Column="0" Text="📊" FontSize="17"
-                                           VerticalOptions="Center" />
-                                    <Picker Grid.Column="1"
-                                            ItemsSource="{Binding ResultatOptions}"
-                                            SelectedItem="{Binding Resultat}"
-                                            BackgroundColor="Transparent"
-                                            TextColor="{StaticResource TextPrimary}"
-                                            VerticalOptions="Center" />
-                                </Grid>
-                            </Border>
-                        </VerticalStackLayout>
-
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- ── Products discussed ─────────────────────────────────── -->
+                <!-- ── 3. Produits discutés ───────────────────────────────── -->
                 <Border Style="{StaticResource CardStyle}" Padding="16,14">
                     <VerticalStackLayout Spacing="12">
 
@@ -156,11 +207,23 @@
                         </Grid>
                         <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
 
+                        <Label Text="Les produits cochés seront enregistrés avec le rapport."
+                               FontSize="11"
+                               TextColor="{StaticResource TextMuted}"
+                               Margin="0,2,0,8"
+                               IsVisible="{Binding IsNotReadOnly}" />
+
                         <Label Text="Sélectionnez les produits abordés lors de cette visite"
-                               FontSize="13" TextColor="{StaticResource TextSecondary}" />
+                               FontSize="13" TextColor="{StaticResource TextSecondary}"
+                               IsVisible="{Binding IsNotReadOnly}" />
+
+                        <Label Text="Produits discutés lors de cette visite"
+                               FontSize="13" TextColor="{StaticResource TextSecondary}"
+                               IsVisible="{Binding IsReadOnly}" />
 
                         <CollectionView ItemsSource="{Binding ProduitsDiscutes}"
-                                        SelectionMode="None">
+                                        SelectionMode="None"
+                                        HeightRequest="300">
                             <CollectionView.EmptyView>
                                 <Label Text="Chargement des produits…"
                                        Style="{StaticResource EmptyStateStyle}"
@@ -184,6 +247,7 @@
                                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                                             <CheckBox Grid.Column="0"
                                                       IsChecked="{Binding IsSelected}"
+                                                      IsEnabled="{Binding Source={x:Reference PageRoot}, Path=BindingContext.IsNotReadOnly}"
                                                       Color="{StaticResource Primary}" />
                                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                                                 <Label Text="{Binding ProductNom}"
@@ -202,7 +266,7 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Hint when disabled -->
+                <!-- Validation hint (hidden in read-only mode) -->
                 <Border BackgroundColor="{StaticResource SecondaryLight}"
                         StrokeShape="RoundRectangle 12" Stroke="Transparent"
                         Padding="14,10"
@@ -211,20 +275,24 @@
                            FontSize="12" FontAttributes="Bold"
                            TextColor="{StaticResource SecondaryText}"
                            HorizontalTextAlignment="Center"
-                           HorizontalOptions="Center" />
+                           HorizontalOptions="Center"
+                           IsVisible="{Binding IsNotReadOnly}" />
                 </Border>
 
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- ── Sticky submit ─────────────────────────────────────────────── -->
+        <!-- ── Sticky footer ─────────────────────────────────────────────── -->
         <Grid Grid.Row="2" BackgroundColor="{StaticResource CardBackground}">
             <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}"
                      VerticalOptions="Start" />
-            <Button Text="Soumettre le rapport"
+
+            <!-- Submit / Update button (create and edit modes) -->
+            <Button Text="{Binding SubmitButtonText}"
                     Command="{Binding SubmitCommand}"
                     Style="{StaticResource PrimaryButtonStyle}"
                     Margin="16,12,16,28"
+                    IsVisible="{Binding IsNotReadOnly}"
                     IsEnabled="{Binding CanSubmit}">
                 <Button.Triggers>
                     <DataTrigger TargetType="Button" Binding="{Binding CanSubmit}" Value="False">
@@ -232,6 +300,13 @@
                     </DataTrigger>
                 </Button.Triggers>
             </Button>
+
+            <!-- Close button (view / read-only mode) -->
+            <Button Text="Fermer"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="16,12,16,28"
+                    IsVisible="{Binding IsReadOnly}"
+                    Command="{Binding CloseCommand}" />
         </Grid>
 
     </Grid>

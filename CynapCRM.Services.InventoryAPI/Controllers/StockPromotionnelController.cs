@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.InventoryAPI.Models.Dto;
+using CynapCRM.Services.InventoryAPI.Models.Dto;
 using CynapCRM.Services.InventoryAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +25,6 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             _response = new ResponseDto();
         }
 
-        // FIX: ajout restriction de rôle
         [HttpPost("gratuite")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> CreateOrUpdateGratuite(
@@ -45,7 +44,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Erreur lors du traitement de la gratuité.";
-                    return BadRequest(_response); // FIX: NotFound → BadRequest
+                    return BadRequest(_response);
                 }
                 _response.Result = result;
                 _response.Message = "Stock de gratuité mis à jour.";
@@ -55,7 +54,27 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(515, _response);
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("gratuite")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetAllGratuite(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 50)
+        {
+            try
+            {
+                _response.Result = await _stockPromotionnelService
+                    .GetAllGratuiteAsync(pageNumber, pageSize);
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
             }
         }
 
@@ -86,7 +105,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(515, _response);
+                return StatusCode(500, _response);
             }
         }
 
@@ -109,7 +128,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Erreur lors du traitement du stock échantillon.";
-                    return BadRequest(_response); // FIX: NotFound → BadRequest
+                    return BadRequest(_response);
                 }
                 _response.Result = result;
                 _response.Message = "Stock échantillon mis à jour avec succès.";
@@ -119,7 +138,27 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(515, _response);
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("echantillon")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetAllEchantillon(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 50)
+        {
+            try
+            {
+                _response.Result = await _stockPromotionnelService
+                    .GetAllEchantillonAsync(pageNumber, pageSize);
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
             }
         }
 
@@ -150,7 +189,7 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
-                return StatusCode(515, _response);
+                return StatusCode(500, _response);
             }
         }
     }

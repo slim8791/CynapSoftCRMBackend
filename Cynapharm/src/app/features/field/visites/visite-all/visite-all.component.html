@@ -1,73 +1,86 @@
-<div class="pw">
+<div class="va-page">
 
   <!-- Header -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  <div class="va-header">
     <div>
-      <a routerLink="/field/visites" style="font-size:.875rem;color:var(--c-primary,#2563eb);text-decoration:none">← Par délégué</a>
-      <h1 style="margin:.25rem 0 0;font-size:1.5rem;font-weight:600">Toutes les visites</h1>
-      <p style="margin:.25rem 0 0;color:#666;font-size:.875rem">{{ filtered.length }} visite(s)</p>
+      <h1 class="va-title">Toutes les visites</h1>
+      <p class="va-sub">{{ filtered.length }} visite(s)</p>
     </div>
   </div>
 
+  @if (error) { <div class="va-error">{{ error }}</div> }
+
   <!-- Filters -->
-  <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1.25rem;align-items:flex-end">
-    <div>
-      <label style="display:block;font-size:.8rem;color:#555;margin-bottom:.25rem">Date début</label>
-      <input type="date" [(ngModel)]="startDate" style="border:1px solid #ddd;border-radius:6px;padding:.375rem .625rem;font-size:.875rem">
+  <div class="va-filters">
+    <div class="va-field">
+      <label>Date début</label>
+      <input type="date" [(ngModel)]="startDate" />
     </div>
-    <div>
-      <label style="display:block;font-size:.8rem;color:#555;margin-bottom:.25rem">Date fin</label>
-      <input type="date" [(ngModel)]="endDate" style="border:1px solid #ddd;border-radius:6px;padding:.375rem .625rem;font-size:.875rem">
+    <div class="va-field">
+      <label>Date fin</label>
+      <input type="date" [(ngModel)]="endDate" />
     </div>
-    <div>
-      <label style="display:block;font-size:.8rem;color:#555;margin-bottom:.25rem">ID Délégué</label>
-      <input type="number" [(ngModel)]="delegueId" (ngModelChange)="onDelegueFilter()" placeholder="Tous"
-             style="width:110px;border:1px solid #ddd;border-radius:6px;padding:.375rem .625rem;font-size:.875rem">
+    <div class="va-field">
+      <label>Délégué</label>
+      <select [(ngModel)]="delegueIdFilter" (ngModelChange)="onDelegueFilter()">
+        <option [ngValue]="null">Tous</option>
+        <option *ngFor="let d of delegues" [ngValue]="d.id">
+          {{ d.nom }}
+        </option>
+      </select>
     </div>
-    <button (click)="load()" [disabled]="loading"
-            style="padding:.4rem 1rem;background:var(--c-primary,#2563eb);color:#fff;border:none;border-radius:6px;font-size:.875rem;cursor:pointer">
+    <button (click)="load()" [disabled]="loading" class="va-btn-refresh">
       {{ loading ? '…' : 'Actualiser' }}
     </button>
   </div>
 
-  @if (error)   { <div style="background:#fef2f2;color:#b91c1c;border:1px solid #fca5a5;border-radius:6px;padding:.75rem 1rem;margin-bottom:1rem">{{ error }}</div> }
-  @if (loading) { <div style="text-align:center;padding:2rem;color:#666">Chargement…</div> }
-
-  @else if (filtered.length === 0) {
-    <div style="text-align:center;padding:3rem;color:#888">Aucune visite trouvée.</div>
+  @if (loading) {
+    <div class="va-loading"><div class="va-spinner"></div> Chargement…</div>
+  } @else if (filtered.length === 0) {
+    <div class="va-empty">Aucune visite trouvée.</div>
   } @else {
-    <div style="overflow-x:auto;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08)">
-      <table style="width:100%;border-collapse:collapse;font-size:.875rem">
-        <thead style="background:var(--bg-subtle,#f8fafc)">
-          <tr>
-            <th style="padding:.625rem 1rem;text-align:left;font-weight:600">#ID</th>
-            <th style="padding:.625rem 1rem;text-align:left;font-weight:600">Délégué</th>
-            <th style="padding:.625rem 1rem;text-align:left;font-weight:600">Date</th>
-            <th style="padding:.625rem 1rem;text-align:left;font-weight:600">Type</th>
-            <th style="padding:.625rem 1rem;text-align:left;font-weight:600">Statut</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (v of filtered; track v.idVisite) {
-            <tr (click)="onRow(v)"
-                style="border-bottom:1px solid #f1f5f9;cursor:pointer;transition:background .15s"
-                onmouseenter="this.style.background='#f8fafc'"
-                onmouseleave="this.style.background=''">
-              <td style="padding:.625rem 1rem;color:#64748b">#{{ v.idVisite }}</td>
-              <td style="padding:.625rem 1rem;font-weight:500">#{{ v.id_User_Delegue }}</td>
-              <td style="padding:.625rem 1rem">{{ v.date | date:'dd/MM/yyyy' }}</td>
-              <td style="padding:.625rem 1rem">{{ typeLabel(v.type) }}</td>
-              <td style="padding:.625rem 1rem">
-                @if (v.isCompleted) {
-                  <span style="display:inline-block;padding:.2rem .6rem;border-radius:12px;font-size:.75rem;background:#dcfce7;color:#166534">Terminée</span>
-                } @else {
-                  <span style="display:inline-block;padding:.2rem .6rem;border-radius:12px;font-size:.75rem;background:#fef9c3;color:#854d0e">En cours</span>
-                }
-              </td>
+    <div class="va-card">
+      <div class="va-scroll">
+        <table class="va-table">
+          <thead>
+            <tr>
+              <th>Délégué</th>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Statut</th>
+              @if (isAdmin || isSuperviseur) { <th>Actions</th> }
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (v of filtered; track v.idVisite) {
+              <tr (click)="onRow(v)">
+                <td>{{ delegueName(v.id_User_Delegue) }}</td>
+                <td>{{ v.dateVisite | date:'dd/MM/yyyy' }}</td>
+                <td>{{ typeLabel(v.type) }}</td>
+                <td>
+                  @if (v.isCompleted) {
+                    <span class="va-badge va-done">Terminée</span>
+                  } @else {
+                    <span class="va-badge va-pending">En cours</span>
+                  }
+                </td>
+                @if (isAdmin || isSuperviseur) {
+                  <td (click)="$event.stopPropagation()">
+                    <div class="action-row">
+                      <a [routerLink]="['/field/visites', v.idVisite, 'edit']" class="act-btn edit" title="Modifier">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </a>
+                      <button (click)="deleteVisite(v.idVisite!, !!v.isCompleted)" class="act-btn delete" [disabled]="v.isCompleted" title="Supprimer">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
   }
 

@@ -70,9 +70,8 @@ namespace CynapCRM.Services.ProductAPI.Service
 
         public async Task<ProduitDto> CreateOrUpdateProductAsync(ProduitDto produitDto)
         {
-            // FIX 7: price must be > 0
             if (produitDto.PrixVente <= 0)
-                return null!;
+                throw new ArgumentException("Le prix de vente doit être supérieur à zéro.");
 
             var product = await _db.Produits
                 .FirstOrDefaultAsync(p => p.Id_Produit == produitDto.Id_Produit);

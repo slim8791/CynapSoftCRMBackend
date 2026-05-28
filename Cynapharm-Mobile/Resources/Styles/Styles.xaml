@@ -7,6 +7,8 @@
     <converters:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
     <converters:InvertedBoolConverter     x:Key="InvertedBoolConverter" />
     <converters:StatusColorConverter      x:Key="StatusColorConverter" />
+    <converters:EtatToColorConverter      x:Key="EtatToColorConverter" />
+    <converters:EtatToTextConverter       x:Key="EtatToTextConverter" />
 
     <!-- ── Global implicit styles ──────────────────────────────────────── -->
 

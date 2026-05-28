@@ -8,8 +8,9 @@ namespace Cynapharm_Mobile.ViewModels.Profile;
 
 public partial class ProfileViewModel : BaseViewModel
 {
-    private readonly AuthService  _authService;
+    private readonly AuthService   _authService;
     private readonly ICacheService _cache;
+    private readonly KpiService    _kpiService;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AvatarInitials), nameof(IsDelegue), nameof(IsClient), nameof(IsMedecin))]
@@ -22,6 +23,7 @@ public partial class ProfileViewModel : BaseViewModel
     [ObservableProperty] private string    _editName              = string.Empty;
     [ObservableProperty] private string    _editTelephone         = string.Empty;
     [ObservableProperty] private string    _editAdresse           = string.Empty;
+    [ObservableProperty] private string    _wilayaLabel           = string.Empty;
 
     public bool IsDelegue => User?.Role is "DELEGUE" or "ADMIN" or "SUPERVISEUR";
     public bool IsClient  => User?.Role is "PHARMACIEN" or "GROSSISTE" or "CLIENT";
@@ -32,10 +34,11 @@ public partial class ProfileViewModel : BaseViewModel
             ? string.Join("", User.Name.Split(' ').Select(s => s[0])).ToUpper()
             : "?";
 
-    public ProfileViewModel(AuthService authService, ICacheService cache)
+    public ProfileViewModel(AuthService authService, ICacheService cache, KpiService kpiService)
     {
         _authService = authService;
         _cache       = cache;
+        _kpiService  = kpiService;
         Title = "Mon Profil";
     }
 
@@ -49,6 +52,25 @@ public partial class ProfileViewModel : BaseViewModel
             EditTelephone = User.Telephone ?? string.Empty;
             EditAdresse   = User.Adresse   ?? string.Empty;
             OnPropertyChanged(nameof(AvatarInitials));
+
+            // For MÉDECIN: resolve RegionId (numeric string) to region name
+            if (User.Role == "MEDECIN" && !string.IsNullOrWhiteSpace(User.RegionId))
+            {
+                if (int.TryParse(User.RegionId, out var regionIdInt))
+                {
+                    var regions = await _kpiService.GetRegionsAsync();
+                    var match   = regions?.FirstOrDefault(r => r.Id == regionIdInt);
+                    WilayaLabel = match?.Nom ?? User.RegionId;
+                }
+                else
+                {
+                    WilayaLabel = User.RegionId;
+                }
+            }
+            else
+            {
+                WilayaLabel = string.Empty;
+            }
         }
     });
 

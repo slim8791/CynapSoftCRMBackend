@@ -39,7 +39,7 @@ export class RegisterComponent {
     this.registerForm = this.fb.group({
       name: ['', Validators.required],          // ✅ Name (pas first/last)
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.pattern(/(?=.*[^a-zA-Z0-9])/)]],
       adresse: ['', Validators.required],
 
       role: [UserRole.CLIENT, Validators.required], // ✅ OBLIGATOIRE
@@ -86,7 +86,7 @@ export class RegisterComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.error = err?.error?.message || 'Registration failed.';
+        this.error = err?.error?.message || 'Échec de l\'inscription. Veuillez réessayer.';
         console.error(err);
       }
     });

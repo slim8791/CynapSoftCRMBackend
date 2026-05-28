@@ -18,4 +18,7 @@ public partial class ProfilePage : ContentPage
         if (BindingContext is ProfileViewModel vm)
             await vm.LoadCommand.ExecuteAsync(null);
     }
+
+    private void OnHamburgerTapped(object sender, EventArgs e)
+        => Shell.Current.FlyoutIsPresented = true;
 }

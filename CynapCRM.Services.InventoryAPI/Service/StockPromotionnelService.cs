@@ -85,7 +85,7 @@ namespace CynapCRM.Services.InventoryAPI.Service
         {
 
             var entity = await _db.StocksDelegues
-                            .OfType<Stock_Echantillon>() 
+                            .OfType<Stock_Echantillon>()
                             .AsNoTracking()
                             .FirstOrDefaultAsync(s =>
                                 s.Id_stock == idStock &&
@@ -95,6 +95,32 @@ namespace CynapCRM.Services.InventoryAPI.Service
                 return null;
             }
             return _mapper.Map<StockEchantillonDto>(entity);
+        }
+
+        public async Task<IEnumerable<StockGratuiteDto>> GetAllGratuiteAsync(int page, int size)
+        {
+            var list = await _db.StocksDelegues
+                .OfType<Stock_Gratuite>()
+                .AsNoTracking()
+                .Where(s => !s.IsDeleted)
+                .OrderByDescending(s => s.DateCreation)
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+            return _mapper.Map<IEnumerable<StockGratuiteDto>>(list);
+        }
+
+        public async Task<IEnumerable<StockEchantillonDto>> GetAllEchantillonAsync(int page, int size)
+        {
+            var list = await _db.StocksDelegues
+                .OfType<Stock_Echantillon>()
+                .AsNoTracking()
+                .Where(s => !s.IsDeleted)
+                .OrderByDescending(s => s.DateCreation)
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+            return _mapper.Map<IEnumerable<StockEchantillonDto>>(list);
         }
     }
 }

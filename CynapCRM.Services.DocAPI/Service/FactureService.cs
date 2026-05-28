@@ -99,7 +99,8 @@ namespace CynapCRM.Services.DocAPI.Service
                     DateCreation = DateTime.UtcNow,
                     MontantHT = factureDto.MontantHT,
                     MontantTTC = factureDto.MontantTTC,
-                    DateFacture = factureDto.DateFacture
+                    DateFacture = factureDto.DateFacture,
+                    CloudinaryUrl = factureDto.CloudinaryUrl
                 };
                 _db.Factures.Add(facture);
             }
@@ -114,6 +115,7 @@ namespace CynapCRM.Services.DocAPI.Service
                 facture.MontantHT = factureDto.MontantHT;
                 facture.MontantTTC = factureDto.MontantTTC;
                 facture.DateFacture = factureDto.DateFacture;
+                facture.CloudinaryUrl = factureDto.CloudinaryUrl;
             }
 
             await _db.SaveChangesAsync();
@@ -128,7 +130,8 @@ namespace CynapCRM.Services.DocAPI.Service
                 TypeDocument = "FACTURE",
                 MontantHT = facture.MontantHT,
                 MontantTTC = facture.MontantTTC,
-                DateFacture = facture.DateFacture
+                DateFacture = facture.DateFacture,
+                CloudinaryUrl = facture.CloudinaryUrl
             };
         }
 

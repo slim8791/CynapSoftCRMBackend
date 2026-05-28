@@ -14,5 +14,7 @@ namespace CynapCRM.Services.DocAPI.Models.Dto
 
         [Required]
         public DateTime DateFacture { get; set; }
+
+        public string? CloudinaryUrl { get; set; }
     }
 }

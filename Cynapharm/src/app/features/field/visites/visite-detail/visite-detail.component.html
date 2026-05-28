@@ -1,0 +1,143 @@
+<div class="vd-page">
+
+  @if (loading) {
+    <div class="vd-loading"><div class="vd-spinner"></div> Chargement…</div>
+  } @else {
+
+    <!-- Header -->
+    <div class="vd-header">
+      <div>
+        <a routerLink="/field/visites/all" class="vd-back">← Toutes les visites</a>
+        <div class="vd-title-row">
+          <h1 class="vd-title">Visite du {{ visite?.dateVisite ? (visite?.dateVisite | date:'dd/MM/yyyy') : 'Non renseignée' }}</h1>
+          @if (visite?.isCompleted) {
+            <span class="vd-badge vd-done">✓ Terminée</span>
+          } @else {
+            <span class="vd-badge vd-pending">En cours</span>
+          }
+        </div>
+      </div>
+      <div class="vd-header-actions">
+        @if (!visite?.isCompleted) {
+          <button class="vd-btn-complete" (click)="complete()" [disabled]="completing">
+            {{ completing ? '…' : '✓ Marquer terminée' }}
+          </button>
+        }
+        @if (!visite?.isCompleted) {
+          <a [routerLink]="['/field/visites', visite?.idVisite, 'edit']" class="vd-btn-edit">
+            ✏ Modifier
+          </a>
+        }
+      </div>
+    </div>
+
+    @if (error)      { <div class="vd-error">{{ error }}</div> }
+    @if (successMsg) { <div class="vd-success">{{ successMsg }}</div> }
+
+    <!-- Info cards grid -->
+    <div class="vd-grid">
+
+      <!-- Visit info -->
+      <div class="vd-card">
+        <p class="vd-card-title">Informations</p>
+        <div class="vd-rows">
+          <div class="vd-row">
+            <div class="vd-row-icon">📅</div>
+            <div class="vd-row-body">
+              <span class="vd-row-label">Date</span>
+              <span class="vd-row-val">{{ visite?.dateVisite ? (visite?.dateVisite | date:'dd/MM/yyyy') : 'Non renseignée' }}</span>
+            </div>
+          </div>
+          <div class="vd-row">
+            <div class="vd-row-icon">{{ typeIcon(visite?.type!) }}</div>
+            <div class="vd-row-body">
+              <span class="vd-row-label">Type de visite</span>
+              <span class="vd-row-val">{{ typeLabel(visite?.type!) }}</span>
+            </div>
+          </div>
+          @if (visite?.id_Planning) {
+            <div class="vd-row">
+              <div class="vd-row-icon">🗓</div>
+              <div class="vd-row-body">
+                <span class="vd-row-label">Planning lié</span>
+                <span class="vd-row-val">{{ planningLabel }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Parties liées -->
+      <div class="vd-card">
+        <p class="vd-card-title">Parties liées</p>
+        <div class="vd-rows">
+          <div class="vd-row">
+            <div class="vd-row-icon">👤</div>
+            <div class="vd-row-body">
+              <span class="vd-row-label">Délégué</span>
+              <span class="vd-row-val">{{ delegueName || ('…') }}</span>
+            </div>
+          </div>
+          <div class="vd-row">
+            <div class="vd-row-icon">🩺</div>
+            <div class="vd-row-body">
+              <span class="vd-row-label">Médecin</span>
+              @if (visite?.id_Medecin) {
+                <span class="vd-row-val">{{ medecinName || ('…') }}</span>
+              } @else {
+                <span class="vd-row-val muted">Non renseigné</span>
+              }
+            </div>
+          </div>
+          <div class="vd-row">
+            <div class="vd-row-icon">💊</div>
+            <div class="vd-row-body">
+              <span class="vd-row-label">Pharmacien</span>
+              @if (visite?.id_Pharmacien) {
+                <span class="vd-row-val">{{ pharmacienName || ('…') }}</span>
+              } @else {
+                <span class="vd-row-val muted">Non renseigné</span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Rapport section -->
+    <div class="vd-rapport-card">
+      <p class="vd-card-title">Rapport de visite</p>
+
+      @if (rapport) {
+        <div class="vd-rapport-exists">
+          <div class="vd-rapport-meta">
+            <span class="vd-resultat">{{ rapport.resultat }}</span>
+            @if (rapport.date) {
+              <span class="vd-rapport-date">Soumis le {{ rapport.date | date:'dd/MM/yyyy' }}</span>
+            }
+          </div>
+          @if (rapport.commentaire) {
+            <div class="vd-rapport-comment">{{ rapport.commentaire }}</div>
+          }
+          @if (!visite?.isCompleted) {
+            <div>
+              <a [routerLink]="['/field/rapports', rapport.idRapport, 'edit']" class="vd-btn-rapport-edit">
+                ✏ Modifier le rapport
+              </a>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="vd-rapport-empty">
+          <div class="vd-rapport-empty-icon">📝</div>
+          <p>Aucun rapport soumis pour cette visite.</p>
+          <a [routerLink]="['/field/rapports/new']"
+             [queryParams]="{ visiteId: visite?.idVisite }"
+             class="vd-btn-rapport">+ Créer un rapport</a>
+        </div>
+      }
+    </div>
+
+  }
+</div>

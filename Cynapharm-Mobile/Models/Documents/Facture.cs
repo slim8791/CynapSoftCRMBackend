@@ -18,11 +18,10 @@ public class Facture
 
     public decimal MontantHT { get; set; }
 
-    // TVA not in backend DTO — kept for XAML compiled-binding compatibility
-    public decimal TVA { get; set; }
-
     public decimal MontantTTC { get; set; }
 
-    // Statut not in backend DTO — kept for XAML compiled-binding compatibility
-    public string Statut { get; set; } = string.Empty;
+    [JsonIgnore]
+    public decimal TVA => MontantTTC - MontantHT;
+
+    public string Statut { get; internal set; }
 }

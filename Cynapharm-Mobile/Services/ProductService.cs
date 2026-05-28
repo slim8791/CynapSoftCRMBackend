@@ -54,12 +54,13 @@ public class ProductService
     }
 
     public Task<List<Lot>?> GetLotsByProductAsync(int productId)
-        => _api.GetAsync<List<Lot>>($"products/lots/{productId}");
+        => _api.GetAsync<List<Lot>>($"products/lots/product/{productId}");
 
     public Task<List<Promotion>?> GetPromotionsAsync(int? productId)
     {
-        var url = "products/promos";
-        if (productId.HasValue) url += $"?productId={productId.Value}";
+        var url = productId.HasValue
+            ? $"products/promos/product/{productId.Value}"
+            : "products/promos";
         return _api.GetAsync<List<Promotion>>(url);
     }
 

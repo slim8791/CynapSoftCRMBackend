@@ -40,8 +40,9 @@ namespace CynapCRM.Services.FieldAPI.Service
                 if (region == null)
                     return null;
 
-                region.NomRegion = dto.NomRegion;
-                region.CodePostal = dto.CodePostal;
+                region.NomRegion       = dto.NomRegion;
+                region.CodePostal      = dto.CodePostal;
+                region.Id_User_Delegue = dto.Id_User_Delegue;
 
             }
             await _db.SaveChangesAsync();

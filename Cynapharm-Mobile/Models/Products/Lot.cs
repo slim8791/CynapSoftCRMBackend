@@ -1,10 +1,20 @@
+using System.Text.Json.Serialization;
+
 namespace Cynapharm_Mobile.Models.Products;
 public class Lot
 {
-    public int Id { get; set; }
-    public int ProductId { get; set; }
+    [JsonPropertyName("numeroLot")]
     public string NumeroLot { get; set; } = string.Empty;
-    public DateTime DateFabrication { get; set; }
+
+    [JsonPropertyName("id_Produit")]
+    public int IdProduit { get; set; }
+
+    [JsonPropertyName("quantite")]
+    public int Quantite { get; set; }
+
+    [JsonPropertyName("dateExpiration")]
     public DateTime DateExpiration { get; set; }
-    public int QuantiteDisponible { get; set; }
+
+    [JsonPropertyName("dateFabrication")]
+    public DateTime? DateFabrication { get; set; }
 }

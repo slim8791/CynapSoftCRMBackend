@@ -17,4 +17,7 @@ public partial class OrderListPage : ContentPage
         base.OnAppearing();
         if (BindingContext is OrderListViewModel vm) _ = vm.LoadCommand.ExecuteAsync(null);
     }
+
+    private void OnHamburgerTapped(object sender, EventArgs e)
+        => Shell.Current.FlyoutIsPresented = true;
 }

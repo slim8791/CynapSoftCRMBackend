@@ -51,104 +51,200 @@
           </div>
         </div>
 
-        <!-- Détails -->
-        <div class="profile-details">
-          <h3 class="section-title">Informations du compte</h3>
-          <div class="detail-grid">
-
-            <div class="detail-row">
-              <span class="detail-label">
+        <!-- Détails (lecture seule) -->
+        @if (!isEditingProfile) {
+          <div class="profile-details">
+            <div class="section-title-row">
+              <h3 class="section-title">Informations du compte</h3>
+              <button type="button" class="btn-edit-profile" (click)="onEditProfile()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/>
-                  <line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
-                ID utilisateur
-              </span>
-              <span class="detail-value id-chip">#{{ currentUser.id }}</span>
+                Modifier
+              </button>
             </div>
+            <div class="detail-grid">
 
-            <div class="detail-row">
-              <span class="detail-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-                Nom complet
-              </span>
-              <span class="detail-value">{{ currentUser.name }}</span>
+              <div class="detail-row">
+                <span class="detail-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/>
+                    <line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>
+                  </svg>
+                  ID utilisateur
+                </span>
+                <span class="detail-value id-chip">#{{ currentUser.id }}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="detail-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  Nom complet
+                </span>
+                <span class="detail-value">{{ currentUser.name }}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="detail-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                  Email
+                </span>
+                <span class="detail-value">{{ currentUser.email }}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="detail-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.92 17z"/>
+                  </svg>
+                  Téléphone
+                </span>
+                <span class="detail-value">{{ currentUser.phoneNumber || '—' }}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="detail-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  Adresse
+                </span>
+                <span class="detail-value">{{ currentUser.adresse || '—' }}</span>
+              </div>
+
+              <div class="detail-row">
+                <span class="detail-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                  Rôle
+                </span>
+                <span class="role-badge" [ngClass]="getRoleCss(currentUser.role)">
+                  {{ getRoleLabel(currentUser.role) }}
+                </span>
+              </div>
+
+              <div class="detail-row">
+                <span class="detail-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  Statut
+                </span>
+                <span class="status-badge" [class.active]="!currentUser.isDeleted" [class.disabled]="currentUser.isDeleted">
+                  <span class="status-dot"></span>
+                  {{ currentUser.isDeleted ? 'Désactivé' : 'Actif' }}
+                </span>
+              </div>
+
             </div>
+          </div>
 
-            <div class="detail-row">
-              <span class="detail-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                Email
-              </span>
-              <span class="detail-value">{{ currentUser.email }}</span>
-            </div>
+          <!-- Info sécurité -->
+          <div class="profile-tip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Pour modifier votre mot de passe, rendez-vous dans l'onglet
+            <button class="inline-link" (click)="setTab('password')">Mot de passe</button>.
+          </div>
+        }
 
-            <div class="detail-row">
-              <span class="detail-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.92 17z"/>
-                </svg>
-                Téléphone
-              </span>
-              <span class="detail-value">{{ currentUser.phoneNumber || '—' }}</span>
-            </div>
+        <!-- Formulaire d'édition du profil -->
+        @if (isEditingProfile) {
+          <div class="profile-details">
+            <h3 class="section-title">Modifier le profil</h3>
 
-            <div class="detail-row">
-              <span class="detail-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-                Adresse
-              </span>
-              <span class="detail-value">{{ currentUser.adresse || '—' }}</span>
-            </div>
-
-            <div class="detail-row">
-              <span class="detail-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
-                Rôle
-              </span>
-              <span class="role-badge" [ngClass]="getRoleCss(currentUser.role)">
-                {{ getRoleLabel(currentUser.role) }}
-              </span>
-            </div>
-
-            <div class="detail-row">
-              <span class="detail-label">
+            @if (profileError) {
+              <div class="alert-danger" style="margin-bottom:16px">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12 6 12 12 16 14"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
-                Statut
-              </span>
-              <span class="status-badge" [class.active]="!currentUser.isDeleted" [class.disabled]="currentUser.isDeleted">
-                <span class="status-dot"></span>
-                {{ currentUser.isDeleted ? 'Désactivé' : 'Actif' }}
-              </span>
-            </div>
+                {{ profileError }}
+              </div>
+            }
 
+            @if (profileSuccess) {
+              <div class="alert-success" style="margin-bottom:16px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Profil mis à jour avec succès.
+              </div>
+            }
+
+            <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" novalidate class="profile-edit-form">
+
+              <div class="form-field">
+                <label for="profileName">Nom complet *</label>
+                <input
+                  id="profileName"
+                  type="text"
+                  formControlName="name"
+                  class="form-input"
+                  [class.is-invalid]="isProfileFieldInvalid('name')"
+                  placeholder="Votre nom complet"
+                  autocomplete="name">
+                @if (isProfileFieldInvalid('name')) {
+                  <span class="field-error">Le nom est requis.</span>
+                }
+              </div>
+
+              <div class="form-field">
+                <label>Email</label>
+                <input
+                  type="email"
+                  [value]="currentUser.email"
+                  class="form-input form-input-readonly"
+                  readonly
+                  autocomplete="email">
+              </div>
+
+              <div class="form-field">
+                <label for="profilePhone">Téléphone</label>
+                <input
+                  id="profilePhone"
+                  type="tel"
+                  formControlName="phoneNumber"
+                  class="form-input"
+                  placeholder="Votre numéro de téléphone"
+                  autocomplete="tel">
+              </div>
+
+              <div class="form-field">
+                <label for="profileAdresse">Adresse</label>
+                <input
+                  id="profileAdresse"
+                  type="text"
+                  formControlName="adresse"
+                  class="form-input"
+                  placeholder="Votre adresse"
+                  autocomplete="street-address">
+              </div>
+
+              <div class="form-actions profile-edit-actions">
+                <button type="button" class="btn-cancel" (click)="onCancelEditProfile()">Annuler</button>
+                <button type="submit" class="btn-submit" [disabled]="profileForm.invalid || profileLoading">
+                  @if (!profileLoading) { Enregistrer }
+                  @if (profileLoading)  { <span class="spinner-sm"></span> }
+                </button>
+              </div>
+
+            </form>
           </div>
-        </div>
-
-        <!-- Info sécurité -->
-        <div class="profile-tip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          Pour modifier votre mot de passe, rendez-vous dans l'onglet
-          <button class="inline-link" (click)="setTab('password')">Mot de passe</button>.
-        </div>
+        }
       }
 
     </div>
@@ -233,8 +329,11 @@
               </svg>
             </button>
           </div>
-          @if (isInvalid('newPassword')) {
+          @if (pwForm.get('newPassword')?.touched && pwForm.get('newPassword')?.hasError('minlength')) {
             <span class="field-error">Minimum 6 caractères requis.</span>
+          }
+          @if (pwForm.get('newPassword')?.touched && pwForm.get('newPassword')?.hasError('pattern')) {
+            <span class="field-error">Le mot de passe doit contenir au moins un caractère non alphanumérique (ex. !, @, #).</span>
           }
         </div>
 

@@ -16,28 +16,9 @@
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
-              Padding="16,48,16,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="40" />
-            </Grid.ColumnDefinitions>
-            <Border Grid.Column="0"
-                    BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
-                    Stroke="Transparent" HeightRequest="38" WidthRequest="38"
-                    VerticalOptions="Center">
-                <Label Text="‹" FontSize="24" FontAttributes="Bold"
-                       TextColor="White"
-                       HorizontalOptions="Center" VerticalOptions="Center" />
-            </Border>
-            <Label Grid.Column="1"
-                   Text="{Binding Title}"
-                   FontSize="17" FontAttributes="Bold"
-                   FontFamily="OpenSansSemibold"
-                   TextColor="White"
-                   HorizontalOptions="Center" VerticalOptions="Center" />
-        </Grid>
+        <controls:AppHeader Grid.Row="0"
+                            Title="{Binding Title}"
+                            ShowBackButton="True" />
 
         <!-- ── Body ──────────────────────────────────────────────────────── -->
         <ScrollView Grid.Row="1">
@@ -53,7 +34,7 @@
                 <Border Style="{StaticResource CardStyle}" Padding="16,14"
                         IsVisible="{Binding IsFacture}">
                     <VerticalStackLayout Spacing="14">
-                        <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="10">
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
                             <BoxView Grid.Column="0" BackgroundColor="{StaticResource Primary}"
                                      CornerRadius="2" WidthRequest="4" />
                             <Label Grid.Column="1" Text="Facture"
@@ -61,14 +42,6 @@
                                    FontFamily="OpenSansSemibold"
                                    TextColor="{StaticResource TextPrimary}"
                                    VerticalOptions="Center" />
-                            <Border Grid.Column="2"
-                                    BackgroundColor="{StaticResource PrimaryLight}"
-                                    StrokeShape="RoundRectangle 10" Stroke="Transparent"
-                                    Padding="10,4" VerticalOptions="Center">
-                                <Label Text="{Binding Facture.Statut}"
-                                       FontSize="11" FontAttributes="Bold"
-                                       TextColor="{StaticResource PrimaryText}" />
-                            </Border>
                         </Grid>
                         <Label Text="{Binding Facture.NumeroFacture}"
                                FontSize="22" FontAttributes="Bold"
@@ -116,7 +89,7 @@
                 <Border Style="{StaticResource CardStyle}" Padding="16,14"
                         IsVisible="{Binding IsBonCommande}">
                     <VerticalStackLayout Spacing="14">
-                        <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="10">
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
                             <BoxView Grid.Column="0" BackgroundColor="{StaticResource Accent}"
                                      CornerRadius="2" WidthRequest="4" />
                             <Label Grid.Column="1" Text="Bon de commande"
@@ -124,14 +97,6 @@
                                    FontFamily="OpenSansSemibold"
                                    TextColor="{StaticResource TextPrimary}"
                                    VerticalOptions="Center" />
-                            <Border Grid.Column="2"
-                                    BackgroundColor="{StaticResource AccentLight}"
-                                    StrokeShape="RoundRectangle 10" Stroke="Transparent"
-                                    Padding="10,4" VerticalOptions="Center">
-                                <Label Text="{Binding BonCommande.Statut}"
-                                       FontSize="11" FontAttributes="Bold"
-                                       TextColor="{StaticResource Accent}" />
-                            </Border>
                         </Grid>
                         <Label Text="{Binding BonCommande.NumeroBon}"
                                FontSize="22" FontAttributes="Bold"
@@ -144,20 +109,6 @@
                                    FontSize="14" FontAttributes="Bold"
                                    TextColor="{StaticResource TextPrimary}" />
                         </VerticalStackLayout>
-                        <Border BackgroundColor="{StaticResource PrimaryLight}"
-                                StrokeShape="RoundRectangle 12" Stroke="Transparent"
-                                Padding="14,12">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <Label Grid.Column="0" Text="Montant total"
-                                       FontSize="13" FontAttributes="Bold"
-                                       TextColor="{StaticResource PrimaryText}"
-                                       VerticalOptions="Center" />
-                                <Label Grid.Column="1"
-                                       Text="{Binding BonCommande.MontantTotal, StringFormat='{0:N3} TND'}"
-                                       FontSize="22" FontAttributes="Bold"
-                                       TextColor="{StaticResource Primary}" />
-                            </Grid>
-                        </Border>
                     </VerticalStackLayout>
                 </Border>
 
@@ -165,7 +116,7 @@
                 <Border Style="{StaticResource CardStyle}" Padding="16,14"
                         IsVisible="{Binding IsBonLivraison}">
                     <VerticalStackLayout Spacing="14">
-                        <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="10">
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
                             <BoxView Grid.Column="0" BackgroundColor="{StaticResource TextSecondary}"
                                      CornerRadius="2" WidthRequest="4" />
                             <Label Grid.Column="1" Text="Bon de livraison"
@@ -173,14 +124,6 @@
                                    FontFamily="OpenSansSemibold"
                                    TextColor="{StaticResource TextPrimary}"
                                    VerticalOptions="Center" />
-                            <Border Grid.Column="2"
-                                    BackgroundColor="{StaticResource SurfaceBackground}"
-                                    StrokeShape="RoundRectangle 10" Stroke="{StaticResource BorderColor}"
-                                    Padding="10,4" VerticalOptions="Center">
-                                <Label Text="{Binding BonLivraison.Statut}"
-                                       FontSize="11" FontAttributes="Bold"
-                                       TextColor="{StaticResource TextSecondary}" />
-                            </Border>
                         </Grid>
                         <Label Text="{Binding BonLivraison.NumeroBon}"
                                FontSize="22" FontAttributes="Bold"

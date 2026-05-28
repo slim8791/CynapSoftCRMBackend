@@ -223,13 +223,14 @@ export class UserListComponent implements OnInit, OnDestroy {
   private normalizeUser(u: any): any {
     return {
       ...u,
-      id:        u.id        ?? u.Id        ?? u.userId,
-      name:      u.name      ?? u.Name      ?? u.nom      ?? '',
-      email:     u.email     ?? u.Email     ?? '',
-      role:      u.role      ?? u.Role      ?? '',
+      id:          u.id          ?? u.Id          ?? u.userId,
+      name:        u.name        ?? u.Name        ?? u.nom      ?? '',
+      email:       u.email       ?? u.Email       ?? '',
+      role:        u.role        ?? u.Role        ?? '',
       phoneNumber: u.phoneNumber ?? u.PhoneNumber ?? '',
-      adresse:   u.adresse   ?? u.Adresse   ?? '',
-      isDeleted: u.isDeleted ?? u.IsDeleted ?? false
+      adresse:     u.adresse     ?? u.Adresse     ?? '',
+      isDeleted:   u.isDeleted   ?? u.IsDeleted   ?? false,
+      typeClient:  u.typeClient  ?? u.TypeClient  ?? null
     };
   }
 
@@ -250,6 +251,21 @@ export class UserListComponent implements OnInit, OnDestroy {
       case 'CLIENT':      return 'role-client';
       default:            return 'role-default';
     }
+  }
+
+  getRoleBadgeClass(user: any): string {
+    if ((user.role ?? '').toUpperCase() === 'CLIENT') {
+      if ((user.typeClient ?? '').toUpperCase() === 'GROSSISTE') return 'role-grossiste';
+      return 'role-client';
+    }
+    return this.getRoleClass(user.role);
+  }
+
+  getRoleBadgeLabel(user: any): string {
+    if ((user.role ?? '').toUpperCase() === 'CLIENT' && user.typeClient) {
+      return user.typeClient;
+    }
+    return user.role || '—';
   }
 
   private resolveError(err: any): string {

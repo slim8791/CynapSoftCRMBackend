@@ -41,7 +41,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
       newPassword: ['', [
         Validators.required,
         Validators.minLength(6),
-        Validators.pattern(/(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])/)
+        Validators.pattern(/(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[^a-zA-Z0-9])/)
       ]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: passwordMatchValidator('newPassword', 'confirmPassword') });
@@ -93,7 +93,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     const msgs: string[] = [];
     if (ctrl.errors['required'])   msgs.push('Le mot de passe est requis.');
     if (ctrl.errors['minlength'])  msgs.push('Minimum 6 caractères.');
-    if (ctrl.errors['pattern'])    msgs.push('Doit contenir une majuscule, une minuscule et un chiffre.');
+    if (ctrl.errors['pattern'])    msgs.push('Le mot de passe doit contenir au moins un caractère non alphanumérique (ex. !, @, #).');
     return msgs;
   }
 

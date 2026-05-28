@@ -16,10 +16,7 @@
        xmlns:reclamations="clr-namespace:Cynapharm_Mobile.Views.Reclamations"
        xmlns:profile="clr-namespace:Cynapharm_Mobile.Views.Profile"
        Shell.FlyoutBehavior="Flyout"
-       Shell.TabBarBackgroundColor="{StaticResource CardBackground}"
-       Shell.TabBarUnselectedColor="{StaticResource TextSecondary}"
-       Shell.TabBarTitleColor="{StaticResource Primary}"
-       Shell.TabBarForegroundColor="{StaticResource Primary}"
+       Shell.TabBarIsVisible="False"
        BackgroundColor="{StaticResource Primary}"
        ForegroundColor="White">
 
@@ -480,78 +477,59 @@
                   FlyoutItemIsVisible="False" />
 
     <!-- ═══════════════════════════════════════════════════════════════
-         PRIMARY TAB BAR
+         PAGE ROUTES  (tab bar removed — navigation via flyout drawer)
+         FlyoutItemIsVisible="False" on every item so nothing appears
+         in the auto-generated flyout list; the custom Shell.FlyoutContent
+         above handles all visual navigation.
+         IsVisible is controlled at runtime by ApplyRoleVisibility().
     ═══════════════════════════════════════════════════════════════════ -->
-    <TabBar>
 
-        <!-- DELEGUE tabs -->
-        <Tab x:Name="FlyoutDashboard" Title="Accueil" IsVisible="False">
-            <Tab.Icon>
-                <FontImageSource FontFamily="Tabler" Glyph="&#xea9d;" Color="{StaticResource TextSecondary}" Size="22" />
-            </Tab.Icon>
-            <ShellContent Route="dashboard"
-                          ContentTemplate="{DataTemplate dashboard:DashboardPage}"
-                          Shell.NavBarIsVisible="False" />
-        </Tab>
+    <!-- ── DÉLÉGUÉ routes ──────────────────────────────────────────── -->
+    <FlyoutItem x:Name="FlyoutDashboard" FlyoutItemIsVisible="False" IsVisible="False">
+        <ShellContent Route="dashboard"
+                      ContentTemplate="{DataTemplate dashboard:DashboardPage}"
+                      Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
 
-        <Tab x:Name="FlyoutVisites" Title="Visites" IsVisible="False">
-            <Tab.Icon>
-                <FontImageSource FontFamily="Tabler" Glyph="&#xea6d;" Color="{StaticResource TextSecondary}" Size="22" />
-            </Tab.Icon>
-            <ShellContent Route="visits"
-                          ContentTemplate="{DataTemplate visites:VisitListPage}"
-                          Shell.NavBarIsVisible="False" />
-        </Tab>
+    <FlyoutItem x:Name="FlyoutVisites" FlyoutItemIsVisible="False" IsVisible="False">
+        <ShellContent Route="visits"
+                      ContentTemplate="{DataTemplate visites:VisitListPage}"
+                      Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
 
-        <Tab x:Name="FlyoutPlanning" Title="Planning" IsVisible="False">
-            <Tab.Icon>
-                <FontImageSource FontFamily="Tabler" Glyph="&#xea53;" Color="{StaticResource TextSecondary}" Size="22" />
-            </Tab.Icon>
-            <ShellContent Route="planning"
-                          ContentTemplate="{DataTemplate planning:PlanningPage}"
-                          Shell.NavBarIsVisible="False" />
-        </Tab>
+    <FlyoutItem x:Name="FlyoutPlanning" FlyoutItemIsVisible="False" IsVisible="False">
+        <ShellContent Route="planning"
+                      ContentTemplate="{DataTemplate planning:PlanningPage}"
+                      Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
 
-        <!-- Catalogue — ALL roles -->
-        <Tab Title="Catalogue">
-            <Tab.Icon>
-                <FontImageSource FontFamily="Tabler" Glyph="&#xec44;" Color="{StaticResource TextSecondary}" Size="22" />
-            </Tab.Icon>
-            <ShellContent Route="products"
-                          ContentTemplate="{DataTemplate products:ProductListPage}"
-                          Shell.NavBarIsVisible="False" />
-        </Tab>
+    <!-- ── ALL roles — Catalogue ───────────────────────────────────── -->
+    <FlyoutItem FlyoutItemIsVisible="False">
+        <ShellContent Route="products"
+                      ContentTemplate="{DataTemplate products:ProductListPage}"
+                      Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
 
-        <!-- CLIENT tabs -->
-        <Tab x:Name="FlyoutOrders" Title="Commandes" IsVisible="False">
-            <Tab.Icon>
-                <FontImageSource FontFamily="Tabler" Glyph="&#xeba0;" Color="{StaticResource TextSecondary}" Size="22" />
-            </Tab.Icon>
-            <ShellContent Route="orders"
-                          ContentTemplate="{DataTemplate orders:OrderListPage}"
-                          Shell.NavBarIsVisible="False" />
-        </Tab>
+    <!-- ── CLIENT + DÉLÉGUÉ — Commandes ───────────────────────────── -->
+    <FlyoutItem x:Name="FlyoutOrders" FlyoutItemIsVisible="False" IsVisible="False">
+        <ShellContent Route="orders"
+                      ContentTemplate="{DataTemplate orders:OrderListPage}"
+                      Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
 
-        <Tab x:Name="FlyoutDocuments" Title="Documents" IsVisible="False">
-            <Tab.Icon>
-                <FontImageSource FontFamily="Tabler" Glyph="&#xea5f;" Color="{StaticResource TextSecondary}" Size="22" />
-            </Tab.Icon>
-            <ShellContent Route="documents"
-                          ContentTemplate="{DataTemplate documents:DocumentListPage}"
-                          Shell.NavBarIsVisible="False" />
-        </Tab>
+    <!-- ── CLIENT — Documents ─────────────────────────────────────── -->
+    <FlyoutItem x:Name="FlyoutDocuments" FlyoutItemIsVisible="False" IsVisible="False">
+        <ShellContent Route="documents"
+                      ContentTemplate="{DataTemplate documents:DocumentListPage}"
+                      Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
 
-        <!-- Profil — ALL roles -->
-        <Tab Title="Profil">
-            <Tab.Icon>
-                <FontImageSource FontFamily="Tabler" Glyph="&#xea9e;" Color="{StaticResource TextSecondary}" Size="22" />
-            </Tab.Icon>
-            <ShellContent Route="profile"
-                          ContentTemplate="{DataTemplate profile:ProfilePage}"
-                          Shell.NavBarIsVisible="False" />
-        </Tab>
-
-    </TabBar>
+    <!-- ── ALL roles — Profil ─────────────────────────────────────── -->
+    <FlyoutItem FlyoutItemIsVisible="False">
+        <ShellContent Route="profile"
+                      ContentTemplate="{DataTemplate profile:ProfilePage}"
+                      Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
 
     <!-- ═══════════════════════════════════════════════════════════════
          SECONDARY PAGES (flyout drawer access only)

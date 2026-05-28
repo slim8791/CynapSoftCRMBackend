@@ -148,8 +148,8 @@
 
           <!-- Rôle -->
           <td class="col-role">
-            <span class="role-badge" [ngClass]="getRoleClass(user.role)">
-              {{ user.role || '—' }}
+            <span class="role-badge" [ngClass]="getRoleBadgeClass(user)">
+              {{ getRoleBadgeLabel(user) }}
             </span>
           </td>
 

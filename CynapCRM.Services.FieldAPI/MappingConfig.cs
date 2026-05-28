@@ -4,7 +4,7 @@ using CynapCRM.Services.FieldAPI.Models.Dto;
 
 
 
-namespace CynapCRM.Services.DocAPI
+namespace CynapCRM.Services.FieldAPI
 {
     public class MappingConfig : Profile
     {

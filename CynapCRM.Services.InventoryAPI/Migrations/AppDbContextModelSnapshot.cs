@@ -160,6 +160,15 @@ namespace CynapCRM.Services.InventoryAPI.Migrations
                 {
                     b.HasBaseType("CynapCRM.Services.InventoryAPI.Models.Stock_Delegue");
 
+                    b.Property<DateTime?>("DateDebut")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateFin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("QteEchantillon")
                         .HasColumnType("int");
 
@@ -170,12 +179,33 @@ namespace CynapCRM.Services.InventoryAPI.Migrations
                 {
                     b.HasBaseType("CynapCRM.Services.InventoryAPI.Models.Stock_Delegue");
 
+                    b.Property<DateTime?>("DateDebut")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateFin")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("QteGratuite")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuantiteAchat")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuantiteGratuite")
                         .HasColumnType("int");
 
                     b.Property<string>("TypePromotion")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("Stocks", t =>
+                        {
+                            t.Property("DateDebut")
+                                .HasColumnName("Stock_Gratuite_DateDebut");
+
+                            t.Property("DateFin")
+                                .HasColumnName("Stock_Gratuite_DateFin");
+                        });
 
                     b.HasDiscriminator().HasValue("Gratuite");
                 });

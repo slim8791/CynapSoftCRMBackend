@@ -21,9 +21,9 @@
       <table class="dt">
         <thead><tr><th>N° Doc</th><th>Type</th><th>Client</th><th>Commande</th><th>Date</th></tr></thead>
         <tbody>
-          @for (d of docs; track d.numeroDoc) {
+          @for (d of docs; track d.numero_Doc) {
             <tr>
-              <td class="mono">{{ d.numeroDoc }}</td>
+              <td class="mono">{{ d.numero_Doc }}</td>
               <td>{{ d.type }}</td>
               <td>{{ clientName(d.id_Client) }}</td>
               <td>{{ d.id_Commande ? '#' + d.id_Commande : '—' }}</td>

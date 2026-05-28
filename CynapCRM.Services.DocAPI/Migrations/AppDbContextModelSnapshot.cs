@@ -30,6 +30,9 @@ namespace CynapCRM.Services.DocAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Numero_Doc"));
 
+                    b.Property<string>("CloudinaryUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DateCreation")
                         .HasColumnType("datetime2");
 

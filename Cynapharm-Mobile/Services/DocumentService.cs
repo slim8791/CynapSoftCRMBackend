@@ -8,19 +8,19 @@ public class DocumentService
     public DocumentService(ApiService api) { _api = api; }
 
     public Task<List<Facture>?> GetFacturesAsync(int page = 1, int size = 20)
-        => _api.GetAsync<List<Facture>>($"documents/factures?page={page}&size={size}");
+        => _api.GetAsync<List<Facture>>($"documents/factures?pageNumber={page}&pageSize={size}");
 
     public Task<Facture?> GetFactureByIdAsync(int id)
         => _api.GetAsync<Facture>($"documents/factures/{id}");
 
     public Task<List<BonCommande>?> GetBonsCommandeAsync(int page = 1, int size = 20)
-        => _api.GetAsync<List<BonCommande>>($"documents/bons-commandes?page={page}&size={size}");
+        => _api.GetAsync<List<BonCommande>>($"documents/bons-commandes?pageNumber={page}&pageSize={size}");
 
     public Task<BonCommande?> GetBonCommandeByIdAsync(int id)
         => _api.GetAsync<BonCommande>($"documents/bons-commandes/{id}");
 
     public Task<List<BonLivraison>?> GetBonsLivraisonAsync(int page = 1, int size = 20)
-        => _api.GetAsync<List<BonLivraison>>($"documents/bons-livraison?page={page}&size={size}");
+        => _api.GetAsync<List<BonLivraison>>($"documents/bons-livraison?pageNumber={page}&pageSize={size}");
 
     public Task<BonLivraison?> GetBonLivraisonByIdAsync(int id)
         => _api.GetAsync<BonLivraison>($"documents/bons-livraison/{id}");

@@ -74,9 +74,9 @@ public partial class DocumentDetailViewModel : BaseViewModel
     {
         var text = DocumentType.ToLowerInvariant() switch
         {
-            "facture"                          when Facture      != null => $"Facture {Facture.NumeroFacture} — {Facture.MontantTTC:C2} — {Facture.Statut}",
-            "bon-commande" or "bc"             when BonCommande  != null => $"Bon de commande {BonCommande.NumeroBon} — {BonCommande.MontantTotal:C2}",
-            "bon-livraison" or "bl"            when BonLivraison != null => $"Bon de livraison {BonLivraison.NumeroBon} — {BonLivraison.Statut}",
+            "facture"                          when Facture      != null => $"Facture {Facture.NumeroFacture} — {Facture.MontantTTC:N3} TND",
+            "bon-commande" or "bc"             when BonCommande  != null => $"Bon de commande {BonCommande.NumeroBon}",
+            "bon-livraison" or "bl"            when BonLivraison != null => $"Bon de livraison {BonLivraison.NumeroBon}",
             _                                                            => "Document Cynapharm"
         };
         await Share.RequestAsync(new ShareTextRequest { Text = text, Title = Title });

@@ -7,8 +7,29 @@
     .tab:hover:not(.active) { color: #374151; }
     .filter-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
     .filter-row label { font-size: 13px; font-weight: 500; color: #374151; white-space: nowrap; }
-    .filter-row input { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; width: 160px; }
-    .filter-row input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+    .filter-row input,
+    .filter-row select {
+      padding: 9px 36px 9px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #111;
+      background: #fafafa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+      appearance: none;
+      -webkit-appearance: none;
+      min-width: 220px;
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .filter-row input:focus,
+    .filter-row select:focus {
+      outline: none;
+      border-color: #6366f1;
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.1);
+    }
+    .filter-row select:hover { border-color: #a5b4fc; }
     .btn { padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
     .btn-primary { background: #6366f1; color: #fff; }
     .btn-primary:hover:not(:disabled) { background: #4f46e5; }
@@ -27,4 +48,90 @@
     .qty { font-weight: 600; color: #6366f1; }
     .link-btn { font-size: 13px; color: #6366f1; text-decoration: none; font-weight: 500; }
     .link-btn:hover { text-decoration: underline; }
+    .actions-cell { display: flex; align-items: center; gap: 8px; }
+    .btn-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; cursor: pointer; transition: all .15s; flex-shrink: 0; }
+    .btn-icon svg { width: 15px; height: 15px; }
+    .btn-icon.danger { color: #dc2626; }
+    .btn-icon.danger:hover { background: #fef2f2; border-color: #fecaca; }
   
+/* ── Confirmation modal ─────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fade-in .15s ease;
+}
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+
+.modal-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 32px 28px 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  text-align: center;
+  animation: slide-up .18s ease;
+}
+@keyframes slide-up { from { transform: translateY(12px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+
+.modal-icon {
+  width: 52px;
+  height: 52px;
+  background: #fef2f2;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: #dc2626;
+}
+.modal-icon svg { width: 24px; height: 24px; }
+
+.modal-box h3 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #111;
+  margin: 0 0 8px;
+}
+.modal-box p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.btn-cancel {
+  padding: 9px 22px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-cancel:hover { background: #f9fafb; }
+
+.btn-confirm-danger {
+  padding: 9px 22px;
+  border: none;
+  border-radius: 8px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-confirm-danger:hover { background: #b91c1c; }

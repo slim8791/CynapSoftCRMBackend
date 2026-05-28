@@ -85,13 +85,8 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
     return this.doc?.dateFacture ?? this.doc?.DateFacture ?? this.doc?.dateCreation ?? this.doc?.DateCreation;
   }
 
-  download(): void {
-    const url = this.downloadUrl(this.doc);
-    if (!url) {
-      this.error = 'Aucun fichier Cloudinary disponible pour ce document.';
-      return;
-    }
-    if (typeof window !== 'undefined') window.open(url, '_blank', 'noopener');
+  print(): void {
+    if (typeof window !== 'undefined') window.print();
   }
 
   private requestByKind(id: number): Observable<any> {
@@ -119,10 +114,4 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  private downloadUrl(doc: any): string | null {
-    const url = doc?.cloudinaryUrl ?? doc?.CloudinaryUrl ?? doc?.url ?? doc?.Url ?? doc?.documentUrl ?? doc?.DocumentUrl ?? doc?.fileUrl ?? doc?.FileUrl ?? doc?.pdfUrl ?? doc?.PdfUrl;
-    return typeof url === 'string' && url.trim()
-      ? url.replace('/raw/upload/', '/raw/upload/fl_attachment/')
-      : null;
-  }
 }

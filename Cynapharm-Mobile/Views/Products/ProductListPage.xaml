@@ -16,11 +16,11 @@
         <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}">
             <VerticalStackLayout Spacing="0">
 
-                <!-- Title + product count badge -->
-                <Grid ColumnDefinitions="*,Auto" Padding="20,52,20,14">
+                <!-- Title + product count badge + hamburger -->
+                <Grid ColumnDefinitions="*,Auto,44" Padding="20,52,16,14">
                     <VerticalStackLayout Grid.Column="0" Spacing="3">
                         <Label Text="Catalogue"
-                               FontSize="24" FontAttributes="Bold"
+                               FontSize="20" FontAttributes="Bold"
                                FontFamily="OpenSansSemibold"
                                TextColor="White" />
                         <Label Text="Catalogue des produits Cynapharm"
@@ -38,6 +38,18 @@
                         <Label Text="{Binding ProductCount, StringFormat='{0} produits'}"
                                FontSize="12" FontAttributes="Bold"
                                TextColor="White" />
+                    </Border>
+
+                    <Border Grid.Column="2"
+                            BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                            Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                            VerticalOptions="Center" HorizontalOptions="End">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnHamburgerTapped" />
+                        </Border.GestureRecognizers>
+                        <Label Text="≡" FontSize="22" FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
                 </Grid>
 

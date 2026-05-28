@@ -176,25 +176,26 @@
                 </td>
 
 <td class="actions-cell">
+  <div class="action-row" style="justify-content: center;">
 
   <!-- VOIR (toujours autorisé) -->
   <button
-    class="act-btn view-btn"
+    class="act-btn view"
     (click)="onView(product.Id_Produit)"
     aria-label="Voir"
     title="Voir le produit">
-    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
     </svg>
   </button>
 
   <!-- MODIFIER (interdit si archivé) -->
   @if (!product.IsArchived) {
-    <button class="act-btn edit-btn"
+    <button class="act-btn edit"
             (click)="onEdit(product.Id_Produit)"
             aria-label="Modifier"
             title="Modifier le produit">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
       </svg>
     </button>
@@ -203,12 +204,12 @@
   <!-- ARCHIVER (si non archivé) -->
   @if (!product.IsArchived) {
     <button
-      class="act-btn warn-btn"
+      class="act-btn warn"
       (click)="onArchive(product.Id_Produit)"
       [disabled]="loadingLots.has(product.Id_Produit)"
       [title]="loadingLots.has(product.Id_Produit) ? 'Vérification du stock…' : 'Archiver le produit'"
       aria-label="Archiver">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
       </svg>
     </button>
@@ -217,11 +218,11 @@
   <!-- DESACTIVER (si actif et non archivé) -->
   @if (product.IsActive && !product.IsArchived) {
     <button
-      class="act-btn danger-btn"
+      class="act-btn delete"
       (click)="onDelete(product.Id_Produit)"
       aria-label="Désactiver"
       title="Désactiver le produit">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
       </svg>
     </button>
@@ -230,11 +231,11 @@
   <!-- ACTIVER (si inactif et non archivé) -->
   @if (!product.IsActive && !product.IsArchived) {
     <button
-      class="act-btn success-btn"
+      class="act-btn validate"
       (click)="onActivate(product.Id_Produit)"
       aria-label="Activer"
       title="Activer le produit">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
     </button>
@@ -243,11 +244,11 @@
   <!-- DESARCHIVER (si archivé) -->
   @if (product.IsArchived) {
     <button
-      class="act-btn success-btn"
+      class="act-btn validate"
       (click)="onUnarchive(product.Id_Produit)"
       aria-label="Désarchiver"
       title="Désarchiver le produit">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
     </button>
@@ -256,11 +257,11 @@
   <!-- SUPPRIMER DÉFINITIVEMENT (si archivé) -->
   @if (product.IsArchived) {
     <button
-      class="act-btn danger-btn"
+      class="act-btn delete"
       (click)="onHardDelete(product.Id_Produit)"
       aria-label="Supprimer définitivement"
       title="Supprimer définitivement (irréversible)">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="3 6 5 6 21 6"/>
         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
         <path d="M10 11v6M14 11v6"/>
@@ -269,6 +270,7 @@
     </button>
   }
 
+  </div>
 </td>
               </tr>
 
@@ -280,7 +282,7 @@
                     @if (isLoadingLots(product.Id_Produit)) {
                       <div class="detail-loading">
                         <div class="detail-spinner"></div>
-                        <span>Loading lots…</span>
+                        <span>Chargement des lots…</span>
                       </div>
 
                     } @else if (getLots(product.Id_Produit).length === 0) {
@@ -359,13 +361,13 @@
           sur {{ filteredProducts.length }}
         </span>
         <div class="pag-controls">
-          <button class="pag-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">Précédent</button>
+          <button class="pag-btn pag-nav" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">Précédent</button>
           @for (pageNum of pageNumbers; track pageNum) {
-            <button class="pag-btn" [class.active]="pageNum === currentPage" (click)="onPageChange(pageNum)">
+            <button class="pag-btn pag-num" [class.active]="pageNum === currentPage" (click)="onPageChange(pageNum)">
               {{ pageNum }}
             </button>
           }
-          <button class="pag-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">Suivant</button>
+          <button class="pag-btn pag-nav" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">Suivant</button>
         </div>
       </div>
     </div>

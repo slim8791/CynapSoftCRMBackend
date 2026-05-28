@@ -60,7 +60,7 @@ export class RegionFormComponent implements OnInit, OnDestroy {
   }
 
   userName(u: any): string {
-    return u?.name ?? u?.Name ?? u?.fullName ?? u?.email ?? `#${u?.id}`;
+    return this.userSvc.displayName(u, this.userSvc.userId(u) ?? undefined);
   }
 
   get f() { return this.form.controls; }

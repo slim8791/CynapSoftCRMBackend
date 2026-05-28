@@ -15,7 +15,5 @@ public class BonLivraison
 
     [JsonPropertyName("id_Commande")]
     public int CommandeId { get; set; }
-
-    // Statut not in backend DTO — kept for XAML compiled-binding compatibility
-    public string Statut { get; set; } = string.Empty;
+    public string Statut { get; internal set; }
 }

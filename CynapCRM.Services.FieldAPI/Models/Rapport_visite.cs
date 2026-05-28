@@ -35,5 +35,12 @@ namespace CynapCRM.Services.FieldAPI.Models
 
         // Nullable: only set when a SUPERVISEUR validates the report
         public int? IdSuperviseurValidateur { get; set; }
+
+        /// <summary>
+        /// JSON-serialized array of products presented during the visit.
+        /// Example: [{"id":1,"nom":"Doliprane"},{"id":3,"nom":"Amoxicilline"}]
+        /// Null when no products were selected by the delegate.
+        /// </summary>
+        public string? ProduitsDiscutes { get; set; }
     }
 }

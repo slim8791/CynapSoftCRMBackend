@@ -193,6 +193,7 @@
           <span class="field-err" *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched">
             <span *ngIf="userForm.get('password')?.hasError('required')">Mot de passe obligatoire.</span>
             <span *ngIf="userForm.get('password')?.hasError('minlength')">Au moins 6 caractères.</span>
+            <span *ngIf="userForm.get('password')?.hasError('pattern')">Le mot de passe doit contenir au moins un caractère non alphanumérique (ex. !, @, #).</span>
           </span>
         </div>
       </div>

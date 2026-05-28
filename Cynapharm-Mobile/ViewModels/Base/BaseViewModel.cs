@@ -65,12 +65,15 @@ public partial class BaseViewModel : ObservableValidator
             ErrorMessage = ex.Message;
             HapticService.Error();
             Logger?.LogError(ex.Message, ex, GetType().Name);
+            await ShowErrorAlertAsync("Erreur", ex.Message);
         }
         catch (HttpRequestException ex)
         {
-            ErrorMessage = ex.Message;
+            const string netMsg = "Impossible de contacter le serveur. Vérifiez votre connexion internet.";
+            ErrorMessage = netMsg;
             HapticService.Error();
             Logger?.LogError(ex.Message, ex, GetType().Name);
+            await ShowErrorAlertAsync("Erreur réseau", netMsg);
         }
         catch (TaskCanceledException)
         {
@@ -82,9 +85,11 @@ public partial class BaseViewModel : ObservableValidator
         }
         catch (Exception ex)
         {
-            ErrorMessage = "Une erreur inattendue s'est produite.";
+            const string unexpectedMsg = "Une erreur inattendue s'est produite.";
+            ErrorMessage = unexpectedMsg;
             HapticService.Error();
             Logger?.LogError(ex.Message, ex, GetType().Name);
+            await ShowErrorAlertAsync("Erreur", ex.Message);
         }
         finally
         {
@@ -111,26 +116,48 @@ public partial class BaseViewModel : ObservableValidator
             ErrorMessage = ex.Message;
             HapticService.Error();
             Logger?.LogError(ex.Message, ex, GetType().Name);
+            await ShowErrorAlertAsync("Erreur", ex.Message);
         }
         catch (HttpRequestException ex)
         {
-            ErrorMessage = ex.Message;
+            const string netMsg = "Impossible de contacter le serveur. Vérifiez votre connexion internet.";
+            ErrorMessage = netMsg;
             HapticService.Error();
             Logger?.LogError(ex.Message, ex, GetType().Name);
+            await ShowErrorAlertAsync("Erreur réseau", netMsg);
         }
         catch (TaskCanceledException) { }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            ErrorMessage = "Une erreur inattendue s'est produite.";
+            const string unexpectedMsg = "Une erreur inattendue s'est produite.";
+            ErrorMessage = unexpectedMsg;
             HapticService.Error();
             Logger?.LogError(ex.Message, ex, GetType().Name);
+            await ShowErrorAlertAsync("Erreur", ex.Message);
         }
         finally
         {
             IsBusy = false;
             IsRefreshing = false;
         }
+    }
+
+    // ── Alert helpers ─────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Shows a DisplayAlert on the main thread. Safe to call from any thread.
+    /// No-ops if Shell.Current is unavailable (e.g., during unit tests).
+    /// </summary>
+    protected static async Task ShowErrorAlertAsync(string title, string message)
+    {
+        try
+        {
+            if (Shell.Current is null) return;
+            await MainThread.InvokeOnMainThreadAsync(
+                () => Shell.Current.DisplayAlert(title, message, "OK"));
+        }
+        catch { /* alert must never bubble */ }
     }
 
     // ── RetryCommand — overridden by list ViewModels ──────────────────────────

@@ -142,6 +142,59 @@ span.role-badge.role-medecin                                { background: #fff7e
 span.role-badge.role-client                                 { background: #f3f4f6; color: #374151; }
 .profile-avatar.role-default, .role-badge.role-default     { background: #9ca3af; color: white; }
 
+/* ── Section title row (with edit button) ────────────────── */
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-title-row .section-title {
+  margin-bottom: 0;
+}
+
+.btn-edit-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0077b6;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, border-color .15s;
+}
+
+.btn-edit-profile svg { width: 13px; height: 13px; }
+.btn-edit-profile:hover { background: #e0f2fe; border-color: #7dd3fc; }
+
+/* ── Profile edit form ───────────────────────────────────── */
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.profile-edit-form .form-input {
+  padding-left: 14px;
+}
+
+.form-input-readonly {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+  cursor: not-allowed;
+}
+
+.profile-edit-actions {
+  padding-top: 4px;
+}
+
 /* ── Details grid ────────────────────────────────────────── */
 .section-title {
   font-size: 13px;

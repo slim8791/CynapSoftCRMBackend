@@ -17,7 +17,7 @@ describe('VisiteFormComponent', () => {
     svcMock = { getById: vi.fn().mockReturnValue(of(null)), createOrUpdate: vi.fn() };
     routerMock = { navigate: vi.fn() };
     if (id) {
-      svcMock.getById.mockReturnValue(of({ idVisite: Number(id), id_User_Delegue: 1, date: '2024-01-15T00:00:00', type: VisiteType.Medecin }));
+      svcMock.getById.mockReturnValue(of({ idVisite: Number(id), id_User_Delegue: 1, dateVisite: '2024-01-15T00:00:00', type: VisiteType.Medecin }));
     }
     await TestBed.configureTestingModule({
       imports: [VisiteFormComponent, ReactiveFormsModule],

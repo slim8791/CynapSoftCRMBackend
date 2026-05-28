@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { DistributionService, EchantillonDto } from '../services/distribution.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { UserService } from '../../../users/user.service';
 import { StockService } from '../../stocks/services/stock.service';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-distribution-detail',
@@ -27,11 +28,13 @@ export class DistributionDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private route: ActivatedRoute,
-    private svc: DistributionService,
-    private userSvc: UserService,
+    private route:    ActivatedRoute,
+    private router:   Router,
+    private svc:      DistributionService,
+    private userSvc:  UserService,
     private stockSvc: StockService,
-    private cdr: ChangeDetectorRef
+    private toast:    ToastService,
+    private cdr:      ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +82,18 @@ export class DistributionDetailComponent implements OnInit, OnDestroy {
         assign(`${fallbackLabel} #${id}`);
         this.cdr.markForCheck();
       }
+    });
+  }
+
+  onDelete(): void {
+    if (!this.item?.id_Distribution) return;
+    if (!confirm('Supprimer cette distribution ?')) return;
+    this.svc.delete(this.item.id_Distribution).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.toast.showSuccess('Distribution supprimée.');
+        this.router.navigate(['/inventory/distributions']);
+      },
+      error: () => this.toast.showError('Erreur lors de la suppression.')
     });
   }
 

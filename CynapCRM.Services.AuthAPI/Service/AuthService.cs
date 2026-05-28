@@ -188,7 +188,8 @@ namespace CynapCRM.Services.AuthAPI.Service
                 PhoneNumber = user.PhoneNumber ?? "",
                 Adresse = user.Adresse ?? "",
                 Role = role,
-                IsDeleted = user.IsDeleted
+                IsDeleted = user.IsDeleted,
+                TypeClient = GetTypeClient(user)
             };
         }
 
@@ -470,7 +471,8 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                     PhoneNumber = user.PhoneNumber,
                     Adresse = user.Adresse,
                     Role = roles.FirstOrDefault() ?? "",
-                    IsDeleted = user.IsDeleted
+                    IsDeleted = user.IsDeleted,
+                    TypeClient = GetTypeClient(user)
                 });
             }
 
@@ -509,7 +511,32 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                     PhoneNumber = user.PhoneNumber,
                     Adresse = user.Adresse,
                     Role = roles.FirstOrDefault() ?? "",
-                    IsDeleted = user.IsDeleted
+                    IsDeleted = user.IsDeleted,
+                    TypeClient = GetTypeClient(user)
+                });
+            }
+
+            return result;
+        }
+
+        public async Task<IEnumerable<UserDto>> GetUsersByRoleAsync(string role)
+        {
+            var users = await _userManager.GetUsersInRoleAsync(role);
+            var result = new List<UserDto>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                result.Add(new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Adresse = user.Adresse,
+                    Role = roles.FirstOrDefault() ?? "",
+                    IsDeleted = user.IsDeleted,
+                    TypeClient = GetTypeClient(user)
                 });
             }
 
@@ -535,13 +562,20 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                     Name = user.Name,
                     PhoneNumber = user.PhoneNumber,
                     Adresse = user.Adresse,
-                    Role = roles.FirstOrDefault() ?? "" ,
-                    IsDeleted = user.IsDeleted
-
+                    Role = roles.FirstOrDefault() ?? "",
+                    IsDeleted = user.IsDeleted,
+                    TypeClient = GetTypeClient(user)
                 });
             }
             return result;
         }
+        private static string? GetTypeClient(Utilisateur user) => user switch
+        {
+            Pharmacien => "PHARMACIEN",
+            Grossiste  => "GROSSISTE",
+            _          => null
+        };
+
         public async Task<ResponseDto> UpdateProfileAsync(UpdateProfileDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);

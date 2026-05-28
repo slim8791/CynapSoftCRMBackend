@@ -28,4 +28,7 @@ public partial class ProductListPage : ContentPage
             _ = vm.LoadCommand.ExecuteAsync(null);
         }
     }
+
+    private void OnHamburgerTapped(object sender, EventArgs e)
+        => Shell.Current.FlyoutIsPresented = true;
 }

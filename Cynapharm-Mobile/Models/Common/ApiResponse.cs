@@ -15,4 +15,8 @@ public class ApiResponse<T>
 
     [JsonPropertyName("errors")]
     public List<string>? Errors { get; set; }
+
+    // Aliases for backward compatibility
+    public bool Success => IsSuccess;
+    public T? Data => Result;
 }

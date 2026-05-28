@@ -39,7 +39,7 @@ export class ReclamationService {
   }
 
   // Normalize: covers Id_Rec / id_Rec / idRec, Id_Commande / id_Commande / idCommande …
-  private normalizeRec(r: any): ReclamationDto {
+  normalizeRec(r: any): ReclamationDto {
     return {
       Id_Rec:          r.Id_Rec          ?? r.id_Rec          ?? r.idRec          ?? 0,
       Message:         r.Message         ?? r.message         ?? '',
@@ -65,14 +65,9 @@ export class ReclamationService {
     return STATUT_REC_CSS[this.statutToNumber(statut)] ?? 'chip-default';
   }
 
-  private toArray(r: any): ReclamationDto[] {
-    const raw = Array.isArray(r) ? r : (this.unwrap<any[]>(r) ?? []);
-    return Array.isArray(raw) ? raw.map(x => this.normalizeRec(x)) : [];
-  }
-
-  // GET /orders/reclamations → returns direct array (no ResponseDto wrapper)
-  getAll(): Observable<ReclamationDto[]> {
-    return this.api.get<any>(this.base).pipe(map(r => this.toArray(r)));
+  // Returns raw API response — callers unwrap result/Result themselves
+  getAll(): Observable<any> {
+    return this.api.get<any>(this.base);
   }
 
   getById(id: number): Observable<ReclamationDto | null> {
@@ -81,18 +76,15 @@ export class ReclamationService {
     );
   }
 
-  // 404 = aucune réclamation pour cette commande → retourne [] sans erreur
-  getByOrder(orderId: number): Observable<ReclamationDto[]> {
+  getByOrder(orderId: number): Observable<any> {
     return this.api.get<any>(`${this.base}/by-commande/${orderId}`).pipe(
-      map(r => this.toArray(r)),
-      catchError((err: HttpErrorResponse) => err.status === 404 ? of([] as ReclamationDto[]) : throwError(() => err))
+      catchError((err: HttpErrorResponse) => err.status === 404 ? of(null) : throwError(() => err))
     );
   }
 
-  getByClient(clientId: number): Observable<ReclamationDto[]> {
+  getByClient(clientId: number): Observable<any> {
     return this.api.get<any>(`${this.base}/by-client/${clientId}`).pipe(
-      map(r => this.toArray(r)),
-      catchError((err: HttpErrorResponse) => err.status === 404 ? of([] as ReclamationDto[]) : throwError(() => err))
+      catchError((err: HttpErrorResponse) => err.status === 404 ? of(null) : throwError(() => err))
     );
   }
 

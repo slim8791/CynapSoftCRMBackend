@@ -17,4 +17,7 @@ public partial class ObjectifPage : ContentPage
         base.OnAppearing();
         if (BindingContext is ObjectifViewModel vm) _ = vm.LoadCommand.ExecuteAsync(null);
     }
+
+    private void OnHamburgerTapped(object sender, EventArgs e)
+        => Shell.Current.FlyoutIsPresented = true;
 }

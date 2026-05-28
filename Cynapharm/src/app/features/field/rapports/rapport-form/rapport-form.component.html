@@ -38,7 +38,7 @@
           </option>
           @for (v of visites; track v.idVisite) {
             <option [value]="v.idVisite">
-              Visite #{{ v.idVisite }} — {{ v.date | date:'dd/MM/yyyy' }}
+              Visite #{{ v.idVisite }} — {{ v.dateVisite | date:'dd/MM/yyyy' }}
             </option>
           }
         </select>

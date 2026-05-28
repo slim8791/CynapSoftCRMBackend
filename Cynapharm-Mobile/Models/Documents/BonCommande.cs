@@ -15,10 +15,6 @@ public class BonCommande
 
     [JsonPropertyName("id_Commande")]
     public int CommandeId { get; set; }
-
-    // MontantTotal not in backend DTO — kept for XAML compiled-binding compatibility
-    public decimal MontantTotal { get; set; }
-
-    // Statut not in backend DTO — kept for XAML compiled-binding compatibility
-    public string Statut { get; set; } = string.Empty;
+    public decimal? MontantTotal { get; internal set; }
+    public string Statut { get; internal set; }
 }

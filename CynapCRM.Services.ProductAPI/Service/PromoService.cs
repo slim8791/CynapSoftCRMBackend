@@ -73,7 +73,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             }
 
             await _db.SaveChangesAsync();
-            return promotionDto;
+            return _mapper.Map<PromotionDto>(promo);
         }
 
         public async Task<bool> DeletePromotionAsync(int promotionId)

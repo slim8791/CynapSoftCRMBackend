@@ -98,7 +98,8 @@ namespace CynapCRM.Services.DocAPI.Service
                     Id_Commande = blDto.Id_Commande,
                     Id_Client = blDto.Id_Client,
                     TypeDocument = "BL",
-                    DateCreation = DateTime.UtcNow
+                    DateCreation = DateTime.UtcNow,
+                    CloudinaryUrl = blDto.CloudinaryUrl
                 };
                 _db.BonsLivraisons.Add(bl);
             }
@@ -110,6 +111,7 @@ namespace CynapCRM.Services.DocAPI.Service
                 if (bl == null) return null;
 
                 bl.Nom_Doc = blDto.Nom_Doc;
+                bl.CloudinaryUrl = blDto.CloudinaryUrl;
             }
 
             await _db.SaveChangesAsync();
@@ -121,7 +123,8 @@ namespace CynapCRM.Services.DocAPI.Service
                 DateCreation = bl.DateCreation,
                 Id_Commande = bl.Id_Commande,
                 Id_Client = bl.Id_Client,
-                TypeDocument = "BL"
+                TypeDocument = "BL",
+                CloudinaryUrl = bl.CloudinaryUrl
             };
         }
 

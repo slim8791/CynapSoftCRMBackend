@@ -39,7 +39,7 @@ describe('VisiteListComponent', () => {
   });
 
   it('load should call getByDelegue and populate visites', () => {
-    const items = [{ idVisite: 1, id_User_Delegue: 1, date: '2024-01-01', type: VisiteType.Medecin }];
+    const items = [{ idVisite: 1, id_User_Delegue: 1, dateVisite: '2024-01-01', type: VisiteType.Medecin }];
     svcMock.getByDelegue.mockReturnValue(of(items));
     component.delegueId = 1;
     component.load();

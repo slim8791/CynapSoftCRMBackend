@@ -18,53 +18,53 @@ import { TypeObjectif, PeriodeObjectif } from '../../../../core/models/enums/ind
 })
 export class ObjectifFormComponent implements OnInit, OnDestroy {
   form!: FormGroup;
-  isEdit      = false;
+  isEdit = false;
   editId: number | null = null;
   loadingData = false;
-  saving      = false;
-  fetchError  = '';
+  saving = false;
+  fetchError = '';
   submitError = '';
-  successMsg  = '';
+  successMsg = '';
 
   delegues: any[] = [];
 
   typeOptions = [
-    { value: TypeObjectif.Visites,         label: 'Visites' },
+    { value: TypeObjectif.Visites, label: 'Visites' },
     { value: TypeObjectif.ChiffreAffaires, label: 'Chiffre d\'affaires' },
     { value: TypeObjectif.NouveauxClients, label: 'Nouveaux clients' },
-    { value: TypeObjectif.Fidelisation,    label: 'Fidélisation' }
+    { value: TypeObjectif.Fidelisation, label: 'Fidélisation' }
   ];
 
   periodeOptions = [
-    { value: PeriodeObjectif.Mensuel,     label: 'Mensuel' },
+    { value: PeriodeObjectif.Mensuel, label: 'Mensuel' },
     { value: PeriodeObjectif.Trimestriel, label: 'Trimestriel' },
-    { value: PeriodeObjectif.Annuel,      label: 'Annuel' }
+    { value: PeriodeObjectif.Annuel, label: 'Annuel' }
   ];
 
   private destroy$ = new Subject<void>();
 
   constructor(
-    private fb:      FormBuilder,
-    private route:   ActivatedRoute,
-    private router:  Router,
-    private svc:     ObjectifService,
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
+    private svc: ObjectifService,
     private userSvc: UserService,
-    private cdr:     ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.form = this.fb.group({
       id_User_Delegue: [null, [Validators.required]],
-      type:            ['',   [Validators.required]],
-      periode:         ['',   [Validators.required]],
-      valeurCible:     [null, [Validators.required, Validators.min(1)]],
-      dateDebut:       ['',   [Validators.required]],
-      dateFin:         ['',   [Validators.required]]
+      type: ['', [Validators.required]],
+      periode: ['', [Validators.required]],
+      valeurCible: [null, [Validators.required, Validators.min(1)]],
+      dateDebut: ['', [Validators.required]],
+      dateFin: ['', [Validators.required]]
     });
 
     // Load delegues
     this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$))
-      .subscribe({ next: u => { this.delegues = u; this.cdr.markForCheck(); }, error: () => {} });
+      .subscribe({ next: u => { this.delegues = u; this.cdr.markForCheck(); }, error: () => { } });
 
     // Auto-calculate dates on periode change
     this.form.get('periode')!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(val => {
@@ -82,7 +82,7 @@ export class ObjectifFormComponent implements OnInit, OnDestroy {
           this.form.patchValue({
             ...data,
             dateDebut: data.dateDebut?.substring(0, 10) ?? '',
-            dateFin:   data.dateFin?.substring(0, 10) ?? ''
+            dateFin: data.dateFin?.substring(0, 10) ?? ''
           });
           this.loadingData = false;
           this.cdr.markForCheck();
@@ -99,16 +99,16 @@ export class ObjectifFormComponent implements OnInit, OnDestroy {
     switch (periode) {
       case PeriodeObjectif.Mensuel:
         dateDebut = new Date(now.getFullYear(), now.getMonth(), 1);
-        dateFin   = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        dateFin = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         break;
       case PeriodeObjectif.Trimestriel:
         const q = Math.floor(now.getMonth() / 3);
         dateDebut = new Date(now.getFullYear(), q * 3, 1);
-        dateFin   = new Date(now.getFullYear(), q * 3 + 3, 0);
+        dateFin = new Date(now.getFullYear(), q * 3 + 3, 0);
         break;
       case PeriodeObjectif.Annuel:
         dateDebut = new Date(now.getFullYear(), 0, 1);
-        dateFin   = new Date(now.getFullYear(), 11, 31);
+        dateFin = new Date(now.getFullYear(), 11, 31);
         break;
       default:
         return;
@@ -116,13 +116,13 @@ export class ObjectifFormComponent implements OnInit, OnDestroy {
 
     this.form.patchValue({
       dateDebut: dateDebut.toISOString().slice(0, 10),
-      dateFin:   dateFin.toISOString().slice(0, 10)
+      dateFin: dateFin.toISOString().slice(0, 10)
     }, { emitEvent: false });
     this.cdr.markForCheck();
   }
 
   userName(u: any): string {
-    return u?.name ?? u?.Name ?? u?.fullName ?? u?.email ?? `#${u?.id}`;
+    return this.userSvc.displayName(u, this.userSvc.userId(u) ?? undefined);
   }
 
   get f() { return this.form.controls; }
@@ -132,11 +132,13 @@ export class ObjectifFormComponent implements OnInit, OnDestroy {
     if (this.form.invalid) return;
     this.saving = true;
     this.submitError = '';
-    this.successMsg  = '';
+    this.successMsg = '';
 
     const dto: ObjectifDto = {
       ...this.form.value,
       id_User_Delegue: +this.form.value.id_User_Delegue,
+      type: +this.form.value.type,
+      periode: +this.form.value.periode,
       valeurRealisee: 0,
       ...(this.isEdit && this.editId ? { idObjectif: this.editId } : {})
     };

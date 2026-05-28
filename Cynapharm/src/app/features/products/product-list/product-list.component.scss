@@ -496,26 +496,50 @@
 
 .pag-info { font-size: 13px; font-weight: 500; color: #64748b; }
 
-.pag-controls { display: flex; gap: 8px; }
+.pag-controls { display: flex; align-items: center; gap: 6px; }
 
 .pag-btn {
-  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
   font-size: 13px;
   font-weight: 600;
-  border: 1px solid #e2e8f0;
-  border-radius: var(--radius-sm);
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
   background: #ffffff;
   color: #475569;
   cursor: pointer;
-  transition: all 0.2s;
+  font-family: inherit;
+  outline: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
 
-  &:hover:not(:disabled) { background: #f1f5f9; color: var(--c-primary-dark); }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-  &.active {
-    background: var(--c-primary-dark);
-    color: #ffffff;
-    border-color: var(--c-primary-dark);
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.2);
+    border-color: #0077b6;
   }
+
+  &:hover:not(:disabled):not(.active) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+  }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+// "Précédent" / "Suivant" — text, wider pill
+.pag-nav { padding: 0 16px; }
+
+// Numbered page buttons — fixed square
+.pag-num { width: 36px; padding: 0; }
+
+.pag-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+  cursor: default;
 }
 
 // ── Modal ─────────────────────────────────────────────

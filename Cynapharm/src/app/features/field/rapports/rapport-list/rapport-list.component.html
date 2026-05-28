@@ -4,8 +4,38 @@
       <h1>Rapports de visite</h1>
       <p class="subtitle">Tous les rapports soumis</p>
     </div>
-    <a routerLink="/field/rapports/new" class="btn btn-primary">+ Nouveau rapport</a>
+    @if (isDelegue) { <a routerLink="/field/rapports/new" class="btn btn-primary">+ Nouveau rapport</a> }
   </div>
+
+<!-- ═══ MODAL : Confirmer la suppression ═══════════════════ -->
+@if (showDeleteModal && deletingItem) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+
+      <div class="modal-icon-danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </div>
+
+      <h3 class="modal-title">Supprimer le rapport ?</h3>
+      <p class="modal-body">
+        Le rapport de la visite <strong>#{{ deletingItem.id_Visite }}</strong>
+        sera supprimé définitivement. Cette action est irréversible.
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelDelete()" [disabled]="deleting">Annuler</button>
+        <button class="btn-confirm-danger" (click)="confirmDelete()" [disabled]="deleting">
+          @if (deleting) { <span class="spinner-sm"></span> }
+          @else          { Supprimer }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
 
   <div *ngIf="loading" class="loading-wrap">
     <div class="spinner"></div><span>Chargement...</span>
@@ -16,9 +46,11 @@
     <button class="retry-btn" (click)="load()">Réessayer</button>
   </div>
 
+  <div *ngIf="successMsg && !loading" class="success-banner">{{ successMsg }}</div>
+
   <div *ngIf="!loading && !error && rapports.length === 0">
     <app-empty-state title="Aucun rapport" message="Aucun rapport disponible.">
-      <a routerLink="/field/rapports/new" class="btn btn-primary">Créer un rapport</a>
+      @if (isDelegue) { <a routerLink="/field/rapports/new" class="btn btn-primary">Créer un rapport</a> }
     </app-empty-state>
   </div>
 
@@ -32,34 +64,105 @@
           <th>Commentaire</th>
           <th>Résultat</th>
           <th>Validé</th>
+          <th>GPS</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let r of rapports">
-          <td>{{ getDelegrueName(r.id_User_Delegue) }}</td>
-          <td>
-            @if (visiteDetails[r.id_Visite]; as visite) {
-              {{ visiteDate(visite) | date:'dd/MM/yyyy' }} ({{ visiteTypeLabel(visite.type) }})
-            } @else {
-              Chargement…
-            }
-          </td>
-          <td>{{ r.dateRapport ? (r.dateRapport | date:'dd/MM/yyyy') : '—' }}</td>
-          <td class="truncate" [title]="r.commentaire">{{ r.commentaire }}</td>
-          <td>{{ r.resultat }}</td>
-          <td>
-            <span class="valid-badge"
-                  [class.valid]="r.estValide === true"
-                  [class.invalid]="r.estValide === false"
-                  [class.pending]="r.estValide == null">
-              {{ r.estValide === true ? 'Validé' : r.estValide === false ? 'Refusé' : 'En attente' }}
-            </span>
-          </td>
-          <td>
-            <a [routerLink]="['/field/rapports/edit', r.idRapport]" class="link-btn">Modifier</a>
-          </td>
-        </tr>
+        <ng-container *ngFor="let r of rapports">
+          <tr>
+            <td>{{ delegueName(r.id_User_Delegue) }}</td>
+            <td>
+              @if (visiteDetails[r.id_Visite]; as visite) {
+                {{ visiteDate(visite) | date:'dd/MM/yyyy' }} ({{ visiteTypeLabel(visite.type) }})
+              } @else {
+                Chargement...
+              }
+            </td>
+            <td>{{ r.date ? (r.date | date:'dd/MM/yyyy') : '-' }}</td>
+            <td class="truncate" [title]="r.commentaire">{{ r.commentaire }}</td>
+            <td>{{ r.resultat }}</td>
+            <td>
+              <span class="valid-badge" [class.valid]="isValidated(r)" [class.pending]="!isValidated(r)">
+                {{ isValidated(r) ? 'Validé' : 'Soumis' }}
+              </span>
+            </td>
+            <td>
+              @if (r.latitude && r.longitude) {
+                <span class="badge badge-success" [title]="r.latitude + ', ' + r.longitude">✅ Certifié</span>
+              } @else {
+                <span class="badge badge-warning">⚠️ Absent</span>
+              }
+            </td>
+            <td>
+              <div class="action-row">
+                <button type="button" class="act-btn view" (click)="toggleDetails(r)" [title]="expandedRapportId === r.idRapport ? 'Masquer' : 'Consulter'">
+                  <svg *ngIf="expandedRapportId !== r.idRapport" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <svg *ngIf="expandedRapportId === r.idRapport" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                </button>
+                @if ((isAdmin || isDelegue) && !isValidated(r)) {
+                  <a [routerLink]="['/field/rapports', r.idRapport, 'edit']" class="act-btn edit" title="Modifier">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </a>
+                }
+                @if (isSuperviseur && !isValidated(r)) {
+                  <button type="button" class="act-btn validate" (click)="validateReport(r)" [disabled]="!r.idRapport || isValidating(r)" [title]="isValidating(r) ? 'Validation...' : 'Valider'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  </button>
+                }
+                @if (isAdmin || isDelegue) {
+                  <button type="button" class="act-btn delete" (click)="deleteRapport(r)" title="Supprimer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="expandedRapportId === r.idRapport" class="detail-row">
+            <td colspan="8">
+              <div class="report-detail">
+                <div>
+                  <span class="detail-label">Commentaire</span>
+                  <p>{{ r.commentaire || 'Aucun commentaire.' }}</p>
+                </div>
+                <div class="detail-grid">
+                  <div>
+                    <span class="detail-label">Délégué</span>
+                    <strong>{{ delegueName(r.id_User_Delegue) }}</strong>
+                  </div>
+                  <div>
+                    <span class="detail-label">Résultat</span>
+                    <strong>{{ r.resultat }}</strong>
+                  </div>
+                  <div>
+                    <span class="detail-label">Statut</span>
+                    <strong>{{ isValidated(r) ? 'Validé par superviseur' : 'En attente de validation' }}</strong>
+                  </div>
+                </div>
+                @if (r.latitude && r.longitude) {
+                  <div class="gps-section">
+                    <span class="detail-label">📍 Localisation certifiée</span>
+                    <div class="gps-coords">
+                      <span class="coord">Lat : {{ r.latitude | number:'1.4-4' }}</span>
+                      <span class="coord">Lng : {{ r.longitude | number:'1.4-4' }}</span>
+                    </div>
+                    <a [href]="getGoogleMapsUrl(r)" target="_blank" rel="noopener" class="maps-link">
+                      Voir sur Google Maps →
+                    </a>
+                  </div>
+                } @else {
+                  <div class="gps-missing">
+                    ⚠️ Coordonnées GPS non disponibles
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
   </div>

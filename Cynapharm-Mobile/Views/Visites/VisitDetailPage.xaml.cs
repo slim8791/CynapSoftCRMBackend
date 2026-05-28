@@ -10,6 +10,13 @@ public partial class VisitDetailPage : ContentPage
         BindingContext = vm;
     }
 
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        if (BindingContext is VisitDetailViewModel vm)
+            _ = vm.InitCommand.ExecuteAsync(null);
+    }
+
     protected override bool OnBackButtonPressed()
     {
         var vm = BindingContext as VisitDetailViewModel;

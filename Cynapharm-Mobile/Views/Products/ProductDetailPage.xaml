@@ -14,9 +14,9 @@
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}" Padding="16,48,16,14">
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}" Padding="16,52,16,14">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40" />
+                <ColumnDefinition Width="44" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
@@ -40,7 +40,7 @@
             <!-- Title -->
             <Label Grid.Column="1"
                    Text="Fiche produit"
-                   FontSize="17" FontAttributes="Bold"
+                   FontSize="20" FontAttributes="Bold"
                    FontFamily="OpenSansSemibold"
                    TextColor="White"
                    HorizontalOptions="Center" VerticalOptions="Center" />
@@ -620,7 +620,7 @@
                                                 Padding="16,12"
                                                 VerticalOptions="Center">
                                             <VerticalStackLayout Spacing="0" HorizontalOptions="Center">
-                                                <Label Text="{Binding QuantiteDisponible}"
+                                                <Label Text="{Binding Quantite}"
                                                        FontAttributes="Bold" FontSize="22"
                                                        TextColor="White"
                                                        HorizontalOptions="Center" />
@@ -682,7 +682,7 @@
                                           ColumnSpacing="10"
                                           Padding="14,14">
                                         <VerticalStackLayout Grid.Column="0" Spacing="5" VerticalOptions="Center">
-                                            <Label Text="{Binding Titre}"
+                                            <Label Text="{Binding CodePromo}"
                                                    FontAttributes="Bold" FontSize="14"
                                                    FontFamily="OpenSansSemibold"
                                                    TextColor="{StaticResource TextPrimary}"
@@ -691,7 +691,7 @@
                                                 <Label Grid.Column="0" Text="🗓️" FontSize="11"
                                                        VerticalOptions="Center" />
                                                 <Label Grid.Column="1"
-                                                       Text="{Binding DateFin, StringFormat='Valable jusqu\'au {0:dd/MM/yyyy}'}"
+                                                       Text="{Binding DateExpiration, StringFormat='Valable jusqu\'au {0:dd/MM/yyyy}'}"
                                                        FontSize="12"
                                                        TextColor="{StaticResource TextSecondary}"
                                                        VerticalOptions="Center" />
@@ -706,7 +706,7 @@
                                                 Padding="14,10"
                                                 VerticalOptions="Center">
                                             <VerticalStackLayout HorizontalOptions="Center" Spacing="0">
-                                                <Label Text="{Binding RemisePourcentage, StringFormat='-{0}%'}"
+                                                <Label Text="{Binding Pourcentage, StringFormat='-{0}%'}"
                                                        FontAttributes="Bold" FontSize="18"
                                                        TextColor="White"
                                                        HorizontalOptions="Center" />

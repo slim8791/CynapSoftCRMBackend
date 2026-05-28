@@ -8,7 +8,7 @@
 
         public int Id_Produit { get; set; }
 
-        public string NumeroLot { get; set; }
+        public string NumeroLot { get; set; } = string.Empty;
 
         public DateTime DateExpiration { get; set; }
 

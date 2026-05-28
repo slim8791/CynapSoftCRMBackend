@@ -21,9 +21,25 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- Avatar + greeting + bell -->
-            <Grid Grid.Row="0" ColumnDefinitions="50,*,40" ColumnSpacing="12">
+            <!-- Hamburger + Avatar + greeting + bell -->
+            <Grid Grid.Row="0" ColumnDefinitions="38,50,*,38" ColumnSpacing="12">
+
+                <!-- Hamburger button (≡) — opens flyout drawer -->
                 <Border Grid.Column="0"
+                        BackgroundColor="#26FFFFFF"
+                        StrokeShape="RoundRectangle 12"
+                        Stroke="Transparent"
+                        HeightRequest="38" WidthRequest="38"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnHamburgerTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="≡" FontSize="22" FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+
+                <Border Grid.Column="1"
                         BackgroundColor="#33FFFFFF"
                         StrokeShape="RoundRectangle 25"
                         Stroke="White" StrokeThickness="1.5"
@@ -37,7 +53,7 @@
                            VerticalOptions="Center" />
                 </Border>
 
-                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                <VerticalStackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center">
                     <Label Text="{Binding UserDisplayName, StringFormat='Bonjour, {0} !'}"
                            FontSize="17" FontAttributes="Bold"
                            FontFamily="OpenSansSemibold"
@@ -46,7 +62,7 @@
                            TextColor="#CCF5FF" FontSize="11" />
                 </VerticalStackLayout>
 
-                <Border Grid.Column="2"
+                <Border Grid.Column="3"
                         BackgroundColor="#26FFFFFF"
                         StrokeShape="RoundRectangle 12"
                         Stroke="Transparent"
@@ -335,32 +351,41 @@
                     </Grid>
 
                     <VerticalStackLayout Spacing="10"
-                                         BindableLayout.ItemsSource="{Binding KpiItems}">
+                                         BindableLayout.ItemsSource="{Binding PerformanceItems}">
                         <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="field:Kpi">
+                            <DataTemplate x:DataType="field:PerformanceDto">
                                 <Border Style="{StaticResource CardStyle}">
-                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                                        <VerticalStackLayout Grid.Column="0" Spacing="3">
-                                            <Label Text="{Binding Indicateur}"
+                                    <VerticalStackLayout Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding TypeLabel}"
                                                    FontAttributes="Bold" FontSize="14"
                                                    FontFamily="OpenSansSemibold"
                                                    TextColor="{StaticResource TextPrimary}" />
-                                            <Label Text="{Binding Periode}"
-                                                   FontSize="11"
-                                                   TextColor="{StaticResource TextSecondary}" />
-                                        </VerticalStackLayout>
-                                        <Border Grid.Column="1"
-                                                BackgroundColor="{StaticResource PrimaryLight}"
-                                                StrokeShape="RoundRectangle 12"
-                                                Stroke="Transparent"
-                                                Padding="14,10"
-                                                VerticalOptions="Center">
-                                            <Label Text="{Binding Valeur, StringFormat='{0:N0}'}"
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Pourcentage, StringFormat='{0:N0}%'}"
                                                    TextColor="{StaticResource Primary}"
-                                                   FontAttributes="Bold" FontSize="20"
-                                                   HorizontalOptions="Center" />
-                                        </Border>
-                                    </Grid>
+                                                   FontAttributes="Bold" FontSize="16"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                            <Border Grid.Column="0"
+                                                    BackgroundColor="{StaticResource BorderColor}"
+                                                    StrokeShape="RoundRectangle 4"
+                                                    HeightRequest="8"
+                                                    VerticalOptions="Center">
+                                                <BoxView BackgroundColor="{StaticResource Primary}"
+                                                         CornerRadius="4"
+                                                         HorizontalOptions="Start"
+                                                         WidthRequest="{Binding Pourcentage}" />
+                                            </Border>
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding ValeurRealisee, StringFormat='{0}'}"
+                                                   FontSize="11"
+                                                   TextColor="{StaticResource TextSecondary}"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                    </VerticalStackLayout>
                                 </Border>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
@@ -369,7 +394,7 @@
                     <Border BackgroundColor="{StaticResource SurfaceBackground}"
                             StrokeShape="RoundRectangle 14" Stroke="{StaticResource BorderColor}"
                             Padding="20,24"
-                            IsVisible="{Binding KpiItems.Count, Converter={StaticResource InvertedBoolConverter}}">
+                            IsVisible="{Binding PerformanceItems.Count, Converter={StaticResource InvertedBoolConverter}}">
                         <VerticalStackLayout HorizontalOptions="Center" Spacing="10">
                             <Border BackgroundColor="{StaticResource AccentLight}"
                                     StrokeShape="RoundRectangle 40" Stroke="Transparent"

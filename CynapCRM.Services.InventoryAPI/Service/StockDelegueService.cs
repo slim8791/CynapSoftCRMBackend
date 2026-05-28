@@ -22,7 +22,7 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
             var stocks = await _db.StocksDelegues
                             .AsNoTracking()
-                            .Where(s => !s.IsDeleted)
+                            .Where(s => !s.IsDeleted && EF.Property<string>(s, "TypeStock") == "Standard")
                             .OrderByDescending(s => s.DateCreation)
                             .Skip((pageNumber - 1) * pageSize)
                             .Take(pageSize)
@@ -41,6 +41,7 @@ namespace CynapCRM.Services.InventoryAPI.Service
                     Id_User_Delegue = dto.Id_User_Delegue,
                     Id_Produit = dto.Id_Produit,
                     NumeroLot = dto.NumeroLot,
+                    DateExpiration = dto.DateExpiration,
                     QteDisponible = dto.QteDisponible,
                     QteReservee = 0,
                     DateCreation = DateTime.UtcNow,
@@ -55,8 +56,11 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
                 if (stock == null) return null;
 
-                stock.QteDisponible = dto.QteDisponible;
-                stock.NumeroLot = dto.NumeroLot;
+                stock.QteDisponible   = dto.QteDisponible;
+                stock.NumeroLot       = dto.NumeroLot;
+                stock.DateExpiration  = dto.DateExpiration;
+                stock.Id_User_Delegue = dto.Id_User_Delegue;
+                stock.Id_Produit      = dto.Id_Produit;
             }
 
             await _db.SaveChangesAsync();
@@ -79,7 +83,8 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
             var stocks = await _db.StocksDelegues
                             .AsNoTracking()
-                            .Where(s => s.Id_User_Delegue == idDelegue && !s.IsDeleted)
+                            .Where(s => s.Id_User_Delegue == idDelegue && !s.IsDeleted
+                                     && EF.Property<string>(s, "TypeStock") == "Standard")
                             .OrderByDescending(s => s.DateCreation)
                             .ToListAsync();
 
@@ -90,7 +95,8 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
             var stocks = await _db.StocksDelegues
                             .AsNoTracking()
-                            .Where(s => s.Id_Produit == idProduit && !s.IsDeleted)
+                            .Where(s => s.Id_Produit == idProduit && !s.IsDeleted
+                                     && EF.Property<string>(s, "TypeStock") == "Standard")
                             .ToListAsync();
 
             return _mapper.Map<IEnumerable<StockDelegueDto>>(stocks);
@@ -113,7 +119,7 @@ namespace CynapCRM.Services.InventoryAPI.Service
             if (type != StockType.Delegue) return false;
 
             var stock = await _db.StocksDelegues
-                .FirstOrDefaultAsync(s => s.Id_stock == idStock);
+                .FirstOrDefaultAsync(s => s.Id_stock == idStock && !s.IsDeleted);
             if (stock == null) return false;
 
             // Règle métier : ne pas supprimer un stock avec quantité restante

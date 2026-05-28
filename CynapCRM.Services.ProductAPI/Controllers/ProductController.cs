@@ -114,6 +114,12 @@ namespace CynapCRM.Services.ProductAPI.Controllers
                 _response.Message = "Produit enregistré avec succès.";
                 return Ok(_response);
             }
+            catch (ArgumentException ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return BadRequest(_response);
+            }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;

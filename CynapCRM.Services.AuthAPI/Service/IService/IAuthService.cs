@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.AuthAPI.Models;
+using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Models.Dto;
 
 namespace CynapCRM.Services.AuthAPI.Service.IService
@@ -20,6 +20,7 @@ Task<ResponseDto> GeneratePasswordResetToken(string email);
         Task<UserDto?> GetUserByIdAsync(int id);
         Task<IEnumerable<UserDto>> GetDisabledUsersAsync();
         Task<IEnumerable<UserDto>> SearchUsersAsync(string keyword, bool? isActive = null);
+        Task<IEnumerable<UserDto>> GetUsersByRoleAsync(string role);
     }
 
     

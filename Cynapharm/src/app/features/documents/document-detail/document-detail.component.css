@@ -13,3 +13,9 @@
 .detail-row:last-child{border-bottom:none}
 .detail-row span{color:#6b7280}
 .detail-row strong{color:#0a1628;text-align:right}
+
+@media print {
+  .back, .btn-p { display: none !important; }
+  .pw { padding: 0; background: white; }
+  .detail-card { box-shadow: none; border: 1px solid #ccc; }
+}

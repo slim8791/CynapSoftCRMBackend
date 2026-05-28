@@ -118,7 +118,7 @@ namespace CynapCRM.Services.InventoryAPI.Service
                 {
                     Id_Stock = idStockSource,
                     TypeMovement = "Transfer-Out",
-                    Quantite = qte,
+                    Quantite = -qte,
                     DateMovement = DateTime.UtcNow,
                     Description = $"Transfert vers stock {idStockDestination}"
                 });

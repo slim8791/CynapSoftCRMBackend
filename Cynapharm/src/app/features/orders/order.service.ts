@@ -60,7 +60,7 @@ export interface LigneCommandeDto {
   Id_Commande:  number;
   Quantite:     number;
   Remise:       number;
-  NumeroLot:    string;
+  NumeroLot:    string | null;
   PrixUnitaire: number;
   SousTotal?:   number;
 }
@@ -147,7 +147,7 @@ export class OrderService {
       Id_Commande:  l.Id_Commande  ?? l.id_Commande  ?? l.idCommande  ?? 0,
       Quantite:     l.Quantite     ?? l.quantite     ?? 0,
       Remise:       l.Remise       ?? l.remise       ?? 0,
-      NumeroLot:    l.NumeroLot    ?? l.numeroLot    ?? '',
+      NumeroLot:    l.NumeroLot    || l.numeroLot    || null,
       PrixUnitaire: l.PrixUnitaire ?? l.prixUnitaire ?? 0,
       SousTotal:    l.SousTotal    ?? l.sousTotal    ?? undefined,
     };
@@ -254,5 +254,17 @@ export class OrderService {
 
   deleteOrder(id: number): Observable<any> {
     return this.api.delete<any>(`${this.base}/${id}`);
+  }
+
+  assignLot(ligne: LigneCommandeDto, numeroLot: string): Observable<any> {
+    return this.api.post<any>(`${this.base}/lignes`, {
+      Id_Ligne:     ligne.Id_Ligne,
+      Id_Commande:  ligne.Id_Commande,
+      Id_Produit:   ligne.Id_Produit,
+      Quantite:     ligne.Quantite,
+      Remise:       ligne.Remise,
+      PrixUnitaire: ligne.PrixUnitaire,
+      NumeroLot:    numeroLot,
+    });
   }
 }

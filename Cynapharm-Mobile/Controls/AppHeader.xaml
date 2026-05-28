@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Cynapharm_Mobile.Controls.AppHeader"
+             x:Name="root">
+
+    <Grid BackgroundColor="{Binding HeaderBackground, Source={x:Reference root}}"
+          Padding="16,52,16,14">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="44" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="44" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ── Left: Back button ─────────────────────────────────────────── -->
+        <Border Grid.Column="0"
+                IsVisible="{Binding ShowBackButton, Source={x:Reference root}}"
+                BackgroundColor="#26FFFFFF"
+                StrokeShape="RoundRectangle 12"
+                Stroke="Transparent"
+                HeightRequest="38" WidthRequest="38"
+                VerticalOptions="Center"
+                HorizontalOptions="Start">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnBackTapped" />
+            </Border.GestureRecognizers>
+            <Label Text="‹" FontSize="24" FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+        </Border>
+
+        <!-- ── Center: Title + optional Subtitle ────────────────────────── -->
+        <VerticalStackLayout Grid.Column="1"
+                             Spacing="2"
+                             VerticalOptions="Center">
+            <Label Text="{Binding Title, Source={x:Reference root}}"
+                   FontSize="20" FontAttributes="Bold"
+                   FontFamily="OpenSansSemibold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   LineBreakMode="TailTruncation" />
+            <Label Text="{Binding Subtitle, Source={x:Reference root}}"
+                   FontSize="12" TextColor="#CCF5FF"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   IsVisible="{Binding HasSubtitle, Source={x:Reference root}}" />
+        </VerticalStackLayout>
+
+        <!-- ── Right: Hamburger OR custom icon ──────────────────────────── -->
+        <Border Grid.Column="2"
+                IsVisible="{Binding ShowRightButton, Source={x:Reference root}}"
+                BackgroundColor="#26FFFFFF"
+                StrokeShape="RoundRectangle 12"
+                Stroke="Transparent"
+                HeightRequest="38" WidthRequest="38"
+                VerticalOptions="Center"
+                HorizontalOptions="End">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnRightTapped" />
+            </Border.GestureRecognizers>
+            <Label Text="{Binding RightButtonGlyph, Source={x:Reference root}}"
+                   FontFamily="{Binding RightButtonFontFamily, Source={x:Reference root}}"
+                   FontSize="22"
+                   TextColor="White"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+        </Border>
+
+    </Grid>
+</ContentView>

@@ -103,13 +103,13 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     b.Property<DateTime>("DateRapport")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("IdSuperviseurValidateur")
+                        .HasColumnType("int");
+
                     b.Property<int>("Id_User_Delegue")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_Visite")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IdSuperviseurValidateur")
                         .HasColumnType("int");
 
                     b.Property<double?>("Latitude")
@@ -117,6 +117,9 @@ namespace CynapCRM.Services.FieldAPI.Migrations
 
                     b.Property<double?>("Longitude")
                         .HasColumnType("float");
+
+                    b.Property<string>("ProduitsDiscutes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Resultat")
                         .IsRequired()
@@ -140,8 +143,9 @@ namespace CynapCRM.Services.FieldAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Region"));
 
-                    b.Property<int>("CodePostal")
-                        .HasColumnType("int");
+                    b.Property<string>("CodePostal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Id_User_Delegue")
                         .HasColumnType("int");
