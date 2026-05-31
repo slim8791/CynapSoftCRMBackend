@@ -211,10 +211,39 @@ public partial class MyStockViewModel : BaseViewModel
         int? idPharmacien = recipientType == "Pharmacien" ? recipientId : (int?)null;
         // ─────────────────────────────────────────────────────────────────────
 
+        // ── Ask for quantity ──────────────────────────────────────────────────
+        var qtyStr = await Shell.Current.DisplayPromptAsync(
+            "Quantité à distribuer",
+            $"Stock disponible : {item.QuantiteRestante} unité(s)\nCombien voulez-vous distribuer à {selectedName} ?",
+            accept: "Confirmer",
+            cancel: "Annuler",
+            placeholder: "ex : 2",
+            maxLength: 4,
+            keyboard: Keyboard.Numeric,
+            initialValue: "1");
+
+        if (qtyStr is null) return; // Annuler pressed
+
+        if (!int.TryParse(qtyStr.Trim(), out var quantite) || quantite <= 0)
+        {
+            await Shell.Current.DisplayAlert("Quantité invalide", "Veuillez saisir un nombre entier supérieur à 0.", "OK");
+            return;
+        }
+
+        if (quantite > item.QuantiteRestante)
+        {
+            await Shell.Current.DisplayAlert(
+                "Stock insuffisant",
+                $"Vous ne pouvez pas distribuer {quantite} unité(s). Stock restant : {item.QuantiteRestante}.",
+                "OK");
+            return;
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         ClearError();
 
         // B11: use StockId (lot-specific) not ProductId so the correct lot is decremented
-        var success = await _localDb.DeductStockByStockIdAsync(item.StockId, 1);
+        var success = await _localDb.DeductStockByStockIdAsync(item.StockId, quantite);
         if (!success)
         {
             ErrorMessage = "⚠️ Stock insuffisant pour ce lot.";
@@ -222,7 +251,7 @@ public partial class MyStockViewModel : BaseViewModel
         }
 
         var src = _echantillonStock.FirstOrDefault(s => s.Id == item.StockId);
-        if (src != null) src.QuantiteRestante = Math.Max(0, src.QuantiteRestante - 1);
+        if (src != null) src.QuantiteRestante = Math.Max(0, src.QuantiteRestante - quantite);
 
         RefreshDisplayedList();
 
@@ -231,14 +260,14 @@ public partial class MyStockViewModel : BaseViewModel
             try
             {
                 await _inventoryService.PostDistributionAsync(
-                    item.StockId, 1, item.NumeroLot, idMedecin, idPharmacien);
+                    item.StockId, quantite, item.NumeroLot, idMedecin, idPharmacien);
             }
             catch (Exception ex)
             {
                 // ── Roll back the optimistic local decrement ──────────────────
                 var rollbackSrc = _echantillonStock.FirstOrDefault(s => s.Id == item.StockId);
-                if (rollbackSrc != null) rollbackSrc.QuantiteRestante += 1;
-                await _localDb.IncrementStockByStockIdAsync(item.StockId, 1);
+                if (rollbackSrc != null) rollbackSrc.QuantiteRestante += quantite;
+                await _localDb.IncrementStockByStockIdAsync(item.StockId, quantite);
                 RefreshDisplayedList();
 
                 Logger?.LogError($"Distribution POST failed for stock {item.StockId}", ex, nameof(MyStockViewModel));
@@ -254,7 +283,7 @@ public partial class MyStockViewModel : BaseViewModel
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
             var snackbar = Snackbar.Make(
-                $"✅ 1 unité de \"{item.ProductNom}\" distribuée à {recipientType} — {selectedName}",
+                $"✅ {quantite} unité(s) de \"{item.ProductNom}\" distribuée(s) à {recipientType} — {selectedName}",
                 duration: TimeSpan.FromSeconds(3));
             await snackbar.Show();
         });
