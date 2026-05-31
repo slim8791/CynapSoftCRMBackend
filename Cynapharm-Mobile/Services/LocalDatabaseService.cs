@@ -1,3 +1,4 @@
+using Cynapharm_Mobile.Models;
 using Cynapharm_Mobile.Models.Common;
 using Cynapharm_Mobile.Models.Inventory;
 using Cynapharm_Mobile.Models.Products;
@@ -210,8 +211,8 @@ public class LocalDatabaseService
             ProductId           = p.ProductId ?? 0,
             Titre               = p.Titre,
             RemisePourcentage   = (double)(p.RemisePourcentage ?? 0),
-            DateDebutTicks      = ((DateTime)p.DateDebut).Ticks,
-            DateFinTicks        = ((DateTime)p.DateFin).Ticks
+            DateDebutTicks      = p.DateDebut.Ticks,
+            DateFinTicks        = p.DateFin is DateTime df ? df.Ticks : 0L
         }));
     }
 
@@ -279,4 +280,5 @@ public class LocalDatabaseService
             .Take(count)
             .ToListAsync();
     }
+
 }

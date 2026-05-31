@@ -21,6 +21,7 @@ Task<ResponseDto> GeneratePasswordResetToken(string email);
         Task<IEnumerable<UserDto>> GetDisabledUsersAsync();
         Task<IEnumerable<UserDto>> SearchUsersAsync(string keyword, bool? isActive = null);
         Task<IEnumerable<UserDto>> GetUsersByRoleAsync(string role);
+        Task<IEnumerable<UserDto>> GetUsersByRegionAsync(int idRegion);
     }
 
     

@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.FieldAPI.Models.Dto;
+using CynapCRM.Services.FieldAPI.Models.Dto;
 using CynapCRM.Services.FieldAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -162,7 +162,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
         }
 
         [HttpDelete("{idVisite:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> DeleteVisite(int idVisite)
         {
             try
@@ -241,6 +241,38 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     return BadRequest(_response);
                 }
                 _response.Message = "Visite complétée avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+        [HttpPut("{idVisite:int}/start")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> StartVisite(int idVisite)
+        {
+            try
+            {
+                if (idVisite <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "ID de visite invalide.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _visiteService.StartVisiteAsync(idVisite);
+                if (result == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Impossible de démarrer la visite (introuvable, déjà démarrée ou terminée).";
+                    return BadRequest(_response);
+                }
+
+                _response.Result = result;
+                _response.Message = "Visite démarrée avec succès.";
                 return Ok(_response);
             }
             catch (Exception ex)

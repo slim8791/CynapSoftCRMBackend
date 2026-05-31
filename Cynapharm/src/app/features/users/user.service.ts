@@ -11,6 +11,7 @@ export interface UserDto {
   adresse: string;
   role: string;
   isDeleted: boolean;
+  idRegion?: number;
 }
 
 @Injectable({
@@ -124,7 +125,28 @@ export class UserService {
   }
 
   getDisabledUsers(): Observable<any> {
-    return this.apiService.get<any>(`${this.baseUrl}/users/disabled`);
+    return this.apiService.get<any>(`${this.baseUrl}/disabled-users`);
+  }
+
+  getUsersByRegion(idRegion: number): Observable<any[]> {
+    return this.apiService.get<any>(`${this.baseUrl}/users/by-region/${idRegion}`).pipe(
+      map(r => r?.Result ?? r?.result ?? r ?? []),
+      catchError(() => of([]))
+    );
+  }
+
+  updateProfile(payload: {
+    email:        string;
+    idRegion?:    number | null;
+    name?:        string;
+    phoneNumber?: string;
+    adresse?:     string;
+  }): Observable<any> {
+    return this.apiService.put<any>(`${this.baseUrl}/update-profile`, payload);
+  }
+
+  updateUserById(id: number, payload: any): Observable<any> {
+    return this.apiService.put<any>(`${this.baseUrl}/users/${id}`, payload);
   }
 }
 

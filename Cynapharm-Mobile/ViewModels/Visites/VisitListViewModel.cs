@@ -127,12 +127,12 @@ public partial class VisitListViewModel : BaseViewModel
     private async Task GoToDetailAsync(Visite? visite)
     {
         if (visite == null) return;
-        await Shell.Current.GoToAsync($"//visits/detail?visiteId={visite.Id}");
+        await Shell.Current.GoToAsync($"///visits/detail?visiteId={visite.Id}");
     }
 
     [RelayCommand]
     private async Task CreateVisitAsync()
-        => await Shell.Current.GoToAsync("//visits/detail");
+        => await Shell.Current.GoToAsync("///visits/detail");
 
     [RelayCommand]
     private void SetStatusFilter(string status) => FilterStatus = status;

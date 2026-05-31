@@ -1,6 +1,7 @@
 using CommunityToolkit.Maui;
 using Cynapharm_Mobile.Services;
 using Cynapharm_Mobile.ViewModels.Auth;
+using Cynapharm_Mobile.ViewModels.Clients;
 using Cynapharm_Mobile.ViewModels.Dashboard;
 using Cynapharm_Mobile.ViewModels.Documents;
 using Cynapharm_Mobile.ViewModels.Objectifs;
@@ -13,6 +14,7 @@ using Cynapharm_Mobile.ViewModels.Rapports;
 using Cynapharm_Mobile.ViewModels.Stock;
 using Cynapharm_Mobile.ViewModels.Visites;
 using Cynapharm_Mobile.Views.Auth;
+using Cynapharm_Mobile.Views.Clients;
 using Cynapharm_Mobile.Views.Dashboard;
 using Cynapharm_Mobile.Views.Documents;
 using Cynapharm_Mobile.Views.Objectifs;
@@ -124,6 +126,7 @@ public static class MauiProgram
         builder.Services.AddTransient<VisiteService>();
         builder.Services.AddTransient<PlanningService>();
         builder.Services.AddTransient<KpiService>();
+        builder.Services.AddTransient<FieldService>();
         builder.Services.AddTransient<DocumentService>();
         builder.Services.AddTransient<UserService>();
 
@@ -149,6 +152,9 @@ public static class MauiProgram
         builder.Services.AddTransient<ProfileViewModel>();
         builder.Services.AddTransient<EditProfileViewModel>();
         builder.Services.AddTransient<ChangePasswordViewModel>();
+        builder.Services.AddTransient<MesClientsViewModel>();
+        builder.Services.AddTransient<ClientFormViewModel>();
+        builder.Services.AddTransient<ClientDetailViewModel>();
 
         // ── Views ─────────────────────────────────────────────────────────────
         builder.Services.AddTransient<LoginPage>();
@@ -172,6 +178,9 @@ public static class MauiProgram
         builder.Services.AddTransient<ProfilePage>();
         builder.Services.AddTransient<EditProfilePage>();
         builder.Services.AddTransient<ChangePasswordPage>();
+        builder.Services.AddTransient<MesClientsPage>();
+        builder.Services.AddTransient<ClientFormPage>();
+        builder.Services.AddTransient<ClientDetailPage>();
         builder.Services.AddTransient<AppShell>();
 
 #if DEBUG

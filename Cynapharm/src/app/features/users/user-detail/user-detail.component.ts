@@ -1,14 +1,15 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
 
 import { UserService } from '../user.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { RapportService, RapportDto } from '../../field/rapports/services/rapport.service';
 import { InventoryBusinessService, StockSummaryDto } from '../../inventory/stocks/services/inventory-business.service';
 import { StockMovementService, StockMovementDto } from '../../inventory/movements/services/stock-movement.service';
+import { RegionService } from '../../field/regions/services/region.service';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
@@ -24,6 +25,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
   user: any = null;
   loading = true;
   error   = '';
+  regionName = '—';
   activeTab: 'info' | 'rapports' | 'mouvements' = 'info';
   rapports: RapportDto[] = [];
   loadingRapports = false;
@@ -48,6 +50,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
     private inventoryBizSvc: InventoryBusinessService,
     private movementSvc: StockMovementService,
     private toastService: ToastService,
+    private regionSvc: RegionService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -87,10 +90,14 @@ export class UserDetailComponent implements OnInit, OnDestroy {
             isDeleted:   raw.isDeleted   ?? raw.IsDeleted   ?? false
           };
           this.loading = false;
-          if ((this.user?.role ?? '').toUpperCase() === 'DELEGUE') {
+          const role = (this.user?.role ?? '').toUpperCase();
+          if (role === 'DELEGUE') {
             this.loadRapports();
             this.loadStockSummary();
             this.loadMovements();
+          }
+          if ((role === 'DELEGUE' || role === 'SUPERVISEUR') && this.user?.idRegion) {
+            this.loadRegionName(this.user.idRegion);
           }
           this.cdr.markForCheck();
         },
@@ -99,6 +106,19 @@ export class UserDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.cdr.markForCheck();
         }
+      });
+  }
+
+  private loadRegionName(idRegion: number): void {
+    this.regionSvc.getAll()
+      .pipe(catchError(() => of([])), takeUntil(this.destroy$))
+      .subscribe(regions => {
+        const found = regions.find(r => {
+          const id = (r as any).Id_Region ?? r.id_Region;
+          return id === idRegion;
+        });
+        this.regionName = (found as any)?.NomRegion ?? found?.nomRegion ?? '—';
+        this.cdr.markForCheck();
       });
   }
 

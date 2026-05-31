@@ -151,5 +151,7 @@
             </CollectionView>
         </RefreshView>
 
+        <controls:AppLoader Grid.RowSpan="4" />
+
     </Grid>
 </ContentPage>

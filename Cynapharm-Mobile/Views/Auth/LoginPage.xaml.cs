@@ -15,15 +15,20 @@ public partial class LoginPage : ContentPage
         BindingContext = vm;
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+    }
+
     private void EmailEntry_Focused(object sender, FocusEventArgs e)
-        => EmailUnderline.Color = ActiveBorder;
+        => EmailUnderline.BackgroundColor = ActiveBorder;
 
     private void EmailEntry_Unfocused(object sender, FocusEventArgs e)
-        => EmailUnderline.Color = InactiveBorder;
+        => EmailUnderline.BackgroundColor = InactiveBorder;
 
     private void PasswordEntry_Focused(object sender, FocusEventArgs e)
-        => PasswordUnderline.Color = ActiveBorder;
+        => PasswordUnderline.BackgroundColor = ActiveBorder;
 
     private void PasswordEntry_Unfocused(object sender, FocusEventArgs e)
-        => PasswordUnderline.Color = InactiveBorder;
+        => PasswordUnderline.BackgroundColor = InactiveBorder;
 }

@@ -186,9 +186,39 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <!-- ── Démarrer la visite ────────────────────────────────── -->
+                <Button Text="▶  Démarrer la visite"
+                        Command="{Binding StartVisiteCommand}"
+                        IsVisible="{Binding CanStartVisite}"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        CornerRadius="12"
+                        HeightRequest="50"
+                        FontSize="15"
+                        FontAttributes="Bold"
+                        Margin="0,4,0,0" />
+
+                <!-- ── Heure de début indicator (visible after start) ──── -->
+                <Border IsVisible="{Binding IsStarted}"
+                        BackgroundColor="#F0FDF4"
+                        StrokeShape="RoundRectangle 10"
+                        Stroke="#86EFAC" StrokeThickness="1"
+                        Padding="14,10">
+                    <HorizontalStackLayout Spacing="8"
+                                           HorizontalOptions="Center">
+                        <Label Text="✓ Visite démarrée à"
+                               FontSize="13"
+                               TextColor="#15803D" />
+                        <Label Text="{Binding HeurDebutLabel}"
+                               FontSize="13"
+                               FontAttributes="Bold"
+                               TextColor="#15803D" />
+                    </HorizontalStackLayout>
+                </Border>
+
                 <!-- ── Rapport action — three mutually exclusive states ──────── -->
 
-                <!-- STATE 1: no rapport yet → CREATE -->
+                <!-- STATE 1: no rapport yet AND visite started → CREATE -->
                 <Border BackgroundColor="{StaticResource PrimaryLight}"
                         StrokeShape="RoundRectangle 14"
                         Stroke="{StaticResource Primary}" StrokeThickness="1"
@@ -312,5 +342,6 @@
                     IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
         </Grid>
 
+        <controls:AppLoader Grid.RowSpan="3" />
     </Grid>
 </ContentPage>

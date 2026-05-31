@@ -15,13 +15,27 @@ public partial class DashboardViewModel : BaseViewModel
     private readonly KpiService       _kpiService;
     private readonly InventoryService _inventoryService;
 
-    [ObservableProperty] private string          _userDisplayName = string.Empty;
-    [ObservableProperty] private string          _userRole        = string.Empty;
+    [ObservableProperty] private string          _userDisplayName  = string.Empty;
+    [ObservableProperty] private string          _userRole         = string.Empty;
+    [ObservableProperty] private string          _greetingInitials = "?";
     [ObservableProperty] private int             _todayVisitCount;
     [ObservableProperty] private bool            _isSuperviseur;
     [ObservableProperty] private bool            _isDelegue;
     [ObservableProperty] private double          _tauxConversion;
     [ObservableProperty] private StockSummaryDto? _stockSummary;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStockFaible), nameof(StockFaibleLabel))]
+    private int _stocksFaibles = 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasRuptureStock), nameof(RuptureStockLabel))]
+    private int _stocksVides = 0;
+
+    public bool   HasStockFaible  => StocksFaibles > 0;
+    public bool   HasRuptureStock => StocksVides   > 0;
+    public string StockFaibleLabel  => $"⚠️ {StocksFaibles} produit(s) en stock faible";
+    public string RuptureStockLabel => $"⚠️ {StocksVides} produit(s) en rupture de stock";
 
     public ObservableCollection<Objectif>         ObjectifItems { get; } = new();
     public ObservableCollection<PerformanceDto>   PerformanceItems { get; } = new();
@@ -40,12 +54,23 @@ public partial class DashboardViewModel : BaseViewModel
 
     private async Task InitializeAsync()
     {
-        var name = await SecureStorage.GetAsync(StorageKeys.UserName);
+        var name = await SecureStorage.GetAsync(StorageKeys.UserName) ?? string.Empty;
         var role = await SecureStorage.GetAsync(StorageKeys.UserRole);
-        UserDisplayName = name ?? "Utilisateur";
-        UserRole        = role ?? string.Empty;
-        IsSuperviseur   = UserRole == "SUPERVISEUR";
-        IsDelegue       = UserRole == "DELEGUE";
+
+        // First word of name as the greeting ("Bonjour, Ahmed !")
+        UserDisplayName = name.Split(' ').FirstOrDefault() ?? (name.Length > 0 ? name : "Utilisateur");
+
+        // Two-letter initials (or one if single-word name, or "?" if empty)
+        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        GreetingInitials = parts.Length >= 2
+            ? $"{parts[0][0]}{parts[1][0]}".ToUpperInvariant()
+            : parts.Length == 1
+                ? parts[0][0].ToString().ToUpperInvariant()
+                : "?";
+
+        UserRole      = role ?? string.Empty;
+        IsSuperviseur = UserRole == "SUPERVISEUR";
+        IsDelegue     = UserRole == "DELEGUE";
     }
 
     [RelayCommand]
@@ -97,6 +122,11 @@ public partial class DashboardViewModel : BaseViewModel
                         var taux  = await _kpiService.GetTauxConversionAsync(userId, debut, today);
                         TauxConversion = taux ?? 0;
                         StockSummary = await _inventoryService.GetStockSummaryAsync(userId);
+                        if (StockSummary != null)
+                        {
+                            StocksFaibles = StockSummary.StocksFaibles;
+                            StocksVides   = StockSummary.StocksVides;
+                        }
                     }
                 }
             }

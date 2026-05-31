@@ -2,10 +2,12 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil, filter, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subject, forkJoin, of } from 'rxjs';
+import { takeUntil, filter, debounceTime, distinctUntilChanged, switchMap, catchError, map } from 'rxjs/operators';
 
 import { UserService } from '../user.service';
+import { AuthService, UserRole } from '../../../core/services/auth.service';
+import { RegionService, RegionDto } from '../../field/regions/services/region.service';
 
 type StatusFilter = 'all' | 'active' | 'disabled';
 type RoleFilter   = 'all' | 'ADMIN' | 'SUPERVISEUR' | 'DELEGUE' | 'MEDECIN' | 'CLIENT';
@@ -24,13 +26,17 @@ export class UserListComponent implements OnInit, OnDestroy {
   filteredUsers: any[] = [];
   loading  = false;
   error    = '';
+  currentRegion: RegionDto | null = null;
 
   // ── Recherche & filtres ──────────────────────────────
   searchTerm:   string       = '';
   statusFilter: StatusFilter = 'active';
   roleFilter:   RoleFilter   = 'all';
 
-  readonly ROLES: RoleFilter[] = ['ADMIN', 'SUPERVISEUR', 'DELEGUE', 'MEDECIN', 'CLIENT'];
+  get ROLES(): RoleFilter[] {
+    if (this.isSuperviseur) return ['DELEGUE', 'CLIENT'];
+    return ['ADMIN', 'SUPERVISEUR', 'DELEGUE', 'MEDECIN', 'CLIENT'];
+  }
 
   // ── Pagination ───────────────────────────────────────
   currentPage = 1;
@@ -47,6 +53,8 @@ export class UserListComponent implements OnInit, OnDestroy {
 
   constructor(
     private userService: UserService,
+    private authSvc: AuthService,
+    private regionSvc: RegionService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {
@@ -55,6 +63,24 @@ export class UserListComponent implements OnInit, OnDestroy {
       filter((e: any) => e.url === '/users'),
       takeUntil(this.destroy$)
     ).subscribe(() => this.loadUsers());
+  }
+
+  // ── Role-based access ──────────────────────────────────
+
+  get isAdmin(): boolean {
+    return this.authSvc.getUserRole()?.toUpperCase() === 'ADMIN';
+  }
+
+  get isSuperviseur(): boolean {
+    return this.authSvc.getUserRole()?.toUpperCase() === 'SUPERVISEUR';
+  }
+
+  get canCreate(): boolean {
+    return this.isAdmin || this.isSuperviseur;
+  }
+
+  get canEdit(): boolean {
+    return this.isAdmin || this.isSuperviseur;
   }
 
   ngOnInit(): void {
@@ -86,6 +112,11 @@ export class UserListComponent implements OnInit, OnDestroy {
     this.error   = '';
     this.cdr.markForCheck();
 
+    if (this.isSuperviseur) {
+      this.loadUsersByRole();
+      return;
+    }
+
     this.userService.getUsers()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -104,6 +135,37 @@ export class UserListComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  private loadUsersByRole(): void {
+    const userId = this.authSvc.getUserId();
+
+    this.regionSvc.getBySuperviseur(userId).pipe(
+      switchMap(region => {
+        this.currentRegion = region;
+        if (region?.id_Region) {
+          return this.userService.getUsersByRegion(region.id_Region);
+        }
+        return forkJoin([
+          this.userService.getUsersByRole('DELEGUE'),
+          this.userService.getUsersByRole('CLIENT')
+        ]).pipe(map(([d, c]: [any[], any[]]) => [...d, ...c]));
+      }),
+      catchError(() => of([])),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (users: any[]) => {
+        this.allUsers = users.map((u: any) => this.normalizeUser(u));
+        this.applyStatusFilter();
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        this.error   = this.resolveError(err);
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   // ── Filtres combinés : statut + rôle (frontend) ──────
@@ -230,7 +292,8 @@ export class UserListComponent implements OnInit, OnDestroy {
       phoneNumber: u.phoneNumber ?? u.PhoneNumber ?? '',
       adresse:     u.adresse     ?? u.Adresse     ?? '',
       isDeleted:   u.isDeleted   ?? u.IsDeleted   ?? false,
-      typeClient:  u.typeClient  ?? u.TypeClient  ?? null
+      typeClient:  u.typeClient  ?? u.TypeClient  ?? null,
+      idRegion:    u.idRegion    ?? u.IdRegion     ?? null
     };
   }
 

@@ -74,9 +74,9 @@ export class DistributionListComponent implements OnInit, OnDestroy {
     this.userSvc.getAllUsers().pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
-          const users = res?.result ?? res?.Result ?? res ?? [];
+          const users = this.userSvc.unwrapList(res);
 
-          // Build ONE global cache with ALL users so every id resolves regardless of role
+          // Single cache shared across all role lookups — every id resolves regardless of role
           this.buildCache(users, this.delegueNames);
           this.buildCache(users, this.medecinNames);
           this.buildCache(users, this.pharmacienNames);
@@ -94,38 +94,17 @@ export class DistributionListComponent implements OnInit, OnDestroy {
             ) && !x.isDeleted
           );
 
-          console.log('All users loaded:', users.length);
-          console.log('delegueNames:', this.delegueNames);
-
-          setTimeout(() => {
-            console.log('=== DISTRIBUTION DEBUG ===');
-            console.log('delegueNames cache:', this.delegueNames);
-            console.log('medecinNames cache:', this.medecinNames);
-            console.log('pharmacienNames cache:', this.pharmacienNames);
-            console.log('allDistributions:', this.allDistributions);
-            if (this.allDistributions.length > 0) {
-              const d = this.allDistributions[0];
-              console.log('first dist id_Delegue:', d.id_Delegue, typeof d.id_Delegue);
-              console.log('cache lookup result:', this.delegueNames[d.id_Delegue]);
-              console.log('cache lookup +id:', this.delegueNames[+d.id_Delegue]);
-            }
-          }, 2000);
-
           this.cdr.markForCheck();
         },
-        error: (err) => {
-          console.error('Failed to load users:', err);
-        }
+        error: () => {}
       });
   }
 
   private buildCache(users: any[], cache: Record<number, string>): void {
     users.forEach(u => {
-      const id = +(u?.id ?? u?.Id ?? u?.id_User ?? u?.Id_User ?? 0);
+      const id = this.userSvc.userId(u);
       if (!id) return;
-      const name = u?.fullName ?? u?.FullName ?? u?.name ?? u?.Name ?? u?.email ?? `#${id}`;
-      cache[id] = name;
-      console.log(`buildCache: id=${id} → name=${name}`);
+      cache[id] = this.userSvc.displayName(u, id);
     });
   }
 
@@ -133,12 +112,7 @@ export class DistributionListComponent implements OnInit, OnDestroy {
     return u?.name ?? u?.Name ?? u?.fullName ?? u?.email ?? `#${u?.id}`;
   }
 
-  getDelegrueName(id: any): string {
-    const numId = +id;
-    const name = this.delegueNames[numId];
-    console.log(`getDelegrueName(${id}) → numId=${numId}, name=${name}`);
-    return name ?? `#${id}`;
-  }
+  getDelegrueName(id: any): string  { return this.delegueNames[+id]    ?? `#${id}`; }
   getMedecinName(id: any): string    { const numId = +id; return this.medecinNames[numId]    ?? `#${id}`; }
   getPharmacienName(id: any): string { const numId = +id; return this.pharmacienNames[numId] ?? `#${id}`; }
 

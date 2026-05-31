@@ -122,26 +122,6 @@ public partial class AppHeader : ContentView
         private set => SetValue(ShowRightButtonProperty, value);
     }
 
-    // ── RightButtonGlyph (computed: "≡" when hamburger, else custom glyph) ─
-    public static readonly BindableProperty RightButtonGlyphProperty =
-        BindableProperty.Create(nameof(RightButtonGlyph), typeof(string), typeof(AppHeader), "≡");
-
-    public string RightButtonGlyph
-    {
-        get => (string)GetValue(RightButtonGlyphProperty);
-        private set => SetValue(RightButtonGlyphProperty, value);
-    }
-
-    // ── RightButtonFontFamily (computed: null for hamburger, font for icon) ─
-    public static readonly BindableProperty RightButtonFontFamilyProperty =
-        BindableProperty.Create(nameof(RightButtonFontFamily), typeof(string), typeof(AppHeader), null);
-
-    public string? RightButtonFontFamily
-    {
-        get => (string?)GetValue(RightButtonFontFamilyProperty);
-        private set => SetValue(RightButtonFontFamilyProperty, value);
-    }
-
     // ─────────────────────────────────────────────────────────────────────────
 
     public AppHeader()
@@ -151,19 +131,7 @@ public partial class AppHeader : ContentView
 
     private void UpdateRightButton()
     {
-        var hasCustomGlyph = !string.IsNullOrEmpty(RightIconGlyph);
-        ShowRightButton = ShowHamburger || hasCustomGlyph;
-
-        if (hasCustomGlyph)
-        {
-            RightButtonGlyph = RightIconGlyph;
-            RightButtonFontFamily = RightIconFontFamily;
-        }
-        else
-        {
-            RightButtonGlyph = "≡";
-            RightButtonFontFamily = null;
-        }
+        ShowRightButton = !string.IsNullOrEmpty(RightIconGlyph);
     }
 
     private void OnBackTapped(object sender, EventArgs e)
@@ -174,11 +142,13 @@ public partial class AppHeader : ContentView
             _ = Shell.Current.GoToAsync("..");
     }
 
+    private void OnHamburgerTapped(object sender, EventArgs e)
+    {
+        Shell.Current.FlyoutIsPresented = true;
+    }
+
     private void OnRightTapped(object sender, EventArgs e)
     {
-        if (ShowHamburger)
-            Shell.Current.FlyoutIsPresented = true;
-        else
-            RightCommand?.Execute(null);
+        RightCommand?.Execute(null);
     }
 }

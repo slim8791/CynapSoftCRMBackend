@@ -103,7 +103,7 @@ public partial class DocumentListViewModel : BaseViewModel
     private async Task GoToDetailAsync(DocumentSummary? doc)
     {
         if (doc == null) return;
-        await Shell.Current.GoToAsync($"//documents/detail?documentType={doc.Type}&documentId={doc.Id}");
+        await Shell.Current.GoToAsync($"///documents/detail?documentType={doc.Type}&documentId={doc.Id}");
     }
 
     [RelayCommand]

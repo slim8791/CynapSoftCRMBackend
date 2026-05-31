@@ -38,29 +38,25 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
             // The admin can create any account
 
-            // The supervisor can only create DELEGUE, MEDECIN, CLIENT
-
+            // SUPERVISEUR can only create DELEGUE and CLIENT
             if (currentUserRole == UserRole.SUPERVISEUR.ToString())
             {
-
                 if (model.Role != UserRole.DELEGUE &&
-                            model.Role != UserRole.MEDECIN &&
-                            model.Role != UserRole.CLIENT)
+                    model.Role != UserRole.CLIENT)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Vous n’avez pas le droit d’exécuter cette opération.";
+                    _response.Message = $"Vous n'êtes pas autorisé à créer un compte avec le rôle {model.Role}.";
                     return Forbid();
                 }
             }
-            // The delegate can create CLIENT and MEDECIN
 
+            // DELEGUE can only create CLIENT
             if (currentUserRole == UserRole.DELEGUE.ToString())
             {
-
-                if (model.Role != UserRole.CLIENT && model.Role != UserRole.MEDECIN)
+                if (model.Role != UserRole.CLIENT)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Vous n’avez pas le droit d’exécuter cette opération.";
+                    _response.Message = $"Vous n'êtes pas autorisé à créer un compte avec le rôle {model.Role}.";
                     return Forbid();
                 }
             }
@@ -176,7 +172,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             }
         }
         [HttpGet("users")]
-        [Authorize(Roles = "ADMIN")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> GetAllUsers()
         {
             try
@@ -190,30 +186,29 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                     return Ok(_response);
                 }
 
+                // SUPERVISEUR sees only DELEGUE + CLIENT users
+                var callerRole = User.FindFirstValue(ClaimTypes.Role);
+                var userList = users.ToList();
+                if (callerRole == UserRole.SUPERVISEUR.ToString())
+                {
+                    userList = userList.Where(u =>
+                        u.Role == UserRole.DELEGUE.ToString() ||
+                        u.Role == UserRole.CLIENT.ToString()
+                    ).ToList();
+                }
+
                 _response.IsSuccess = true;
-                _response.Result = users.ToList();
+                _response.Result = userList;
                 _response.Message = "Liste de tous les utilisateurs.";
 
                 return Ok(_response);
             }
             catch (Exception ex)
             {
-                // FULL DEBUG
-                var errorDetails = $@"
-GetAllUsers EXCEPTION:
-Type: {ex.GetType().Name}
-Message: {ex.Message}
-Stack: {ex.StackTrace}
-Inner: {ex.InnerException?.Message}";
-                
-                Console.WriteLine(errorDetails);
-                
                 _response.IsSuccess = false;
                 _response.Message = $"Server error: {ex.Message}";
                 return StatusCode(515, _response);
             }
-
-            
         }
         [HttpPost("AssignRole")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
@@ -422,12 +417,33 @@ Inner: {ex.InnerException?.Message}";
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetUsersByRole(string role)
         {
+            // DELEGUE can query CLIENT and MEDECIN roles
+            var callerRole = User.FindFirstValue(ClaimTypes.Role);
+            if (callerRole == UserRole.DELEGUE.ToString() &&
+                !string.Equals(role, UserRole.CLIENT.ToString(), StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(role, UserRole.MEDECIN.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Accès refusé. Vous ne pouvez consulter que les clients et les médecins.";
+                return Forbid();
+            }
+
+            // SUPERVISEUR can only query DELEGUE or CLIENT roles
+            if (callerRole == UserRole.SUPERVISEUR.ToString() &&
+                !string.Equals(role, UserRole.DELEGUE.ToString(), StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(role, UserRole.CLIENT.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Accès refusé.";
+                return Forbid();
+            }
+
             var result = await _authService.GetUsersByRoleAsync(role);
             return Ok(new ResponseDto { IsSuccess = true, Result = result });
         }
 
         [HttpGet("users/{id}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetUserById(int id)
         {
             try
@@ -440,6 +456,16 @@ Inner: {ex.InnerException?.Message}";
                     return NotFound(_response);
                 }
 
+                var callerRole = User.FindFirstValue(ClaimTypes.Role);
+                if (callerRole == UserRole.DELEGUE.ToString() &&
+                    user.Role != UserRole.CLIENT.ToString() &&
+                    user.Role != UserRole.MEDECIN.ToString())
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Acces refuse.";
+                    return Forbid();
+                }
+
                 _response.IsSuccess = true;
                 _response.Result = user;
                 _response.Message = "Détails de l'utilisateur récupérés.";
@@ -450,6 +476,27 @@ Inner: {ex.InnerException?.Message}";
                 _response.IsSuccess = false;
                 _response.Message = $"Erreur: {ex.Message}";
                 return StatusCode(515, _response);
+            }
+        }
+
+        [HttpGet("users/by-region/{idRegion}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetUsersByRegion(int idRegion)
+        {
+            try
+            {
+                var filtered = await _authService.GetUsersByRegionAsync(idRegion);
+                var list = filtered.ToList();
+                _response.IsSuccess = true;
+                _response.Result    = list;
+                _response.Message   = $"{list.Count} utilisateur(s) trouvé(s) dans la région {idRegion}.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message   = ex.Message;
+                return StatusCode(500, _response);
             }
         }
 

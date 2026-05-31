@@ -236,11 +236,9 @@ public partial class RapportViewModel : BaseViewModel
 
     /// <summary>
     /// Called from OnAppearing.
-    /// Requests GPS permission early (while the delegate fills the form), then tries to
-    /// get the last known position. Sets IsGpsWarningVisible=true with a detailed
-    /// GpsWarningMessage whenever coordinates are unavailable, so the delegate knows
-    /// to act BEFORE tapping "Soumettre" — the submit button stays disabled until GPS
-    /// coordinates are captured (CanSubmit requires CapturedLatitude/Longitude).
+    /// Shows the system GPS permission dialog, then tries the last-known position (max 10 min old).
+    /// Falls back to an active 8-second acquisition when the cached position is stale or absent.
+    /// On denial → DisplayAlert; on GPS disabled → DisplayAlert offering to open Settings.
     /// In view/read-only mode this is skipped entirely.
     /// </summary>
     [RelayCommand]
@@ -248,69 +246,97 @@ public partial class RapportViewModel : BaseViewModel
     {
         if (IsReadOnly) return;
 
+        IsCapturingLocation = true;
+        GeoStatus           = "🔍 Vérification de la permission GPS…";
+
         try
         {
-            // Step 1: request permission (shows dialog on first run, silent on subsequent)
+            // Step 1: show system permission dialog (first run) or check current status
             var status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             if (status != PermissionStatus.Granted)
             {
+                IsCapturingLocation = false;
                 GeoStatus           = "⚠️ GPS requis — non autorisé";
                 GpsWarningMessage   = "La localisation GPS est obligatoire pour soumettre " +
-                                      "un rapport de visite. Autorisez l'accès dans les paramètres.";
+                                      "un rapport de visite. Autorisez l'accès dans les paramètres " +
+                                      "de l'application.";
                 IsGpsWarningVisible = true;
-                // CapturedLatitude/Longitude stay null → CanSubmit=false → button grayed out
+                await Shell.Current.DisplayAlert(
+                    "Permission GPS requise",
+                    "Veuillez autoriser l'accès à la localisation pour pouvoir soumettre un rapport de visite.",
+                    "OK");
                 return;
             }
 
-            // Step 2: get last known position (fast — no 10-second wait)
+            GeoStatus = "📍 Recherche de la position…";
+
+            // Step 2: try last-known position — use it only when fresh (≤ 10 min)
             var last = await Geolocation.GetLastKnownLocationAsync();
-            if (last == null)
+            var age  = last != null
+                ? DateTime.UtcNow - last.Timestamp.UtcDateTime
+                : TimeSpan.MaxValue;
+
+            if (last != null && age.TotalMinutes <= 10)
             {
-                GeoStatus           = "⚠️ GPS activé mais signal absent";
-                GpsWarningMessage   = "Aucun signal GPS détecté. Placez-vous à l'extérieur " +
-                                      "ou près d'une fenêtre. Le GPS est obligatoire pour " +
-                                      "soumettre ce rapport.";
-                IsGpsWarningVisible = true;
-                // CanSubmit stays false until CaptureLocationAsync succeeds at submit time
+                CapturedLatitude    = last.Latitude;
+                CapturedLongitude   = last.Longitude;
+                IsGpsWarningVisible = false;
+                GpsWarningMessage   = string.Empty;
+                GeoStatus = $"✅ Position détectée — {last.Latitude:F4}, {last.Longitude:F4}" +
+                            $" (il y a {(int)age.TotalMinutes} min)";
+                IsCapturingLocation = false;
                 return;
             }
 
-            // GPS ready
-            CapturedLatitude    = last.Latitude;
-            CapturedLongitude   = last.Longitude;
-            IsGpsWarningVisible = false;
-            GpsWarningMessage   = string.Empty;
-            var age = DateTime.UtcNow - last.Timestamp.UtcDateTime;
-            GeoStatus = $"✅ Position détectée — {last.Latitude:F4}, {last.Longitude:F4}" +
-                        $" (il y a {(int)age.TotalMinutes} min)";
-            // CapturedLatitude/Longitude now have values → CanSubmit can become true
+            // Step 3: active fallback — request a fresh fix with 8-second timeout
+            GeoStatus = "📍 Acquisition du signal GPS…";
+            var request  = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(8));
+            var location = await Geolocation.GetLocationAsync(request);
+
+            if (location != null)
+            {
+                CapturedLatitude    = location.Latitude;
+                CapturedLongitude   = location.Longitude;
+                IsGpsWarningVisible = false;
+                GpsWarningMessage   = string.Empty;
+                GeoStatus = $"✅ Position capturée — {location.Latitude:F4}, {location.Longitude:F4}";
+                IsCapturingLocation = false;
+                return;
+            }
+
+            // Active request returned null — signal too weak
+            IsCapturingLocation = false;
+            GeoStatus           = "⚠️ GPS activé mais signal absent";
+            GpsWarningMessage   = "Aucun signal GPS détecté. Placez-vous à l'extérieur ou " +
+                                  "près d'une fenêtre et appuyez sur « 🔄 Réessayer ».";
+            IsGpsWarningVisible = true;
         }
         catch (FeatureNotEnabledException)
         {
+            IsCapturingLocation = false;
             GeoStatus           = "⚠️ GPS désactivé dans les paramètres";
             GpsWarningMessage   = "Activez la localisation dans Paramètres → Localisation " +
-                                  "et revenez sur cette page.";
+                                  "et appuyez sur « 🔄 Réessayer ».";
             IsGpsWarningVisible = true;
+            var openSettings = await Shell.Current.DisplayAlert(
+                "GPS désactivé",
+                "La localisation est désactivée sur votre appareil. Voulez-vous ouvrir les paramètres pour l'activer ?",
+                "Ouvrir les paramètres", "Annuler");
+            if (openSettings)
+                AppInfo.ShowSettingsUI();
         }
         catch
         {
+            IsCapturingLocation = false;
             GeoStatus           = "⚠️ Géolocalisation indisponible";
-            GpsWarningMessage   = "Impossible d'accéder au GPS. " +
-                                  "Vérifiez les paramètres de localisation.";
+            GpsWarningMessage   = "Impossible d'accéder au GPS. Vérifiez les paramètres de localisation.";
             IsGpsWarningVisible = true;
         }
     }
 
-    private static async Task<bool> IsGpsEnabledAsync()
-    {
-        try
-        {
-            await Geolocation.GetLastKnownLocationAsync();
-            return true;
-        }
-        catch (FeatureNotEnabledException) { return false; }
-        catch { return true; }
-    }
+    /// <summary>Retry GPS capture — bound to the "🔄 Réessayer" button in the warning banner.</summary>
+    [RelayCommand]
+    private Task RefreshGpsAsync() => PreCaptureLocationAsync();
 
     /// <summary>Opens the device's app settings so the user can enable Location permission.</summary>
     [RelayCommand]

@@ -124,12 +124,12 @@ public partial class OrderListViewModel : BaseViewModel
     private async Task GoToDetailAsync(Order? order)
     {
         if (order == null) return;
-        await Shell.Current.GoToAsync($"//orders/detail?orderId={order.Id}");
+        await Shell.Current.GoToAsync($"///orders/detail?orderId={order.Id}");
     }
 
     [RelayCommand]
     private async Task CreateOrderAsync()
-        => await Shell.Current.GoToAsync("//orders/create");
+        => await Shell.Current.GoToAsync("///orders/create");
 
     [RelayCommand]
     private void SetStatusFilter(string status) => StatusFilter = status;

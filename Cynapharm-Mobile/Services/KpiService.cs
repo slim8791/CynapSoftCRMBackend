@@ -56,4 +56,11 @@ public class KpiService
 
     public Task<List<RegionModel>?> GetRegionsAsync()
         => _api.GetAsync<List<RegionModel>>("fields/regions");
+
+    /// <summary>
+    /// Returns the region(s) assigned to a specific delegate.
+    /// Endpoint: GET fields/regions/by-delegue/{idDelegue}
+    /// </summary>
+    public Task<List<RegionModel>?> GetRegionsByDelegueAsync(int idDelegue)
+        => _api.GetAsync<List<RegionModel>>($"fields/regions/by-delegue/{idDelegue}");
 }

@@ -13,6 +13,6 @@ public class Region
     [JsonPropertyName("codePostal")]
     public string CodePostal { get; set; } = string.Empty;
 
-    [JsonPropertyName("id_User_Delegue")]
-    public int IdDelegue { get; set; }
+    [JsonPropertyName("id_Superviseur")]
+    public int? IdSuperviseur { get; set; }
 }

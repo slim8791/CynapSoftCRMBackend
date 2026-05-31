@@ -147,7 +147,7 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Id_User_Delegue")
+                    b.Property<int?>("Id_Superviseur")
                         .HasColumnType("int");
 
                     b.Property<string>("NomRegion")
@@ -158,7 +158,7 @@ namespace CynapCRM.Services.FieldAPI.Migrations
 
                     b.HasIndex("CodePostal");
 
-                    b.HasIndex("Id_User_Delegue");
+                    b.HasIndex("Id_Superviseur");
 
                     b.ToTable("Regions");
                 });
@@ -172,6 +172,9 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Visite"));
 
                     b.Property<DateTime>("DateVisite")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("HeureDebut")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("Id_Medecin")
@@ -190,6 +193,9 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsStarted")
                         .HasColumnType("bit");
 
                     b.Property<int>("Type")

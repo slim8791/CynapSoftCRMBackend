@@ -10,5 +10,6 @@
         public string Role { get; set; } = string.Empty;
         public bool IsDeleted { get; set; } = false;
         public string? TypeClient { get; set; }
+        public int? IdRegion { get; set; }
     }
 }

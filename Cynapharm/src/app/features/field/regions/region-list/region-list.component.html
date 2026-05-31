@@ -61,7 +61,7 @@
         <tr>
           <th>Nom de la région</th>
           <th>Code postal</th>
-          <th>Délégué</th>
+          <th>Superviseur</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -69,7 +69,7 @@
         <tr *ngFor="let r of regions">
           <td class="bold">{{ r.nomRegion }}</td>
           <td class="mono">{{ r.codePostal }}</td>
-          <td>{{ getDelegrueName(r.id_User_Delegue) }}</td>
+          <td>{{ r.id_Superviseur ? getDelegrueName(r.id_Superviseur) : '—' }}</td>
           <td class="actions-cell">
             <div class="action-row">
               @if (isAdmin || isSuperviseur) {

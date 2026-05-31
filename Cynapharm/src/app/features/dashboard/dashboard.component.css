@@ -209,6 +209,28 @@
 .kpi-purple .kpi-icon  { background: #f5f3ff; color: #7c3aed; }
 .kpi-purple .kpi-value { color: #7c3aed; }
 
+/* Responsive font for CA (large numbers with TND suffix) */
+.kpi-card.kpi-green .kpi-value {
+  font-size: clamp(16px, 2.5vw, 28px);
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+/* ─── Info banner (SUPERVISEUR) ─────────────────────── */
+.dash-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
 /* ─── Charts ─────────────────────────────────────────── */
 .charts-row {
   display: grid;

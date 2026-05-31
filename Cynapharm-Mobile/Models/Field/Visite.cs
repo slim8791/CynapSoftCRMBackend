@@ -58,6 +58,21 @@ public class Visite
                 ? PharmacienNom
                 : string.Empty;
 
+    [JsonPropertyName("heureDebut")]
+    public DateTime? HeureDebut { get; set; }
+
+    [JsonPropertyName("isStarted")]
+    public bool IsStarted { get; set; }
+
+    [JsonIgnore]
+    public bool CanStart => !IsStarted && !IsCompleted;
+
+    [JsonIgnore]
+    public string HeurDebutLabel =>
+        HeureDebut?.Year > 1
+            ? HeureDebut.Value.ToLocalTime().ToString("HH:mm")
+            : string.Empty;
+
     [JsonIgnore]
     public bool HasContact => !string.IsNullOrEmpty(ContactName);
 }

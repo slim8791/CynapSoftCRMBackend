@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CynapCRM.Services.FieldAPI.Data;
 using CynapCRM.Services.FieldAPI.Models;
 using CynapCRM.Services.FieldAPI.Models.Dto;
@@ -189,6 +189,22 @@ namespace CynapCRM.Services.FieldAPI.Service
                             .AnyAsync(v =>
                                 v.Id_Visite == idVisite &&
                                 v.Id_User_Delegue == idDelegue);
+        }
+
+        public async Task<VisiteDto?> StartVisiteAsync(int idVisite)
+        {
+            var visite = await _db.Visites
+                .Include(v => v.Rapport)
+                .FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
+
+            if (visite == null || visite.IsStarted || visite.IsCompleted)
+                return null;
+
+            visite.IsStarted  = true;
+            visite.HeureDebut = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<VisiteDto>(visite);
         }
     }
 }

@@ -6,10 +6,12 @@ import {
   AbstractControl, ValidationErrors
 } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
 import { PromoStockService, StockGratuiteDto, StockEchantillonDto } from '../services/promo-stock.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { UserService } from '../../../users/user.service';
+import { ProductService } from '../../../products/product.service';
 
 function dateRangeValidator(form: AbstractControl): ValidationErrors | null {
   const debut = form.get('dateDebut')?.value;
@@ -45,6 +47,10 @@ export class PromoStockDetailComponent implements OnInit, OnDestroy {
   gratuiteData: StockGratuiteDto | null = null;
   echantillonData: StockEchantillonDto | null = null;
 
+  // Resolved display names
+  delegueNames:  Record<number, string> = {};
+  productNames:  Record<number, string> = {};
+
   gratuiteForm!: FormGroup;
   echantillonForm!: FormGroup;
 
@@ -58,22 +64,34 @@ export class PromoStockDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private fb: FormBuilder,
-    private svc: PromoStockService,
-    private cdr: ChangeDetectorRef
+    private fb:         FormBuilder,
+    private svc:        PromoStockService,
+    private userSvc:    UserService,
+    private productSvc: ProductService,
+    private cdr:        ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadingGratuite = true;
     this.svc.getAllGratuite().pipe(takeUntil(this.destroy$)).subscribe({
-      next: data => { this.allGratuite = data; this.loadingGratuite = false; this.cdr.markForCheck(); },
-      error: ()   => { this.loadingGratuite = false; this.cdr.markForCheck(); }
+      next: data => {
+        this.allGratuite = data;
+        this.loadingGratuite = false;
+        this.resolveNames();
+        this.cdr.markForCheck();
+      },
+      error: () => { this.loadingGratuite = false; this.cdr.markForCheck(); }
     });
 
     this.loadingEchantillon = true;
     this.svc.getAllEchantillon().pipe(takeUntil(this.destroy$)).subscribe({
-      next: data => { this.allEchantillon = data; this.loadingEchantillon = false; this.cdr.markForCheck(); },
-      error: ()   => { this.loadingEchantillon = false; this.cdr.markForCheck(); }
+      next: data => {
+        this.allEchantillon = data;
+        this.loadingEchantillon = false;
+        this.resolveNames();
+        this.cdr.markForCheck();
+      },
+      error: () => { this.loadingEchantillon = false; this.cdr.markForCheck(); }
     });
 
     this.gratuiteForm = this.fb.group({
@@ -162,6 +180,40 @@ export class PromoStockDetailComponent implements OnInit, OnDestroy {
       error: () => { this.echantillonError = 'Erreur lors de l\'enregistrement.'; this.savingEchantillon = false; this.cdr.markForCheck(); }
     });
   }
+
+  // ── Name resolution ───────────────────────────────────
+
+  private resolveNames(): void {
+    const delegueIds = [...new Set([
+      ...this.allGratuite.map(g => g.id_User_Delegue),
+      ...this.allEchantillon.map(e => e.id_User_Delegue)
+    ])].filter(id => id > 0);
+
+    const produitIds = [...new Set([
+      ...this.allGratuite.map(g => g.id_Produit),
+      ...this.allEchantillon.map(e => e.id_Produit)
+    ])].filter(id => id > 0);
+
+    if (delegueIds.length > 0) {
+      this.userSvc.getDisplayNamesByIds(delegueIds)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(names => { Object.assign(this.delegueNames, names); this.cdr.markForCheck(); });
+    }
+
+    produitIds.forEach(id => {
+      if (this.productNames[id]) return;
+      this.productSvc.getProductById(id)
+        .pipe(takeUntil(this.destroy$), catchError(() => of(null)))
+        .subscribe(r => {
+          const p = r?.Result ?? r?.result ?? r;
+          this.productNames[id] = p?.nom ?? p?.Nom ?? p?.name ?? p?.Name ?? `Produit #${id}`;
+          this.cdr.markForCheck();
+        });
+    });
+  }
+
+  getDeleagueName(id: number): string { return this.delegueNames[+id] ?? `#${id}`; }
+  getProduitName(id: number):  string { return this.productNames[+id]  ?? `Produit #${id}`; }
 
   getDistributed(item: any): number {
     if (!item?.qteEchantillon) return 0;

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Cynapharm_Mobile.Models.Auth;
 using Cynapharm_Mobile.Services;
 using Cynapharm_Mobile.ViewModels.Base;
+using Cynapharm_Mobile.Models.Field;
 
 namespace Cynapharm_Mobile.ViewModels.Profile;
 
@@ -11,6 +12,7 @@ public partial class ProfileViewModel : BaseViewModel
     private readonly AuthService   _authService;
     private readonly ICacheService _cache;
     private readonly KpiService    _kpiService;
+    private readonly FieldService  _fieldService;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AvatarInitials), nameof(IsDelegue), nameof(IsClient), nameof(IsMedecin))]
@@ -25,6 +27,12 @@ public partial class ProfileViewModel : BaseViewModel
     [ObservableProperty] private string    _editAdresse           = string.Empty;
     [ObservableProperty] private string    _wilayaLabel           = string.Empty;
 
+    [ObservableProperty] private string    _regionLabel           = string.Empty;
+    [ObservableProperty] private bool      _hasRegion             = false;
+
+    partial void OnRegionLabelChanged(string value)
+        => HasRegion = !string.IsNullOrEmpty(value) && value != "Non assigné";
+
     public bool IsDelegue => User?.Role is "DELEGUE" or "ADMIN" or "SUPERVISEUR";
     public bool IsClient  => User?.Role is "PHARMACIEN" or "GROSSISTE" or "CLIENT";
     public bool IsMedecin => User?.Role is "MEDECIN";
@@ -34,11 +42,12 @@ public partial class ProfileViewModel : BaseViewModel
             ? string.Join("", User.Name.Split(' ').Select(s => s[0])).ToUpper()
             : "?";
 
-    public ProfileViewModel(AuthService authService, ICacheService cache, KpiService kpiService)
+    public ProfileViewModel(AuthService authService, ICacheService cache, KpiService kpiService, FieldService fieldService)
     {
-        _authService = authService;
-        _cache       = cache;
-        _kpiService  = kpiService;
+        _authService  = authService;
+        _cache        = cache;
+        _kpiService   = kpiService;
+        _fieldService = fieldService;
         Title = "Mon Profil";
     }
 
@@ -53,24 +62,10 @@ public partial class ProfileViewModel : BaseViewModel
             EditAdresse   = User.Adresse   ?? string.Empty;
             OnPropertyChanged(nameof(AvatarInitials));
 
-            // For MÉDECIN: resolve RegionId (numeric string) to region name
-            if (User.Role == "MEDECIN" && !string.IsNullOrWhiteSpace(User.RegionId))
-            {
-                if (int.TryParse(User.RegionId, out var regionIdInt))
-                {
-                    var regions = await _kpiService.GetRegionsAsync();
-                    var match   = regions?.FirstOrDefault(r => r.Id == regionIdInt);
-                    WilayaLabel = match?.Nom ?? User.RegionId;
-                }
-                else
-                {
-                    WilayaLabel = User.RegionId;
-                }
-            }
-            else
-            {
-                WilayaLabel = string.Empty;
-            }
+            WilayaLabel = string.Empty;
+
+            if (User.Role == "DELEGUE" || User.Role == "SUPERVISEUR")
+                await LoadRegionAsync(User.Id, User.Role);
         }
     });
 
@@ -185,6 +180,50 @@ public partial class ProfileViewModel : BaseViewModel
             _cache.InvalidateAll(); // clear all in-memory caches on logout
             _authService.Logout();
             await Shell.Current.GoToAsync("//login");
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private async Task LoadRegionAsync(int userId, string role)
+    {
+        try
+        {
+            if (role == "SUPERVISEUR")
+            {
+                var regions = await _fieldService.GetRegionsBySuperviseurAsync(userId);
+                RegionLabel = regions?.Count > 0 ? regions[0].Nom : "Non assigné";
+                return;
+            }
+
+            // DELEGUE — Strategy 1: direct lookup by IdRegion (fastest path)
+            if (User?.IdRegion.HasValue == true)
+            {
+                var region = await _fieldService.GetRegionByIdAsync(User.IdRegion.Value);
+                if (region != null)
+                {
+                    RegionLabel = region.Nom;
+                    return;
+                }
+            }
+
+            // DELEGUE — Strategy 2: fetch all regions and match by IdRegion
+            if (User?.IdRegion.HasValue == true)
+            {
+                var all   = await _fieldService.GetAllRegionsAsync();
+                var match = all?.FirstOrDefault(r => r.Id == User.IdRegion.Value);
+                if (match != null)
+                {
+                    RegionLabel = match.Nom;
+                    return;
+                }
+            }
+
+            RegionLabel = "Non assigné";
+        }
+        catch
+        {
+            RegionLabel = string.Empty;
         }
     }
 }

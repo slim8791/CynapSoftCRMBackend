@@ -4,7 +4,15 @@
   <div class="dash-header">
     <div>
       <h1 class="dash-title">Tableau de bord</h1>
-      <p class="dash-subtitle">Vue temps réel — commandes &amp; chiffre d'affaires</p>
+      @if (isAdmin) {
+        <p class="dash-subtitle">Vue globale — toutes régions confondues</p>
+      }
+      @if (isSuperviseur) {
+        <p class="dash-subtitle">Vue globale — filtre par région disponible dans une version future</p>
+      }
+      @if (isDelegue) {
+        <p class="dash-subtitle">Vue temps réel — commandes &amp; chiffre d'affaires</p>
+      }
     </div>
     <button class="btn-refresh" (click)="reload()" [disabled]="loading" title="Actualiser">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.spinning]="loading">
@@ -14,6 +22,18 @@
       Actualiser
     </button>
   </div>
+
+  <!-- ── Bannière info SUPERVISEUR ────────────────────── -->
+  @if (isSuperviseur) {
+    <div class="dash-info-banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Les statistiques affichées couvrent l'ensemble des régions. Un filtre par région superviseur est prévu dans une version future.
+    </div>
+  }
 
   <!-- ── Erreur globale ─────────────────────────────────  -->
   <div *ngIf="error && !loading" class="dash-error">
@@ -95,7 +115,7 @@
     </div>
 
     <!-- ── Statistiques commandes (API dashboard) ───────── -->
-    @if (orderDash) {
+    @if (orderDash && !isDelegue) {
       <div style="margin-bottom:1.5rem">
         <h2 style="font-size:1rem;font-weight:600;color:#374151;margin:0 0 .75rem">Statistiques des commandes</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.75rem;margin-bottom:.75rem">
@@ -106,82 +126,98 @@
           <div class="kpi-card"           ><span class="kpi-label">Expédiées</span><span class="kpi-value">{{ orderDash.Expediees }}</span></div>
           <div class="kpi-card kpi-green" ><span class="kpi-label">Livrées</span><span class="kpi-value">{{ orderDash.Livrees }}</span></div>
           <div class="kpi-card"  style="background:#fef2f2"><span class="kpi-label">Annulées</span><span class="kpi-value" style="color:#b91c1c">{{ orderDash.Annulees }}</span></div>
-          <div class="kpi-card kpi-green" ><span class="kpi-label">Total HT (TND)</span><span class="kpi-value" style="font-size:1rem">{{ orderDash.MontantTotalHT | number:'1.0-0' }}</span></div>
-          <div class="kpi-card kpi-green" ><span class="kpi-label">Total TTC (TND)</span><span class="kpi-value" style="font-size:1rem">{{ orderDash.MontantTotalTTC | number:'1.0-0' }}</span></div>
+          <div class="kpi-card kpi-green" ><span class="kpi-label">Total HT (TND)</span><span class="kpi-value" style="font-size:1rem">{{ orderDash.MontantTotalHT | currencyTND }}</span></div>
+          <div class="kpi-card kpi-green" ><span class="kpi-label">Total TTC (TND)</span><span class="kpi-value" style="font-size:1rem">{{ orderDash.MontantTotalTTC | currencyTND }}</span></div>
           <div class="kpi-card kpi-orange"><span class="kpi-label">Réclam. ouvertes</span><span class="kpi-value">{{ orderDash.ReclamationsOuvertes }}</span></div>
           <div class="kpi-card kpi-orange"><span class="kpi-label">Réclam. en cours</span><span class="kpi-value">{{ orderDash.ReclamationsEnCours }}</span></div>
+          <div class="kpi-card kpi-green" ><span class="kpi-label">Réclam. résolues</span><span class="kpi-value">{{ orderDash.ReclamationsResolues }}</span></div>
           <div class="kpi-card kpi-blue"  ><span class="kpi-label">Aujourd'hui</span><span class="kpi-value">{{ orderDash.CommandesAujourdHui }}</span></div>
           <div class="kpi-card kpi-blue"  ><span class="kpi-label">Ce mois</span><span class="kpi-value">{{ orderDash.CommandesCeMois }}</span></div>
         </div>
       </div>
     }
 
-    <!-- ── Graphiques ligne 1 ─────────────────────────── -->
-    <div class="charts-row">
+    <!-- ── Graphiques globaux : ADMIN + SUPERVISEUR seulement ── -->
+    @if (!isDelegue) {
 
-      <!-- Chart 1 : Barres horizontales — commandes par statut -->
-      <div class="chart-card">
-        <div *ngIf="statutBarSeries.length === 0 || statutBarSeries[0]?.data?.length === 0" class="chart-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <path d="M3 9h18M9 21V9"/>
-          </svg>
-          <p>Aucune donnée de commandes disponible.</p>
+      <!-- ── Graphiques ligne 1 ─────────────────────────── -->
+      <div class="charts-row">
+
+        <!-- Chart 1 : Barres horizontales — commandes par statut -->
+        <div class="chart-card">
+          <div *ngIf="statutBarSeries.length === 0 || statutBarSeries[0]?.data?.length === 0" class="chart-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18M9 21V9"/>
+            </svg>
+            <p>Aucune donnée de commandes disponible.</p>
+          </div>
+          <apx-chart
+            *ngIf="statutBarSeries.length > 0 && statutBarSeries[0]?.data?.length > 0"
+            [series]="statutBarSeries"
+            [chart]="statutBarOptions.chart"
+            [plotOptions]="statutBarOptions.plotOptions"
+            [dataLabels]="statutBarOptions.dataLabels"
+            [xaxis]="statutBarOptions.xaxis"
+            [colors]="statutBarOptions.colors"
+            [title]="statutBarOptions.title">
+          </apx-chart>
+        </div>
+
+        <!-- Chart 2 : Donut commandes par statut -->
+        <div class="chart-card chart-card--small">
+          <div *ngIf="statutChartSeries.length === 0" class="chart-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 8v4M12 16h.01"/>
+            </svg>
+            <p>Aucune commande disponible.</p>
+          </div>
+          <apx-chart
+            *ngIf="statutChartSeries.length > 0"
+            [series]="statutChartSeries"
+            [chart]="statutChartOptions.chart"
+            [labels]="statutChartLabels"
+            [colors]="statutChartOptions.colors"
+            [dataLabels]="statutChartOptions.dataLabels"
+            [legend]="statutChartOptions.legend"
+            [tooltip]="statutChartOptions.tooltip"
+            [title]="statutChartOptions.title">
+          </apx-chart>
+        </div>
+
+      </div>
+
+      <!-- ── Graphique ligne 2 : Volume 7 jours ───────────  -->
+      <div class="chart-card chart-card--full">
+        <div *ngIf="volumeChartSeries.length === 0 || volumeChartSeries[0]?.data?.length === 0" class="chart-empty">
+          <p>Aucune donnée de commandes sur 7 jours.</p>
         </div>
         <apx-chart
-          *ngIf="statutBarSeries.length > 0 && statutBarSeries[0]?.data?.length > 0"
-          [series]="statutBarSeries"
-          [chart]="statutBarOptions.chart"
-          [plotOptions]="statutBarOptions.plotOptions"
-          [dataLabels]="statutBarOptions.dataLabels"
-          [xaxis]="statutBarOptions.xaxis"
-          [colors]="statutBarOptions.colors"
-          [title]="statutBarOptions.title">
+          *ngIf="volumeChartSeries.length > 0 && volumeChartSeries[0]?.data?.length > 0"
+          [series]="volumeChartSeries"
+          [chart]="volumeChartOptions.chart"
+          [stroke]="volumeChartOptions.stroke"
+          [fill]="volumeChartOptions.fill"
+          [dataLabels]="volumeChartOptions.dataLabels"
+          [xaxis]="volumeChartOptions.xaxis"
+          [colors]="volumeChartOptions.colors"
+          [tooltip]="volumeChartOptions.tooltip"
+          [title]="volumeChartOptions.title">
         </apx-chart>
       </div>
 
-      <!-- Chart 2 : Donut commandes par statut -->
-      <div class="chart-card chart-card--small">
-        <div *ngIf="statutChartSeries.length === 0" class="chart-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 8v4M12 16h.01"/>
-          </svg>
-          <p>Aucune commande disponible.</p>
-        </div>
-        <apx-chart
-          *ngIf="statutChartSeries.length > 0"
-          [series]="statutChartSeries"
-          [chart]="statutChartOptions.chart"
-          [labels]="statutChartLabels"
-          [colors]="statutChartOptions.colors"
-          [dataLabels]="statutChartOptions.dataLabels"
-          [legend]="statutChartOptions.legend"
-          [tooltip]="statutChartOptions.tooltip"
-          [title]="statutChartOptions.title">
-        </apx-chart>
-      </div>
+    }
 
-    </div>
-
-    <!-- ── Graphique ligne 2 : Volume 7 jours ───────────  -->
-    <div class="chart-card chart-card--full">
-      <div *ngIf="volumeChartSeries.length === 0 || volumeChartSeries[0]?.data?.length === 0" class="chart-empty">
-        <p>Aucune donnée de commandes sur 7 jours.</p>
+    <!-- ── KPIs terrain : DÉLÉGUÉ seulement ─────────────── -->
+    @if (isDelegue) {
+      <div class="kpi-terrain-section">
+        <h2 style="font-size:1rem;font-weight:600;color:#374151;margin:0 0 .75rem">
+          Mes KPIs terrain
+        </h2>
+        <app-kpi-dashboard/>
       </div>
-      <apx-chart
-        *ngIf="volumeChartSeries.length > 0 && volumeChartSeries[0]?.data?.length > 0"
-        [series]="volumeChartSeries"
-        [chart]="volumeChartOptions.chart"
-        [stroke]="volumeChartOptions.stroke"
-        [fill]="volumeChartOptions.fill"
-        [dataLabels]="volumeChartOptions.dataLabels"
-        [xaxis]="volumeChartOptions.xaxis"
-        [colors]="volumeChartOptions.colors"
-        [tooltip]="volumeChartOptions.tooltip"
-        [title]="volumeChartOptions.title">
-      </apx-chart>
-    </div>
+    }
 
   </ng-container>
 </div>

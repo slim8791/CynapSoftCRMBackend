@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { takeUntil, catchError, map } from 'rxjs/operators';
 import { RegionService, RegionDto } from '../services/region.service';
 import { UserService } from '../../../../features/users/user.service';
 
@@ -24,7 +24,7 @@ export class RegionFormComponent implements OnInit, OnDestroy {
   submitError = '';
   successMsg  = '';
 
-  delegues: any[] = [];
+  superviseurs: any[] = [];
 
   private destroy$ = new Subject<void>();
 
@@ -41,11 +41,11 @@ export class RegionFormComponent implements OnInit, OnDestroy {
     this.form = this.fb.group({
       nomRegion:       ['', [Validators.required]],
       codePostal:      ['', [Validators.required, Validators.pattern(/^\d{4,}$/)]],
-      id_User_Delegue: [null, [Validators.required]]
+      id_Superviseur: [null]
     });
 
-    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$))
-      .subscribe({ next: u => { this.delegues = u; this.cdr.markForCheck(); }, error: () => {} });
+    this.userSvc.getUsersByRole('SUPERVISEUR').pipe(takeUntil(this.destroy$))
+      .subscribe({ next: u => { this.superviseurs = u; this.cdr.markForCheck(); }, error: () => {} });
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
@@ -74,15 +74,33 @@ export class RegionFormComponent implements OnInit, OnDestroy {
 
     const dto: RegionDto = {
       ...this.form.value,
-      id_User_Delegue: +this.form.value.id_User_Delegue,
+      id_Superviseur: this.form.value.id_Superviseur ? +this.form.value.id_Superviseur : undefined,
       ...(this.isEdit && this.editId ? { id_Region: this.editId } : {})
     };
 
     this.svc.createOrUpdate(dto).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
+      next: (savedRegion) => {
         this.saving = false;
         this.successMsg = this.isEdit ? 'Région mise à jour.' : 'Région créée.';
         this.cdr.markForCheck();
+
+        // Sync IdRegion to the assigned superviseur in AuthAPI
+        const supId    = dto.id_Superviseur;
+        const regionId = (savedRegion as any)?.Id_Region ?? savedRegion?.id_Region;
+        if (supId && regionId) {
+          this.userSvc.getUserById(supId).pipe(
+            map(r => r?.Result ?? r?.result ?? r),
+            catchError(() => of(null)),
+            takeUntil(this.destroy$)
+          ).subscribe(user => {
+            if (user?.email) {
+              this.userSvc.updateProfile({ email: user.email, idRegion: regionId })
+                .pipe(catchError(() => of(null)))
+                .subscribe();
+            }
+          });
+        }
+
         setTimeout(() => this.router.navigate(['/field/regions']), 1200);
       },
       error: () => { this.submitError = 'Erreur lors de l\'enregistrement.'; this.saving = false; this.cdr.markForCheck(); }

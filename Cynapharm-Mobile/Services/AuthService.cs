@@ -40,6 +40,11 @@ public class AuthService
             // device never share each other's data.
             await SecureStorage.SetAsync(StorageKeys.UserTelephone(userId), result.User.Telephone ?? string.Empty);
             await SecureStorage.SetAsync(StorageKeys.UserAdresse(userId),   result.User.Adresse   ?? string.Empty);
+
+            if (result.User.IdRegion.HasValue)
+                await SecureStorage.SetAsync(StorageKeys.UserIdRegion, result.User.IdRegion.Value.ToString());
+            else
+                SecureStorage.Remove(StorageKeys.UserIdRegion);
         }
         return result;
     }
@@ -89,8 +94,9 @@ public class AuthService
             catch { }
         }
 
-        var telephone = await SecureStorage.GetAsync(StorageKeys.UserTelephone(idStr)) ?? string.Empty;
-        var adresse   = await SecureStorage.GetAsync(StorageKeys.UserAdresse(idStr))   ?? string.Empty;
+        var telephone    = await SecureStorage.GetAsync(StorageKeys.UserTelephone(idStr)) ?? string.Empty;
+        var adresse      = await SecureStorage.GetAsync(StorageKeys.UserAdresse(idStr))   ?? string.Empty;
+        var idRegionStr  = await SecureStorage.GetAsync(StorageKeys.UserIdRegion);
 
         return new UserInfo
         {
@@ -100,6 +106,7 @@ public class AuthService
             Role      = role,
             Telephone = telephone,
             Adresse   = adresse,
+            IdRegion  = int.TryParse(idRegionStr, out var idRegion) ? idRegion : (int?)null,
         };
     }
 
@@ -111,6 +118,7 @@ public class AuthService
         SecureStorage.Remove(StorageKeys.UserId);
         SecureStorage.Remove(StorageKeys.UserName);
         SecureStorage.Remove(StorageKeys.UserEmail);
+        SecureStorage.Remove(StorageKeys.UserIdRegion);
         _api.ClearAuthorizationHeader();
     }
 

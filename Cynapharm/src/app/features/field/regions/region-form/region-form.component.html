@@ -34,16 +34,15 @@
         }
       </div>
 
-      <!-- Délégué (dropdown) -->
+      <!-- Superviseur (dropdown) -->
       <div class="field">
-        <label>Délégué *</label>
-        <select formControlName="id_User_Delegue">
-          <option [value]="null">-- Sélectionner un délégué --</option>
-          @for (u of delegues; track u.id) {
+        <label>Superviseur</label>
+        <select formControlName="id_Superviseur">
+          <option [value]="null">-- Sélectionner un superviseur --</option>
+          @for (u of superviseurs; track u.id) {
             <option [value]="u.id">{{ userName(u) }}</option>
           }
         </select>
-        <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Délégué requis</span>
       </div>
 
     </div>

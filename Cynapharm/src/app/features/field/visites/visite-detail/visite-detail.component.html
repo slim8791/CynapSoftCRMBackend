@@ -64,6 +64,15 @@
               </div>
             </div>
           }
+          @if (visite?.isStarted) {
+            <div class="vd-row">
+              <div class="vd-row-icon">▶</div>
+              <div class="vd-row-body">
+                <span class="vd-row-label">Heure de début</span>
+                <span class="vd-row-val" style="color: #059669;">{{ visite?.heureDebut | date:'HH:mm' }}</span>
+              </div>
+            </div>
+          }
         </div>
       </div>
 

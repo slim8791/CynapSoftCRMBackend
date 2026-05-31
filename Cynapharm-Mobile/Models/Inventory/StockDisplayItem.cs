@@ -37,7 +37,7 @@ public class StockDisplayItem
     public float ProgressValue =>
         QuantiteAllouee > 0
             ? Math.Clamp((float)QuantiteRestante / QuantiteAllouee, 0f, 1f)
-            : QuantiteRestante > 0 ? 1f : 0f;
+            : 0f; // no allocated quantity known → show empty bar (covers promo cards)
 
     /// <summary>
     /// True only for échantillon cards that have run out of stock.

@@ -7,7 +7,7 @@ export interface Region {
   id_Region: number;
   nomRegion: string;
   codePostal: string;
-  id_User_Delegue: number;
+  id_Superviseur?: number;
 }
 
 export interface VisiteKpi {

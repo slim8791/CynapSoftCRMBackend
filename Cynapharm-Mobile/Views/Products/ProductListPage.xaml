@@ -17,8 +17,24 @@
             <VerticalStackLayout Spacing="0">
 
                 <!-- Title + product count badge + hamburger -->
-                <Grid ColumnDefinitions="*,Auto,44" Padding="20,52,16,14">
-                    <VerticalStackLayout Grid.Column="0" Spacing="3">
+                <Grid ColumnDefinitions="44,*,Auto" Padding="16,48,16,14">
+                    
+                    <!-- Hamburger on the Left -->
+                    <Border Grid.Column="0"
+                            BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                            Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                            VerticalOptions="Center" HorizontalOptions="Start">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnHamburgerTapped" />
+                        </Border.GestureRecognizers>
+                        <!-- SVG Hamburger Menu -->
+                        <Path Data="M 5,7 L 19,7 M 5,12 L 19,12 M 5,17 L 19,17"
+                              Stroke="White" StrokeThickness="2.5"
+                              StrokeLineJoin="Round" StrokeLineCap="Round"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
                         <Label Text="Catalogue"
                                FontSize="20" FontAttributes="Bold"
                                FontFamily="OpenSansSemibold"
@@ -28,7 +44,7 @@
                                TextColor="#CCF5FF" />
                     </VerticalStackLayout>
 
-                    <Border Grid.Column="1"
+                    <Border Grid.Column="2"
                             BackgroundColor="#26FFFFFF"
                             StrokeShape="RoundRectangle 20"
                             Stroke="Transparent"
@@ -38,18 +54,6 @@
                         <Label Text="{Binding ProductCount, StringFormat='{0} produits'}"
                                FontSize="12" FontAttributes="Bold"
                                TextColor="White" />
-                    </Border>
-
-                    <Border Grid.Column="2"
-                            BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
-                            Stroke="Transparent" HeightRequest="38" WidthRequest="38"
-                            VerticalOptions="Center" HorizontalOptions="End">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnHamburgerTapped" />
-                        </Border.GestureRecognizers>
-                        <Label Text="≡" FontSize="22" FontAttributes="Bold"
-                               TextColor="White"
-                               HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
                 </Grid>
 
@@ -378,6 +382,8 @@
 
             </CollectionView>
         </RefreshView>
+
+        <controls:AppLoader Grid.RowSpan="6" />
 
     </Grid>
 </ContentPage>

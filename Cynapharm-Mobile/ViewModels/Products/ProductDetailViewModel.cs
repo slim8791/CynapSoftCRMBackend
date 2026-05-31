@@ -175,6 +175,6 @@ public partial class ProductDetailViewModel : BaseViewModel
                 "OK");
             return;
         }
-        await Shell.Current.GoToAsync($"//orders/create?productId={ProductId}");
+        await Shell.Current.GoToAsync($"///orders/create?productId={ProductId}");
     }
 }

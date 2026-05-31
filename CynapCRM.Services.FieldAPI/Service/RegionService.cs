@@ -25,9 +25,9 @@ namespace CynapCRM.Services.FieldAPI.Service
             {
                 region = new Region
                 {
-                    NomRegion = dto.NomRegion,
-                    CodePostal = dto.CodePostal,
-                    Id_User_Delegue = dto.Id_User_Delegue
+                    NomRegion      = dto.NomRegion,
+                    CodePostal     = dto.CodePostal,
+                    Id_Superviseur = dto.Id_Superviseur
                 };
 
                 _db.Regions.Add(region);
@@ -40,9 +40,9 @@ namespace CynapCRM.Services.FieldAPI.Service
                 if (region == null)
                     return null;
 
-                region.NomRegion       = dto.NomRegion;
-                region.CodePostal      = dto.CodePostal;
-                region.Id_User_Delegue = dto.Id_User_Delegue;
+                region.NomRegion      = dto.NomRegion;
+                region.CodePostal     = dto.CodePostal;
+                region.Id_Superviseur = dto.Id_Superviseur;
 
             }
             await _db.SaveChangesAsync();
@@ -62,7 +62,18 @@ namespace CynapCRM.Services.FieldAPI.Service
         {
             var list = await _db.Regions
                 .AsNoTracking()
-                .Where(r => r.Id_User_Delegue == idDelegue)
+                .Where(r => r.Id_Superviseur == idDelegue)
+                .OrderBy(r => r.NomRegion)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<RegionDto>>(list);
+        }
+
+        public async Task<IEnumerable<RegionDto>> GetRegionsBySuperviseurAsync(int idSuperviseur)
+        {
+            var list = await _db.Regions
+                .AsNoTracking()
+                .Where(r => r.Id_Superviseur == idSuperviseur)
                 .OrderBy(r => r.NomRegion)
                 .ToListAsync();
 
@@ -88,9 +99,7 @@ namespace CynapCRM.Services.FieldAPI.Service
 
         public async Task<int> GetNombreRegionsCouvreAsync(int idDelegue)
         {
-
-            return await _db.Regions.CountAsync(r => r.Id_User_Delegue == idDelegue);
-
+            return await _db.Regions.CountAsync(r => r.Id_Superviseur == idDelegue);
         }
 
 

@@ -73,12 +73,12 @@
               <span class="value mono">{{ gratuiteData.numeroLot }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Délégué ID</span>
-              <span class="value">#{{ gratuiteData.id_User_Delegue }}</span>
+              <span class="label">Délégué</span>
+              <span class="value">{{ getDeleagueName(gratuiteData.id_User_Delegue) }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Produit ID</span>
-              <span class="value">#{{ gratuiteData.id_Produit }}</span>
+              <span class="label">Produit</span>
+              <span class="value">{{ getProduitName(gratuiteData.id_Produit) }}</span>
             </div>
             @if (gratuiteData.dateDebut) {
               <div class="detail-item">
@@ -217,12 +217,12 @@
               <span class="value mono">{{ echantillonData.numeroLot }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Délégué ID</span>
-              <span class="value">#{{ echantillonData.id_User_Delegue }}</span>
+              <span class="label">Délégué</span>
+              <span class="value">{{ getDeleagueName(echantillonData.id_User_Delegue) }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Produit ID</span>
-              <span class="value">#{{ echantillonData.id_Produit }}</span>
+              <span class="label">Produit</span>
+              <span class="value">{{ getProduitName(echantillonData.id_Produit) }}</span>
             </div>
             @if (echantillonData.description) {
               <div class="detail-item">

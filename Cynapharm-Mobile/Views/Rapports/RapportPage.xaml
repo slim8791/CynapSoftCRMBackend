@@ -54,25 +54,36 @@
                 <Border BackgroundColor="#FFF3E0"
                         StrokeShape="RoundRectangle 12"
                         Stroke="#FF8F00" StrokeThickness="1"
-                        Padding="14,10"
+                        Padding="14,12"
                         IsVisible="{Binding IsGpsWarningVisible}">
-                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-                        <Label Grid.Column="0" Text="⚠️" FontSize="18"
-                               VerticalOptions="Center" />
-                        <Label Grid.Column="1"
-                               Text="{Binding GpsWarningMessage}"
-                               FontSize="12" TextColor="#E65100"
-                               VerticalOptions="Center" />
-                        <Button Grid.Column="2"
-                                Text="Paramètres"
-                                FontSize="11"
-                                BackgroundColor="#FF8F00"
-                                TextColor="White"
-                                CornerRadius="8"
-                                Padding="8,4"
-                                HeightRequest="36"
-                                Command="{Binding OpenGpsSettingsCommand}" />
-                    </Grid>
+                    <VerticalStackLayout Spacing="10">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Label Grid.Column="0" Text="⚠️" FontSize="18"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding GpsWarningMessage}"
+                                   FontSize="12" TextColor="#E65100"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                        <HorizontalStackLayout Spacing="10" HorizontalOptions="End">
+                            <Button Text="🔄 Réessayer"
+                                    FontSize="11"
+                                    BackgroundColor="{StaticResource Primary}"
+                                    TextColor="White"
+                                    CornerRadius="8"
+                                    Padding="10,4"
+                                    HeightRequest="36"
+                                    Command="{Binding RefreshGpsCommand}" />
+                            <Button Text="⚙️ Paramètres"
+                                    FontSize="11"
+                                    BackgroundColor="#FF8F00"
+                                    TextColor="White"
+                                    CornerRadius="8"
+                                    Padding="10,4"
+                                    HeightRequest="36"
+                                    Command="{Binding OpenGpsSettingsCommand}" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
                 </Border>
 
                 <!-- GPS status banner -->
@@ -309,5 +320,6 @@
                     Command="{Binding CloseCommand}" />
         </Grid>
 
+        <controls:AppLoader Grid.RowSpan="3" />
     </Grid>
 </ContentPage>

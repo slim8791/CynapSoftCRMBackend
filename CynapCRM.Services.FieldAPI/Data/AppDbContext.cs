@@ -33,8 +33,8 @@ namespace CynapCRM.Services.FieldAPI.Data
                 .OnDelete(DeleteBehavior.SetNull); // If a planning is deleted, the visits remain (historical)
 
 
-            // 4. Frequent searches by delegate
-            modelBuilder.Entity<Region>().HasIndex(r => r.Id_User_Delegue);
+            // 4. Frequent searches by delegate/superviseur
+            modelBuilder.Entity<Region>().HasIndex(r => r.Id_Superviseur);
             modelBuilder.Entity<Objectif_Delegue>().HasIndex(o => o.Id_User_Delegue);
             modelBuilder.Entity<Planning_Visite>().HasIndex(p => p.Id_User_Delegue);
             modelBuilder.Entity<Visite>().HasIndex(v => v.Id_User_Delegue);

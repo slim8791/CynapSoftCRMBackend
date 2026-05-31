@@ -18,5 +18,6 @@
 
         public UserRole Role { get; set; }      // CLIENT / ADMIN / SUPERVISEUR / DELEGUE / MEDECIN
         public UserType UserType { get; set; }  // PHARMACIEN / GROSSISTE
+        public int? IdRegion { get; set; }
     }
 }

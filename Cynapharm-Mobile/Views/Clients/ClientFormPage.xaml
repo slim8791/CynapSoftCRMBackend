@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Clients"
+             x:Class="Cynapharm_Mobile.Views.Clients.ClientFormPage"
+             x:DataType="vm:ClientFormViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ═══ HEADER ══════════════════════════════════════════════ -->
+        <Grid Grid.Row="0"
+              BackgroundColor="{StaticResource Primary}"
+              Padding="16,48,16,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Back button -->
+            <Border Grid.Column="0"
+                    BackgroundColor="#26FFFFFF"
+                    StrokeShape="RoundRectangle 10"
+                    Stroke="Transparent"
+                    HeightRequest="36" WidthRequest="36"
+                    VerticalOptions="Center">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CancelCommand}"/>
+                </Border.GestureRecognizers>
+                <Label Text="‹" FontSize="22" TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Border>
+
+            <!-- Title -->
+            <Label Grid.Column="1"
+                   Text="{Binding Title}"
+                   FontSize="18" FontAttributes="Bold"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"/>
+        </Grid>
+
+        <!-- ═══ FORM ════════════════════════════════════════════════ -->
+        <ScrollView Grid.Row="1" Padding="14,14,14,20">
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Error -->
+                <Border IsVisible="{Binding HasError}"
+                        BackgroundColor="{StaticResource DangerLight}"
+                        StrokeShape="RoundRectangle 10"
+                        Stroke="Transparent"
+                        Padding="12" Margin="0,0,0,12">
+                    <Label Text="{Binding ErrorMessage}"
+                           FontSize="13" TextColor="{StaticResource DangerText}"/>
+                </Border>
+
+                <!-- Section: Identité -->
+                <Label Text="Identité" FontSize="14" FontAttributes="Bold"
+                       TextColor="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
+
+                <Label Text="Nom *" FontSize="12"
+                       TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
+                <Entry Placeholder="Nom de famille"
+                       Text="{Binding Nom}"
+                       BackgroundColor="{StaticResource SurfaceBackground}"
+                       FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
+
+                <Label Text="Prénom *" FontSize="12"
+                       TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
+                <Entry Placeholder="Prénom"
+                       Text="{Binding Prenom}"
+                       BackgroundColor="{StaticResource SurfaceBackground}"
+                       FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
+
+                <Label Text="Email *" FontSize="12"
+                       TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
+                <Entry Placeholder="client@exemple.com"
+                       Text="{Binding Email}"
+                       Keyboard="Email"
+                       IsEnabled="{Binding IsNew}"
+                       BackgroundColor="{StaticResource SurfaceBackground}"
+                       FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
+
+                <!-- Section: Coordonnées -->
+                <Label Text="Coordonnées" FontSize="14" FontAttributes="Bold"
+                       TextColor="{StaticResource TextPrimary}" Margin="0,8,0,8"/>
+
+                <Label Text="Téléphone" FontSize="12"
+                       TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
+                <Entry Placeholder="+216 XX XXX XXX"
+                       Text="{Binding Telephone}"
+                       Keyboard="Telephone"
+                       BackgroundColor="{StaticResource SurfaceBackground}"
+                       FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
+
+                <Label Text="Adresse" FontSize="12"
+                       TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
+                <Entry Placeholder="Ville, Pays"
+                       Text="{Binding Adresse}"
+                       BackgroundColor="{StaticResource SurfaceBackground}"
+                       FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
+
+                <!-- Section: Type client -->
+                <Label Text="Type de client" FontSize="14" FontAttributes="Bold"
+                       TextColor="{StaticResource TextPrimary}" Margin="0,8,0,8"/>
+
+                <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                        StrokeShape="RoundRectangle 10"
+                        Stroke="{StaticResource BorderColor}"
+                        Padding="4,0"
+                        HeightRequest="48" Margin="0,0,0,12">
+                    <Picker ItemsSource="{Binding ClientTypes}"
+                            SelectedIndex="{Binding SelectedTypeIndex}"
+                            FontSize="14"
+                            TextColor="{StaticResource TextPrimary}"/>
+                </Border>
+
+                <!-- Section: Sécurité (création only) -->
+                <VerticalStackLayout IsVisible="{Binding IsNew}">
+                    <Label Text="Sécurité" FontSize="14" FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}" Margin="0,8,0,8"/>
+
+                    <Label Text="Mot de passe *" FontSize="12"
+                           TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
+                    <Entry Placeholder="6 caractères minimum"
+                           Text="{Binding Password}"
+                           IsPassword="True"
+                           BackgroundColor="{StaticResource SurfaceBackground}"
+                           FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
+                </VerticalStackLayout>
+
+                <!-- Info note -->
+                <Border BackgroundColor="{StaticResource PrimaryLight}"
+                        StrokeShape="RoundRectangle 10"
+                        Stroke="Transparent"
+                        Padding="12" Margin="0,4,0,12">
+                    <Label FontSize="12" TextColor="{StaticResource PrimaryText}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="ℹ️ " FontSize="14"/>
+                                <Span Text="Le rôle est automatiquement défini comme CLIENT. Seul un administrateur peut le modifier."/>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </Border>
+
+                <!-- Submit button -->
+                <Button Text="{Binding IsNew, Converter={StaticResource InvertedBoolConverter}, ConverterParameter='Mettre à jour|Créer le compte'}"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="15"
+                        HeightRequest="50"
+                        CornerRadius="10"
+                        Margin="0,8,0,0"/>
+
+                <!-- Loading indicator -->
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Color="{StaticResource Primary}"
+                                   HeightRequest="30" Margin="0,8,0,0"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

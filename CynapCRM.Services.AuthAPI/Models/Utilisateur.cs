@@ -11,6 +11,7 @@ namespace CynapCRM.Services.AuthAPI.Models
 
         public string Adresse { get; set; } = string.Empty;
         public bool IsDeleted { get; set; } = false;
+        public int? IdRegion { get; set; }
 
 
 

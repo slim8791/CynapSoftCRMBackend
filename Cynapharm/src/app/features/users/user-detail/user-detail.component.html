@@ -278,6 +278,25 @@
           </span>
         </div>
 
+        @if ((user.role | uppercase) === 'DELEGUE' || (user.role | uppercase) === 'SUPERVISEUR') {
+          <div class="detail-row">
+            <span class="detail-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Région
+            </span>
+            @if (regionName !== '—') {
+              <span class="detail-val" style="display:inline-block;background:#EDE9FE;color:#6D28D9;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:600">
+                {{ regionName }}
+              </span>
+            } @else {
+              <span class="detail-val" style="color:#94a3b8">Non assigné</span>
+            }
+          </div>
+        }
+
         <div class="detail-row">
           <span class="detail-label">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

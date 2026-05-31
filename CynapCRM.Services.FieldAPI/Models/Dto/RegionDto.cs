@@ -8,6 +8,6 @@
 
         public string CodePostal { get; set; } = string.Empty;
 
-        public int Id_User_Delegue { get; set; }
+        public int? Id_Superviseur { get; set; }
     }
 }

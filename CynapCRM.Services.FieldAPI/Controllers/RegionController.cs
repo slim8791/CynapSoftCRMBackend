@@ -117,6 +117,25 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             }
         }
 
+        [HttpGet("by-superviseur/{idSuperviseur:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetRegionsBySuperviseur(int idSuperviseur)
+        {
+            try
+            {
+                var result = await _regionService.GetRegionsBySuperviseurAsync(idSuperviseur);
+                _response.IsSuccess = true;
+                _response.Result    = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message   = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpGet("count/{idDelegue:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
         public async Task<IActionResult> GetNombreRegionsCouvre(int idDelegue)

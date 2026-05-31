@@ -7,6 +7,9 @@ import {
 
 import { AuthService, User } from '../../core/services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { RegionService } from '../field/regions/services/region.service';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 type Tab = 'profile' | 'password';
 
@@ -21,6 +24,7 @@ export class SettingsComponent implements OnInit {
 
   activeTab: Tab = 'profile';
   currentUser: User | null = null;
+  regionName = '—';
 
   // ── Formulaire édition du profil ───────────────────────
   profileForm!: FormGroup;
@@ -44,11 +48,32 @@ export class SettingsComponent implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder,
     private toast: ToastService,
+    private regionSvc: RegionService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
+
+    const role = (this.currentUser?.role ?? '').toUpperCase();
+    const uid  = this.currentUser?.id;
+
+    if (uid && role === 'SUPERVISEUR') {
+      this.regionSvc.getBySuperviseur(uid)
+        .pipe(catchError(() => of(null)))
+        .subscribe(region => {
+          this.regionName = (region as any)?.NomRegion ?? region?.nomRegion ?? '—';
+          this.cdr.markForCheck();
+        });
+    } else if (uid && role === 'DELEGUE') {
+      this.regionSvc.getByDelegue(uid)
+        .pipe(catchError(() => of([])))
+        .subscribe(regions => {
+          const r = regions[0] as any;
+          this.regionName = r?.NomRegion ?? r?.nomRegion ?? '—';
+          this.cdr.markForCheck();
+        });
+    }
 
     this.profileForm = this.fb.group({
       name:        ['', Validators.required],

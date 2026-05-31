@@ -24,9 +24,30 @@
             <Border.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnBackTapped" />
             </Border.GestureRecognizers>
-            <Label Text="‹" FontSize="24" FontAttributes="Bold"
-                   TextColor="White"
-                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <!-- SVG Chevron Left -->
+            <Path Data="M 15,18 L 9,12 L 15,6"
+                  Stroke="White" StrokeThickness="2.5"
+                  StrokeLineJoin="Round" StrokeLineCap="Round"
+                  HorizontalOptions="Center" VerticalOptions="Center" />
+        </Border>
+
+        <!-- ── Left: Hamburger ───────────────────────────────────────────── -->
+        <Border Grid.Column="0"
+                IsVisible="{Binding ShowHamburger, Source={x:Reference root}}"
+                BackgroundColor="#26FFFFFF"
+                StrokeShape="RoundRectangle 12"
+                Stroke="Transparent"
+                HeightRequest="38" WidthRequest="38"
+                VerticalOptions="Center"
+                HorizontalOptions="Start">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnHamburgerTapped" />
+            </Border.GestureRecognizers>
+            <!-- SVG Hamburger Menu -->
+            <Path Data="M 5,7 L 19,7 M 5,12 L 19,12 M 5,17 L 19,17"
+                  Stroke="White" StrokeThickness="2.5"
+                  StrokeLineJoin="Round" StrokeLineCap="Round"
+                  HorizontalOptions="Center" VerticalOptions="Center" />
         </Border>
 
         <!-- ── Center: Title + optional Subtitle ────────────────────────── -->
@@ -47,7 +68,7 @@
                    IsVisible="{Binding HasSubtitle, Source={x:Reference root}}" />
         </VerticalStackLayout>
 
-        <!-- ── Right: Hamburger OR custom icon ──────────────────────────── -->
+        <!-- ── Right: Custom action icon ────────────────────────────────── -->
         <Border Grid.Column="2"
                 IsVisible="{Binding ShowRightButton, Source={x:Reference root}}"
                 BackgroundColor="#26FFFFFF"
@@ -59,8 +80,8 @@
             <Border.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnRightTapped" />
             </Border.GestureRecognizers>
-            <Label Text="{Binding RightButtonGlyph, Source={x:Reference root}}"
-                   FontFamily="{Binding RightButtonFontFamily, Source={x:Reference root}}"
+            <Label Text="{Binding RightIconGlyph, Source={x:Reference root}}"
+                   FontFamily="{Binding RightIconFontFamily, Source={x:Reference root}}"
                    FontSize="22"
                    TextColor="White"
                    HorizontalOptions="Center" VerticalOptions="Center" />

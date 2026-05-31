@@ -10,70 +10,45 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="{StaticResource PageBackground}">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
 
         <!-- ── Header ─────────────────────────────────────────────────────── -->
-        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}">
-            <VerticalStackLayout Padding="20,52,20,16" Spacing="0">
-                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,14">
-                    <VerticalStackLayout Grid.Column="0" Spacing="3">
-                        <Label Text="Mes visites"
-                               FontSize="20" FontAttributes="Bold"
-                               FontFamily="OpenSansSemibold"
-                               TextColor="White" />
-                        <Label Text="Historique et planification"
-                               FontSize="12" TextColor="#CCF5FF" />
-                    </VerticalStackLayout>
+        <controls:AppHeader Grid.Row="0" Title="Mes visites" Subtitle="Historique et planification" ShowHamburger="True" />
 
-                    <!-- Hamburger button (≡) — opens flyout drawer -->
-                    <Border Grid.Column="1"
-                            BackgroundColor="#26FFFFFF"
-                            StrokeShape="RoundRectangle 12"
-                            Stroke="Transparent"
-                            HeightRequest="38" WidthRequest="38"
-                            VerticalOptions="Center">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnHamburgerTapped" />
-                        </Border.GestureRecognizers>
-                        <Label Text="≡" FontSize="22" FontAttributes="Bold"
-                               TextColor="White"
-                               HorizontalOptions="Center" VerticalOptions="Center" />
-                    </Border>
+        <VerticalStackLayout Grid.Row="1" BackgroundColor="{StaticResource Primary}" Padding="0,0,0,16">
+            <!-- Floating search bar -->
+            <Border BackgroundColor="White"
+                    StrokeShape="RoundRectangle 14"
+                    Stroke="Transparent"
+                    Padding="14,0"
+                    Margin="16,0,16,4">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,4" Radius="12" Opacity="0.12" />
+                </Border.Shadow>
+                <Grid ColumnDefinitions="20,*" ColumnSpacing="10" HeightRequest="48">
+                    <Label Grid.Column="0" Text="🔍" FontSize="15"
+                           TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                    <Entry Grid.Column="1"
+                           Placeholder="Rechercher une visite…"
+                           Text="{Binding SearchQuery}"
+                           ReturnCommand="{Binding SearchCommand}"
+                           ReturnType="Search"
+                           PlaceholderColor="{StaticResource TextMuted}"
+                           TextColor="{StaticResource TextPrimary}"
+                           BackgroundColor="Transparent"
+                           FontSize="14" HeightRequest="48"
+                           Margin="0" VerticalOptions="Center" />
                 </Grid>
-                <!-- Floating search bar -->
-                <Border BackgroundColor="White"
-                        StrokeShape="RoundRectangle 14"
-                        Stroke="Transparent"
-                        Padding="14,0"
-                        Margin="0,0,0,4">
-                    <Border.Shadow>
-                        <Shadow Brush="Black" Offset="0,4" Radius="12" Opacity="0.12" />
-                    </Border.Shadow>
-                    <Grid ColumnDefinitions="20,*" ColumnSpacing="10" HeightRequest="48">
-                        <Label Grid.Column="0" Text="🔍" FontSize="15"
-                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
-                        <Entry Grid.Column="1"
-                               Placeholder="Rechercher une visite…"
-                               Text="{Binding SearchQuery}"
-                               ReturnCommand="{Binding SearchCommand}"
-                               ReturnType="Search"
-                               PlaceholderColor="{StaticResource TextMuted}"
-                               TextColor="{StaticResource TextPrimary}"
-                               BackgroundColor="Transparent"
-                               FontSize="14" HeightRequest="48"
-                               Margin="0" VerticalOptions="Center" />
-                    </Grid>
-                </Border>
-            </VerticalStackLayout>
-        </Grid>
+            </Border>
+        </VerticalStackLayout>
 
         <!-- Error banner -->
-        <controls:ErrorBanner Grid.Row="1"
+        <controls:ErrorBanner Grid.Row="2"
                               Message="{Binding ErrorMessage}"
                               Margin="16,8,16,0" />
 
         <!-- ── Date range filter ─────────────────────────────────────────── -->
-        <Grid Grid.Row="2"
+        <Grid Grid.Row="3"
               ColumnDefinitions="*,*" ColumnSpacing="12"
               BackgroundColor="{StaticResource PageBackground}"
               Padding="16,10,16,4">
@@ -108,7 +83,7 @@
         </Grid>
 
         <!-- ── Status filter chips ───────────────────────────────────────── -->
-        <ScrollView Grid.Row="3"
+        <ScrollView Grid.Row="4"
                     Orientation="Horizontal"
                     HorizontalScrollBarVisibility="Never"
                     BackgroundColor="{StaticResource PageBackground}">
@@ -157,7 +132,7 @@
         </ScrollView>
 
         <!-- ── Visit list ────────────────────────────────────────────────── -->
-        <RefreshView Grid.Row="4"
+        <RefreshView Grid.Row="5"
                      Command="{Binding RefreshCommand}"
                      IsRefreshing="{Binding IsRefreshing}"
                      RefreshColor="{StaticResource Primary}">
@@ -285,7 +260,7 @@
         </RefreshView>
 
         <!-- ── Sticky CTA ─────────────────────────────────────────────────── -->
-        <Grid Grid.Row="5" BackgroundColor="{StaticResource CardBackground}">
+        <Grid Grid.Row="6" BackgroundColor="{StaticResource CardBackground}">
             <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}"
                      VerticalOptions="Start" />
             <Button Text="+ Nouvelle visite"
@@ -293,6 +268,8 @@
                     Style="{StaticResource PrimaryButtonStyle}"
                     Margin="16,12,16,28" />
         </Grid>
+
+        <controls:AppLoader Grid.RowSpan="7" />
 
     </Grid>
 </ContentPage>

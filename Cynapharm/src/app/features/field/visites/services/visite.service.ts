@@ -11,6 +11,8 @@ export interface VisiteDto {
   dateVisite:      string;
   type:            VisiteType;
   isCompleted?:    boolean;
+  isStarted?:      boolean;
+  heureDebut?:     string | null;
   id_Medecin?:     number | null;
   id_Pharmacien?:  number | null;
   id_Planning?:    number | null;
@@ -30,6 +32,8 @@ export class VisiteService {
       dateVisite:      r.date            ?? r.dateVisite      ?? r.DateVisite     ?? r.Date ?? '',
       type:            r.type            ?? r.Type            ?? 0,
       isCompleted:     r.isCompleted     ?? r.IsCompleted     ?? false,
+      isStarted:       r.isStarted       ?? r.IsStarted       ?? false,
+      heureDebut:      r.heureDebut      ?? r.HeureDebut      ?? null,
       id_Medecin:      r.id_Medecin      ?? r.Id_Medecin      ?? r.idMedecin      ?? null,
       id_Pharmacien:   r.id_Pharmacien   ?? r.Id_Pharmacien   ?? r.idPharmacien   ?? null,
       id_Planning:     r.id_Planning     ?? r.Id_Planning     ?? r.idPlanning     ?? null,
@@ -48,13 +52,7 @@ export class VisiteService {
 
   getById(id: number): Observable<VisiteDto> {
     return this.api.get<any>(`${this.base}/${id}`).pipe(
-      map(r => {
-        const unwrapped = this.u<any>(r);
-        console.log('API Response for getById:', r, 'Unwrapped:', unwrapped);
-        const normalized = this.normalize(unwrapped);
-        console.log('Normalized Visite:', normalized);
-        return normalized;
-      })
+      map(r => this.normalize(this.u<any>(r)))
     );
   }
 

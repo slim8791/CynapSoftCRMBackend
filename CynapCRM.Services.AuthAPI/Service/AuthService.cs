@@ -84,6 +84,8 @@ namespace CynapCRM.Services.AuthAPI.Service
                 };
             }
 
+            user.IdRegion = model.IdRegion;
+
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
@@ -160,8 +162,8 @@ namespace CynapCRM.Services.AuthAPI.Service
                 Name = user.Name,
                 PhoneNumber = user.PhoneNumber,
                 Adresse = user.Adresse,
-
-                Role = roles.First().ToUpper()
+                Role = roles.First().ToUpper(),
+                IdRegion = user.IdRegion
             };
 
             return new LoginResponseDto
@@ -189,7 +191,8 @@ namespace CynapCRM.Services.AuthAPI.Service
                 Adresse = user.Adresse ?? "",
                 Role = role,
                 IsDeleted = user.IsDeleted,
-                TypeClient = GetTypeClient(user)
+                TypeClient = GetTypeClient(user),
+                IdRegion = user.IdRegion
             };
         }
 
@@ -284,7 +287,8 @@ namespace CynapCRM.Services.AuthAPI.Service
                     Name = user.Name,
                     PhoneNumber = user.PhoneNumber,
                     Adresse = user.Adresse,
-                    Role = updatedRoles.FirstOrDefault() ?? ""
+                    Role = updatedRoles.FirstOrDefault() ?? "",
+                    IdRegion = user.IdRegion
                 },
                 Token = newToken
             };
@@ -472,7 +476,8 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                     Adresse = user.Adresse,
                     Role = roles.FirstOrDefault() ?? "",
                     IsDeleted = user.IsDeleted,
-                    TypeClient = GetTypeClient(user)
+                    TypeClient = GetTypeClient(user),
+                    IdRegion = user.IdRegion
                 });
             }
 
@@ -512,7 +517,8 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                     Adresse = user.Adresse,
                     Role = roles.FirstOrDefault() ?? "",
                     IsDeleted = user.IsDeleted,
-                    TypeClient = GetTypeClient(user)
+                    TypeClient = GetTypeClient(user),
+                    IdRegion = user.IdRegion
                 });
             }
 
@@ -536,10 +542,37 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                     Adresse = user.Adresse,
                     Role = roles.FirstOrDefault() ?? "",
                     IsDeleted = user.IsDeleted,
-                    TypeClient = GetTypeClient(user)
+                    TypeClient = GetTypeClient(user),
+                    IdRegion = user.IdRegion
                 });
             }
 
+            return result;
+        }
+
+        public async Task<IEnumerable<UserDto>> GetUsersByRegionAsync(int idRegion)
+        {
+            var users = await _userManager.Users
+                .Where(u => u.IdRegion == idRegion && !u.IsDeleted)
+                .ToListAsync();
+
+            var result = new List<UserDto>();
+            foreach (var u in users)
+            {
+                var roles = await _userManager.GetRolesAsync(u);
+                result.Add(new UserDto
+                {
+                    Id          = u.Id,
+                    Name        = u.Name,
+                    Email       = u.Email ?? "",
+                    PhoneNumber = u.PhoneNumber ?? "",
+                    Adresse     = u.Adresse,
+                    Role        = roles.FirstOrDefault() ?? "",
+                    IdRegion    = u.IdRegion,
+                    IsDeleted   = u.IsDeleted,
+                    TypeClient  = GetTypeClient(u)
+                });
+            }
             return result;
         }
 
@@ -564,7 +597,8 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                     Adresse = user.Adresse,
                     Role = roles.FirstOrDefault() ?? "",
                     IsDeleted = user.IsDeleted,
-                    TypeClient = GetTypeClient(user)
+                    TypeClient = GetTypeClient(user),
+                    IdRegion = user.IdRegion
                 });
             }
             return result;
@@ -593,6 +627,8 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
             user.Name = model.Name ?? user.Name;
             user.PhoneNumber = model.PhoneNumber ?? user.PhoneNumber;
             user.Adresse = model.Adresse ?? user.Adresse;
+            if (model.IdRegion.HasValue)
+                user.IdRegion = model.IdRegion;
 
             var result = await _userManager.UpdateAsync(user);
 
@@ -618,7 +654,8 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                     Name = user.Name,
                     PhoneNumber = user.PhoneNumber,
                     Adresse = user.Adresse,
-                    Role = roles.FirstOrDefault() ?? ""
+                    Role = roles.FirstOrDefault() ?? "",
+                    IdRegion = user.IdRegion
                 }
             };
         }

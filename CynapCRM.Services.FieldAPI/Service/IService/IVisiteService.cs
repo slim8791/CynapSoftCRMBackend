@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.FieldAPI.Models.Dto;
+using CynapCRM.Services.FieldAPI.Models.Dto;
 
 namespace CynapCRM.Services.FieldAPI.Service.IService
 {
@@ -24,6 +24,9 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 
         // Business security: ownership
         Task<bool> IsVisiteOwnedByDelegueAsync(int idVisite, int idDelegue);
+
+        // Démarrer la visite sur le terrain
+        Task<VisiteDto?> StartVisiteAsync(int idVisite);
 
     }
 }

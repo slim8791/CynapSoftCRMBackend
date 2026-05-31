@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { ApiService } from '../../../core/services/api.service';
 
 /** Correspond à EtatCommande enum backend (7 états) */
@@ -83,9 +83,29 @@ export class OrderApiService {
   }
 
   /** Tableau de bord commandes */
-  getOrdersDashboard(): Observable<OrderDashboardDto> {
+  getOrdersDashboard(): Observable<OrderDashboardDto | null> {
     return this.api.get<any>(`/orders/dashboard`).pipe(
-      map(r => this.unwrap<OrderDashboardDto>(r))
+      map(r => {
+        const data = this.unwrap<any>(r);
+        if (!data) return null;
+        return {
+          TotalCommandes:       data.TotalCommandes       ?? data.totalCommandes       ?? 0,
+          EnAttente:            data.EnAttente             ?? data.enAttente             ?? 0,
+          Confirmees:           data.Confirmees            ?? data.confirmees            ?? 0,
+          EnPreparation:        data.EnPreparation         ?? data.enPreparation         ?? 0,
+          Expediees:            data.Expediees             ?? data.expediees             ?? 0,
+          Livrees:              data.Livrees               ?? data.livrees               ?? 0,
+          Annulees:             data.Annulees              ?? data.annulees              ?? 0,
+          MontantTotalHT:       data.MontantTotalHT        ?? data.montantTotalHT        ?? 0,
+          MontantTotalTTC:      data.MontantTotalTTC       ?? data.montantTotalTTC       ?? 0,
+          ReclamationsOuvertes: data.ReclamationsOuvertes  ?? data.reclamationsOuvertes  ?? 0,
+          ReclamationsEnCours:  data.ReclamationsEnCours   ?? data.reclamationsEnCours   ?? 0,
+          ReclamationsResolues: data.ReclamationsResolues  ?? data.reclamationsResolues  ?? 0,
+          CommandesAujourdHui:  data.CommandesAujourdHui   ?? data.commandesAujourdHui   ?? 0,
+          CommandesCeMois:      data.CommandesCeMois        ?? data.commandesCeMois        ?? 0,
+        } as OrderDashboardDto;
+      }),
+      catchError(() => of(null))
     );
   }
 
@@ -126,22 +146,48 @@ export class OrderApiService {
       // Normalise le champ statut (PascalCase ou camelCase selon backend)
       const etat: any = (o as any).Statut ?? (o as any).statut
                      ?? (o as any).etatCommande ?? (o as any).EtatCommande;
+
+      const ttc = (o as any).MontantTTC ?? (o as any).montantTTC ?? o.montantTTC ?? 0;
+
+      // Normalize statut to numeric enum for reliable comparison
+      let etatNorm: number | undefined;
+      if (typeof etat === 'number') {
+        etatNorm = etat;
+      } else if (typeof etat === 'string') {
+        const found = Object.entries(ETAT_LABELS).find(([, v]) => v === etat);
+        if (found) etatNorm = Number(found[0]);
+      }
+
+      // FIX-3: skip Brouillon — internal draft, not a real order
+      if (etatNorm === EtatCommande.Brouillon) continue;
+
       const label = typeof etat === 'string'
         ? etat
         : (ETAT_LABELS[etat as EtatCommande] ?? 'Inconnu');
 
       countByStatus[label] = (countByStatus[label] ?? 0) + 1;
 
-      const ttc = (o as any).MontantTTC ?? (o as any).montantTTC ?? o.montantTTC ?? 0;
-      totalCA += ttc;
+      // Exclude annulées from CA total
+      if (etatNorm !== EtatCommande.Annulee) totalCA += ttc;
 
-      const etatNum = typeof etat === 'number' ? etat : undefined;
-      if (etat === 'EnAttente'    || etatNum === EtatCommande.EnAttente)  countEnAttente++;
-      if (etat === 'Livree'       || etatNum === EtatCommande.Livree)     countLivrees++;
-      if (etat === 'Annulee'      || etatNum === EtatCommande.Annulee)    countAnnulees++;
+      if (etatNorm === EtatCommande.EnAttente)  countEnAttente++;
+      if (etatNorm === EtatCommande.Livree)     countLivrees++;
+      if (etatNorm === EtatCommande.Annulee)    countAnnulees++;
 
-      const dateStr = ((o as any).DateCommande ?? (o as any).dateCommande ?? o.dateCommande ?? '')
-                        .slice(0, 10);
+      // FIX-4: robust date parsing — handles ISO, "dd/MM/yyyy", "yyyy-MM-dd HH:mm:ss"
+      const rawDate = (o as any).DateCommande ?? (o as any).dateCommande ?? o.dateCommande ?? '';
+      let dateStr = '';
+      if (rawDate) {
+        try {
+          const parsed = new Date(rawDate);
+          if (!isNaN(parsed.getTime())) {
+            dateStr = parsed.toISOString().slice(0, 10);
+          }
+        } catch {
+          dateStr = String(rawDate).slice(0, 10);
+        }
+      }
+
       if (dateStr === todayStr) countToday++;
 
       const bucket = last7.find(b => b.date === dateStr);

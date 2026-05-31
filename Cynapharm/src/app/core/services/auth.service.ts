@@ -29,6 +29,7 @@ export interface User {
   role: UserRole;
   type?: UserType;
   isDeleted: boolean;
+  idRegion?: number;
 }
 
 @Injectable({

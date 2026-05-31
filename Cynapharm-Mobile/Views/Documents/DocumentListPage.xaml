@@ -238,5 +238,7 @@
             </CollectionView>
         </RefreshView>
 
+        <controls:AppLoader Grid.RowSpan="5" />
+
     </Grid>
 </ContentPage>

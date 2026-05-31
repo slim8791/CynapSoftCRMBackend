@@ -136,7 +136,7 @@
                         <BoxView x:Name="EmailUnderline"
                                  HeightRequest="2"
                                  CornerRadius="1"
-                                 Color="{StaticResource FieldBorderInactive}" />
+                                 BackgroundColor="{StaticResource FieldBorderInactive}" />
                     </VerticalStackLayout>
 
                     <!-- Password field -->
@@ -184,7 +184,7 @@
                         <BoxView x:Name="PasswordUnderline"
                                  HeightRequest="2"
                                  CornerRadius="1"
-                                 Color="{StaticResource FieldBorderInactive}" />
+                                 BackgroundColor="{StaticResource FieldBorderInactive}" />
                     </VerticalStackLayout>
 
                     <!-- Forgot password link -->

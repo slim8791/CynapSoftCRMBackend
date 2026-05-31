@@ -40,6 +40,9 @@ public class VisiteService
     public Task<bool> DeleteVisiteAsync(int id)
         => _api.DeleteAsync($"fields/visites/{id}");
 
+    public Task<Visite?> StartVisiteAsync(int id)
+        => _api.PutAsync<Visite>($"fields/visites/{id}/start", new { });
+
     // ── Rapports ──────────────────────────────────────────────────────────────
 
     /// <summary>

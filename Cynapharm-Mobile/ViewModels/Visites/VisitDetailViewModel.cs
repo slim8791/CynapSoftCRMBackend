@@ -54,6 +54,7 @@ public partial class VisitDetailViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(CanDelete))]
     [NotifyPropertyChangedFor(nameof(ShowEditRapport))]
     [NotifyPropertyChangedFor(nameof(ShowViewRapport))]
+    [NotifyPropertyChangedFor(nameof(CanStartVisite))]
     private bool _isCompleted;
 
     /// <summary>True when the visite already has a submitted rapport.</summary>
@@ -62,6 +63,20 @@ public partial class VisitDetailViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(ShowEditRapport))]
     [NotifyPropertyChangedFor(nameof(ShowViewRapport))]
     private bool _hasRapport;
+
+    // ── Start visite ───────────────────────────────────────────────────────────
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanStartVisite))]
+    [NotifyPropertyChangedFor(nameof(ShowSubmitRapport))]
+    [NotifyPropertyChangedFor(nameof(ShowEditRapport))]
+    private bool _isStarted;
+
+    [ObservableProperty]
+    private string _heurDebutLabel = string.Empty;
+
+    /// <summary>Show the "Démarrer la visite" button only for existing, non-started, non-completed visites.</summary>
+    public bool CanStartVisite => IsExisting && !IsStarted && !IsCompleted;
 
     public bool HasPlanningLabel => !string.IsNullOrEmpty(PlanningLabel);
 
@@ -73,8 +88,8 @@ public partial class VisitDetailViewModel : BaseViewModel
 
     // ── Rapport action button — three mutually exclusive display states ─────────
 
-    /// <summary>No rapport yet → "Soumettre un rapport" (create).</summary>
-    public bool ShowSubmitRapport => IsExisting && !HasRapport;
+    /// <summary>No rapport yet AND visite started → "Soumettre un rapport" (create).</summary>
+    public bool ShowSubmitRapport => IsExisting && !HasRapport && IsStarted;
 
     /// <summary>Rapport exists, superviseur hasn't validated yet → "Modifier le rapport" (edit).</summary>
     public bool ShowEditRapport   => IsExisting && HasRapport && !IsCompleted;
@@ -123,6 +138,7 @@ public partial class VisitDetailViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsNew));
         OnPropertyChanged(nameof(IsExisting));
         OnPropertyChanged(nameof(CanDelete));
+        OnPropertyChanged(nameof(CanStartVisite));
         OnPropertyChanged(nameof(ShowSubmitRapport));
         OnPropertyChanged(nameof(ShowEditRapport));
         OnPropertyChanged(nameof(ShowViewRapport));
@@ -179,6 +195,8 @@ public partial class VisitDetailViewModel : BaseViewModel
                 SelectedPlanningId = visite.IdPlanning;
                 IsCompleted        = visite.IsCompleted;
                 HasRapport         = visite.HasRapport;   // ISSUE #11
+                IsStarted          = visite.IsStarted;
+                HeurDebutLabel     = visite.HeurDebutLabel;
                 SelectedMedecin    = Medecins.FirstOrDefault(m => m.Id == visite.IdMedecin);
                 SelectedPharmacien = Pharmaciens.FirstOrDefault(p => p.Id == visite.IdPharmacien);
             }
@@ -240,7 +258,7 @@ public partial class VisitDetailViewModel : BaseViewModel
         if (IsNew && result != null)
         {
             // Navigate to the new visite so the user can immediately submit a rapport
-            await Shell.Current.GoToAsync($"//visits/detail?visiteId={result.Id}");
+            await Shell.Current.GoToAsync($"///visits/detail?visiteId={result.Id}");
         }
         else
         {
@@ -257,6 +275,32 @@ public partial class VisitDetailViewModel : BaseViewModel
     });
 
     [RelayCommand]
+    private async Task StartVisiteAsync()
+    {
+        var confirm = await Shell.Current.DisplayAlert(
+            "Démarrer la visite",
+            "Confirmer le démarrage de cette visite ?",
+            "Oui", "Non");
+
+        if (!confirm) return;
+
+        await ExecuteAsync(async () =>
+        {
+            var result = await _visiteService.StartVisiteAsync(VisiteId);
+            if (result != null)
+            {
+                IsStarted      = true;
+                HeurDebutLabel = DateTime.Now.ToString("HH:mm");
+
+                await Shell.Current.DisplayAlert(
+                    "Visite démarrée",
+                    $"Heure de début : {HeurDebutLabel}",
+                    "OK");
+            }
+        });
+    }
+
+    [RelayCommand]
     private async Task GoToRapportAsync()
     {
         // Determine mode from current state — single command handles all three buttons
@@ -264,6 +308,6 @@ public partial class VisitDetailViewModel : BaseViewModel
                  : !IsCompleted  ? "&rapportMode=edit"    // edit (superviseur not yet validated)
                  :                 "&rapportMode=view";   // read-only (locked by superviseur)
 
-        await Shell.Current.GoToAsync($"//visits/rapport?visiteId={VisiteId}{mode}");
+        await Shell.Current.GoToAsync($"///visits/rapport?visiteId={VisiteId}{mode}");
     }
 }

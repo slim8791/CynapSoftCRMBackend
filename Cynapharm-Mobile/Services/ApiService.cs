@@ -175,8 +175,17 @@ public class ApiService
         var json = await response.Content.ReadAsStringAsync();
         if (string.IsNullOrWhiteSpace(json)) return default;
 
-        // All API endpoints return ApiResponse<T> { "result": ..., "isSuccess": true, "message": "" }.
-        // Always deserialize as the wrapper and return Result.
+        // Some endpoints return a plain array or object; others wrap in ApiResponse<T>.
+        // Peek at the root element: only unwrap when "isSuccess" is present.
+        using var responseDoc = System.Text.Json.JsonDocument.Parse(json);
+        var responseRoot = responseDoc.RootElement;
+
+        bool isWrapped = responseRoot.ValueKind == System.Text.Json.JsonValueKind.Object
+                         && responseRoot.TryGetProperty("isSuccess", out _);
+
+        if (!isWrapped)
+            return JsonSerializer.Deserialize<T>(json, _jsonOptions);
+
         var wrapped = JsonSerializer.Deserialize<ApiResponse<T>>(json, _jsonOptions);
         if (wrapped is null) return default;
         if (!wrapped.IsSuccess)

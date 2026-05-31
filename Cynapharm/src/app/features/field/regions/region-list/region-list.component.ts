@@ -38,7 +38,7 @@ export class RegionListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.load();
     if (this.isDelegue) return;
-    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$)).subscribe({
+    this.userSvc.getUsersByRole('SUPERVISEUR').pipe(takeUntil(this.destroy$)).subscribe({
       next: users => {
         users.forEach(u => {
           const id = this.userSvc.userId(u);
@@ -59,7 +59,7 @@ export class RegionListComponent implements OnInit, OnDestroy {
     source$.pipe(takeUntil(this.destroy$)).subscribe({
       next: data => {
         this.regions = data;
-        this.resolveDelegueNames(data.map(r => r.id_User_Delegue));
+        this.resolveDelegueNames(data.filter(r => r.id_Superviseur).map(r => r.id_Superviseur!));
         this.loading = false;
         this.cdr.markForCheck();
       },

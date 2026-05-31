@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.OrderAPI.Models;
+using CynapCRM.Services.OrderAPI.Models;
 using CynapCRM.Services.OrderAPI.Models.Dto;
 using CynapCRM.Services.OrderAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
@@ -263,9 +263,9 @@ namespace CynapCRM.Services.OrderAPI.Controllers
             }
         }
 
-        // FIX: endpoint annulation dédié pour CLIENT
+        // FIX: endpoint annulation dédié pour CLIENT et DELEGUE
         [HttpPut("{idCommande:int}/cancel")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,PHARMACIEN,GROSSISTE,CLIENT")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> CancelOrder(
             int idCommande,
             [FromQuery] string? motif = null)

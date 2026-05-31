@@ -34,9 +34,11 @@
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnHamburgerTapped" />
                     </Border.GestureRecognizers>
-                    <Label Text="≡" FontSize="22" FontAttributes="Bold"
-                           TextColor="White"
-                           HorizontalOptions="Center" VerticalOptions="Center" />
+                    <!-- SVG Hamburger Menu -->
+                    <Path Data="M 5,7 L 19,7 M 5,12 L 19,12 M 5,17 L 19,17"
+                          Stroke="White" StrokeThickness="2.5"
+                          StrokeLineJoin="Round" StrokeLineCap="Round"
+                          HorizontalOptions="Center" VerticalOptions="Center" />
                 </Border>
 
                 <Border Grid.Column="1"
@@ -45,8 +47,8 @@
                         Stroke="White" StrokeThickness="1.5"
                         HeightRequest="46" WidthRequest="46"
                         VerticalOptions="Center">
-                    <Label Text="{Binding UserInitials}"
-                           FontSize="16" FontAttributes="Bold"
+                    <Label Text="{Binding GreetingInitials}"
+                           FontSize="20" FontAttributes="Bold"
                            FontFamily="OpenSansSemibold"
                            TextColor="White"
                            HorizontalOptions="Center"
@@ -93,7 +95,7 @@
                     <BoxView Grid.Column="1" BackgroundColor="#40FFFFFF"
                              WidthRequest="1" VerticalOptions="Fill" />
                     <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="2">
-                        <Label Text="{Binding TauxConversion, StringFormat='{0:N1}%'}"
+                        <Label Text="{Binding TauxConversion, StringFormat='{0:F0}%'}"
                                FontSize="24" FontAttributes="Bold"
                                TextColor="White"
                                HorizontalOptions="Center"
@@ -191,19 +193,21 @@
                                 </Border>
                             </Grid>
 
+                            <!-- Stock faible — hidden when count = 0 -->
                             <Border BackgroundColor="{StaticResource SecondaryLight}"
                                     StrokeShape="RoundRectangle 10" Stroke="Transparent"
                                     Padding="12,8"
-                                    IsVisible="{Binding StockSummary.StocksFaibles, Converter={StaticResource IsNotNullOrEmptyConverter}}">
-                                <Label Text="{Binding StockSummary.StocksFaibles, StringFormat='⚠️ {0} produit(s) en stock faible'}"
+                                    IsVisible="{Binding HasStockFaible}">
+                                <Label Text="{Binding StockFaibleLabel}"
                                        FontSize="12" FontAttributes="Bold"
                                        TextColor="{StaticResource SecondaryText}" />
                             </Border>
+                            <!-- Rupture de stock — hidden when count = 0 -->
                             <Border BackgroundColor="{StaticResource DangerLight}"
                                     StrokeShape="RoundRectangle 10" Stroke="Transparent"
                                     Padding="12,8"
-                                    IsVisible="{Binding StockSummary.StocksVides, Converter={StaticResource IsNotNullOrEmptyConverter}}">
-                                <Label Text="{Binding StockSummary.StocksVides, StringFormat='⚠️ {0} produit(s) en rupture de stock'}"
+                                    IsVisible="{Binding HasRuptureStock}">
+                                <Label Text="{Binding RuptureStockLabel}"
                                        FontSize="12" FontAttributes="Bold"
                                        TextColor="{StaticResource DangerText}" />
                             </Border>
@@ -380,10 +384,20 @@
                                                          WidthRequest="{Binding Pourcentage}" />
                                             </Border>
                                             <Label Grid.Column="1"
-                                                   Text="{Binding ValeurRealisee, StringFormat='{0}'}"
                                                    FontSize="11"
-                                                   TextColor="{StaticResource TextSecondary}"
-                                                   VerticalOptions="Center" />
+                                                   VerticalOptions="Center">
+                                                <Label.FormattedText>
+                                                    <FormattedString>
+                                                        <Span Text="{Binding ValeurRealisee}"
+                                                              FontAttributes="Bold"
+                                                              TextColor="{StaticResource Primary}" />
+                                                        <Span Text=" / "
+                                                              TextColor="{StaticResource TextMuted}" />
+                                                        <Span Text="{Binding ValeurCible}"
+                                                              TextColor="{StaticResource TextMuted}" />
+                                                    </FormattedString>
+                                                </Label.FormattedText>
+                                            </Label>
                                         </Grid>
                                     </VerticalStackLayout>
                                 </Border>
@@ -410,6 +424,9 @@
                 </VerticalStackLayout>
             </ScrollView>
         </RefreshView>
+
+        <!-- ── Loader ────────────────────────────────────────────────────── -->
+        <controls:AppLoader Grid.RowSpan="2" />
 
     </Grid>
 </ContentPage>

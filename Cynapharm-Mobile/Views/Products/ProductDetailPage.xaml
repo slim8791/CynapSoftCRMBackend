@@ -768,5 +768,7 @@
             </Grid>
         </Grid>
 
+        <controls:AppLoader Grid.RowSpan="3" />
+
     </Grid>
 </ContentPage>

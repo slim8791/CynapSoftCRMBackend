@@ -331,9 +331,16 @@ export class VisiteAllComponent implements OnInit, OnDestroy {
   }
 
   applyDelegueFilter(): void {
-    this.filtered = this.delegueIdFilter
+    let list = this.delegueIdFilter
       ? this.visites.filter(v => v.id_User_Delegue === this.delegueIdFilter)
       : [...this.visites];
+
+    // Trier par date (la plus récente d'abord)
+    this.filtered = list.sort((a, b) => {
+      const d1 = new Date(a.dateVisite || 0).getTime();
+      const d2 = new Date(b.dateVisite || 0).getTime();
+      return d2 - d1;
+    });
   }
 
   onDelegueFilter(): void {

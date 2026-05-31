@@ -14,18 +14,20 @@
         <!-- ── Hero header ────────────────────────────────────────────────── -->
         <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}">
 
-            <!-- Hamburger overlay (top-right, within safe-area padding) -->
+            <!-- Hamburger overlay (top-left, within safe-area padding) -->
             <Border BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
                     Stroke="Transparent" HeightRequest="38" WidthRequest="38"
-                    HorizontalOptions="End" VerticalOptions="Start"
-                    Margin="0,52,16,0"
+                    HorizontalOptions="Start" VerticalOptions="Start"
+                    Margin="16,52,0,0"
                     ZIndex="10">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnHamburgerTapped" />
                 </Border.GestureRecognizers>
-                <Label Text="≡" FontSize="22" FontAttributes="Bold"
-                       TextColor="White"
-                       HorizontalOptions="Center" VerticalOptions="Center" />
+                <!-- SVG Hamburger Menu -->
+                <Path Data="M 5,7 L 19,7 M 5,12 L 19,12 M 5,17 L 19,17"
+                      Stroke="White" StrokeThickness="2.5"
+                      StrokeLineJoin="Round" StrokeLineCap="Round"
+                      HorizontalOptions="Center" VerticalOptions="Center" />
             </Border>
 
             <VerticalStackLayout Spacing="0" Padding="20,52,20,28">
@@ -173,11 +175,16 @@
                                        HorizontalOptions="Center" VerticalOptions="Center" />
                             </Border>
                             <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                <Label Text="Région" FontSize="11"
+                                <Label Text="Région" FontSize="12"
                                        TextColor="{StaticResource TextMuted}" />
-                                <Label Text="{Binding WilayaLabel}"
-                                       FontSize="14" FontAttributes="Bold"
-                                       TextColor="{StaticResource TextPrimary}" />
+                                <Label Text="{Binding RegionLabel}"
+                                       FontSize="15" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       IsVisible="{Binding HasRegion}" />
+                                <Label Text="Non assigné"
+                                       FontSize="13"
+                                       TextColor="{StaticResource TextMuted}"
+                                       IsVisible="{Binding HasRegion, Converter={StaticResource InvertedBoolConverter}}" />
                             </VerticalStackLayout>
                         </Grid>
 

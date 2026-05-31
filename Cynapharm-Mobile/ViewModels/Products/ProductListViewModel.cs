@@ -122,7 +122,7 @@
         // Garantit l'exécution sur le thread UI (obligatoire sur Android)
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            await Shell.Current.GoToAsync($"//products/detail?productId={product.Id}");
+            await Shell.Current.GoToAsync($"///products/detail?productId={product.Id}");
         });
     }
 
