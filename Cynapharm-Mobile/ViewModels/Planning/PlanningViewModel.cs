@@ -5,12 +5,14 @@ using Cynapharm_Mobile.Models.Field;
 using Cynapharm_Mobile.Services;
 using Cynapharm_Mobile.ViewModels.Base;
 using PlanningModel = Cynapharm_Mobile.Models.Field.Planning;
+using CreateVisiteDto = Cynapharm_Mobile.Models.Field.CreateVisiteDto;
 
 namespace Cynapharm_Mobile.ViewModels.Planning;
 
 public partial class PlanningViewModel : BaseViewModel
 {
     private readonly PlanningService _planningService;
+    private readonly VisiteService   _visiteService;
     private CancellationTokenSource? _loadCts;
 
     [ObservableProperty] private DateTime _weekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
@@ -20,9 +22,10 @@ public partial class PlanningViewModel : BaseViewModel
 
     public ObservableCollection<PlanningDayGroup> WeekDays { get; } = new();
 
-    public PlanningViewModel(PlanningService planningService)
+    public PlanningViewModel(PlanningService planningService, VisiteService visiteService)
     {
         _planningService = planningService;
+        _visiteService   = visiteService;
         Title = "Planning";
     }
 
@@ -54,41 +57,75 @@ public partial class PlanningViewModel : BaseViewModel
         await ExecuteAsync(async () =>
         {
             ct.ThrowIfCancellationRequested();
-            var entries = await _planningService.GetPlanningAsync(WeekStart) ?? new List<PlanningModel>();
+            var weekEnd = WeekStart.AddDays(5);
+
+            // Load planning entries and visites in parallel
+            var planningTask = _planningService.GetPlanningAsync(WeekStart);
+            var visiteTask   = _visiteService.GetVisitesAsync(WeekStart, weekEnd, null);
+            await Task.WhenAll(planningTask, visiteTask);
+
             ct.ThrowIfCancellationRequested();
+            var entries = planningTask.Result ?? new List<PlanningModel>();
+            var visites = visiteTask.Result   ?? new List<Visite>();
 
             // 6 days: Monday → Saturday (Tunisian working week)
             WeekDays.Clear();
             for (int i = 0; i < 6; i++)
             {
-                var day = WeekStart.AddDays(i);
-                var dayEntries = entries.Where(e => e.DatePlanifiee.Date == day.Date).ToList();
-                WeekDays.Add(new PlanningDayGroup(day, dayEntries));
+                var day        = WeekStart.AddDays(i);
+                var dayVisites = visites.Where(v => v.DateVisite.Date == day.Date).ToList();
+                // Filter out plannings that already have a Visite to avoid duplicates and hide the 'Démarrer' button
+                var dayEntries = entries
+                    .Where(e => e.DatePlanifiee.Date == day.Date && !dayVisites.Any(v => v.IdPlanning == e.Id))
+                    .ToList();
+                WeekDays.Add(new PlanningDayGroup(day, dayEntries, dayVisites));
             }
         });
     }
 
+    [RelayCommand]
+    private async Task OpenVisiteAsync(int visiteId)
+    {
+        if (visiteId > 0)
+            await Shell.Current.GoToAsync($"///visits/detail?visiteId={visiteId}");
+    }
+
     /// <summary>
-    /// Called by the "+" button on each day row (CommandParameter = day date)
-    /// AND by the sticky "+ Ajouter" button (CommandParameter = default → today).
-    /// Passes idPlanning when a planning entry exists for that day (ISSUE #3/#4 fix).
+    /// "+" button → ouvre le formulaire de création de planning (date pré-remplie).
     /// </summary>
     [RelayCommand]
     private async Task AddVisitAsync(DateTime date)
     {
         var effectiveDate = date != default ? date : DateTime.Today;
         var dateStr = effectiveDate.ToString("yyyy-MM-dd");
+        await Shell.Current.GoToAsync($"///planning/form?prefillDate={dateStr}");
+    }
 
-        // Find the first planning entry for this day in the current week view
-        var planning = WeekDays
-            .FirstOrDefault(g => g.Date.Date == effectiveDate.Date)
-            ?.Entries.FirstOrDefault();
+    /// <summary>
+    /// Bouton "Démarrer" sur une carte planning → crée automatiquement la visite
+    /// à partir des données du planning (médecin/pharmacien + date).
+    /// </summary>
+    [RelayCommand]
+    private async Task DemarrerVisiteAsync(PlanningModel planning)
+    {
+        if (planning == null) return;
 
-        var route = planning != null
-            ? $"//visits/detail?prefillDate={dateStr}&idPlanning={planning.Id}"
-            : $"//visits/detail?prefillDate={dateStr}";
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        if (!int.TryParse(userIdStr, out var delegueId)) return;
 
-        await Shell.Current.GoToAsync(route);
+        var dto = new CreateVisiteDto
+        {
+            DateVisite   = planning.DatePlanifiee,
+            Type         = planning.TypeVisite,
+            IdMedecin    = planning.IdMedecin,
+            IdPharmacien = planning.IdPharmacien,
+            IdPlanning   = planning.Id,
+            IdDelegue    = delegueId
+        };
+
+        var visite = await _visiteService.CreateVisiteAsync(dto);
+        if (visite != null)
+            await Shell.Current.GoToAsync($"///visits/detail?visiteId={visite.Id}");
     }
 }
 
@@ -97,13 +134,16 @@ public class PlanningDayGroup
     public DateTime Date { get; }
     public string DayLabel { get; }
     public List<PlanningModel> Entries { get; }
-    public bool HasEntries => Entries.Count > 0;
-    public bool IsToday => Date.Date == DateTime.Today;
+    public List<Visite>        Visites { get; }
+    public bool HasEntries => Entries.Count > 0 || Visites.Count > 0;
+    public bool HasVisites  => Visites.Count > 0;
+    public bool IsToday    => Date.Date == DateTime.Today;
 
-    public PlanningDayGroup(DateTime date, List<PlanningModel> entries)
+    public PlanningDayGroup(DateTime date, List<PlanningModel> entries, List<Visite> visites)
     {
-        Date = date;
+        Date     = date;
         DayLabel = date.ToString("ddd dd/MM");
-        Entries = entries;
+        Entries  = entries;
+        Visites  = visites;
     }
 }

@@ -18,11 +18,13 @@ public partial class MyStockViewModel : BaseViewModel
     private readonly ProductService       _productSvc;
     private readonly UserService          _userSvc;
 
+    private const string CacheKeyTotalite    = "stock:totalite";
     private const string CacheKeyEchantillon = "stock:echantillon";
     private const string CacheKeyPromo       = "stock:promo";
     private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(5);
 
-    private List<StockDelegue>  _echantillonStock = new();
+    private List<StockDelegue>  _totaliteStock    = new();
+    private List<StockPromo>    _echantillonStock = new();
     private List<StockPromo>    _promoStock       = new();
 
     public ObservableCollection<StockDisplayItem> StockLines     { get; } = new();
@@ -33,8 +35,8 @@ public partial class MyStockViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(IsHistorySegment))]
     private int _activeSegment;
 
-    public bool IsStockSegment   => ActiveSegment <= 1;
-    public bool IsHistorySegment => ActiveSegment == 2;
+    public bool IsStockSegment   => ActiveSegment <= 2;
+    public bool IsHistorySegment => ActiveSegment == 3;
 
     public MyStockViewModel(
         InventoryService inventoryService,
@@ -64,17 +66,28 @@ public partial class MyStockViewModel : BaseViewModel
 
         await ExecuteAsync(async () =>
         {
-            _echantillonStock = await _cache.GetOrCreateAsync(
-                CacheKeyEchantillon,
+            _totaliteStock = await _cache.GetOrCreateAsync(
+                CacheKeyTotalite,
                 async () => await _inventoryService.GetStockDelegueAsync(),
                 CacheTtl) ?? new();
 
-            // Promo stocks — 404 means no promo data for this tenant; show empty list, not error
+            try
+            {
+                _echantillonStock = await _cache.GetOrCreateAsync(
+                    CacheKeyEchantillon,
+                    async () => await _inventoryService.GetStockEchantillonAsync(),
+                    CacheTtl) ?? new();
+            }
+            catch (ApiException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                _echantillonStock = new();
+            }
+
             try
             {
                 _promoStock = await _cache.GetOrCreateAsync(
                     CacheKeyPromo,
-                    async () => await _inventoryService.GetStockPromoAsync(),
+                    async () => await _inventoryService.GetStockGratuiteAsync(),
                     CacheTtl) ?? new();
             }
             catch (ApiException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
@@ -83,15 +96,28 @@ public partial class MyStockViewModel : BaseViewModel
             }
 
             // ── FIX-5: resolve product names from ProductService ─────────────
-            // Backend StockDelegueDto does not include nomProduit.
-            // Deduplicate by ProductId to avoid redundant API calls.
-            var echantillonIdsToResolve = _echantillonStock
+            var totaliteIdsToResolve = _totaliteStock
                 .Where(s => string.IsNullOrEmpty(s.ProductNom) && s.ProductId > 0)
                 .Select(s => s.ProductId)
                 .Distinct()
                 .ToList();
 
             var productNameCache = new Dictionary<int, string>();
+            foreach (var pid in totaliteIdsToResolve)
+            {
+                var product = await _productSvc.GetProductByIdAsync(pid);
+                productNameCache[pid] = product?.Nom ?? $"Produit #{pid}";
+            }
+            foreach (var s in _totaliteStock.Where(s => string.IsNullOrEmpty(s.ProductNom) && productNameCache.ContainsKey(s.ProductId)))
+                s.ProductNom = productNameCache[s.ProductId];
+
+            // Same for echantillon stock
+            var echantillonIdsToResolve = _echantillonStock
+                .Where(s => string.IsNullOrEmpty(s.ProductNom) && s.ProductId > 0)
+                .Select(s => s.ProductId)
+                .Distinct()
+                .Except(productNameCache.Keys)
+                .ToList();
             foreach (var pid in echantillonIdsToResolve)
             {
                 var product = await _productSvc.GetProductByIdAsync(pid);
@@ -116,7 +142,20 @@ public partial class MyStockViewModel : BaseViewModel
                 s.ProductNom = productNameCache[s.ProductId];
             // ─────────────────────────────────────────────────────────────────
 
-            await _localDb.SeedStockAsync(_echantillonStock);
+            var echantillonsForDb = _echantillonStock.Select(e => new StockDelegue
+            {
+                Id               = e.Id,
+                ProductId        = e.ProductId,
+                ProductNom       = e.ProductNom,
+                NumeroLot        = e.NumeroLot,
+                QuantiteRestante = e.Quantite,
+                QuantiteAllouee  = e.Quantite,
+                DateExpiration   = e.DateExpiration
+            });
+
+            var combinedStockForDb = _totaliteStock.Concat(echantillonsForDb).ToList();
+
+            await _localDb.SeedStockAsync(combinedStockForDb);
 
             var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
             if (int.TryParse(userIdStr, out var userId))
@@ -125,8 +164,8 @@ public partial class MyStockViewModel : BaseViewModel
                 StockMovements.Clear();
                 if (movements != null)
                 {
-                    // Build a quick stockId→productName lookup from the already-resolved echantillon list
-                    var nameByStockId = _echantillonStock
+                    // Build a quick stockId→productName lookup from the already-resolved totalite list
+                    var nameByStockId = _totaliteStock
                         .Where(s => !string.IsNullOrEmpty(s.ProductNom))
                         .ToDictionary(s => s.Id, s => s.ProductNom);
 
@@ -150,6 +189,7 @@ public partial class MyStockViewModel : BaseViewModel
     [RelayCommand]
     private Task RefreshAsync()
     {
+        _cache.Invalidate(CacheKeyTotalite);
         _cache.Invalidate(CacheKeyEchantillon);
         _cache.Invalidate(CacheKeyPromo);
         return LoadAsync();
@@ -250,8 +290,11 @@ public partial class MyStockViewModel : BaseViewModel
             return;
         }
 
-        var src = _echantillonStock.FirstOrDefault(s => s.Id == item.StockId);
+        var src = _totaliteStock.FirstOrDefault(s => s.Id == item.StockId);
         if (src != null) src.QuantiteRestante = Math.Max(0, src.QuantiteRestante - quantite);
+
+        var srcEchantillon = _echantillonStock.FirstOrDefault(s => s.Id == item.StockId);
+        if (srcEchantillon != null) srcEchantillon.Quantite = Math.Max(0, srcEchantillon.Quantite - quantite);
 
         RefreshDisplayedList();
 
@@ -265,8 +308,11 @@ public partial class MyStockViewModel : BaseViewModel
             catch (Exception ex)
             {
                 // ── Roll back the optimistic local decrement ──────────────────
-                var rollbackSrc = _echantillonStock.FirstOrDefault(s => s.Id == item.StockId);
+                var rollbackSrc = _totaliteStock.FirstOrDefault(s => s.Id == item.StockId);
                 if (rollbackSrc != null) rollbackSrc.QuantiteRestante += quantite;
+
+                var rollbackEchantillon = _echantillonStock.FirstOrDefault(s => s.Id == item.StockId);
+                if (rollbackEchantillon != null) rollbackEchantillon.Quantite += quantite;
                 await _localDb.IncrementStockByStockIdAsync(item.StockId, quantite);
                 RefreshDisplayedList();
 
@@ -296,7 +342,7 @@ public partial class MyStockViewModel : BaseViewModel
         StockLines.Clear();
         if (ActiveSegment == 0)
         {
-            foreach (var s in _echantillonStock)
+            foreach (var s in _totaliteStock)
                 StockLines.Add(new StockDisplayItem
                 {
                     StockId          = s.Id,
@@ -310,20 +356,63 @@ public partial class MyStockViewModel : BaseViewModel
                                         : null,
                     QuantiteRestante = s.QuantiteRestante,
                     QuantiteAllouee  = s.QuantiteAllouee,
-                    IsEchantillon    = true
+                    IsEchantillon    = false // Consultation only, no distribution
                 });
         }
         else if (ActiveSegment == 1)
         {
-            foreach (var s in _promoStock)
+            foreach (var s in _echantillonStock)
+            {
+                string details = "Échantillon promotionnel";
+                if (!string.IsNullOrEmpty(s.Description)) details += $" - {s.Description}";
+                if (s.DateFin.HasValue) details += $"\nValide jusqu'au {s.DateFin.Value:dd/MM/yyyy}";
+
                 StockLines.Add(new StockDisplayItem
                 {
+                    StockId          = s.Id,
+                    NumeroLot        = s.NumeroLot,
                     ProductId        = s.ProductId,
                     ProductNom       = s.ProductNom,
                     QuantiteLabel    = $"Qté : {s.Quantite}",
                     QuantiteRestante = s.Quantite,
-                    IsEchantillon    = false
+                    QuantiteAllouee  = s.Quantite,
+                    PromoDetails     = details,
+                    IsEchantillon    = true // Allow distribute
                 });
+            }
+        }
+        else if (ActiveSegment == 2)
+        {
+            foreach (var s in _promoStock)
+            {
+                string details = "";
+                if (!string.IsNullOrEmpty(s.TypePromotion))
+                {
+                    // It's a Gratuite
+                    details = $"Gratuité ({s.TypePromotion}) - Achat: {s.QuantiteAchat}, Gratuit: {s.QuantiteGratuite}";
+                    if (s.DateFin.HasValue) details += $"\nValide jusqu'au {s.DateFin.Value:dd/MM/yyyy}";
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(s.NumeroLot))
+                    {
+                        details = $"Lot: {s.NumeroLot}";
+                        if (s.DateExpiration.HasValue) details += $"\nExp. {s.DateExpiration.Value:dd/MM/yyyy}";
+                    }
+                }
+
+                StockLines.Add(new StockDisplayItem
+                {
+                    StockId          = s.Id,
+                    NumeroLot        = s.NumeroLot,
+                    ProductId        = s.ProductId,
+                    ProductNom       = s.ProductNom,
+                    QuantiteLabel    = $"Qté Promo : {s.QteGratuite}",
+                    QuantiteRestante = s.QteGratuite,
+                    PromoDetails     = details,
+                    IsEchantillon    = false // Usually don't distribute gratuites via the "distribuer échantillon" flow
+                });
+            }
         }
     }
 
@@ -332,7 +421,7 @@ public partial class MyStockViewModel : BaseViewModel
         try
         {
             var entries = await _localDb.GetStockAsync();
-            _echantillonStock = entries.Select(e => new StockDelegue
+            _totaliteStock = entries.Select(e => new StockDelegue
             {
                 Id               = e.Id,
                 ProductId        = e.ProductId,
@@ -343,6 +432,7 @@ public partial class MyStockViewModel : BaseViewModel
                                     ? new DateTime(e.DateExpirationTicks.Value)
                                     : null
             }).ToList();
+            _echantillonStock = new();
             _promoStock = new();
             RefreshDisplayedList();
             IsOffline = true;

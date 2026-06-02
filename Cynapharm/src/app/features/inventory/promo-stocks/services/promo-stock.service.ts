@@ -57,4 +57,7 @@ export class PromoStockService {
     return this.api.get<any>(`${this.base}/echantillon?pageNumber=${page}&pageSize=${size}`)
       .pipe(map(r => this.u<StockEchantillonDto[]>(r) ?? []));
   }
+  deletePromoStock(idStock: number): Observable<any> {
+    return this.api.delete<any>(`${this.base}/${idStock}`);
+  }
 }

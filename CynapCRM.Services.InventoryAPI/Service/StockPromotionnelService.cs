@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.InventoryAPI.Models;
+using CynapCRM.Services.InventoryAPI.Models;
 using CynapCRM.Services.InventoryAPI.Models.Dto;
 using CynapCRM.Services.InventoryAPI.Service.IService;
 using AutoMapper;
@@ -110,6 +110,17 @@ namespace CynapCRM.Services.InventoryAPI.Service
             return _mapper.Map<IEnumerable<StockGratuiteDto>>(list);
         }
 
+        public async Task<IEnumerable<StockGratuiteDto>> GetGratuiteByDelegueAsync(int idDelegue)
+        {
+            var list = await _db.StocksDelegues
+                .OfType<Stock_Gratuite>()
+                .AsNoTracking()
+                .Where(s => !s.IsDeleted && s.Id_User_Delegue == idDelegue)
+                .OrderByDescending(s => s.DateCreation)
+                .ToListAsync();
+            return _mapper.Map<IEnumerable<StockGratuiteDto>>(list);
+        }
+
         public async Task<IEnumerable<StockEchantillonDto>> GetAllEchantillonAsync(int page, int size)
         {
             var list = await _db.StocksDelegues
@@ -121,6 +132,30 @@ namespace CynapCRM.Services.InventoryAPI.Service
                 .Take(size)
                 .ToListAsync();
             return _mapper.Map<IEnumerable<StockEchantillonDto>>(list);
+        }
+
+        public async Task<IEnumerable<StockEchantillonDto>> GetEchantillonByDelegueAsync(int idDelegue)
+        {
+            var list = await _db.StocksDelegues
+                .OfType<Stock_Echantillon>()
+                .AsNoTracking()
+                .Where(s => !s.IsDeleted && s.Id_User_Delegue == idDelegue)
+                .OrderByDescending(s => s.DateCreation)
+                .ToListAsync();
+            return _mapper.Map<IEnumerable<StockEchantillonDto>>(list);
+        }
+
+        public async Task<bool> DeleteStockPromotionnelAsync(int idStock)
+        {
+            var entity = await _db.StocksDelegues.FirstOrDefaultAsync(s => s.Id_stock == idStock);
+            if (entity == null || entity.IsDeleted)
+            {
+                return false;
+            }
+
+            entity.IsDeleted = true;
+            await _db.SaveChangesAsync();
+            return true;
         }
     }
 }

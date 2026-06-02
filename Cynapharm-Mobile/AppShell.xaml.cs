@@ -3,6 +3,7 @@ using Cynapharm_Mobile.Views.Auth;
 using Cynapharm_Mobile.Views.Clients;
 using Cynapharm_Mobile.Views.Documents;
 using Cynapharm_Mobile.Views.Orders;
+using Cynapharm_Mobile.Views.Planning;
 using Cynapharm_Mobile.Views.Products;
 using Cynapharm_Mobile.Views.Profile;
 using Cynapharm_Mobile.Views.Rapports;
@@ -80,6 +81,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("profile/changepassword", typeof(ChangePasswordPage));
         Routing.RegisterRoute("clients/detail",         typeof(ClientDetailPage));
         Routing.RegisterRoute("clients/form",           typeof(ClientFormPage));
+        Routing.RegisterRoute("planning/form",          typeof(PlanningFormPage));
     }
 
     private async Task Navigate(string route)

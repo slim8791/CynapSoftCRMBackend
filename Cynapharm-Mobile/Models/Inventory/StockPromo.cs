@@ -35,4 +35,25 @@ public class StockPromo
 
     [JsonPropertyName("dateExpiration")]
     public DateTime? DateExpiration { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("qteGratuite")]
+    public int QteGratuite { get; set; }
+
+    [JsonPropertyName("typePromotion")]
+    public string? TypePromotion { get; set; }
+
+    [JsonPropertyName("quantiteAchat")]
+    public int QuantiteAchat { get; set; }
+
+    [JsonPropertyName("quantiteGratuite")]
+    public int QuantiteGratuite { get; set; }
+
+    [JsonPropertyName("dateDebut")]
+    public DateTime? DateDebut { get; set; }
+
+    [JsonPropertyName("dateFin")]
+    public DateTime? DateFin { get; set; }
 }

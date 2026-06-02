@@ -137,6 +137,7 @@ public static class MauiProgram
         builder.Services.AddTransient<VisitListViewModel>();
         builder.Services.AddTransient<VisitDetailViewModel>();
         builder.Services.AddTransient<PlanningViewModel>();
+        builder.Services.AddTransient<PlanningFormViewModel>();
         builder.Services.AddTransient<RapportViewModel>();
         builder.Services.AddTransient<MyStockViewModel>();
         builder.Services.AddTransient<ObjectifViewModel>();
@@ -163,6 +164,7 @@ public static class MauiProgram
         builder.Services.AddTransient<VisitListPage>();
         builder.Services.AddTransient<VisitDetailPage>();
         builder.Services.AddTransient<PlanningPage>();
+        builder.Services.AddTransient<PlanningFormPage>();
         builder.Services.AddTransient<RapportPage>();
         builder.Services.AddTransient<MyStockPage>();
         builder.Services.AddTransient<ObjectifPage>();

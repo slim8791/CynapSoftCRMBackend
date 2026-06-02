@@ -41,7 +41,7 @@ public class Visite
     public bool HasRapport { get; set; }
 
     [JsonIgnore]
-    public string Statut => IsCompleted ? "Complétée" : "Non complétée";
+    public string Statut => IsCompleted ? "Complétée" : IsStarted ? "En cours" : "Planifiée";
 
     // ── Resolved display names (populated by ViewModel after load, never from API)
     [JsonIgnore]

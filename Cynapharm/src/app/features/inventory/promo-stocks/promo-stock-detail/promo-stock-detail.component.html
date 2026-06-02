@@ -144,6 +144,11 @@
               <button type="submit" class="btn btn-primary" [disabled]="savingGratuite">
                 @if (savingGratuite) { Enregistrement... } @else { Enregistrer }
               </button>
+              @if (isAdminOrSuperviseur) {
+                <button type="button" class="btn btn-danger" (click)="deletePromo('gratuite')">
+                  Supprimer
+                </button>
+              }
             </div>
           </form>
         </div>
@@ -278,6 +283,11 @@
               <button type="submit" class="btn btn-primary" [disabled]="savingEchantillon">
                 @if (savingEchantillon) { Enregistrement... } @else { Enregistrer }
               </button>
+              @if (isAdminOrSuperviseur) {
+                <button type="button" class="btn btn-danger" (click)="deletePromo('echantillon')">
+                  Supprimer
+                </button>
+              }
             </div>
           </form>
         </div>
@@ -286,3 +296,15 @@
   }
 
 </div>
+
+<!-- Dialog de confirmation -->
+<app-confirm-dialog
+  [visible]="showConfirmDialog"
+  title="Confirmer la suppression"
+  message="Êtes-vous sûr de vouloir supprimer ce stock promotionnel ? Cette action est irréversible."
+  confirmLabel="Supprimer"
+  cancelLabel="Annuler"
+  confirmClass="btn-danger"
+  (confirmed)="confirmDeletion()"
+  (cancelled)="cancelDeletion()">
+</app-confirm-dialog>

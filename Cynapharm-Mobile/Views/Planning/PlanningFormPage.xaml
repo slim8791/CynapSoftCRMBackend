@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Planning"
+             x:Class="Cynapharm_Mobile.Views.Planning.PlanningFormPage"
+             x:DataType="vm:PlanningFormViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- HEADER -->
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
+              Padding="16,48,16,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="44"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="44"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" BackgroundColor="#26FFFFFF"
+                    StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                    HeightRequest="38" WidthRequest="38" VerticalOptions="Center">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CancelCommand}"/>
+                </Border.GestureRecognizers>
+                <Label Text="‹" FontSize="24" TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center"/>
+            </Border>
+            <Label Grid.Column="1" Text="Nouveau planning"
+                   FontSize="18" FontAttributes="Bold" TextColor="White"
+                   HorizontalOptions="Center" VerticalOptions="Center"/>
+            <BoxView Grid.Column="2" Color="Transparent"/>
+        </Grid>
+
+        <!-- FORM -->
+        <ScrollView Grid.Row="1" Padding="16,16,16,32">
+            <VerticalStackLayout Spacing="14">
+
+                <!-- Date et horaires -->
+                <Border BackgroundColor="{StaticResource CardBackground}"
+                        StrokeShape="RoundRectangle 16" Stroke="{StaticResource BorderColor}"
+                        StrokeThickness="1" Padding="16,14,16,14">
+                    <Border.Shadow>
+                        <Shadow Brush="#18000000" Offset="0,2" Radius="8" Opacity="0.08"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="32,10,*" Margin="0,0,0,14">
+                            <Border Grid.Column="0" BackgroundColor="{StaticResource PrimaryLight}"
+                                    StrokeShape="RoundRectangle 8" Stroke="Transparent"
+                                    HeightRequest="32" WidthRequest="32">
+                                <Label Text="📅" FontSize="15"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                            <Label Grid.Column="2" Text="Date et horaires"
+                                   FontSize="14" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+
+                        <!-- Date -->
+                        <Label Text="Date *" FontSize="12"
+                               TextColor="{StaticResource TextSecondary}" Margin="0,0,0,6"/>
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12" Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1" Margin="0,0,0,14">
+                            <Grid ColumnDefinitions="44,*" HeightRequest="50">
+                                <Label Grid.Column="0" Text="📆" FontSize="16"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <BoxView Grid.Column="0" WidthRequest="1"
+                                         Color="{StaticResource BorderColor}"
+                                         HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                <DatePicker Grid.Column="1" Date="{Binding Date}"
+                                            Format="dd/MM/yyyy"
+                                            TextColor="{StaticResource TextPrimary}"
+                                            BackgroundColor="Transparent"
+                                            Margin="10,0,8,0" VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Heure début -->
+                        <Label Text="Heure de début *" FontSize="12"
+                               TextColor="{StaticResource TextSecondary}" Margin="0,0,0,6"/>
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12" Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1" Margin="0,0,0,14">
+                            <Grid ColumnDefinitions="44,*" HeightRequest="50">
+                                <Label Grid.Column="0" Text="🕐" FontSize="16"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <BoxView Grid.Column="0" WidthRequest="1"
+                                         Color="{StaticResource BorderColor}"
+                                         HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                <TimePicker Grid.Column="1" Time="{Binding HeureDebut}"
+                                            Format="HH:mm"
+                                            TextColor="{StaticResource TextPrimary}"
+                                            BackgroundColor="Transparent"
+                                            Margin="10,0,8,0" VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Heure fin -->
+                        <Label Text="Heure de fin *" FontSize="12"
+                               TextColor="{StaticResource TextSecondary}" Margin="0,0,0,6"/>
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12" Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1" Margin="0,0,0,0">
+                            <Grid ColumnDefinitions="44,*" HeightRequest="50">
+                                <Label Grid.Column="0" Text="🕑" FontSize="16"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <BoxView Grid.Column="0" WidthRequest="1"
+                                         Color="{StaticResource BorderColor}"
+                                         HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                <TimePicker Grid.Column="1" Time="{Binding HeureFin}"
+                                            Format="HH:mm"
+                                            TextColor="{StaticResource TextPrimary}"
+                                            BackgroundColor="Transparent"
+                                            Margin="10,0,8,0" VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Type de visite + Contact -->
+                <Border BackgroundColor="{StaticResource CardBackground}"
+                        StrokeShape="RoundRectangle 16" Stroke="{StaticResource BorderColor}"
+                        StrokeThickness="1" Padding="16,14,16,14">
+                    <Border.Shadow>
+                        <Shadow Brush="#18000000" Offset="0,2" Radius="8" Opacity="0.08"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="32,10,*" Margin="0,0,0,14">
+                            <Border Grid.Column="0" BackgroundColor="#E8F5E9"
+                                    StrokeShape="RoundRectangle 8" Stroke="Transparent"
+                                    HeightRequest="32" WidthRequest="32">
+                                <Label Text="🏷️" FontSize="15"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                            <Label Grid.Column="2" Text="Type de visite"
+                                   FontSize="14" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+
+                        <!-- Toggle Médecin / Pharmacien -->
+                        <Label Text="Cible" FontSize="12"
+                               TextColor="{StaticResource TextSecondary}" Margin="0,0,0,8"/>
+                        <Grid ColumnDefinitions="*,8,*" Margin="0,0,0,14">
+                            <Border Grid.Column="0" StrokeShape="RoundRectangle 12"
+                                    StrokeThickness="2" Stroke="{StaticResource BorderColor}"
+                                    BackgroundColor="Transparent" Padding="0,12">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border"
+                                                 Binding="{Binding IsMedecinType}" Value="True">
+                                        <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                        <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectMedecinCommand}"/>
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+                                    <Label Text="🩺" FontSize="20" HorizontalOptions="Center"/>
+                                    <Label Text="Médecin" FontSize="13" FontAttributes="Bold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+                            <Border Grid.Column="2" StrokeShape="RoundRectangle 12"
+                                    StrokeThickness="2" Stroke="{StaticResource BorderColor}"
+                                    BackgroundColor="Transparent" Padding="0,12">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border"
+                                                 Binding="{Binding IsPharmacienType}" Value="True">
+                                        <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                        <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectPharmacienCommand}"/>
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+                                    <Label Text="💊" FontSize="20" HorizontalOptions="Center"/>
+                                    <Label Text="Pharmacien" FontSize="13" FontAttributes="Bold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+
+                        <!-- Picker Médecin -->
+                        <VerticalStackLayout IsVisible="{Binding IsMedecinType}" Spacing="6">
+                            <Label FontSize="12" TextColor="{StaticResource TextSecondary}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="Médecin cible"/>
+                                        <Span Text=" *" TextColor="{StaticResource Danger}"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                    StrokeShape="RoundRectangle 12" Stroke="{StaticResource BorderColor}"
+                                    StrokeThickness="1" HeightRequest="52">
+                                <Grid ColumnDefinitions="44,*">
+                                    <Label Grid.Column="0" Text="🩺" FontSize="16"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <BoxView Grid.Column="0" WidthRequest="1"
+                                             Color="{StaticResource BorderColor}"
+                                             HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                    <Picker Grid.Column="1"
+                                            ItemsSource="{Binding Medecins}"
+                                            ItemDisplayBinding="{Binding Nom}"
+                                            SelectedItem="{Binding SelectedMedecin}"
+                                            Title="Sélectionner un médecin"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{StaticResource TextPrimary}"
+                                            TitleColor="{StaticResource TextMuted}"
+                                            Margin="10,0,8,0" VerticalOptions="Center"/>
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Picker Pharmacien -->
+                        <VerticalStackLayout IsVisible="{Binding IsPharmacienType}" Spacing="6">
+                            <Label FontSize="12" TextColor="{StaticResource TextSecondary}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="Pharmacien cible"/>
+                                        <Span Text=" *" TextColor="{StaticResource Danger}"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                    StrokeShape="RoundRectangle 12" Stroke="{StaticResource BorderColor}"
+                                    StrokeThickness="1" HeightRequest="52">
+                                <Grid ColumnDefinitions="44,*">
+                                    <Label Grid.Column="0" Text="💊" FontSize="16"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <BoxView Grid.Column="0" WidthRequest="1"
+                                             Color="{StaticResource BorderColor}"
+                                             HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                    <Picker Grid.Column="1"
+                                            ItemsSource="{Binding Pharmaciens}"
+                                            ItemDisplayBinding="{Binding Nom}"
+                                            SelectedItem="{Binding SelectedPharmacien}"
+                                            Title="Sélectionner un pharmacien"
+                                            BackgroundColor="Transparent"
+                                            TextColor="{StaticResource TextPrimary}"
+                                            TitleColor="{StaticResource TextMuted}"
+                                            Margin="10,0,8,0" VerticalOptions="Center"/>
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Bouton enregistrer -->
+                <Border BackgroundColor="{StaticResource Primary}"
+                        StrokeShape="RoundRectangle 14" Stroke="Transparent"
+                        HeightRequest="54">
+                    <Border.Shadow>
+                        <Shadow Brush="{StaticResource Primary}" Offset="0,4"
+                                Radius="12" Opacity="0.35"/>
+                    </Border.Shadow>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SaveCommand}"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="Enregistrer le planning"
+                           FontSize="15" FontAttributes="Bold" TextColor="White"
+                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Border>
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                                   Color="{StaticResource Primary}" HeightRequest="28"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

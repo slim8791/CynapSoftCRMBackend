@@ -22,8 +22,37 @@ public class InventoryService
         return await _api.GetAsync<List<StockDelegue>>($"inventory/stocks-delegue/by-delegue/{userId}");
     }
 
-    public Task<List<StockPromo>?> GetStockPromoAsync()
-        => _api.GetAsync<List<StockPromo>>("inventory/stocks-promotionnels/echantillon");
+    public async Task<List<StockPromo>?> GetStockEchantillonAsync()
+    {
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        if (!int.TryParse(userIdStr, out var userId)) return new List<StockPromo>();
+
+        return await _api.GetAsync<List<StockPromo>>($"inventory/stocks-promotionnels/echantillon/by-delegue/{userId}");
+    }
+
+    public async Task<List<StockPromo>?> GetStockPromoAsync()
+    {
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        if (!int.TryParse(userIdStr, out var userId)) return new List<StockPromo>();
+
+        var echantillonTask = _api.GetAsync<List<StockPromo>>($"inventory/stocks-promotionnels/echantillon/by-delegue/{userId}");
+        var gratuiteTask    = _api.GetAsync<List<StockPromo>>($"inventory/stocks-promotionnels/gratuite/by-delegue/{userId}");
+
+        await Task.WhenAll(echantillonTask, gratuiteTask);
+
+        var echantillons = echantillonTask.Result ?? new List<StockPromo>();
+        var gratuites    = gratuiteTask.Result ?? new List<StockPromo>();
+
+        return echantillons.Concat(gratuites).ToList();
+    }
+
+    public async Task<List<StockPromo>?> GetStockGratuiteAsync()
+    {
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        if (!int.TryParse(userIdStr, out var userId)) return new List<StockPromo>();
+
+        return await _api.GetAsync<List<StockPromo>>($"inventory/stocks-promotionnels/gratuite/by-delegue/{userId}");
+    }
 
     public Task<object?> GetDistributionAsync()
         => _api.GetAsync<object>("inventory/distributions");

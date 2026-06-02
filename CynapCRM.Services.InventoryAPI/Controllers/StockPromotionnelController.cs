@@ -78,6 +78,30 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             }
         }
 
+        [HttpGet("gratuite/by-delegue/{idDelegue:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetGratuiteByDelegue(int idDelegue)
+        {
+            try
+            {
+                if (idDelegue <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Id délégué invalide.";
+                    return BadRequest(_response);
+                }
+                _response.Result = await _stockPromotionnelService
+                    .GetGratuiteByDelegueAsync(idDelegue);
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpGet("gratuite/{idStock:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetStockGratuiteById(int idStock)
@@ -162,6 +186,30 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             }
         }
 
+        [HttpGet("echantillon/by-delegue/{idDelegue:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> GetEchantillonByDelegue(int idDelegue)
+        {
+            try
+            {
+                if (idDelegue <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Id délégué invalide.";
+                    return BadRequest(_response);
+                }
+                _response.Result = await _stockPromotionnelService
+                    .GetEchantillonByDelegueAsync(idDelegue);
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpGet("echantillon/{idStock:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetStockEchantillonById(int idStock)
@@ -192,7 +240,38 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+
+        [HttpDelete("{idStock:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> DeleteStockPromotionnel(int idStock)
+        {
+            try
+            {
+                if (idStock <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Id stock invalide.";
+                    return BadRequest(_response);
+                }
+
+                var success = await _stockPromotionnelService.DeleteStockPromotionnelAsync(idStock);
+                if (!success)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Stock promotionnel introuvable ou déjà supprimé.";
+                    return NotFound(_response);
+                }
+
+                _response.IsSuccess = true;
+                _response.Message = "Stock promotionnel supprimé avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
     }
-
-
 }

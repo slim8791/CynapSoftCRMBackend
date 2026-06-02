@@ -12,6 +12,7 @@ public class StockDisplayItem
     public string ProductNom { get; set; } = string.Empty;
     public string QuantiteLabel { get; set; } = string.Empty;
     public string? ExpiryLabel { get; set; }
+    public string? PromoDetails { get; set; }
 
     // Raw remaining quantity — used by quota enforcement
     public int QuantiteRestante { get; set; }
@@ -24,6 +25,9 @@ public class StockDisplayItem
 
     [JsonIgnore]
     public bool HasExpiry => ExpiryLabel != null;
+
+    [JsonIgnore]
+    public bool HasPromoDetails => !string.IsNullOrEmpty(PromoDetails);
 
     // Distribute button is only active for samples that still have stock
     [JsonIgnore]

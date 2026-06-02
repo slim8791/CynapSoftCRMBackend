@@ -26,14 +26,15 @@
 
         <!-- ── Tab bar ───────────────────────────────────────────────────── -->
         <Grid Grid.Row="2"
-              ColumnDefinitions="*,*,*"
+              ColumnDefinitions="*,*,*,*"
               BackgroundColor="{StaticResource CardBackground}">
 
+            <!-- Tab 0: Totalité -->
             <VerticalStackLayout Grid.Column="0" Spacing="0">
-                <Button Text="Échantillons"
+                <Button Text="Totalité"
                         Command="{Binding SetSegmentCommand}" CommandParameter="0"
                         BackgroundColor="Transparent"
-                        HeightRequest="48" FontSize="13" Margin="0">
+                        HeightRequest="48" FontSize="11" Margin="0" Padding="0">
                     <Button.Triggers>
                         <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="0">
                             <Setter Property="TextColor"     Value="{StaticResource Primary}" />
@@ -43,6 +44,9 @@
                             <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
                         </DataTrigger>
                         <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="3">
                             <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
                         </DataTrigger>
                     </Button.Triggers>
@@ -58,15 +62,19 @@
                         <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="2">
                             <Setter Property="BackgroundColor" Value="Transparent" />
                         </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="3">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
                     </BoxView.Triggers>
                 </BoxView>
             </VerticalStackLayout>
 
+            <!-- Tab 1: Échantillons -->
             <VerticalStackLayout Grid.Column="1" Spacing="0">
-                <Button Text="Stock Promo"
+                <Button Text="Échantillons"
                         Command="{Binding SetSegmentCommand}" CommandParameter="1"
                         BackgroundColor="Transparent"
-                        HeightRequest="48" FontSize="13" Margin="0">
+                        HeightRequest="48" FontSize="11" Margin="0" Padding="0">
                     <Button.Triggers>
                         <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="0">
                             <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
@@ -76,6 +84,9 @@
                             <Setter Property="FontAttributes" Value="Bold" />
                         </DataTrigger>
                         <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="3">
                             <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
                         </DataTrigger>
                     </Button.Triggers>
@@ -91,15 +102,19 @@
                         <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="2">
                             <Setter Property="BackgroundColor" Value="Transparent" />
                         </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="3">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
                     </BoxView.Triggers>
                 </BoxView>
             </VerticalStackLayout>
 
+            <!-- Tab 2: Stock Promo -->
             <VerticalStackLayout Grid.Column="2" Spacing="0">
-                <Button Text="Historique"
+                <Button Text="Promos"
                         Command="{Binding SetSegmentCommand}" CommandParameter="2"
                         BackgroundColor="Transparent"
-                        HeightRequest="48" FontSize="13" Margin="0">
+                        HeightRequest="48" FontSize="11" Margin="0" Padding="0">
                     <Button.Triggers>
                         <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="0">
                             <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
@@ -108,6 +123,49 @@
                             <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
                         </DataTrigger>
                         <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="TextColor"     Value="{StaticResource Primary}" />
+                            <Setter Property="FontAttributes" Value="Bold" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="3">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <BoxView HeightRequest="2.5" CornerRadius="2">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="0">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="1">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="3">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+            </VerticalStackLayout>
+
+            <!-- Tab 3: Historique -->
+            <VerticalStackLayout Grid.Column="3" Spacing="0">
+                <Button Text="Historique"
+                        Command="{Binding SetSegmentCommand}" CommandParameter="3"
+                        BackgroundColor="Transparent"
+                        HeightRequest="48" FontSize="11" Margin="0" Padding="0">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="0">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="1">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="3">
                             <Setter Property="TextColor"     Value="{StaticResource Primary}" />
                             <Setter Property="FontAttributes" Value="Bold" />
                         </DataTrigger>
@@ -122,6 +180,9 @@
                             <Setter Property="BackgroundColor" Value="Transparent" />
                         </DataTrigger>
                         <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="3">
                             <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
                         </DataTrigger>
                     </BoxView.Triggers>
@@ -178,11 +239,15 @@
                             <VerticalStackLayout Spacing="12" Padding="14,14">
                                 <!-- Product name + quantity badge -->
                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                                    <Label Grid.Column="0"
-                                           Text="{Binding ProductNom}"
-                                           FontAttributes="Bold" FontSize="15"
-                                           FontFamily="OpenSansSemibold"
-                                           TextColor="{StaticResource TextPrimary}" />
+                                    <VerticalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                                        <Label Text="{Binding ProductNom}"
+                                               FontAttributes="Bold" FontSize="15"
+                                               FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource TextPrimary}" />
+                                        <Label Text="{Binding PromoDetails}"
+                                               FontSize="12" TextColor="{StaticResource TextSecondary}"
+                                               IsVisible="{Binding HasPromoDetails}" />
+                                    </VerticalStackLayout>
                                     <Border Grid.Column="1"
                                             Padding="12,5"
                                             StrokeShape="RoundRectangle 12"

@@ -10,8 +10,10 @@ import { Subject, of } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 import { PromoStockService, StockGratuiteDto, StockEchantillonDto } from '../services/promo-stock.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { UserService } from '../../../users/user.service';
 import { ProductService } from '../../../products/product.service';
+import { AuthService, UserRole } from '../../../../core/services/auth.service';
 
 function dateRangeValidator(form: AbstractControl): ValidationErrors | null {
   const debut = form.get('dateDebut')?.value;
@@ -30,7 +32,7 @@ function gratuiteRuleValidator(form: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-promo-stock-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, FormsModule, EmptyStateComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, FormsModule, EmptyStateComponent, ConfirmDialogComponent],
   templateUrl: './promo-stock-detail.component.html',
   styleUrls: ['./promo-stock-detail.component.css']
 })
@@ -61,6 +63,10 @@ export class PromoStockDetailComponent implements OnInit, OnDestroy {
   echantillonSuccess = '';
   echantillonError = '';
 
+  isAdminOrSuperviseur = false;
+  showConfirmDialog = false;
+  promoToDeleteType: 'gratuite' | 'echantillon' | null = null;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -68,10 +74,13 @@ export class PromoStockDetailComponent implements OnInit, OnDestroy {
     private svc:        PromoStockService,
     private userSvc:    UserService,
     private productSvc: ProductService,
+    private authSvc:    AuthService,
     private cdr:        ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.isAdminOrSuperviseur = this.authSvc.hasRole([UserRole.ADMIN, UserRole.SUPERVISEUR]);
+
     this.loadingGratuite = true;
     this.svc.getAllGratuite().pipe(takeUntil(this.destroy$)).subscribe({
       next: data => {
@@ -179,6 +188,57 @@ export class PromoStockDetailComponent implements OnInit, OnDestroy {
       },
       error: () => { this.echantillonError = 'Erreur lors de l\'enregistrement.'; this.savingEchantillon = false; this.cdr.markForCheck(); }
     });
+  }
+
+  deletePromo(type: 'gratuite' | 'echantillon'): void {
+    const id = type === 'gratuite' ? this.selectedGratuiteId : this.selectedEchantillonId;
+    if (!id) return;
+
+    this.promoToDeleteType = type;
+    this.showConfirmDialog = true;
+  }
+
+  confirmDeletion(): void {
+    if (!this.promoToDeleteType) return;
+    const type = this.promoToDeleteType;
+    const id = type === 'gratuite' ? this.selectedGratuiteId : this.selectedEchantillonId;
+    
+    if (!id) {
+      this.cancelDeletion();
+      return;
+    }
+
+    this.svc.deletePromoStock(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        if (type === 'gratuite') {
+          this.allGratuite = this.allGratuite.filter(g => g.id_stock !== id);
+          this.selectedGratuiteId = null;
+          this.gratuiteData = null;
+          this.gratuiteSuccess = 'Stock gratuité supprimé avec succès.';
+        } else {
+          this.allEchantillon = this.allEchantillon.filter(e => e.id_stock !== id);
+          this.selectedEchantillonId = null;
+          this.echantillonData = null;
+          this.echantillonSuccess = 'Stock échantillon supprimé avec succès.';
+        }
+        this.cancelDeletion();
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        if (type === 'gratuite') {
+          this.gratuiteError = 'Erreur lors de la suppression.';
+        } else {
+          this.echantillonError = 'Erreur lors de la suppression.';
+        }
+        this.cancelDeletion();
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  cancelDeletion(): void {
+    this.showConfirmDialog = false;
+    this.promoToDeleteType = null;
   }
 
   // ── Name resolution ───────────────────────────────────

@@ -131,10 +131,18 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Médecin (optionnel) -->
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="Médecin (optionnel)" FontSize="12" FontAttributes="Bold"
-                                   TextColor="{StaticResource TextSecondary}" />
+                        <!-- Médecin — visible uniquement si type = Médecin -->
+                        <VerticalStackLayout Spacing="6"
+                                             IsVisible="{Binding IsMedecinType}">
+                            <Label FontSize="12" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextSecondary}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="Médecin"/>
+                                        <Span Text=" *" TextColor="{StaticResource Danger}"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
                             <Border BackgroundColor="{StaticResource SurfaceBackground}"
                                     StrokeShape="RoundRectangle 12"
                                     Stroke="{StaticResource FieldBorderInactive}"
@@ -157,10 +165,18 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Pharmacien (optionnel) -->
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="Pharmacien (optionnel)" FontSize="12" FontAttributes="Bold"
-                                   TextColor="{StaticResource TextSecondary}" />
+                        <!-- Pharmacien — visible uniquement si type = Pharmacien -->
+                        <VerticalStackLayout Spacing="6"
+                                             IsVisible="{Binding IsPharmacienType}">
+                            <Label FontSize="12" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextSecondary}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="Pharmacien"/>
+                                        <Span Text=" *" TextColor="{StaticResource Danger}"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
                             <Border BackgroundColor="{StaticResource SurfaceBackground}"
                                     StrokeShape="RoundRectangle 12"
                                     Stroke="{StaticResource FieldBorderInactive}"

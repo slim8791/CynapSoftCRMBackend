@@ -60,11 +60,14 @@ namespace CynapCRM.Services.FieldAPI.Service
             {
                 planning = new Planning_Visite
                 {
-                    Date = dto.Date,
-                    HeureDebut = dto.HeureDebut,
-                    HeureFin = dto.HeureFin,
-                    Etat = EtatPlanning.EnAttente,
-                    Id_User_Delegue = dto.Id_User_Delegue
+                    Date            = dto.Date,
+                    HeureDebut      = dto.HeureDebut,
+                    HeureFin        = dto.HeureFin,
+                    Etat            = EtatPlanning.EnAttente,
+                    Id_User_Delegue = dto.Id_User_Delegue,
+                    Id_Medecin      = dto.Id_Medecin,
+                    Id_Pharmacien   = dto.Id_Pharmacien,
+                    TypeVisite      = dto.TypeVisite
                 };
 
                 _db.Plannings.Add(planning);
@@ -77,9 +80,12 @@ namespace CynapCRM.Services.FieldAPI.Service
                 if (planning == null || planning.Etat == EtatPlanning.Confirme)
                     return null;
 
-                planning.Date = dto.Date;
-                planning.HeureDebut = dto.HeureDebut;
-                planning.HeureFin = dto.HeureFin;
+                planning.Date          = dto.Date;
+                planning.HeureDebut    = dto.HeureDebut;
+                planning.HeureFin      = dto.HeureFin;
+                planning.Id_Medecin    = dto.Id_Medecin;
+                planning.Id_Pharmacien = dto.Id_Pharmacien;
+                planning.TypeVisite    = dto.TypeVisite;
             }
 
             await _db.SaveChangesAsync();

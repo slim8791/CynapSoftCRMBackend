@@ -24,10 +24,22 @@ public class Planning
     [JsonPropertyName("etat")]
     public int Etat { get; set; }
 
-    // These fields don't come from the backend list response but are kept
-    // for local use (e.g. when creating a new planning entry)
+    [JsonPropertyName("id_Medecin")]
+    public int? IdMedecin { get; set; }
+
+    [JsonPropertyName("id_Pharmacien")]
+    public int? IdPharmacien { get; set; }
+
+    // VisiteType: 1=Médecin  2=Pharmacien
+    [JsonPropertyName("typeVisite")]
+    public int TypeVisite { get; set; } = 1;
+
+    // Resolved locally after load (not from API list)
+    [JsonIgnore] public string ContactNom { get; set; } = string.Empty;
+    [JsonIgnore] public string TypeLabel  => TypeVisite == 2 ? "Pharmacien" : "Médecin";
+    [JsonIgnore] public string EtatLabel  => Etat switch { 1 => "Confirmée", 2 => "Annulée", _ => "Planifiée" };
+
     public string ClientNom { get; set; } = string.Empty;
-    public string? Objectif { get; set; }
     public int? VisiteId { get; set; }
 
     /// <summary>

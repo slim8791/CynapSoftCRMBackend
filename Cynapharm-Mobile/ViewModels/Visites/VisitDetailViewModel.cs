@@ -70,6 +70,7 @@ public partial class VisitDetailViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(CanStartVisite))]
     [NotifyPropertyChangedFor(nameof(ShowSubmitRapport))]
     [NotifyPropertyChangedFor(nameof(ShowEditRapport))]
+    [NotifyPropertyChangedFor(nameof(CanDelete))]
     private bool _isStarted;
 
     [ObservableProperty]
@@ -83,8 +84,8 @@ public partial class VisitDetailViewModel : BaseViewModel
     /// <summary>Form is editable only when the visite has not been completed yet.</summary>
     public bool CanEdit   => !IsCompleted;
 
-    /// <summary>Delete is only available for existing, non-completed visites.</summary>
-    public bool CanDelete => IsExisting && !IsCompleted;
+    /// <summary>Delete is only available for existing, non-started, non-completed visites.</summary>
+    public bool CanDelete => IsExisting && !IsStarted && !IsCompleted;
 
     // ── Rapport action button — three mutually exclusive display states ─────────
 
@@ -103,14 +104,17 @@ public partial class VisitDetailViewModel : BaseViewModel
     public bool IsNew      => VisiteId == 0;
     public bool IsExisting => VisiteId > 0;
 
-    public List<string> VisiteTypeOptions { get; } = new() { "Médecin", "Pharmacien", "Autre" };
+    public List<string> VisiteTypeOptions { get; } = new() { "Médecin", "Pharmacien" };
+
+    public bool IsMedecinType    => SelectedType == 1;
+    public bool IsPharmacienType => SelectedType == 2;
 
     public string SelectedTypeLabel
     {
-        get => SelectedType switch { 1 => "Médecin", 2 => "Pharmacien", _ => "Autre" };
+        get => SelectedType == 1 ? "Médecin" : "Pharmacien";
         set
         {
-            SelectedType = value switch { "Médecin" => 1, "Pharmacien" => 2, _ => 3 };
+            SelectedType = value == "Médecin" ? 1 : 2;
             OnPropertyChanged();
         }
     }
@@ -157,6 +161,11 @@ public partial class VisitDetailViewModel : BaseViewModel
     {
         _isDirty = true;
         OnPropertyChanged(nameof(SelectedTypeLabel));
+        OnPropertyChanged(nameof(IsMedecinType));
+        OnPropertyChanged(nameof(IsPharmacienType));
+        // Reset the picker that's no longer relevant
+        if (value == 1) SelectedPharmacien = null;
+        if (value == 2) SelectedMedecin    = null;
     }
 
     [RelayCommand]
@@ -173,16 +182,10 @@ public partial class VisitDetailViewModel : BaseViewModel
             Medecins.Add(new UserPickerItem { Id = u.Id, Nom = u.Name });
 
         Pharmaciens.Clear();
-        foreach (var u in pharmacienTask.Result ?? new())
-            Pharmaciens.Add(new UserPickerItem
-            {
-                Id  = u.Id,
-                // Show TypeClient subtype so the delegate can distinguish
-                // "Pharmacie Centrale (PHARMACIEN)" from "Grossiste Nord (GROSSISTE)"
-                Nom = string.IsNullOrWhiteSpace(u.TypeClient)
-                    ? u.Name
-                    : $"{u.Name} ({u.TypeClient})"
-            });
+        foreach (var u in (pharmacienTask.Result ?? new())
+                     .Where(u => string.Equals(u.TypeClient, "PHARMACIEN",
+                                               StringComparison.OrdinalIgnoreCase)))
+            Pharmaciens.Add(new UserPickerItem { Id = u.Id, Nom = u.Name });
 
         // Load existing visite data and restore picker selections
         if (VisiteId > 0)
