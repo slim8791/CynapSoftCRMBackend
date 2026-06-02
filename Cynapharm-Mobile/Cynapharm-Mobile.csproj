@@ -52,7 +52,7 @@
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#1A6B3C" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#1A6B3C" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0096B4" BaseSize="128,128" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -76,6 +76,12 @@
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.*" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.*" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Update="Controls\SectionLoader.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	</ItemGroup>
 
 </Project>

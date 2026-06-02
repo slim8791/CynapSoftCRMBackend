@@ -9,7 +9,7 @@
     <Color x:Key="PrimaryText">#007A93</Color>
 
     <!-- ── Header Background ─────────────────────────────────────────────── -->
-    <Color x:Key="HeaderBackground">#2d6a4f</Color>
+    <Color x:Key="HeaderBackground">#0096B4</Color>
 
     <!-- ── Secondary / accent ────────────────────────────────────────────── -->
     <Color x:Key="Secondary">#F5A623</Color>

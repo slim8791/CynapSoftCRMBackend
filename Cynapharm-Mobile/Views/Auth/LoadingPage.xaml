@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Cynapharm_Mobile.Views.Auth.LoadingPage"
+             Title="Loading"
+             BackgroundColor="{StaticResource Primary}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="*,Auto,*"
+          Padding="20">
+
+        <!-- Center loading spinner -->
+        <VerticalStackLayout Grid.Row="1"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            Spacing="20">
+
+            <ActivityIndicator IsRunning="True"
+                              IsVisible="True"
+                              Color="White"
+                              Scale="2" />
+
+            <Label Text="Loading..."
+                   FontSize="16"
+                   TextColor="White"
+                   HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>

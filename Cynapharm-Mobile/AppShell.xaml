@@ -500,6 +500,14 @@
     </Shell.FlyoutContent>
 
     <!-- ═══════════════════════════════════════════════════════════════
+         LOADING ROUTE (initial route while auth check happens)
+    ═══════════════════════════════════════════════════════════════════ -->
+    <ShellContent Route="loading"
+                  ContentTemplate="{DataTemplate auth:LoadingPage}"
+                  Shell.NavBarIsVisible="False"
+                  FlyoutItemIsVisible="False" />
+
+    <!-- ═══════════════════════════════════════════════════════════════
          AUTH ROUTE
     ═══════════════════════════════════════════════════════════════════ -->
     <ShellContent Route="login"

@@ -34,6 +34,7 @@
         [ObservableProperty] private string  _selectedCategory  = "Tous";
         [ObservableProperty] private int     _productCount;
         [ObservableProperty] private bool    _isSearching;
+        [ObservableProperty] private bool    _isLoadingProducts;
 
         public ProductListViewModel(ProductService productService, LocalDatabaseService localDb)
         {
@@ -129,49 +130,54 @@
     // ── Core logic ────────────────────────────────────────────────────────────
 
     private async Task LoadCatalogueAsync()
+    {
+        SetBusy(true);
+        IsLoadingProducts = true;
+        try
         {
-            SetBusy(true);
-            try
+            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
             {
-                if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
-                {
-                    await LoadFromSqliteAsync();
-                    return;
-                }
-
-                // MEDECIN and CLIENT use /products/visible (active + non-archived, server-filtered).
-                // DELEGUE/ADMIN use /products and filter archived client-side.
-                List<Product>? result;
-                if (_useVisibleEndpoint)
-                {
-                    result = await _productService.GetVisibleProductsAsync();
-                    if (result != null)
-                    {
-                        _allProducts = result;
-                        await _localDb.SeedProductsAsync(_allProducts);
-                        IsOffline = false;
-                    }
-                }
-                else
-                {
-                    result = await _productService.GetProductsAsync();
-                    if (result != null)
-                    {
-                        _allProducts = result.Where(p => p.Actif && !p.IsArchived).ToList();
-                        await _localDb.SeedProductsAsync(_allProducts);
-                        IsOffline = false;
-                    }
-                }
-
-                await ApplyFilterAsync(skipBusy: true);
+                await LoadFromSqliteAsync();
+                return;
             }
-            catch (Exception ex)
+
+            // MEDECIN and CLIENT use /products/visible (active + non-archived, server-filtered).
+            // DELEGUE/ADMIN use /products and filter archived client-side.
+            List<Product>? result;
+            if (_useVisibleEndpoint)
             {
-                System.Diagnostics.Debug.WriteLine($"[ProductListVM] {ex.Message}");
-                if (_allProducts.Count == 0) await LoadFromSqliteAsync();
+                result = await _productService.GetVisibleProductsAsync();
+                if (result != null)
+                {
+                    _allProducts = result;
+                    await _localDb.SeedProductsAsync(_allProducts);
+                    IsOffline = false;
+                }
             }
-            finally { SetBusy(false); }
+            else
+            {
+                result = await _productService.GetProductsAsync();
+                if (result != null)
+                {
+                    _allProducts = result.Where(p => p.Actif && !p.IsArchived).ToList();
+                    await _localDb.SeedProductsAsync(_allProducts);
+                    IsOffline = false;
+                }
+            }
+
+            await ApplyFilterAsync(skipBusy: true);
         }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ProductListVM] {ex.Message}");
+            if (_allProducts.Count == 0) await LoadFromSqliteAsync();
+        }
+        finally 
+        { 
+            SetBusy(false);
+            IsLoadingProducts = false;
+        }
+    }
 
         private async Task LoadCategoriesAsync()
         {

@@ -111,11 +111,22 @@ public partial class App : Application
                         "MEDECIN" => "//products",
                         _ => "//orders"
                     };
-                    await (Shell.Current?.GoToAsync(target) ?? Task.CompletedTask);
+
+                    // Get current route to avoid redundant navigation
+                    var currentRoute = Shell.Current?.CurrentState?.Location.OriginalString ?? string.Empty;
+                    if (!currentRoute.Equals(target, StringComparison.OrdinalIgnoreCase))
+                    {
+                        await (Shell.Current?.GoToAsync(target) ?? Task.CompletedTask);
+                    }
                 }
                 else
                 {
-                    await (Shell.Current?.GoToAsync("//login") ?? Task.CompletedTask);
+                    // Not authenticated — ensure we're on login
+                    var currentRoute = Shell.Current?.CurrentState?.Location.OriginalString ?? string.Empty;
+                    if (!currentRoute.Equals("//login", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await (Shell.Current?.GoToAsync("//login") ?? Task.CompletedTask);
+                    }
                 }
             }
             catch (Exception ex)

@@ -24,6 +24,12 @@ public partial class DashboardViewModel : BaseViewModel
     [ObservableProperty] private double          _tauxConversion;
     [ObservableProperty] private StockSummaryDto? _stockSummary;
 
+    // ── Section-level loading states for activity indicators ──────────────────
+    [ObservableProperty] private bool            _isLoadingKpis;
+    [ObservableProperty] private bool            _isLoadingObjectifs;
+    [ObservableProperty] private bool            _isLoadingStock;
+    [ObservableProperty] private bool            _isLoadingRegions;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasStockFaible), nameof(StockFaibleLabel))]
     private int _stocksFaibles = 0;
@@ -91,20 +97,25 @@ public partial class DashboardViewModel : BaseViewModel
             var today      = DateTime.Today;
             var monthStart = new DateTime(today.Year, today.Month, 1);
 
-            // Start performance + objectifs in parallel regardless of role
-            // (BUG-03 removed the DELEGUE-only guard from KpiService)
+            // Start performance + objectifs in parallel with individual section loaders
+            IsLoadingKpis = true;
+            IsLoadingObjectifs = true;
+
             var perfTask = _kpiService.GetPerformanceAsync(monthStart, today);
             var objTask  = _kpiService.GetObjectifsAsync();
 
             if (IsSuperviseur)
             {
                 // Load regions in parallel with perf + objectifs
+                IsLoadingRegions = true;
                 var regionTask = _kpiService.GetRegionsAsync();
                 await Task.WhenAll(perfTask, objTask, regionTask);
 
                 Regions.Clear();
                 if (regionTask.Result != null)
                     foreach (var r in regionTask.Result) Regions.Add(r);
+
+                IsLoadingRegions = false;
             }
             else
             {
@@ -115,6 +126,7 @@ public partial class DashboardViewModel : BaseViewModel
 
                 if (IsDelegue)
                 {
+                    IsLoadingStock = true;
                     var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
                     if (int.TryParse(userIdStr, out var userId))
                     {
@@ -128,6 +140,7 @@ public partial class DashboardViewModel : BaseViewModel
                             StocksVides   = StockSummary.StocksVides;
                         }
                     }
+                    IsLoadingStock = false;
                 }
             }
 
@@ -139,11 +152,13 @@ public partial class DashboardViewModel : BaseViewModel
                 foreach (var k in kpis) PerformanceItems.Add(k);
                 await SaveCacheAsync("dashboard_kpis", kpis);
             }
+            IsLoadingKpis = false;
 
             var objectifs = objTask.Result;
             ObjectifItems.Clear();
             if (objectifs != null)
                 foreach (var o in objectifs) ObjectifItems.Add(o);
+            IsLoadingObjectifs = false;
 
             IsOffline = false;
         }
@@ -151,7 +166,14 @@ public partial class DashboardViewModel : BaseViewModel
         {
             await LoadFromCacheAsync();
         }
-        finally { SetBusy(false); }
+        finally 
+        { 
+            SetBusy(false);
+            IsLoadingKpis = false;
+            IsLoadingObjectifs = false;
+            IsLoadingStock = false;
+            IsLoadingRegions = false;
+        }
     }
 
     private async Task LoadFromCacheAsync()

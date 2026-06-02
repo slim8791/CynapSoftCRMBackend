@@ -32,6 +32,7 @@ public partial class OrderListViewModel : BaseViewModel
 
     [ObservableProperty] private string _statusFilter = "Tous";
     [ObservableProperty] private bool   _isGrossiste;
+    [ObservableProperty] private bool   _isLoadingOrders;
 
     private int  _currentPage = 1;
     private bool _isClient;
@@ -76,12 +77,20 @@ public partial class OrderListViewModel : BaseViewModel
         _currentPage = 1;
         Orders.Clear();
 
-        var result = await FetchPageAsync(_currentPage);
-        if (result != null)
+        IsLoadingOrders = true;
+        try
         {
-            var filtered = result.Where(o => o.Statut != 0).ToList();
-            foreach (var o in filtered) Orders.Add(o);
-            HasMore = result.Count == 20;
+            var result = await FetchPageAsync(_currentPage);
+            if (result != null)
+            {
+                var filtered = result.Where(o => o.Statut != 0).ToList();
+                foreach (var o in filtered) Orders.Add(o);
+                HasMore = result.Count == 20;
+            }
+        }
+        finally
+        {
+            IsLoadingOrders = false;
         }
     });
 
