@@ -57,6 +57,12 @@ public partial class ProductDetailViewModel : BaseViewModel
         var product = await _productService.GetProductByIdAsync(ProductId);
         if (product != null)
         {
+            if (!product.Actif || product.IsArchived)
+            {
+                await Shell.Current.GoToAsync("..");
+                return;
+            }
+
             Product = product;
             Title   = product.Nom;
 

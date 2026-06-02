@@ -143,6 +143,16 @@
                     <strong>{{ isValidated(r) ? 'Validé par superviseur' : 'En attente de validation' }}</strong>
                   </div>
                 </div>
+                @if (parseProduitsDiscutes(r).length > 0) {
+                  <div class="produits-section">
+                    <span class="detail-label">💊 Produits discutés</span>
+                    <div class="produits-list">
+                      @for (p of parseProduitsDiscutes(r); track p.id) {
+                        <span class="produit-badge">{{ p.nom }}</span>
+                      }
+                    </div>
+                  </div>
+                }
                 @if (r.latitude && r.longitude) {
                   <div class="gps-section">
                     <span class="detail-label">📍 Localisation certifiée</span>

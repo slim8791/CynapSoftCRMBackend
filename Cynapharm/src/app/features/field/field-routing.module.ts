@@ -45,18 +45,6 @@ const routes: Routes = [
     data: { roles: ['ADMIN', 'SUPERVISEUR', 'DELEGUE'] },
     loadComponent: () => import('./plannings/planning-list/planning-list.component').then(m => m.PlanningListComponent)
   },
-  {
-    path: 'plannings/new',
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['ADMIN', 'SUPERVISEUR', 'DELEGUE'] },
-    loadComponent: () => import('./plannings/planning-form/planning-form.component').then(m => m.PlanningFormComponent)
-  },
-  {
-    path: 'plannings/:id/edit',
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['ADMIN', 'SUPERVISEUR', 'DELEGUE'] },
-    loadComponent: () => import('./plannings/planning-form/planning-form.component').then(m => m.PlanningFormComponent)
-  },
 
   // Rapports
   {

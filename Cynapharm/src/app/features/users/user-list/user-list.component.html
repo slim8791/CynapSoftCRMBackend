@@ -170,7 +170,7 @@
           <!-- Région -->
           <td class="col-region">
             @if (user.idRegion) {
-              <span class="badge badge-region">Région #{{ user.idRegion }}</span>
+              <span class="badge badge-region">{{ getRegionName(user.idRegion) }}</span>
             } @else {
               <span class="text-muted">—</span>
             }

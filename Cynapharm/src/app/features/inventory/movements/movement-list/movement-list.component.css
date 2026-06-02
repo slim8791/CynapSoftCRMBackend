@@ -273,3 +273,99 @@ tr:hover td { background: #f8fafc; }
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
 }
+
+/* ── Filter actions row ─────────────────────────── */
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Reset filters button ────────────────────────── */
+.btn-reset {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  box-shadow: none;
+}
+.btn-reset:hover:not(:disabled) {
+  background: #fef3c7;
+  border-color: #fbbf24;
+}
+.btn-reset:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Active filter badges ─────────────────────────── */
+.active-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-clear {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  font-weight: 700;
+}
+.badge-clear:hover { color: #1d4ed8; }
+
+.results-count {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* ── Sens chip (Entrée / Sortie) ────────────────────── */
+.sens-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.sens-entree { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+.sens-sortie { background: #fef2f2; color: #e11d48; border: 1px solid #fecdd3; }
+
+/* ── Delegue / Produit label cells ──────────────────── */
+.delegue-label {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.produit-label {
+  font-size: 13px;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+  display: inline-block;
+}

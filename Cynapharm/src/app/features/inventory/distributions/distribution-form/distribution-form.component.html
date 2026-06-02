@@ -46,14 +46,7 @@
         <span *ngIf="f['id_Stock'].touched && f['id_Stock'].invalid" class="field-error">Stock requis</span>
       </div>
 
-      <!-- Numéro de lot (auto-filled readonly) -->
-      <div class="field">
-        <label>Numéro de lot</label>
-        <div class="date-display" [class.empty]="!f['numeroLot'].value">
-          {{ f['numeroLot'].value || '— auto-rempli depuis le stock sélectionné —' }}
-        </div>
-        <input type="hidden" formControlName="numeroLot" />
-      </div>
+
 
       <!-- Quantité -->
       <div class="field">

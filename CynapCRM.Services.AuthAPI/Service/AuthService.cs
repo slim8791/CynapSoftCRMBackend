@@ -53,7 +53,7 @@ namespace CynapCRM.Services.AuthAPI.Service
                         Email = model.Email,
                         UserName = model.Email,
                         Adresse = model.Adresse,
-                        PhoneNumber = model.PhoneNumber,  // ✅ ajout
+                        PhoneNumber = model.PhoneNumber,
                         NomOfficine = model.NomOfficine,
                         TypePharmacie = model.TypePharmacie,
                         IsDeleted = false
@@ -64,11 +64,25 @@ namespace CynapCRM.Services.AuthAPI.Service
                         Email = model.Email,
                         UserName = model.Email,
                         Adresse = model.Adresse,
-                        PhoneNumber = model.PhoneNumber,  // ✅ ajout
+                        PhoneNumber = model.PhoneNumber,
                         RaisonSociale = model.RaisonSociale,
                         IsDeleted = false
                     },
                     _ => throw new ArgumentException("UserType invalide pour un Client.")
+                };
+            }
+            else if (model.Role == UserRole.MEDECIN)
+            {
+                user = new Medecin
+                {
+                    Name = model.Name,
+                    Email = model.Email,
+                    UserName = model.Email,
+                    Adresse = model.Adresse,
+                    PhoneNumber = model.PhoneNumber,
+                    Specialite = model.Specialite ?? string.Empty,
+                    TypeEtablissement = model.TypeEtablissement ?? string.Empty,
+                    IsDeleted = false
                 };
             }
             else
@@ -79,7 +93,7 @@ namespace CynapCRM.Services.AuthAPI.Service
                     Email = model.Email,
                     UserName = model.Email,
                     Adresse = model.Adresse,
-                    PhoneNumber = model.PhoneNumber,  // ✅ ajout
+                    PhoneNumber = model.PhoneNumber,
                     IsDeleted = false
                 };
             }

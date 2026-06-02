@@ -58,16 +58,11 @@ namespace CynapCRM.Services.FieldAPI.Service
             return region == null ? null : _mapper.Map<RegionDto>(region);
         }
 
-        public async Task<IEnumerable<RegionDto>> GetRegionsByDelegueAsync(int idDelegue)
-        {
-            var list = await _db.Regions
-                .AsNoTracking()
-                .Where(r => r.Id_Superviseur == idDelegue)
-                .OrderBy(r => r.NomRegion)
-                .ToListAsync();
-
-            return _mapper.Map<IEnumerable<RegionDto>>(list);
-        }
+        // NOTE: the Region entity has no Delegue FK — a delegue's region is stored
+        // on the User entity (User.idRegion) in the AuthAPI, not here.
+        // This endpoint cannot resolve the delegue→region link from this service alone.
+        public Task<IEnumerable<RegionDto>> GetRegionsByDelegueAsync(int idDelegue)
+            => Task.FromResult(Enumerable.Empty<RegionDto>());
 
         public async Task<IEnumerable<RegionDto>> GetRegionsBySuperviseurAsync(int idSuperviseur)
         {

@@ -33,8 +33,17 @@ public partial class MesClientsViewModel : BaseViewModel
     {
         await ExecuteAsync(async () =>
         {
-            var clients = await _userSvc.GetUsersByRoleAsync("CLIENT");
-            _allClients = clients ?? new();
+            var all = await _userSvc.GetUsersByRoleAsync("CLIENT");
+
+            // Filter: show only clients created by this delegue
+            // Clients created by a delegue carry the delegue's idRegion.
+            // If no region is stored (edge case), fall back to showing all.
+            var regionStr = await SecureStorage.GetAsync(StorageKeys.UserIdRegion);
+            if (int.TryParse(regionStr, out var delegueRegionId))
+                _allClients = (all ?? new()).Where(c => c.IdRegion == delegueRegionId).ToList();
+            else
+                _allClients = all ?? new();
+
             ApplyFilter();
         });
     }

@@ -5,6 +5,8 @@
     .ae{padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#b91c1c;margin-bottom:16px;font-size:13px}
     .lb{display:flex;align-items:center;gap:10px;color:#888;padding:24px}
     .sp{width:18px;height:18px;border:2px solid #e5e7eb;border-top-color:#0077b6;border-radius:50%;animation:s .7s linear infinite}
+    .sp-sm{width:14px;height:14px;display:inline-block}
+    .act-btn:disabled{opacity:.55;cursor:progress}
     @keyframes s{to{transform:rotate(360deg)}}
     .tc{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
     .dt{width:100%;border-collapse:collapse;font-size:13px}

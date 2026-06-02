@@ -14,6 +14,7 @@ import { AuthService, UserRole } from '../../../core/services/auth.service';
 import { UserService } from '../../users/user.service';
 import { ProductService } from '../../products/product.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { DocumentGeneratorService } from '../../documents/services/document-generator.service';
 
 @Component({
   selector: 'app-order-detail',
@@ -83,6 +84,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     private userSvc:      UserService,
     private productSvc:   ProductService,
     private toast:        ToastService,
+    private docGen:       DocumentGeneratorService,
     private cdr:          ChangeDetectorRef,
   ) {}
 
@@ -244,46 +246,31 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   private autoCreateBC(): void {
     if (!this.order) return;
     if (this.bonsCommandes.length > 0) return;
-    this.bcSvc.createOrUpdate({
-      numero_Doc:  0,
-      nom_Doc:     `BC-${this.order.Id_Commande}`,
-      id_Commande: this.orderId,
-      id_Client:   this.order.Id_Client,
-    }).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => { this.toast.showSuccess('Bon de commande créé automatiquement.'); this.loadDocuments(); },
-      error: () => this.toast.showError('Erreur lors de la création automatique du BC.'),
-    });
+    this.docGen.generateBonCommande(this.orderId, this.order.Id_Client)
+      .pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => { this.toast.showSuccess('Bon de commande créé automatiquement.'); this.loadDocuments(); },
+        error: () => this.toast.showError('Erreur lors de la création automatique du BC.'),
+      });
   }
 
   private autoCreateBL(): void {
     if (!this.order) return;
     if (this.bonsLivraison.length > 0) return;
-    this.blSvc.createOrUpdate({
-      numero_Doc:  0,
-      nom_Doc:     `BL-${this.order.Id_Commande}`,
-      id_Commande: this.orderId,
-      id_Client:   this.order.Id_Client,
-    }).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => { this.toast.showSuccess('Bon de livraison créé automatiquement.'); this.loadDocuments(); },
-      error: () => this.toast.showError('Erreur lors de la création automatique du BL.'),
-    });
+    this.docGen.generateBonLivraison(this.orderId, this.order.Id_Client)
+      .pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => { this.toast.showSuccess('Bon de livraison créé automatiquement.'); this.loadDocuments(); },
+        error: () => this.toast.showError('Erreur lors de la création automatique du BL.'),
+      });
   }
 
   private autoCreateFacture(): void {
     if (!this.order) return;
     if (this.factures.length > 0) return;
-    this.factureSvc.createOrUpdate({
-      numero_Doc:  0,
-      nom_Doc:     `FAC-${this.order.Id_Commande}`,
-      id_Commande: this.orderId,
-      id_Client:   this.order.Id_Client,
-      montantHT:   this.order.MontantTotalHT ?? 0,
-      montantTTC:  this.order.MontantTTC     ?? 0,
-      dateFacture: new Date().toISOString(),
-    }).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => { this.toast.showSuccess('Facture créée automatiquement.'); this.loadDocuments(); },
-      error: () => this.toast.showError('Erreur lors de la création automatique de la facture.'),
-    });
+    this.docGen.generateFacture(this.orderId, this.order.Id_Client)
+      .pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => { this.toast.showSuccess('Facture créée automatiquement.'); this.loadDocuments(); },
+        error: () => this.toast.showError('Erreur lors de la création automatique de la facture.'),
+      });
   }
 
   closeCancelModal(): void { this.showCancelModal = false; this.cancelMotif = ''; this.cancelMotifError = ''; }
@@ -359,11 +346,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Fix 4 — create document buttons
+  // Fix 4 — create document buttons (generate PDF + upload + persist)
   createBC(): void {
     if (!this.order) return;
     this.creatingBC = true;
-    this.bcSvc.createOrUpdate({ numero_Doc: 0, nom_Doc: `BC-${this.orderId}`, id_Commande: this.orderId, id_Client: this.order.Id_Client })
+    this.docGen.generateBonCommande(this.orderId, this.order.Id_Client)
       .pipe(takeUntil(this.destroy$)).subscribe({
         next: () => { this.toast.showSuccess('Bon de commande créé.'); this.creatingBC = false; this.loadDocuments(); },
         error: () => { this.toast.showError('Erreur lors de la création du BC.'); this.creatingBC = false; this.cdr.markForCheck(); },
@@ -373,7 +360,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   createBL(): void {
     if (!this.order) return;
     this.creatingBL = true;
-    this.blSvc.createOrUpdate({ numero_Doc: 0, id_Commande: this.orderId, id_Client: this.order.Id_Client })
+    this.docGen.generateBonLivraison(this.orderId, this.order.Id_Client)
       .pipe(takeUntil(this.destroy$)).subscribe({
         next: () => { this.toast.showSuccess('Bon de livraison créé.'); this.creatingBL = false; this.loadDocuments(); },
         error: () => { this.toast.showError('Erreur lors de la création du BL.'); this.creatingBL = false; this.cdr.markForCheck(); },
@@ -383,16 +370,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   createFacture(): void {
     if (!this.order) return;
     this.creatingFacture = true;
-    this.factureSvc.createOrUpdate({
-      numero_Doc: 0,
-      id_Commande: this.orderId,
-      id_Client:   this.order.Id_Client,
-      montantHT:   this.order.MontantTotalHT ?? 0,
-      montantTTC:  this.order.MontantTTC     ?? 0,
-    }).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => { this.toast.showSuccess('Facture créée.'); this.creatingFacture = false; this.loadDocuments(); },
-      error: () => { this.toast.showError('Erreur lors de la création de la facture.'); this.creatingFacture = false; this.cdr.markForCheck(); },
-    });
+    this.docGen.generateFacture(this.orderId, this.order.Id_Client)
+      .pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => { this.toast.showSuccess('Facture créée.'); this.creatingFacture = false; this.loadDocuments(); },
+        error: () => { this.toast.showError('Erreur lors de la création de la facture.'); this.creatingFacture = false; this.cdr.markForCheck(); },
+      });
   }
 
   onDeleteFacture(id: number): void {

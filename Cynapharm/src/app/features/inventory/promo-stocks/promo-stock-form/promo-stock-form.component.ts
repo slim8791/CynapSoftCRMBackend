@@ -15,6 +15,8 @@ import { takeUntil } from 'rxjs/operators';
 import { PromoStockService } from '../services/promo-stock.service';
 import { StockService, StockDelegueDto } from '../../stocks/services/stock.service';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { UserService } from '../../../users/user.service';
+import { ProductService } from '../../../products/product.service';
 
 function typeValidator(form: AbstractControl): ValidationErrors | null {
   const type = form.get('type')?.value;
@@ -58,8 +60,13 @@ export class PromoStockFormComponent implements OnInit, OnDestroy {
     private promoSvc: PromoStockService,
     private stockSvc: StockService,
     private toast: ToastService,
+    private userSvc: UserService,
+    private productSvc: ProductService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  deleguesData: any[] = [];
+  productsData: any[] = [];
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -78,6 +85,30 @@ export class PromoStockFormComponent implements OnInit, OnDestroy {
     this.stockSvc.getAll(1, 200).pipe(takeUntil(this.destroy$)).subscribe({
       next: data => { this.allStocks = data; this.loadingStocks = false; this.cdr.markForCheck(); },
       error: ()   => { this.loadingStocks = false; this.cdr.markForCheck(); }
+    });
+
+    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$)).subscribe({
+      next: users => {
+        this.deleguesData = users.map(u => ({
+          ...u,
+          id: u.id ?? u.Id,
+          name: u.name ?? u.Name ?? u.fullName ?? u.FullName ?? u.email ?? u.Email
+        })).filter(u => u.id != null);
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+
+    this.productSvc.getVisibleProducts().pipe(takeUntil(this.destroy$)).subscribe({
+      next: prods => {
+        this.productsData = prods.map((p: any) => ({
+          ...p,
+          Id_Produit: p.Id_Produit ?? p.id_Produit,
+          Nom: p.Nom ?? p.nom ?? ''
+        }));
+        this.cdr.markForCheck();
+      },
+      error: () => {}
     });
 
     this.form.get('id_Stock')!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(id => {
@@ -105,6 +136,16 @@ export class PromoStockFormComponent implements OnInit, OnDestroy {
       (!this.selectedDelegueId || s.id_User_Delegue === this.selectedDelegueId) &&
       (!this.selectedProduitId || s.id_Produit === this.selectedProduitId)
     );
+  }
+
+  delegueName(id: number): string {
+    const u = this.deleguesData.find(x => x.id === id);
+    return u ? u.name : `Délégué #${id}`;
+  }
+
+  produitName(id: number): string {
+    const p = this.productsData.find(x => x.Id_Produit === id);
+    return p ? p.Nom : `Produit #${id}`;
   }
 
   onDelegueChange(id: any): void {

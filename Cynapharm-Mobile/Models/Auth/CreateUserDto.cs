@@ -27,4 +27,11 @@ public class CreateUserDto
 
     [JsonPropertyName("idRegion")]
     public int? IdRegion { get; set; }
+
+    // Médecin only
+    [JsonPropertyName("specialite")]
+    public string? Specialite { get; set; }
+
+    [JsonPropertyName("typeEtablissement")]
+    public string? TypeEtablissement { get; set; }
 }

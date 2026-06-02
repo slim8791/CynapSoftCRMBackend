@@ -85,10 +85,6 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
     return this.doc?.dateFacture ?? this.doc?.DateFacture ?? this.doc?.dateCreation ?? this.doc?.DateCreation;
   }
 
-  print(): void {
-    if (typeof window !== 'undefined') window.print();
-  }
-
   private requestByKind(id: number): Observable<any> {
     if (this.kind === 'facture') return this.factureSvc.getById(id);
     if (this.kind === 'bon-commande') return this.bcSvc.getById(id);

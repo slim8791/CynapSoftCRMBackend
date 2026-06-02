@@ -6,7 +6,7 @@ import { Subject, forkJoin, of } from 'rxjs';
 import { takeUntil, filter, debounceTime, distinctUntilChanged, switchMap, catchError, map } from 'rxjs/operators';
 
 import { UserService } from '../user.service';
-import { AuthService, UserRole } from '../../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { RegionService, RegionDto } from '../../field/regions/services/region.service';
 
 type StatusFilter = 'all' | 'active' | 'disabled';
@@ -27,6 +27,7 @@ export class UserListComponent implements OnInit, OnDestroy {
   loading  = false;
   error    = '';
   currentRegion: RegionDto | null = null;
+  regionMap = new Map<number, string>();
 
   // ── Recherche & filtres ──────────────────────────────
   searchTerm:   string       = '';
@@ -95,6 +96,11 @@ export class UserListComponent implements OnInit, OnDestroy {
       } else {
         this.applyStatusFilter();
       }
+    });
+
+    this.regionSvc.getAll().pipe(takeUntil(this.destroy$)).subscribe(regions => {
+      regions.forEach(r => { if (r.id_Region) this.regionMap.set(r.id_Region, r.nomRegion); });
+      this.cdr.markForCheck();
     });
 
     this.loadUsers();
@@ -295,6 +301,10 @@ export class UserListComponent implements OnInit, OnDestroy {
       typeClient:  u.typeClient  ?? u.TypeClient  ?? null,
       idRegion:    u.idRegion    ?? u.IdRegion     ?? null
     };
+  }
+
+  getRegionName(idRegion: number | null): string {
+    return idRegion != null ? (this.regionMap.get(idRegion) ?? `Région #${idRegion}`) : '—';
   }
 
   getInitials(name: string): string {

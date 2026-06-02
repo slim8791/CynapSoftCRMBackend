@@ -217,5 +217,15 @@ export class RapportListComponent implements OnInit, OnDestroy {
     return `https://www.google.com/maps?q=${r.latitude},${r.longitude}`;
   }
 
+  parseProduitsDiscutes(r: RapportDto): { id: number; nom: string }[] {
+    if (!r.produitsDiscutes) return [];
+    try {
+      const parsed = JSON.parse(r.produitsDiscutes);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 }

@@ -8,26 +8,53 @@ namespace Cynapharm_Mobile.ViewModels.Clients;
 
 public partial class ClientFormViewModel : BaseViewModel, IQueryAttributable
 {
-    private readonly UserService _userSvc;
+    private readonly UserService  _userSvc;
+    private readonly FieldService _fieldSvc;
 
-    [ObservableProperty] private string _nom = string.Empty;
-    [ObservableProperty] private string _prenom = string.Empty;
-    [ObservableProperty] private string _email = string.Empty;
-    [ObservableProperty] private string _telephone = string.Empty;
-    [ObservableProperty] private string _adresse = string.Empty;
-    [ObservableProperty] private string _password = string.Empty;
-    [ObservableProperty] private int _selectedTypeIndex; // 0 = PHARMACIEN, 1 = GROSSISTE
+    [ObservableProperty] private string _nomComplet    = string.Empty;
+    [ObservableProperty] private string _email         = string.Empty;
+    [ObservableProperty] private string _telephone     = string.Empty;
+    [ObservableProperty] private string _adresse       = string.Empty;
+    [ObservableProperty] private string _password      = string.Empty;
+    [ObservableProperty] private string _specialite    = string.Empty;
+    [ObservableProperty] private string _typeEtablissement = string.Empty;
 
-    public bool IsNew => ClientId <= 0;
-    public int ClientId { get; private set; }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMedecin), nameof(IsClient),
+                              nameof(IsPharmacien), nameof(IsGrossiste),
+                              nameof(RoleBadgeLabel), nameof(RoleBadgeColor))]
+    private int _selectedTypeIndex; // 0=Pharmacien  1=Grossiste  2=Médecin
 
-    public List<string> ClientTypes { get; } = new() { "PHARMACIEN", "GROSSISTE" };
+    public bool IsNew        => ClientId <= 0;
+    public bool IsMedecin    => SelectedTypeIndex == 2;
+    public bool IsClient     => SelectedTypeIndex != 2;
+    public bool IsPharmacien => SelectedTypeIndex == 0;
+    public bool IsGrossiste  => SelectedTypeIndex == 1;
+    public int  ClientId     { get; private set; }
 
-    public ClientFormViewModel(UserService userSvc)
+    // Textes calculés — évite le recours à InvertedBoolConverter avec paramètre pipe
+    public string FormSubtitle => IsNew ? "Remplissez les informations du compte" : "Modifiez les informations";
+    public string SaveLabel    => IsNew ? "Créer le compte" : "Mettre à jour";
+
+    // Badge de rôle affiché sous le sélecteur
+    public string RoleBadgeLabel => SelectedTypeIndex switch
     {
-        _userSvc = userSvc;
-        Title = "Nouveau client";
+        0 => "PHARMACIEN",
+        1 => "GROSSISTE",
+        _ => "MÉDECIN"
+    };
+    public string RoleBadgeColor => IsMedecin ? "#1565C0" : "#2E7D32";
+
+    public ClientFormViewModel(UserService userSvc, FieldService fieldSvc)
+    {
+        _userSvc  = userSvc;
+        _fieldSvc = fieldSvc;
+        Title = "Nouveau compte";
     }
+
+    [RelayCommand] void SelectPharmacien() => SelectedTypeIndex = 0;
+    [RelayCommand] void SelectGrossiste()  => SelectedTypeIndex = 1;
+    [RelayCommand] void SelectMedecin()    => SelectedTypeIndex = 2;
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -47,7 +74,7 @@ public partial class ClientFormViewModel : BaseViewModel, IQueryAttributable
             var client = await _userSvc.GetUserByIdAsync(ClientId);
             if (client == null) return;
 
-            Nom = client.Name ?? string.Empty;
+            NomComplet = client.Name ?? string.Empty;
             Email = client.Email ?? string.Empty;
             Telephone = client.Telephone ?? string.Empty;
             Adresse = client.Adresse ?? string.Empty;
@@ -58,9 +85,15 @@ public partial class ClientFormViewModel : BaseViewModel, IQueryAttributable
     private async Task SaveAsync()
     {
         // Validate required fields
-        if (string.IsNullOrWhiteSpace(Nom) || string.IsNullOrWhiteSpace(Email))
+        if (string.IsNullOrWhiteSpace(NomComplet) || string.IsNullOrWhiteSpace(Email))
         {
-            await Shell.Current.DisplayAlert("Validation", "Nom et Email sont obligatoires.", "OK");
+            await Shell.Current.DisplayAlert("Validation", "Nom complet et Email sont obligatoires.", "OK");
+            return;
+        }
+
+        if (IsMedecin && string.IsNullOrWhiteSpace(Specialite))
+        {
+            await Shell.Current.DisplayAlert("Validation", "La spécialité est obligatoire pour un médecin.", "OK");
             return;
         }
 
@@ -74,27 +107,50 @@ public partial class ClientFormViewModel : BaseViewModel, IQueryAttributable
                     return;
                 }
 
-                var idRegionStr = await SecureStorage.GetAsync(StorageKeys.UserIdRegion);
-                var dto = new CreateUserDto
+                var idRegion = await ResolveCurrentUserRegionAsync();
+
+                CreateUserDto dto;
+                if (IsMedecin)
                 {
-                    Name = $"{Prenom} {Nom}".Trim(),
-                    Email = Email,
-                    Password = Password,
-                    PhoneNumber = Telephone,
-                    Adresse = Adresse,
-                    Role = "CLIENT",
-                    UserType = ClientTypes[SelectedTypeIndex],
-                    IdRegion = int.TryParse(idRegionStr, out var idRegion) ? idRegion : (int?)null
-                };
+                    dto = new CreateUserDto
+                    {
+                        Name      = NomComplet.Trim(),
+                        Email     = Email,
+                        Password  = Password,
+                        PhoneNumber = Telephone,
+                        Adresse   = Adresse,
+                        Role      = "MEDECIN",
+                        UserType  = "PHARMACIEN", // ignored by backend for MEDECIN
+                        IdRegion  = idRegion,
+                        Specialite         = Specialite.Trim(),
+                        TypeEtablissement  = TypeEtablissement.Trim()
+                    };
+                }
+                else
+                {
+                    dto = new CreateUserDto
+                    {
+                        Name      = NomComplet.Trim(),
+                        Email     = Email,
+                        Password  = Password,
+                        PhoneNumber = Telephone,
+                        Adresse   = Adresse,
+                        Role      = "CLIENT",
+                        UserType  = SelectedTypeIndex == 0 ? "PHARMACIEN" : "GROSSISTE",
+                        IdRegion  = idRegion
+                    };
+                }
+
                 await _userSvc.CreateUserAsync(dto);
-                await Shell.Current.DisplayAlert("Succès", "Compte client créé avec succès.", "OK");
+                var label = IsMedecin ? "médecin" : SelectedTypeIndex == 0 ? "pharmacien" : "grossiste";
+                await Shell.Current.DisplayAlert("Succès", $"Compte {label} créé avec succès.", "OK");
             }
             else
             {
                 var dto = new UpdateUserDto
                 {
                     Email = Email,
-                    Name = $"{Prenom} {Nom}".Trim(),
+                    Name = NomComplet.Trim(),
                     PhoneNumber = Telephone,
                     Adresse = Adresse
                     // Role NOT included — DÉLÉGUÉ cannot change role
@@ -104,6 +160,39 @@ public partial class ClientFormViewModel : BaseViewModel, IQueryAttributable
             }
             await Shell.Current.GoToAsync("..");
         });
+    }
+
+    /// <summary>
+    /// Resolves the logged-in user's region ID.
+    /// Fast path: reads the cached value from SecureStorage.
+    /// Fallback (SUPERVISEUR whose idRegion is stored on the Region side):
+    ///   calls GET /fields/regions/by-superviseur/{id}, caches the result,
+    ///   so future calls hit the fast path.
+    /// </summary>
+    private async Task<int?> ResolveCurrentUserRegionAsync()
+    {
+        var cached = await SecureStorage.GetAsync(StorageKeys.UserIdRegion);
+        if (int.TryParse(cached, out var rid))
+            return rid;
+
+        // Cache miss — the SUPERVISEUR's region is stored on the Region entity,
+        // not on their user profile.  Fetch it explicitly.
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        if (!int.TryParse(userIdStr, out var supId))
+            return null;
+
+        try
+        {
+            var regions = await _fieldSvc.GetRegionsBySuperviseurAsync(supId);
+            var regionId = regions?.FirstOrDefault()?.Id;
+            if (regionId.HasValue)
+                await SecureStorage.SetAsync(StorageKeys.UserIdRegion, regionId.Value.ToString());
+            return regionId;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     [RelayCommand]

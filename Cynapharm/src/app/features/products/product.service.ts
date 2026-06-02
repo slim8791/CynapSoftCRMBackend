@@ -25,7 +25,10 @@ export class ProductService {
   getProducts(): Observable<any[]> {
     return this.apiService
       .get<any>(this.endpoint)
-      .pipe(map(r => this.unwrapResult<any[]>(r)));
+      .pipe(
+        map(r => this.unwrapResult<any[]>(r) ?? []),
+        catchError(() => of([]))
+      );
   }
 
   /** GET /products/filter?page=1&pageSize=1000 — returns all products (active + inactive + archived) */

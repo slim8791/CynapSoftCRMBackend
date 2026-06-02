@@ -13,22 +13,22 @@ public partial class ProfileViewModel : BaseViewModel
     private readonly ICacheService _cache;
     private readonly KpiService    _kpiService;
     private readonly FieldService  _fieldService;
+    private readonly UserService   _userService;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AvatarInitials), nameof(IsDelegue), nameof(IsClient), nameof(IsMedecin))]
     private UserInfo? _user;
-    [ObservableProperty] private bool      _isEditing;
-    [ObservableProperty] private string    _currentPassword       = string.Empty;
-    [ObservableProperty] private string    _newPassword           = string.Empty;
-    [ObservableProperty] private string    _confirmPassword       = string.Empty;
-    [ObservableProperty] private string    _passwordErrorMessage  = string.Empty;
-    [ObservableProperty] private string    _editName              = string.Empty;
-    [ObservableProperty] private string    _editTelephone         = string.Empty;
-    [ObservableProperty] private string    _editAdresse           = string.Empty;
-    [ObservableProperty] private string    _wilayaLabel           = string.Empty;
+    [ObservableProperty] private bool   _isEditing;
+    [ObservableProperty] private string _currentPassword      = string.Empty;
+    [ObservableProperty] private string _newPassword          = string.Empty;
+    [ObservableProperty] private string _confirmPassword      = string.Empty;
+    [ObservableProperty] private string _passwordErrorMessage = string.Empty;
+    [ObservableProperty] private string _editName             = string.Empty;
+    [ObservableProperty] private string _editTelephone        = string.Empty;
+    [ObservableProperty] private string _editAdresse          = string.Empty;
 
-    [ObservableProperty] private string    _regionLabel           = string.Empty;
-    [ObservableProperty] private bool      _hasRegion             = false;
+    [ObservableProperty] private string    _regionLabel = string.Empty;
+    [ObservableProperty] private bool      _hasRegion   = false;
 
     partial void OnRegionLabelChanged(string value)
         => HasRegion = !string.IsNullOrEmpty(value) && value != "Non assigné";
@@ -42,12 +42,14 @@ public partial class ProfileViewModel : BaseViewModel
             ? string.Join("", User.Name.Split(' ').Select(s => s[0])).ToUpper()
             : "?";
 
-    public ProfileViewModel(AuthService authService, ICacheService cache, KpiService kpiService, FieldService fieldService)
+    public ProfileViewModel(AuthService authService, ICacheService cache, KpiService kpiService,
+                           FieldService fieldService, UserService userService)
     {
         _authService  = authService;
         _cache        = cache;
         _kpiService   = kpiService;
         _fieldService = fieldService;
+        _userService  = userService;
         Title = "Mon Profil";
     }
 
@@ -61,8 +63,6 @@ public partial class ProfileViewModel : BaseViewModel
             EditTelephone = User.Telephone ?? string.Empty;
             EditAdresse   = User.Adresse   ?? string.Empty;
             OnPropertyChanged(nameof(AvatarInitials));
-
-            WilayaLabel = string.Empty;
 
             if (User.Role == "DELEGUE" || User.Role == "SUPERVISEUR")
                 await LoadRegionAsync(User.Id, User.Role);
@@ -218,6 +218,27 @@ public partial class ProfileViewModel : BaseViewModel
                     return;
                 }
             }
+
+            // DELEGUE — Strategy 3: SecureStorage may be stale; fetch fresh user data
+            // from AuthAPI which stores idRegion directly on the User entity.
+            try
+            {
+                var freshUser = await _userService.GetUserByIdAsync(userId);
+                if (freshUser?.IdRegion.HasValue == true)
+                {
+                    // Cache the region ID so future logins hit Strategy 1 directly
+                    await SecureStorage.SetAsync(StorageKeys.UserIdRegion,
+                                                 freshUser.IdRegion.Value.ToString());
+
+                    var region = await _fieldService.GetRegionByIdAsync(freshUser.IdRegion.Value);
+                    if (region != null)
+                    {
+                        RegionLabel = region.Nom;
+                        return;
+                    }
+                }
+            }
+            catch { /* non-critical — fall through to "Non assigné" */ }
 
             RegionLabel = "Non assigné";
         }

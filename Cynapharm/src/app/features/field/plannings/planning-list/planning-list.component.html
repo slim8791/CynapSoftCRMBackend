@@ -4,7 +4,6 @@
           <h1>Plannings</h1>
           <p class="subtitle">Plannings des délégués</p>
         </div>
-        <a routerLink="/field/plannings/new" class="btn btn-primary">+ Nouveau planning</a>
       </div>
 
       <div class="filter-bar">
@@ -113,15 +112,6 @@
               </td>
               <td>
                 <div class="action-row">
-                  @if (p.etat !== EtatPlanning.Confirme) {
-                    <a [routerLink]="['/field/plannings', p.idPlanning, 'edit']" class="act-btn edit" title="Modifier">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    </a>
-                  } @else {
-                    <button class="act-btn edit" disabled title="Modifier">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    </button>
-                  }
                   @if (isAdmin || isSuperviseur) {
                     <button (click)="validatePlanning(p)" class="act-btn validate" [disabled]="p.etat === EtatPlanning.Confirme" [title]="p.etat === EtatPlanning.Confirme ? 'Confirmé' : 'Valider'">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>

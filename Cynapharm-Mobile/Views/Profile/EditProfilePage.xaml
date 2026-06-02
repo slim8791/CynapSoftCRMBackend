@@ -50,7 +50,8 @@
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center" />
                         </Border>
-                        <!-- Camera badge -->
+                        <!--
+                        FUTURE: change photo button — re-enable when photo upload is implemented
                         <Border BackgroundColor="{StaticResource Primary}"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="White" StrokeThickness="2"
@@ -61,11 +62,15 @@
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center" />
                         </Border>
+                        -->
                     </Grid>
+                    <!--
+                    FUTURE: change photo label — re-enable when photo upload is implemented
                     <Label Text="Changer la photo"
                            FontSize="13" FontAttributes="Bold"
                            TextColor="{StaticResource Primary}"
                            HorizontalOptions="Center" />
+                    -->
                 </VerticalStackLayout>
 
                 <!-- ── Section title: Modifiable ────────────────────────── -->

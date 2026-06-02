@@ -28,6 +28,9 @@ public class UserListItem
     [JsonPropertyName("isDeleted")]
     public bool IsDeleted { get; set; }
 
+    [JsonPropertyName("idRegion")]
+    public int? IdRegion { get; set; }
+
     [JsonIgnore]
     public string TypeClientLabel => TypeClient ?? Role ?? string.Empty;
 

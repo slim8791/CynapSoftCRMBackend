@@ -6,9 +6,6 @@
       <h1 class="pt">{{ title }}</h1>
       <p class="ps">Document #{{ doc?.numero_Doc ?? doc?.numeroDoc ?? '-' }}</p>
     </div>
-    @if (doc) {
-      <button class="btn-p" (click)="print()">🖨 Imprimer / PDF</button>
-    }
   </div>
 
   @if (error) { <div class="ae">{{ error }}</div> }

@@ -25,7 +25,7 @@
                   (ngModelChange)="onDelegueChange($event)">
             <option [ngValue]="null">-- Sélectionner un délégué --</option>
             @for (id of uniqueDelegues; track id) {
-              <option [ngValue]="id">Délégué #{{ id }}</option>
+              <option [ngValue]="id">{{ delegueName(id) }}</option>
             }
           </select>
         }
@@ -41,7 +41,7 @@
                   (ngModelChange)="onProduitChange($event)">
             <option [ngValue]="null">-- Sélectionner un produit --</option>
             @for (id of filteredProduits; track id) {
-              <option [ngValue]="id">Produit #{{ id }}</option>
+              <option [ngValue]="id">{{ produitName(id) }}</option>
             }
           </select>
         }
@@ -72,15 +72,7 @@
         }
       </div>
 
-      <!-- 4. Date d'expiration (auto-filled from selected lot) -->
-      @if (selectedStock) {
-        <div class="field">
-          <label>Date d'expiration</label>
-          <div class="date-display">
-            {{ selectedStock.dateExpiration | date:'dd/MM/yyyy' }}
-          </div>
-        </div>
-      }
+
 
     </div>
 
@@ -91,12 +83,12 @@
         <strong class="mono">{{ selectedStock.numeroLot }}</strong>
       </div>
       <div class="summary-row">
-        <span>Délégué ID</span>
-        <strong>#{{ selectedStock.id_User_Delegue }}</strong>
+        <span>Délégué</span>
+        <strong>{{ delegueName(selectedStock.id_User_Delegue) }}</strong>
       </div>
       <div class="summary-row">
-        <span>Produit ID</span>
-        <strong>#{{ selectedStock.id_Produit }}</strong>
+        <span>Produit</span>
+        <strong>{{ produitName(selectedStock.id_Produit) }}</strong>
       </div>
       <div class="summary-row">
         <span>Qté disponible</span>

@@ -116,11 +116,20 @@ export class KpiDashboardComponent implements OnInit, OnDestroy {
   }
 
   historiqueAction(entry: any): string {
-    return entry?.action ?? entry?.Action ?? entry?.type ?? entry?.Type ?? entry?.event ?? entry?.Event ?? '—';
+    const act = entry?.action ?? entry?.Action ?? entry?.type ?? entry?.Type ?? entry?.event ?? entry?.Event;
+    
+    // Convertir les codes numériques du backend en texte lisible
+    if (act == 1 || act === '1') return 'Démarrage de visite';
+    if (act == 2 || act === '2') return 'Clôture de visite / Rapport';
+    if (act == 3 || act === '3') return 'Création de commande';
+    if (act == 4 || act === '4') return 'Distribution d\'échantillon';
+    
+    return act ? String(act) : '—';
   }
 
   historiqueDetail(entry: any): string {
-    return entry?.detail ?? entry?.Detail ?? entry?.description ?? entry?.Description ?? entry?.message ?? entry?.Message ?? '—';
+    const detail = entry?.detail ?? entry?.Detail ?? entry?.description ?? entry?.Description ?? entry?.message ?? entry?.Message;
+    return detail ? detail : 'Aucun détail fourni';
   }
 
   private loadDeleguesFromVisites(): void {

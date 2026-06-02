@@ -13,6 +13,7 @@ export interface RapportDto {
   idSuperviseurValidateur?: number | null;
   latitude?:         number | null;
   longitude?:        number | null;
+  produitsDiscutes?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -34,6 +35,7 @@ export class RapportService {
       idSuperviseurValidateur: r.idSuperviseurValidateur ?? r.IdSuperviseurValidateur ?? null,
       latitude:        r.latitude        ?? r.Latitude        ?? null,
       longitude:       r.longitude       ?? r.Longitude       ?? null,
+      produitsDiscutes: r.produitsDiscutes ?? r.ProduitsDiscutes ?? null,
     };
   }
 

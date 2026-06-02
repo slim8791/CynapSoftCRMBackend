@@ -9,159 +9,636 @@
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- ═══ HEADER ══════════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════════════════════════
+             HEADER
+        ════════════════════════════════════════════════════════════ -->
         <Grid Grid.Row="0"
               BackgroundColor="{StaticResource Primary}"
-              Padding="16,48,16,16">
+              Padding="16,48,16,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="44"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="44"/>
             </Grid.ColumnDefinitions>
 
             <!-- Back button -->
-            <Border Grid.Column="0"
+            <Border Grid.Row="0" Grid.Column="0"
                     BackgroundColor="#26FFFFFF"
-                    StrokeShape="RoundRectangle 10"
+                    StrokeShape="RoundRectangle 12"
                     Stroke="Transparent"
-                    HeightRequest="36" WidthRequest="36"
+                    HeightRequest="38" WidthRequest="38"
                     VerticalOptions="Center">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding CancelCommand}"/>
                 </Border.GestureRecognizers>
-                <Label Text="‹" FontSize="22" TextColor="White"
+                <Label Text="‹" FontSize="24" TextColor="White"
                        HorizontalOptions="Center" VerticalOptions="Center"/>
             </Border>
 
             <!-- Title -->
-            <Label Grid.Column="1"
+            <Label Grid.Row="0" Grid.Column="1"
                    Text="{Binding Title}"
                    FontSize="18" FontAttributes="Bold"
                    TextColor="White"
-                   VerticalOptions="Center"
-                   HorizontalOptions="Center"/>
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+
+            <!-- Spacer -->
+            <BoxView Grid.Row="0" Grid.Column="2" Color="Transparent"/>
+
+            <!-- Avatar + subtitle -->
+            <Grid Grid.Row="1" Grid.ColumnSpan="3"
+                  ColumnDefinitions="52,14,*"
+                  Margin="0,18,0,0">
+
+                <Border Grid.Column="0"
+                        BackgroundColor="#33FFFFFF"
+                        StrokeShape="RoundRectangle 16"
+                        Stroke="#44FFFFFF"
+                        HeightRequest="52" WidthRequest="52"
+                        HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="👤" FontSize="22"
+                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Border>
+
+                <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="4">
+                    <Label Text="{Binding Title}"
+                           FontSize="16" FontAttributes="Bold"
+                           TextColor="White"/>
+                    <Label Text="{Binding FormSubtitle}"
+                           FontSize="12" TextColor="#CCFFFFFF"/>
+                </VerticalStackLayout>
+            </Grid>
         </Grid>
 
-        <!-- ═══ FORM ════════════════════════════════════════════════ -->
-        <ScrollView Grid.Row="1" Padding="14,14,14,20">
+        <!-- ═══════════════════════════════════════════════════════════
+             FORM BODY
+        ════════════════════════════════════════════════════════════ -->
+        <ScrollView Grid.Row="1" Padding="16,16,16,32">
             <VerticalStackLayout Spacing="0">
 
-                <!-- Error -->
+                <!-- ── Error banner ──────────────────────────────── -->
                 <Border IsVisible="{Binding HasError}"
                         BackgroundColor="{StaticResource DangerLight}"
-                        StrokeShape="RoundRectangle 10"
-                        Stroke="Transparent"
-                        Padding="12" Margin="0,0,0,12">
-                    <Label Text="{Binding ErrorMessage}"
-                           FontSize="13" TextColor="{StaticResource DangerText}"/>
+                        StrokeShape="RoundRectangle 12"
+                        Stroke="{StaticResource Danger}"
+                        StrokeThickness="1"
+                        Padding="14,12" Margin="0,0,0,14">
+                    <Grid ColumnDefinitions="24,10,*">
+                        <Label Grid.Column="0" Text="⚠️" FontSize="15"
+                               VerticalOptions="Center"/>
+                        <Label Grid.Column="2"
+                               Text="{Binding ErrorMessage}"
+                               FontSize="13"
+                               TextColor="{StaticResource DangerText}"
+                               VerticalOptions="Center"/>
+                    </Grid>
                 </Border>
 
-                <!-- Section: Identité -->
-                <Label Text="Identité" FontSize="14" FontAttributes="Bold"
-                       TextColor="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
-
-                <Label Text="Nom *" FontSize="12"
-                       TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
-                <Entry Placeholder="Nom de famille"
-                       Text="{Binding Nom}"
-                       BackgroundColor="{StaticResource SurfaceBackground}"
-                       FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
-
-                <Label Text="Prénom *" FontSize="12"
-                       TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
-                <Entry Placeholder="Prénom"
-                       Text="{Binding Prenom}"
-                       BackgroundColor="{StaticResource SurfaceBackground}"
-                       FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
-
-                <Label Text="Email *" FontSize="12"
-                       TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
-                <Entry Placeholder="client@exemple.com"
-                       Text="{Binding Email}"
-                       Keyboard="Email"
-                       IsEnabled="{Binding IsNew}"
-                       BackgroundColor="{StaticResource SurfaceBackground}"
-                       FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
-
-                <!-- Section: Coordonnées -->
-                <Label Text="Coordonnées" FontSize="14" FontAttributes="Bold"
-                       TextColor="{StaticResource TextPrimary}" Margin="0,8,0,8"/>
-
-                <Label Text="Téléphone" FontSize="12"
-                       TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
-                <Entry Placeholder="+216 XX XXX XXX"
-                       Text="{Binding Telephone}"
-                       Keyboard="Telephone"
-                       BackgroundColor="{StaticResource SurfaceBackground}"
-                       FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
-
-                <Label Text="Adresse" FontSize="12"
-                       TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
-                <Entry Placeholder="Ville, Pays"
-                       Text="{Binding Adresse}"
-                       BackgroundColor="{StaticResource SurfaceBackground}"
-                       FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
-
-                <!-- Section: Type client -->
-                <Label Text="Type de client" FontSize="14" FontAttributes="Bold"
-                       TextColor="{StaticResource TextPrimary}" Margin="0,8,0,8"/>
-
-                <Border BackgroundColor="{StaticResource SurfaceBackground}"
-                        StrokeShape="RoundRectangle 10"
+                <!-- ══════════════════════════════════════════════════
+                     SECTION : IDENTITÉ
+                ═══════════════════════════════════════════════════ -->
+                <Border BackgroundColor="{StaticResource CardBackground}"
+                        StrokeShape="RoundRectangle 16"
                         Stroke="{StaticResource BorderColor}"
-                        Padding="4,0"
-                        HeightRequest="48" Margin="0,0,0,12">
-                    <Picker ItemsSource="{Binding ClientTypes}"
-                            SelectedIndex="{Binding SelectedTypeIndex}"
-                            FontSize="14"
-                            TextColor="{StaticResource TextPrimary}"/>
+                        StrokeThickness="1"
+                        Padding="16,14,16,4"
+                        Margin="0,0,0,14">
+                    <Border.Shadow>
+                        <Shadow Brush="#18000000" Offset="0,2" Radius="8" Opacity="0.08"/>
+                    </Border.Shadow>
+
+                    <!-- Section header -->
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="32,10,*" Margin="0,0,0,14">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="{StaticResource PrimaryLight}"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="Transparent"
+                                    HeightRequest="32" WidthRequest="32">
+                                <Label Text="🪪" FontSize="15"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="1">
+                                <Label Text="Identité" FontSize="14" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"/>
+                                <Label Text="Informations de base" FontSize="11"
+                                       TextColor="{StaticResource TextMuted}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- Nom complet -->
+                        <Label Margin="0,0,0,6">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="Nom complet" FontSize="12" TextColor="{StaticResource TextSecondary}"/>
+                                    <Span Text=" *" FontSize="12" TextColor="{StaticResource Danger}"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1"
+                                Margin="0,0,0,14">
+                            <Grid ColumnDefinitions="44,*" HeightRequest="50">
+                                <Label Grid.Column="0" Text="👤" FontSize="16"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <BoxView Grid.Column="0" WidthRequest="1" Color="{StaticResource BorderColor}"
+                                         HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                <Entry Grid.Column="1"
+                                       Placeholder="Prénom et nom"
+                                       Text="{Binding NomComplet}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       PlaceholderColor="{StaticResource TextMuted}"
+                                       BackgroundColor="Transparent"
+                                       Margin="10,0,8,0"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Email -->
+                        <Label Margin="0,0,0,6">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="Email" FontSize="12" TextColor="{StaticResource TextSecondary}"/>
+                                    <Span Text=" *" FontSize="12" TextColor="{StaticResource Danger}"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1"
+                                Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="44,*" HeightRequest="50">
+                                <Label Grid.Column="0" Text="✉️" FontSize="16"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <BoxView Grid.Column="0" WidthRequest="1" Color="{StaticResource BorderColor}"
+                                         HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                <Entry Grid.Column="1"
+                                       Placeholder="client@exemple.tn"
+                                       Text="{Binding Email}"
+                                       Keyboard="Email"
+                                       IsEnabled="{Binding IsNew}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       PlaceholderColor="{StaticResource TextMuted}"
+                                       BackgroundColor="Transparent"
+                                       Margin="10,0,8,0"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
                 </Border>
 
-                <!-- Section: Sécurité (création only) -->
-                <VerticalStackLayout IsVisible="{Binding IsNew}">
-                    <Label Text="Sécurité" FontSize="14" FontAttributes="Bold"
-                           TextColor="{StaticResource TextPrimary}" Margin="0,8,0,8"/>
+                <!-- ══════════════════════════════════════════════════
+                     SECTION : COORDONNÉES
+                ═══════════════════════════════════════════════════ -->
+                <Border BackgroundColor="{StaticResource CardBackground}"
+                        StrokeShape="RoundRectangle 16"
+                        Stroke="{StaticResource BorderColor}"
+                        StrokeThickness="1"
+                        Padding="16,14,16,4"
+                        Margin="0,0,0,14">
+                    <Border.Shadow>
+                        <Shadow Brush="#18000000" Offset="0,2" Radius="8" Opacity="0.08"/>
+                    </Border.Shadow>
 
-                    <Label Text="Mot de passe *" FontSize="12"
-                           TextColor="{StaticResource TextSecondary}" Margin="0,0,0,4"/>
-                    <Entry Placeholder="6 caractères minimum"
-                           Text="{Binding Password}"
-                           IsPassword="True"
-                           BackgroundColor="{StaticResource SurfaceBackground}"
-                           FontSize="14" HeightRequest="48" Margin="0,0,0,12"/>
-                </VerticalStackLayout>
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="32,10,*" Margin="0,0,0,14">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#FFF3E0"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="Transparent"
+                                    HeightRequest="32" WidthRequest="32">
+                                <Label Text="📍" FontSize="15"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="1">
+                                <Label Text="Coordonnées" FontSize="14" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"/>
+                                <Label Text="Contact et localisation" FontSize="11"
+                                       TextColor="{StaticResource TextMuted}"/>
+                            </VerticalStackLayout>
+                        </Grid>
 
-                <!-- Info note -->
-                <Border BackgroundColor="{StaticResource PrimaryLight}"
-                        StrokeShape="RoundRectangle 10"
+                        <!-- Téléphone -->
+                        <Label Text="Téléphone" FontSize="12"
+                               TextColor="{StaticResource TextSecondary}" Margin="0,0,0,6"/>
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1"
+                                Margin="0,0,0,14">
+                            <Grid ColumnDefinitions="44,*" HeightRequest="50">
+                                <Label Grid.Column="0" Text="📱" FontSize="16"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <BoxView Grid.Column="0" WidthRequest="1" Color="{StaticResource BorderColor}"
+                                         HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                <Entry Grid.Column="1"
+                                       Placeholder="+216 XX XXX XXX"
+                                       Text="{Binding Telephone}"
+                                       Keyboard="Telephone"
+                                       FontSize="14"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       PlaceholderColor="{StaticResource TextMuted}"
+                                       BackgroundColor="Transparent"
+                                       Margin="10,0,8,0"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Adresse -->
+                        <Label Text="Adresse" FontSize="12"
+                               TextColor="{StaticResource TextSecondary}" Margin="0,0,0,6"/>
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1"
+                                Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="44,*" HeightRequest="50">
+                                <Label Grid.Column="0" Text="🏠" FontSize="16"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <BoxView Grid.Column="0" WidthRequest="1" Color="{StaticResource BorderColor}"
+                                         HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                <Entry Grid.Column="1"
+                                       Placeholder="Ville, Gouvernorat"
+                                       Text="{Binding Adresse}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       PlaceholderColor="{StaticResource TextMuted}"
+                                       BackgroundColor="Transparent"
+                                       Margin="10,0,8,0"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ══════════════════════════════════════════════════
+                     SECTION : TYPE DE COMPTE
+                ═══════════════════════════════════════════════════ -->
+                <Border BackgroundColor="{StaticResource CardBackground}"
+                        StrokeShape="RoundRectangle 16"
+                        Stroke="{StaticResource BorderColor}"
+                        StrokeThickness="1"
+                        Padding="16,14,16,16"
+                        Margin="0,0,0,14">
+                    <Border.Shadow>
+                        <Shadow Brush="#18000000" Offset="0,2" Radius="8" Opacity="0.08"/>
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="0">
+
+                        <!-- Section header -->
+                        <Grid ColumnDefinitions="32,10,*" Margin="0,0,0,16">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#E8F5E9"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="Transparent"
+                                    HeightRequest="32" WidthRequest="32">
+                                <Label Text="🏷️" FontSize="15"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="1">
+                                <Label Text="Type de compte" FontSize="14" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"/>
+                                <Label Text="Sélectionnez le profil à créer" FontSize="11"
+                                       TextColor="{StaticResource TextMuted}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- Niveau 1 : Médecin | Client -->
+                        <Label Text="Catégorie" FontSize="12"
+                               TextColor="{StaticResource TextSecondary}" Margin="0,0,0,8"/>
+                        <Grid ColumnDefinitions="*,8,*" Margin="0,0,0,14">
+
+                            <!-- Bouton MÉDECIN -->
+                            <Border x:Name="BtnMedecin" Grid.Column="0"
+                                    StrokeShape="RoundRectangle 12" StrokeThickness="2"
+                                    Stroke="{StaticResource BorderColor}"
+                                    BackgroundColor="Transparent"
+                                    Padding="0,12">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border"
+                                                 Binding="{Binding IsMedecin}" Value="True">
+                                        <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                        <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectMedecinCommand}"/>
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+                                    <Label Text="🩺" FontSize="22" HorizontalOptions="Center"/>
+                                    <Label Text="Médecin" FontSize="13" FontAttributes="Bold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Bouton CLIENT -->
+                            <Border Grid.Column="2"
+                                    StrokeShape="RoundRectangle 12" StrokeThickness="2"
+                                    Stroke="{StaticResource BorderColor}"
+                                    BackgroundColor="Transparent"
+                                    Padding="0,12">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border"
+                                                 Binding="{Binding IsClient}" Value="True">
+                                        <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                        <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectPharmacienCommand}"/>
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+                                    <Label Text="🏥" FontSize="22" HorizontalOptions="Center"/>
+                                    <Label Text="Client" FontSize="13" FontAttributes="Bold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+
+                        <!-- Niveau 2 : Pharmacien | Grossiste (visible si Client) -->
+                        <VerticalStackLayout IsVisible="{Binding IsClient}" Spacing="0">
+                            <Label Text="Sous-type" FontSize="12"
+                                   TextColor="{StaticResource TextSecondary}" Margin="0,0,0,8"/>
+                            <Grid ColumnDefinitions="*,8,*" Margin="0,0,0,4">
+
+                                <!-- PHARMACIEN -->
+                                <Border Grid.Column="0"
+                                        StrokeShape="RoundRectangle 10" StrokeThickness="2"
+                                        Stroke="{StaticResource BorderColor}"
+                                        BackgroundColor="Transparent"
+                                        Padding="0,10">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding IsPharmacien}" Value="True">
+                                            <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                            <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}"/>
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SelectPharmacienCommand}"/>
+                                    </Border.GestureRecognizers>
+                                    <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
+                                        <Label Text="💊" FontSize="18" HorizontalOptions="Center"/>
+                                        <Label Text="Pharmacien" FontSize="12" FontAttributes="Bold"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               HorizontalOptions="Center"/>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <!-- GROSSISTE -->
+                                <Border Grid.Column="2"
+                                        StrokeShape="RoundRectangle 10" StrokeThickness="2"
+                                        Stroke="{StaticResource BorderColor}"
+                                        BackgroundColor="Transparent"
+                                        Padding="0,10">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding IsGrossiste}" Value="True">
+                                            <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                            <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}"/>
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SelectGrossisteCommand}"/>
+                                    </Border.GestureRecognizers>
+                                    <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
+                                        <Label Text="🏭" FontSize="18" HorizontalOptions="Center"/>
+                                        <Label Text="Grossiste" FontSize="12" FontAttributes="Bold"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               HorizontalOptions="Center"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </Grid>
+                        </VerticalStackLayout>
+
+                        <!-- Badge de rôle sélectionné -->
+                        <Border BackgroundColor="{StaticResource Primary}"
+                                StrokeShape="RoundRectangle 20"
+                                Stroke="Transparent"
+                                Padding="14,6"
+                                HorizontalOptions="Center"
+                                Margin="0,14,0,0">
+                            <Label Text="{Binding RoleBadgeLabel}"
+                                   FontSize="11" FontAttributes="Bold"
+                                   TextColor="White"
+                                   HorizontalOptions="Center"/>
+                        </Border>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ══════════════════════════════════════════════════
+                     SECTION : MÉDECIN (visible uniquement si Médecin sélectionné)
+                ═══════════════════════════════════════════════════ -->
+                <Border IsVisible="{Binding IsMedecin}"
+                        BackgroundColor="{StaticResource CardBackground}"
+                        StrokeShape="RoundRectangle 16"
+                        Stroke="{StaticResource BorderColor}"
+                        StrokeThickness="1"
+                        Padding="16,14,16,14"
+                        Margin="0,0,0,14">
+                    <Border.Shadow>
+                        <Shadow Brush="#18000000" Offset="0,2" Radius="8" Opacity="0.08"/>
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="32,10,*" Margin="0,0,0,14">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#E3F2FD"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="Transparent"
+                                    HeightRequest="32" WidthRequest="32">
+                                <Label Text="🩺" FontSize="15"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="1">
+                                <Label Text="Informations médicales" FontSize="14" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"/>
+                                <Label Text="Spécialité et établissement" FontSize="11"
+                                       TextColor="{StaticResource TextMuted}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- Spécialité -->
+                        <Label Margin="0,0,0,6">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="Spécialité" FontSize="12" TextColor="{StaticResource TextSecondary}"/>
+                                    <Span Text=" *" FontSize="12" TextColor="{StaticResource Danger}"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1"
+                                Margin="0,0,0,14">
+                            <Grid ColumnDefinitions="44,*" HeightRequest="50">
+                                <Label Grid.Column="0" Text="🔬" FontSize="16"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <BoxView Grid.Column="0" WidthRequest="1" Color="{StaticResource BorderColor}"
+                                         HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                <Entry Grid.Column="1"
+                                       Placeholder="Ex. Cardiologie, Pédiatrie…"
+                                       Text="{Binding Specialite}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       PlaceholderColor="{StaticResource TextMuted}"
+                                       BackgroundColor="Transparent"
+                                       Margin="10,0,8,0"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Type d'établissement -->
+                        <Label Text="Type d'établissement" FontSize="12"
+                               TextColor="{StaticResource TextSecondary}" Margin="0,0,0,6"/>
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1"
+                                Margin="0,0,0,0">
+                            <Grid ColumnDefinitions="44,*" HeightRequest="50">
+                                <Label Grid.Column="0" Text="🏥" FontSize="16"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <BoxView Grid.Column="0" WidthRequest="1" Color="{StaticResource BorderColor}"
+                                         HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                <Entry Grid.Column="1"
+                                       Placeholder="Ex. Clinique, Hôpital, Cabinet…"
+                                       Text="{Binding TypeEtablissement}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       PlaceholderColor="{StaticResource TextMuted}"
+                                       BackgroundColor="Transparent"
+                                       Margin="10,0,8,0"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ══════════════════════════════════════════════════
+                     SECTION : SÉCURITÉ (création uniquement)
+                ═══════════════════════════════════════════════════ -->
+                <Border IsVisible="{Binding IsNew}"
+                        BackgroundColor="{StaticResource CardBackground}"
+                        StrokeShape="RoundRectangle 16"
+                        Stroke="{StaticResource BorderColor}"
+                        StrokeThickness="1"
+                        Padding="16,14,16,14"
+                        Margin="0,0,0,14">
+                    <Border.Shadow>
+                        <Shadow Brush="#18000000" Offset="0,2" Radius="8" Opacity="0.08"/>
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="32,10,*" Margin="0,0,0,14">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#F3E8FF"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="Transparent"
+                                    HeightRequest="32" WidthRequest="32">
+                                <Label Text="🔒" FontSize="15"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="1">
+                                <Label Text="Sécurité" FontSize="14" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"/>
+                                <Label Text="Accès au compte client" FontSize="11"
+                                       TextColor="{StaticResource TextMuted}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Label Margin="0,0,0,6">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="Mot de passe" FontSize="12" TextColor="{StaticResource TextSecondary}"/>
+                                    <Span Text=" *" FontSize="12" TextColor="{StaticResource Danger}"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1">
+                            <Grid ColumnDefinitions="44,*" HeightRequest="50">
+                                <Label Grid.Column="0" Text="🔑" FontSize="16"
+                                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <BoxView Grid.Column="0" WidthRequest="1" Color="{StaticResource BorderColor}"
+                                         HorizontalOptions="End" VerticalOptions="Fill" Margin="0,10"/>
+                                <Entry Grid.Column="1"
+                                       Placeholder="6 caractères minimum"
+                                       Text="{Binding Password}"
+                                       IsPassword="True"
+                                       FontSize="14"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       PlaceholderColor="{StaticResource TextMuted}"
+                                       BackgroundColor="Transparent"
+                                       Margin="10,0,8,0"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── Info note ─────────────────────────────────── -->
+                <Border BackgroundColor="{StaticResource InfoBackground}"
+                        StrokeShape="RoundRectangle 12"
                         Stroke="Transparent"
-                        Padding="12" Margin="0,4,0,12">
-                    <Label FontSize="12" TextColor="{StaticResource PrimaryText}">
-                        <Label.FormattedText>
-                            <FormattedString>
-                                <Span Text="ℹ️ " FontSize="14"/>
-                                <Span Text="Le rôle est automatiquement défini comme CLIENT. Seul un administrateur peut le modifier."/>
-                            </FormattedString>
-                        </Label.FormattedText>
-                    </Label>
+                        Padding="14,12"
+                        Margin="0,0,0,20">
+                    <Grid ColumnDefinitions="24,10,*">
+                        <Label Grid.Column="0" Text="ℹ️" FontSize="15"
+                               VerticalOptions="Start" Margin="0,1,0,0"/>
+                        <Label Grid.Column="2"
+                               Text="Le rôle est automatiquement défini comme CLIENT. Seul un administrateur peut le modifier."
+                               FontSize="12"
+                               TextColor="{StaticResource InfoText}"
+                               LineBreakMode="WordWrap"/>
+                    </Grid>
                 </Border>
 
-                <!-- Submit button -->
-                <Button Text="{Binding IsNew, Converter={StaticResource InvertedBoolConverter}, ConverterParameter='Mettre à jour|Créer le compte'}"
-                        Command="{Binding SaveCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
-                        BackgroundColor="{StaticResource Primary}"
-                        TextColor="White"
-                        FontAttributes="Bold"
-                        FontSize="15"
-                        HeightRequest="50"
-                        CornerRadius="10"
-                        Margin="0,8,0,0"/>
+                <!-- ── Submit button ─────────────────────────────── -->
+                <Border BackgroundColor="{StaticResource Primary}"
+                        StrokeShape="RoundRectangle 14"
+                        Stroke="Transparent"
+                        Padding="0"
+                        HeightRequest="54"
+                        Margin="0,0,0,4">
+                    <Border.Shadow>
+                        <Shadow Brush="{StaticResource Primary}" Offset="0,4" Radius="12" Opacity="0.35"/>
+                    </Border.Shadow>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SaveCommand}"/>
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="*,Auto,8" HorizontalOptions="Center" VerticalOptions="Center">
+                        <Label Grid.Column="0"
+                               Text="{Binding SaveLabel}"
+                               FontSize="15" FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Grid>
+                </Border>
 
                 <!-- Loading indicator -->
                 <ActivityIndicator IsRunning="{Binding IsBusy}"
                                    IsVisible="{Binding IsBusy}"
                                    Color="{StaticResource Primary}"
-                                   HeightRequest="30" Margin="0,8,0,0"/>
+                                   HeightRequest="28"
+                                   Margin="0,10,0,0"/>
 
             </VerticalStackLayout>
         </ScrollView>

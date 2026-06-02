@@ -16,4 +16,7 @@ public partial class MesClientsPage : ContentPage
         if (BindingContext is MesClientsViewModel vm)
             _ = vm.LoadCommand.ExecuteAsync(null);
     }
+
+    private void OnHamburgerTapped(object sender, EventArgs e)
+        => Shell.Current.FlyoutIsPresented = true;
 }

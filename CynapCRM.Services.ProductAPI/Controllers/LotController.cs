@@ -86,7 +86,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
 
-        [HttpDelete("lot/{numeroLot}")]
+        [HttpDelete("{numeroLot}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteLot(string numeroLot)
         {

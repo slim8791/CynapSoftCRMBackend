@@ -96,8 +96,10 @@ export class UserDetailComponent implements OnInit, OnDestroy {
             this.loadStockSummary();
             this.loadMovements();
           }
-          if ((role === 'DELEGUE' || role === 'SUPERVISEUR') && this.user?.idRegion) {
+          if (this.user?.idRegion) {
             this.loadRegionName(this.user.idRegion);
+          } else if (role === 'SUPERVISEUR') {
+            this.loadRegionBySuperviseur(this.user.id);
           }
           this.cdr.markForCheck();
         },
@@ -118,6 +120,15 @@ export class UserDetailComponent implements OnInit, OnDestroy {
           return id === idRegion;
         });
         this.regionName = (found as any)?.NomRegion ?? found?.nomRegion ?? '—';
+        this.cdr.markForCheck();
+      });
+  }
+
+  private loadRegionBySuperviseur(superviseurId: number): void {
+    this.regionSvc.getBySuperviseur(superviseurId)
+      .pipe(catchError(() => of(null)), takeUntil(this.destroy$))
+      .subscribe(region => {
+        this.regionName = region?.nomRegion ?? '—';
         this.cdr.markForCheck();
       });
   }

@@ -24,7 +24,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Back button -->
+            <!-- Hamburger button — opens flyout drawer -->
             <Border Grid.Row="0" Grid.Column="0"
                     BackgroundColor="#26FFFFFF"
                     StrokeShape="RoundRectangle 10"
@@ -32,10 +32,12 @@
                     HeightRequest="36" WidthRequest="36"
                     VerticalOptions="Center">
                 <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding GoBackCommand}"/>
+                    <TapGestureRecognizer Tapped="OnHamburgerTapped"/>
                 </Border.GestureRecognizers>
-                <Label Text="‹" FontSize="22" TextColor="White"
-                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                <Path Data="M 4,7 L 20,7 M 4,12 L 20,12 M 4,17 L 20,17"
+                      Stroke="White" StrokeThickness="2.5"
+                      StrokeLineCap="Round"
+                      HorizontalOptions="Center" VerticalOptions="Center"/>
             </Border>
 
             <!-- Title -->

@@ -40,7 +40,6 @@
         <table class="rl-table">
           <thead>
             <tr>
-              <th>#</th>
               <th>Message</th>
               <th>Commande</th>
               <th>Ligne</th>
@@ -54,7 +53,6 @@
           <tbody>
             @for (rec of filteredReclamations; track rec.Id_Rec) {
               <tr>
-                <td class="col-id">#{{ rec.Id_Rec }}</td>
                 <td class="col-msg" [title]="rec.Message">{{ rec.Message }}</td>
                 <td><a [routerLink]="['/orders', rec.Id_Commande]" class="link">{{ formatOrderNum(rec.Id_Commande) }}</a></td>
                 <td class="col-gray">{{ getProductNameForLigne(rec.Id_Commande, rec.Id_Ligne) }}</td>

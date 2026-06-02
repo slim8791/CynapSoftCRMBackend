@@ -38,24 +38,26 @@
       <!-- ID Stock source -->
       <div class="field">
         <label class="field-label">
-          {{ isTransfer ? 'ID Stock source *' : 'ID Stock *' }}
+          {{ isTransfer ? 'Stock source *' : 'Stock *' }}
         </label>
-        <input type="number" formControlName="idStock" min="1"
-               [class.field-invalid]="fieldInvalid('idStock')"
-               placeholder="Ex: 12" />
+        <select formControlName="idStock" [class.field-invalid]="fieldInvalid('idStock')">
+          <option [ngValue]="null">Sélectionnez un stock...</option>
+          <option *ngFor="let s of stocks" [ngValue]="s.id">{{ s.label }}</option>
+        </select>
         <span *ngIf="fieldInvalid('idStock')" class="field-error">
-          L'ID stock est requis (min 1).
+          Le stock est requis.
         </span>
       </div>
 
       <!-- ID Stock destination — Transfer uniquement -->
       <div class="field" *ngIf="isTransfer">
-        <label class="field-label">ID Stock destination *</label>
-        <input type="number" formControlName="idStockDest" min="1"
-               [class.field-invalid]="fieldInvalid('idStockDest')"
-               placeholder="Ex: 15" />
+        <label class="field-label">Stock destination *</label>
+        <select formControlName="idStockDest" [class.field-invalid]="fieldInvalid('idStockDest')">
+          <option [ngValue]="null">Sélectionnez un stock de destination...</option>
+          <option *ngFor="let s of stocks" [ngValue]="s.id">{{ s.label }}</option>
+        </select>
         <span *ngIf="fieldInvalid('idStockDest')" class="field-error">
-          L'ID stock destination est requis.
+          Le stock destination est requis.
         </span>
       </div>
 

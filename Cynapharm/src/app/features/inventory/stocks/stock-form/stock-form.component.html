@@ -62,20 +62,17 @@
         <span *ngIf="f['numeroLot'].touched && f['numeroLot'].invalid" class="field-error">Lot requis</span>
       </div>
 
-      <!-- 4. Date d'expiration (auto-filled readonly) -->
-      <div class="field">
-        <label>Date d'expiration</label>
-        <div class="date-display" [class.empty]="!lotDateDisplay">
-          {{ lotDateDisplay || '— auto-remplie depuis le lot sélectionné —' }}
-        </div>
-        <input type="hidden" formControlName="dateExpiration" />
-      </div>
 
-      <!-- 5. Qté disponible (min 1) -->
+
+      <!-- 5. Qté disponible (min 1, max lot quantite) -->
       <div class="field">
         <label>Qté disponible *</label>
-        <input type="number" formControlName="qteDisponible" min="1" placeholder="1" />
-        <span *ngIf="f['qteDisponible'].touched && f['qteDisponible'].invalid" class="field-error">Valeur invalide (min 1)</span>
+        <input type="number" formControlName="qteDisponible" min="1" placeholder="Ex: 50" />
+        <span *ngIf="f['qteDisponible'].touched && f['qteDisponible'].errors?.['required']" class="field-error">Quantité requise</span>
+        <span *ngIf="f['qteDisponible'].touched && f['qteDisponible'].errors?.['min']" class="field-error">Valeur invalide (min 1)</span>
+        <span *ngIf="f['qteDisponible'].touched && f['qteDisponible'].errors?.['max']" class="field-error">
+          Stock insuffisant dans le lot (maximum {{ f['qteDisponible'].errors?.['max'].max }} unités)
+        </span>
       </div>
 
     </div>

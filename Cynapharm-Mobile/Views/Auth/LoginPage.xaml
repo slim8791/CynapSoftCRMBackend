@@ -108,7 +108,7 @@
 
                     <!-- Email field -->
                     <VerticalStackLayout Spacing="0">
-                        <Label Text="Identifiant / Email"
+                        <Label Text="Email"
                                FontSize="12" FontAttributes="Bold"
                                TextColor="{StaticResource SecondaryTextColor}"
                                Margin="0,0,0,8" />

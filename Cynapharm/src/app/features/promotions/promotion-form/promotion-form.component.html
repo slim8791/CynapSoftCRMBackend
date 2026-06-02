@@ -1,11 +1,16 @@
-<div class="page-wrapper">
+<div class="page">
   <div class="page-header">
-    <a routerLink="/promotions" class="back-link">← Promotions</a>
+    <a routerLink="/promotions" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Retour
+    </a>
     <h1>{{ isEdit ? 'Modifier' : 'Nouvelle' }} promotion</h1>
   </div>
 
   <div class="form-card">
-    @if (loading) { <div class="loading-block"><div class="spinner"></div></div> }
+    @if (loading) { <div class="loading-wrap"><div class="spinner"></div></div> }
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
       <div class="form-grid">
@@ -13,28 +18,28 @@
         <!-- Code promo -->
         <div class="field">
           <label>Code promo *</label>
-          <input type="text" formControlName="codePromo" class="input"
-                 [class.invalid]="isInvalid('codePromo')"
+          <input type="text" formControlName="codePromo"
+                 [class.field-invalid]="isInvalid('codePromo')"
                  placeholder="EX: PROMO25">
           @if (form.get('codePromo')?.errors?.['required'] && form.get('codePromo')?.touched) {
-            <span class="err">Code obligatoire.</span>
+            <span class="field-error">Code obligatoire.</span>
           }
           @if (form.get('codePromo')?.errors?.['whitespace'] && form.get('codePromo')?.touched) {
-            <span class="err">Espaces interdits.</span>
+            <span class="field-error">Espaces interdits.</span>
           }
         </div>
 
         <!-- Réduction -->
         <div class="field">
           <label>Réduction (%) *</label>
-          <input type="number" formControlName="pourcentage" class="input"
-                 [class.invalid]="isInvalid('pourcentage')"
+          <input type="number" formControlName="pourcentage"
+                 [class.field-invalid]="isInvalid('pourcentage')"
                  min="1" max="100" placeholder="Ex: 20">
           @if (form.get('pourcentage')?.errors?.['required'] && form.get('pourcentage')?.touched) {
-            <span class="err">La réduction est obligatoire.</span>
+            <span class="field-error">La réduction est obligatoire.</span>
           }
           @if ((form.get('pourcentage')?.errors?.['min'] || form.get('pourcentage')?.errors?.['max']) && form.get('pourcentage')?.touched) {
-            <span class="err">La réduction doit être entre 1 et 100.</span>
+            <span class="field-error">La réduction doit être entre 1 et 100.</span>
           }
         </div>
 
@@ -42,11 +47,11 @@
         <div class="field">
           <label>N° de lot *</label>
           @if (loadingLots) {
-            <select class="input" disabled>
+            <select disabled>
               <option>Chargement des lots…</option>
             </select>
           } @else {
-            <select formControlName="numeroLot" class="input" [class.invalid]="isInvalid('numeroLot')">
+            <select formControlName="numeroLot" [class.field-invalid]="isInvalid('numeroLot')">
               <option value="">-- Sélectionner un lot --</option>
               @for (lot of availableLots; track lot.numero) {
                 <option [value]="lot.numero">
@@ -57,50 +62,58 @@
             </select>
           }
           @if (availableLots.length === 0 && !loadingLots) {
-            <span class="err">Aucun lot disponible (non expiré, en stock).</span>
+            <span class="field-error">Aucun lot disponible (non expiré, en stock).</span>
           }
           @if (isInvalid('numeroLot')) {
-            <span class="err">Veuillez sélectionner un lot.</span>
+            <span class="field-error">Veuillez sélectionner un lot.</span>
           }
         </div>
 
         <!-- Date de début -->
         <div class="field">
           <label>Date de début *</label>
-          <input type="date" formControlName="dateDebut" class="input"
-                 [class.invalid]="isInvalid('dateDebut') || dateRangeInvalid">
+          <input type="date" formControlName="dateDebut"
+                 [class.field-invalid]="isInvalid('dateDebut') || dateRangeInvalid">
           @if (form.get('dateDebut')?.errors?.['required'] && form.get('dateDebut')?.touched) {
-            <span class="err">Date de début obligatoire.</span>
+            <span class="field-error">Date de début obligatoire.</span>
           }
         </div>
 
         <!-- Date d'expiration -->
         <div class="field">
           <label>Date d'expiration *</label>
-          <input type="date" formControlName="dateExpiration" class="input"
-                 [class.invalid]="isInvalid('dateExpiration') || dateRangeInvalid">
+          <input type="date" formControlName="dateExpiration"
+                 [class.field-invalid]="isInvalid('dateExpiration') || dateRangeInvalid">
           @if (form.get('dateExpiration')?.errors?.['required'] && form.get('dateExpiration')?.touched) {
-            <span class="err">Date d'expiration obligatoire.</span>
+            <span class="field-error">Date d'expiration obligatoire.</span>
           }
           @if (form.get('dateExpiration')?.errors?.['dateRange'] && form.get('dateExpiration')?.touched) {
-            <span class="err">La date d'expiration doit être postérieure à la date de début.</span>
+            <span class="field-error">La date d'expiration doit être postérieure à la date de début.</span>
           }
         </div>
 
-        <!-- Statut -->
-        <div class="field field-check">
-          <label><input type="checkbox" formControlName="estActive"> Promotion active</label>
-        </div>
+      </div> <!-- End of form-grid -->
 
+      <!-- Statut Toggle Card -->
+      <div class="status-toggle-card">
+        <div class="toggle-info">
+          <strong>Statut de la promotion</strong>
+          <span>Une promotion inactive ne sera pas visible ni applicable par les commerciaux sur le terrain.</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" formControlName="estActive">
+          <span class="slider"></span>
+        </label>
       </div>
 
-      @if (error) { <div class="alert-danger">{{ error }}</div> }
+      @if (error) { <div class="error-banner">{{ error }}</div> }
 
       <div class="form-actions">
-        <a routerLink="/promotions" class="btn-cancel">Annuler</a>
-        <button type="submit" class="btn-submit" [disabled]="loading">
-          {{ loading ? '…' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          <span *ngIf="loading" class="btn-spinner"></span>
+          {{ loading ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer la promotion') }}
         </button>
+        <a routerLink="/promotions" class="btn btn-secondary">Annuler</a>
       </div>
     </form>
   </div>

@@ -100,9 +100,18 @@ export class StockFormComponent implements OnInit, OnDestroy {
       if (id) this.loadLots(+id);
     });
 
-    // When lot changes → auto-fill expiration date
+    // When lot changes → auto-fill expiration date and set max quantity
     this.form.get('numeroLot')!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(num => {
       const lot = this.lots.find(l => l.numero === num);
+      
+      // Dynamic max validator
+      if (lot) {
+        this.form.get('qteDisponible')!.setValidators([Validators.required, Validators.min(1), Validators.max(lot.quantite)]);
+      } else {
+        this.form.get('qteDisponible')!.setValidators([Validators.required, Validators.min(1)]);
+      }
+      this.form.get('qteDisponible')!.updateValueAndValidity({ emitEvent: false });
+
       if (lot?.dateExpiration) {
         const iso  = lot.dateExpiration.substring(0, 10);
         const [y, m, d] = iso.split('-');

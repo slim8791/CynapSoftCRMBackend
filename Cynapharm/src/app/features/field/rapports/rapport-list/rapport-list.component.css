@@ -50,6 +50,9 @@
     .maps-link { font-size: 13px; color: #6366f1; text-decoration: none; font-weight: 500; width: fit-content; }
     .maps-link:hover { text-decoration: underline; }
     .gps-missing { font-size: 13px; color: #a16207; }
+    .produits-section { display: flex; flex-direction: column; gap: 6px; }
+    .produits-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .produit-badge { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
 
     /* ── Modal ───────────────────────────────────────────── */
     .modal-overlay {

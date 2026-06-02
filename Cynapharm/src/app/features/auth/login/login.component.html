@@ -21,10 +21,10 @@
           <span class="logo-text">Cyna<strong>Pharm</strong></span>
         </div>
 
-        <h1 class="brand-title">L'excellence au service de la santé.</h1>
+        <h1 class="brand-title">L'excellence au service de la santé</h1>
         <p class="brand-subtitle">
           Pilotez vos équipes terrain, gérez vos stocks et suivez vos performances en temps réel avec notre CRM nouvelle
-          génération.
+          génération
         </p>
 
         <div class="feature-grid">
@@ -119,10 +119,7 @@
 
           <!-- Cloudflare Turnstile CAPTCHA -->
           <div class="turnstile-wrapper">
-            <app-turnstile
-              #turnstileWidget
-              (resolved)="onTurnstileResolved($event)"
-              (errored)="onTurnstileError()">
+            <app-turnstile #turnstileWidget (resolved)="onTurnstileResolved($event)" (errored)="onTurnstileError()">
             </app-turnstile>
           </div>
 

@@ -2,10 +2,13 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, forkJoin, of } from 'rxjs';
+import { takeUntil, catchError, map } from 'rxjs/operators';
 import { StockMovementService } from '../services/stock-movement.service';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { UserService } from '../../../users/user.service';
+import { ProductService } from '../../../products/product.service';
+import { StockService, StockDelegueDto } from '../../stocks/services/stock.service';
 
 @Component({
   selector: 'app-movement-form',
@@ -20,24 +23,67 @@ export class MovementFormComponent implements OnInit, OnDestroy {
   submitError = '';
   private destroy$ = new Subject<void>();
 
+  stocks: { id: number; label: string }[] = [];
+  loadingData = true;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private svc: StockMovementService,
     private toast: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private userService: UserService,
+    private productSvc: ProductService,
+    private stockSvc: StockService
   ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
       type:        ['Decrement', Validators.required],
-      idStock:     [null, [Validators.required, Validators.min(1)]],
+      idStock:     [null, [Validators.required]],
       idStockDest: [null],
       qte:         [null, [Validators.required, Validators.min(1)]]
     });
 
     this.form.get('type')!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateDestValidation();
+      this.cdr.markForCheck();
+    });
+    this.loadReferenceData();
+  }
+
+  private loadReferenceData(): void {
+    forkJoin({
+      delegues: this.userService.getUsersByRole('DELEGUE').pipe(catchError(() => of([]))),
+      produits: this.productSvc.getProducts().pipe(
+        map(r => Array.isArray(r) ? r : []),
+        catchError(() => of([]))
+      ),
+      stocksList: this.stockSvc.getAll(1, 10000).pipe(catchError(() => of([])))
+    }).pipe(takeUntil(this.destroy$)).subscribe(({ delegues, produits, stocksList }) => {
+
+      const deleguesMap = new Map((Array.isArray(delegues) ? delegues : []).map((u: any) => [
+        u?.id ?? u?.Id ?? 0,
+        u?.name ?? u?.Name ?? u?.email ?? `#${u?.id ?? u?.Id}`
+      ]));
+
+      const produitsMap = new Map((Array.isArray(produits) ? produits : []).map((p: any) => [
+        p?.Id_Produit ?? p?.id_Produit ?? p?.id ?? p?.Id ?? 0,
+        p?.Nom ?? p?.nom ?? p?.name ?? p?.Name ?? `#${p?.Id_Produit ?? p?.id}`
+      ]));
+
+      this.stocks = (Array.isArray(stocksList) ? stocksList : [])
+        .filter((s: StockDelegueDto) => s.id_stock != null)
+        .map((s: StockDelegueDto) => {
+          const delegueLabel = deleguesMap.get(s.id_User_Delegue) ?? `Délégué #${s.id_User_Delegue}`;
+          const produitLabel = produitsMap.get(s.id_Produit) ?? `Produit #${s.id_Produit}`;
+          return {
+            id: s.id_stock!,
+            label: `${delegueLabel} — ${produitLabel} (Lot: ${s.numeroLot || 'N/A'}) [Dispo: ${s.qteDisponible}]`
+          };
+        });
+
+      this.loadingData = false;
       this.cdr.markForCheck();
     });
   }
@@ -47,7 +93,7 @@ export class MovementFormComponent implements OnInit, OnDestroy {
   private updateDestValidation(): void {
     const destCtrl = this.form.get('idStockDest')!;
     if (this.isTransfer) {
-      destCtrl.setValidators([Validators.required, Validators.min(1)]);
+      destCtrl.setValidators([Validators.required]);
     } else {
       destCtrl.clearValidators();
       destCtrl.setValue(null);

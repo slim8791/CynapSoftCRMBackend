@@ -157,7 +157,7 @@
                     result = await _productService.GetProductsAsync();
                     if (result != null)
                     {
-                        _allProducts = result.Where(p => !p.IsArchived).ToList();
+                        _allProducts = result.Where(p => p.Actif && !p.IsArchived).ToList();
                         await _localDb.SeedProductsAsync(_allProducts);
                         IsOffline = false;
                     }
@@ -217,7 +217,7 @@
                     Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
                 {
                     var remote = await _productService.GetProductsAsync(q);
-                    if (remote != null) list = remote.Where(p => !p.IsArchived).ToList();
+                    if (remote != null) list = remote.Where(p => p.Actif && !p.IsArchived).ToList();
                 }
 
                 Products.Clear();
@@ -241,7 +241,7 @@
                     PrixUnitaire = e.PrixUnitaire,
                     ImageUrl     = e.ImageUrl,
                     Actif        = e.Actif
-                }).ToList();
+                }).Where(p => p.Actif).ToList();
 
                 Products.Clear();
                 foreach (var p in _allProducts) Products.Add(p);

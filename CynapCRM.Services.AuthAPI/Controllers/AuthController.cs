@@ -50,10 +50,10 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                 }
             }
 
-            // DELEGUE can only create CLIENT
+            // DELEGUE can create CLIENT and MEDECIN
             if (currentUserRole == UserRole.DELEGUE.ToString())
             {
-                if (model.Role != UserRole.CLIENT)
+                if (model.Role != UserRole.CLIENT && model.Role != UserRole.MEDECIN)
                 {
                     _response.IsSuccess = false;
                     _response.Message = $"Vous n'êtes pas autorisé à créer un compte avec le rôle {model.Role}.";
