@@ -164,10 +164,17 @@ public partial class MyStockViewModel : BaseViewModel
                 StockMovements.Clear();
                 if (movements != null)
                 {
-                    // Build a quick stockId→productName lookup from the already-resolved totalite list
-                    var nameByStockId = _totaliteStock
-                        .Where(s => !string.IsNullOrEmpty(s.ProductNom))
-                        .ToDictionary(s => s.Id, s => s.ProductNom);
+                    // Build a quick stockId→productName lookup from all already-resolved stock lists
+                    var nameByStockId = new Dictionary<int, string>();
+                    
+                    foreach (var s in _totaliteStock.Where(s => !string.IsNullOrEmpty(s.ProductNom)))
+                        nameByStockId[s.Id] = s.ProductNom;
+
+                    foreach (var s in _echantillonStock.Where(s => !string.IsNullOrEmpty(s.ProductNom)))
+                        nameByStockId[s.Id] = s.ProductNom;
+
+                    foreach (var s in _promoStock.Where(s => !string.IsNullOrEmpty(s.ProductNom)))
+                        nameByStockId[s.Id] = s.ProductNom;
 
                     foreach (var m in movements)
                     {
