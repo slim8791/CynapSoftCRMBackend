@@ -29,7 +29,7 @@ public partial class ReclamationListViewModel : BaseViewModel
         var list = await _orderService.GetReclamationsByClientAsync(clientId);
         Reclamations.Clear();
         if (list != null)
-            foreach (var r in list)
+            foreach (var r in list?.Where(r => r != null) ?? Enumerable.Empty<Reclamation>())
                 Reclamations.Add(r);
     });
 

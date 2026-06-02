@@ -45,4 +45,8 @@ public class DocumentService
 
     public Task<List<BonLivraison>?> GetBLByCommandeAsync(int idCommande)
         => _api.GetAsync<List<BonLivraison>>($"{ApiRoutes.Documents.BLByCommande}/{idCommande}");
+
+    /// <summary>Downloads raw bytes from a Cloudinary (or any public) URL.</summary>
+    public Task<byte[]?> DownloadFileAsync(string url)
+        => _api.DownloadFileAsync(url);
 }

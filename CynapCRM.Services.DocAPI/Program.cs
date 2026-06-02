@@ -11,9 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(option =>
 {
@@ -74,7 +77,7 @@ void applyMigrations()
             if (dbContext.Database.GetPendingMigrations().Any())
             {
                 dbContext.Database.Migrate();
-                Console.WriteLine(">>> Migration appliquée avec succès !");
+                Console.WriteLine(">>> Migration appliquï¿½e avec succï¿½s !");
             }
         }
         catch (Exception ex)

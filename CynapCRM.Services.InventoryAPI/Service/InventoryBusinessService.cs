@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CynapCRM.Services.InventoryAPI.Data;
 using CynapCRM.Services.InventoryAPI.Models;
 using CynapCRM.Services.InventoryAPI.Models.Dto;
@@ -106,12 +106,28 @@ namespace CynapCRM.Services.InventoryAPI.Service
                 .Select(m => m.DateMovement)
                 .FirstOrDefaultAsync();
 
+            var baseStocks = stocks.Where(s => s.GetType() == typeof(Stock_Delegue)).ToList();
+            var echantillons = stocks.OfType<Stock_Echantillon>().ToList();
+            var gratuites = stocks.OfType<Stock_Gratuite>().ToList();
+
+            var totalQte = baseStocks.Sum(s => s.QteDisponible)
+                         + echantillons.Sum(e => e.QteEchantillon)
+                         + gratuites.Sum(g => g.QteGratuite);
+
+            var vides = baseStocks.Count(s => s.QteDisponible == 0)
+                      + echantillons.Count(e => e.QteEchantillon == 0)
+                      + gratuites.Count(g => g.QteGratuite == 0);
+
+            var faibles = baseStocks.Count(s => s.QteDisponible > 0 && s.QteDisponible <= 5)
+                        + echantillons.Count(e => e.QteEchantillon > 0 && e.QteEchantillon <= 5)
+                        + gratuites.Count(g => g.QteGratuite > 0 && g.QteGratuite <= 5);
+
             return new StockSummaryDto
             {
                 TotalProduits = stocks.Count,
-                TotalQteDisponible = stocks.Sum(s => s.QteDisponible),
-                StocksVides = stocks.Count(s => s.QteDisponible == 0),
-                StocksFaibles = stocks.Count(s => s.QteDisponible > 0 && s.QteDisponible <= 5),
+                TotalQteDisponible = totalQte,
+                StocksVides = vides,
+                StocksFaibles = faibles,
                 TotalDistributions = distributions.Count,
                 TotalQteDistribuee = distributions.Sum(e => e.Qte),
                 DernierMouvement = dernierMouvement == default ? null : dernierMouvement

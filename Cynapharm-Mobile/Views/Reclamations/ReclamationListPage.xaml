@@ -71,21 +71,10 @@
                                 <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06" />
                             </Border.Shadow>
                             <Grid ColumnDefinitions="5,*">
-                                <!-- Status accent bar -->
+                                <!-- Status accent bar - use StatutColor -->
                                 <BoxView Grid.Column="0"
-                                         BackgroundColor="{StaticResource Secondary}"
-                                         VerticalOptions="Fill">
-                                    <BoxView.Triggers>
-                                        <DataTrigger TargetType="BoxView"
-                                                     Binding="{Binding Statut}" Value="EnCours">
-                                            <Setter Property="BackgroundColor" Value="#185FA5" />
-                                        </DataTrigger>
-                                        <DataTrigger TargetType="BoxView"
-                                                     Binding="{Binding Statut}" Value="Resolue">
-                                            <Setter Property="BackgroundColor" Value="#2d7a4f" />
-                                        </DataTrigger>
-                                    </BoxView.Triggers>
-                                </BoxView>
+                                         BackgroundColor="{Binding StatutColor}"
+                                         VerticalOptions="Fill" />
                                 <VerticalStackLayout Grid.Column="1" Padding="14,14" Spacing="6">
                                     <Label Text="{Binding Motif}"
                                            FontAttributes="Bold" FontSize="14"
@@ -106,37 +95,24 @@
                                             Stroke="Transparent"
                                             Padding="10,4"
                                             HorizontalOptions="Start"
-                                            BackgroundColor="{StaticResource SecondaryLight}">
+                                            BackgroundColor="#FEF3C7">
                                         <Border.Triggers>
-                                            <DataTrigger TargetType="Border"
-                                                         Binding="{Binding Statut}" Value="EnCours">
-                                                <Setter Property="BackgroundColor" Value="#D6E8F7" />
+                                            <DataTrigger TargetType="Border" Binding="{Binding Statut}" Value="0">
+                                                <Setter Property="BackgroundColor" Value="#FEF3C7" />
                                             </DataTrigger>
-                                            <DataTrigger TargetType="Border"
-                                                         Binding="{Binding Statut}" Value="Resolue">
-                                                <Setter Property="BackgroundColor" Value="#D4EDDA" />
+                                            <DataTrigger TargetType="Border" Binding="{Binding Statut}" Value="1">
+                                                <Setter Property="BackgroundColor" Value="#DDE9F5" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding Statut}" Value="2">
+                                                <Setter Property="BackgroundColor" Value="#D1F2EB" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding Statut}" Value="3">
+                                                <Setter Property="BackgroundColor" Value="#FEE2E2" />
                                             </DataTrigger>
                                         </Border.Triggers>
-                                        <Label Text="{Binding Statut}"
-                                               FontSize="11" FontAttributes="Bold">
-                                            <Label.Triggers>
-                                                <DataTrigger TargetType="Label"
-                                                             Binding="{Binding Statut}" Value="Ouverte">
-                                                    <Setter Property="TextColor" Value="#854F0B" />
-                                                    <Setter Property="Text"      Value="Ouverte" />
-                                                </DataTrigger>
-                                                <DataTrigger TargetType="Label"
-                                                             Binding="{Binding Statut}" Value="EnCours">
-                                                    <Setter Property="TextColor" Value="#185FA5" />
-                                                    <Setter Property="Text"      Value="En cours" />
-                                                </DataTrigger>
-                                                <DataTrigger TargetType="Label"
-                                                             Binding="{Binding Statut}" Value="Resolue">
-                                                    <Setter Property="TextColor" Value="#2d7a4f" />
-                                                    <Setter Property="Text"      Value="Résolue" />
-                                                </DataTrigger>
-                                            </Label.Triggers>
-                                        </Label>
+                                        <Label Text="{Binding StatutLabel}"
+                                               FontSize="11" FontAttributes="Bold"
+                                               TextColor="{Binding StatutColor}" />
                                     </Border>
                                 </VerticalStackLayout>
                             </Grid>

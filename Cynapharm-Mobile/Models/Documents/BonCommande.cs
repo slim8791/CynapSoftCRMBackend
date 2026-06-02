@@ -15,6 +15,10 @@ public class BonCommande
 
     [JsonPropertyName("id_Commande")]
     public int CommandeId { get; set; }
+
+    [JsonPropertyName("cloudinaryUrl")]
+    public string? CloudinaryUrl { get; set; }
+
     public decimal? MontantTotal { get; internal set; }
     public string Statut { get; internal set; }
 }

@@ -15,5 +15,9 @@ public class BonLivraison
 
     [JsonPropertyName("id_Commande")]
     public int CommandeId { get; set; }
+
+    [JsonPropertyName("cloudinaryUrl")]
+    public string? CloudinaryUrl { get; set; }
+
     public string Statut { get; internal set; }
 }
