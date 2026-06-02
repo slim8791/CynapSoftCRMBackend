@@ -16,9 +16,14 @@ public class Facture
     [JsonPropertyName("id_Commande")]
     public int CommandeId { get; set; }
 
-    public decimal MontantHT { get; set; }
+    [JsonPropertyName("montantHT")]
+    public decimal MontantHT  { get; set; }
 
+    [JsonPropertyName("montantTTC")]
     public decimal MontantTTC { get; set; }
+
+    [JsonPropertyName("cloudinaryUrl")]
+    public string? CloudinaryUrl { get; set; }
 
     [JsonIgnore]
     public decimal TVA => MontantTTC - MontantHT;

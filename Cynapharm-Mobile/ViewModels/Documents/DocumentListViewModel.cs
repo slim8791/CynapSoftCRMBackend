@@ -69,19 +69,19 @@ public partial class DocumentListViewModel : BaseViewModel
                     var factures = await _documentService.GetFacturesAsync(1, 50);
                     if (factures != null)
                         foreach (var f in factures)
-                            Documents.Add(new DocumentSummary { Id = f.Id, Numero = f.NumeroFacture, Date = f.DateFacture, Type = "FACTURE", CommandeId = f.CommandeId });
+                            Documents.Add(new DocumentSummary { Id = f.Id, Numero = f.NumeroFacture, Date = f.DateFacture, Type = "FACTURE", CommandeId = f.CommandeId, Montant = f.MontantTTC, Url = f.CloudinaryUrl });
                     break;
                 case "BC":
                     var bcs = await _documentService.GetBonsCommandeAsync(1, 50);
                     if (bcs != null)
                         foreach (var b in bcs)
-                            Documents.Add(new DocumentSummary { Id = b.Id, Numero = b.NumeroBon, Date = b.DateEmission, Type = "BC", CommandeId = b.CommandeId });
+                            Documents.Add(new DocumentSummary { Id = b.Id, Numero = b.NumeroBon, Date = b.DateEmission, Type = "BC", CommandeId = b.CommandeId, Url = b.CloudinaryUrl });
                     break;
                 case "BL":
                     var bls = await _documentService.GetBonsLivraisonAsync(1, 50);
                     if (bls != null)
                         foreach (var b in bls)
-                            Documents.Add(new DocumentSummary { Id = b.Id, Numero = b.NumeroBon, Date = b.DateLivraison, Type = "BL", CommandeId = b.CommandeId });
+                            Documents.Add(new DocumentSummary { Id = b.Id, Numero = b.NumeroBon, Date = b.DateLivraison, Type = "BL", CommandeId = b.CommandeId, Url = b.CloudinaryUrl });
                     break;
             }
         }

@@ -32,10 +32,17 @@ namespace CynapCRM.Services.DocAPI
                 .IncludeBase<Document, DocumentDto>();
 
             CreateMap<FactureDto, Facture>()
-                .IncludeBase<DocumentDto, Document>();
+                .IncludeBase<DocumentDto, Document>()
+                .ForMember(d => d.MontantHT, opt => opt.MapFrom(src => src.MontantHT))
+                .ForMember(d => d.MontantTTC, opt => opt.MapFrom(src => src.MontantTTC))
+                .ForMember(d => d.DateFacture, opt => opt.MapFrom(src => src.DateFacture));
 
             CreateMap<Facture, FactureDto>()
-                .IncludeBase<Document, DocumentDto>();
+                .IncludeBase<Document, DocumentDto>()
+                .ForMember(d => d.MontantHT, opt => opt.MapFrom(src => src.MontantHT))
+                .ForMember(d => d.MontantTTC, opt => opt.MapFrom(src => src.MontantTTC))
+                .ForMember(d => d.DateFacture, opt => opt.MapFrom(src => src.DateFacture))
+                .ForMember(d => d.DateCreation, opt => opt.Ignore());
 
         }
     }
