@@ -7,8 +7,29 @@
       <p class="ol-sub">Gestion des commandes clients</p>
     </div>
     <div class="ol-actions">
-      <a routerLink="/orders/reclamations" class="btn-outline-link">Réclamations</a>
+      <!-- Fix 4 — réclamations count badge -->
+      <a routerLink="/orders/reclamations" class="btn-outline-link">
+        Réclamations
+        @if (reclamationsTotal > 0) {
+          <span class="recl-badge">{{ reclamationsTotal }}</span>
+        }
+      </a>
     </div>
+  </div>
+
+  <!-- ═══ FILTRES ════════════════════════════════════════════ -->
+  <div class="ol-filters">
+    <select [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()" class="ol-select" aria-label="Filtre par statut">
+      @for (s of statuses; track s.value) {
+        <option [value]="s.value">{{ s.label }}</option>
+      }
+    </select>
+    <input type="date" [(ngModel)]="startDate" (ngModelChange)="onFilterChange()" class="ol-date-input" aria-label="Date début">
+    <span class="ol-filter-sep">→</span>
+    <input type="date" [(ngModel)]="endDate" (ngModelChange)="onFilterChange()" class="ol-date-input" aria-label="Date fin">
+    @if (statusFilter || startDate || endDate) {
+      <button class="ol-clear-btn" (click)="clearFilters()">✕ Effacer</button>
+    }
   </div>
 
   <!-- ═══ ERREUR ═══════════════════════════════════════════ -->
@@ -44,6 +65,7 @@
     } @else {
 
       <div class="ol-table-card">
+        <div class="ol-table-scroll">
         <table class="ol-table">
           <thead>
             <tr>
@@ -59,50 +81,100 @@
           </thead>
           <tbody>
             @for (order of orders; track order.Id_Commande) {
-              <tr>
-                <td class="col-id">#{{ order.Id_Commande }}</td>
+              <tr [class.row-annulee]="svc.statutToNumber(order.Statut) === 6">
+                <td><span class="order-num-chip">{{ formatOrderNum(order.Id_Commande) }}</span></td>
                 <td>{{ order.DateCommande | date:'dd/MM/yyyy' }}</td>
-                <td class="col-gray">Client #{{ order.Id_Client }}</td>
+
+                <!-- Fix 2 — Client name or "Client inconnu" -->
+                <td class="col-gray">{{ getClientName(order.Id_Client) }}</td>
+
                 <td class="col-center">
                   <span class="badge-count">{{ getLignesCount(order) }}</span>
                 </td>
-                <td class="col-right">{{ order.MontantTotalHT | number:'1.2-2' }}</td>
-                <td class="col-right fw-bold">{{ order.MontantTTC | number:'1.2-2' }}</td>
+                <td class="col-right">{{ formatAmount(order.MontantTotalHT) }}</td>
+                <td class="col-right fw-bold">{{ formatAmount(order.MontantTTC) }}</td>
                 <td>
                   <span class="chip" [ngClass]="getEtatClass(order.Statut)">
                     {{ getEtatLabel(order.Statut) }}
                   </span>
                 </td>
+
                 <td class="col-actions">
-                  <button class="act-btn view" (click)="onView(order.Id_Commande)" title="Voir le détail">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  </button>
-                  @if (isAdmin) {
-                    <button class="act-btn delete" (click)="openDeleteModal(order)" title="Supprimer">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                      </svg>
+                  <div class="action-row" style="justify-content: center;">
+                    <!-- Vue détail -->
+                    <button class="act-btn view" (click)="onView(order.Id_Commande)" title="Voir le détail">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
-                  }
+
+                    <!-- Changer statut dropdown -->
+                    @if (getNextStatuses(order).length > 0) {
+                      <div class="status-dropdown-wrap">
+                        <button
+                          class="act-btn status-btn"
+                          (click)="toggleStatusMenu(order.Id_Commande); $event.stopPropagation()"
+                          title="Changer le statut"
+                          [class.status-btn-open]="openStatusMenuId === order.Id_Commande">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="1 4 1 10 7 10"/>
+                            <polyline points="23 20 23 14 17 14"/>
+                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                          </svg>
+                        </button>
+                        @if (openStatusMenuId === order.Id_Commande) {
+                          <div class="status-menu" (click)="$event.stopPropagation()">
+                            <p class="status-menu-label">Passer vers :</p>
+                            @for (next of getNextStatuses(order); track next.value) {
+                              <button
+                                class="status-menu-item"
+                                [ngClass]="getEtatClass(next.value)"
+                                (click)="changeStatus(order, next.value); closeStatusMenu()">
+                                {{ next.label }}
+                              </button>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    <!-- Fix 1 — Delete only for Brouillon or Annulee -->
+                    @if (isAdmin && canDelete(order)) {
+                      <button class="act-btn delete" (click)="openDeleteModal(order)" title="Supprimer">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                      </button>
+                    }
+                  </div>
                 </td>
               </tr>
             }
           </tbody>
         </table>
+        </div>
       </div>
 
       <!-- Pagination -->
       <div class="ol-pagination">
-        <button class="pag-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
-          ‹ Précédent
+        <button class="pag-btn pag-arrow" [disabled]="currentPage === 1"
+                (click)="onPageChange(currentPage - 1)" title="Page précédente">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
         </button>
-        <span class="pag-page">Page {{ currentPage }}</span>
-        <button class="pag-btn" [disabled]="!hasMore" (click)="onPageChange(currentPage + 1)">
-          Suivant ›
+
+        @if (pageNumbers[0] > 1) {
+          <button class="pag-btn pag-num" (click)="onPageChange(1)">1</button>
+          @if (pageNumbers[0] > 2) { <span class="pag-ellipsis">…</span> }
+        }
+
+        @for (p of pageNumbers; track p) {
+          <button class="pag-btn pag-num" [class.pag-active]="p === currentPage"
+                  (click)="onPageChange(p)">{{ p }}</button>
+        }
+
+        <button class="pag-btn pag-arrow" [disabled]="!hasMore"
+                (click)="onPageChange(currentPage + 1)" title="Page suivante">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
         </button>
       </div>
     }
@@ -123,15 +195,13 @@
 
       <h3 class="modal-title">Supprimer la commande ?</h3>
       <p class="modal-body">
-        La commande <strong>#{{ deletingOrder.Id_Commande }}</strong>
-        ({{ getEtatLabel(deletingOrder.Statut) }} — {{ deletingOrder.MontantTTC | number:'1.2-2' }} TND TTC)
+        La commande <strong>{{ formatOrderNum(deletingOrder.Id_Commande) }}</strong>
+        ({{ getEtatLabel(deletingOrder.Statut) }} — {{ formatAmount(deletingOrder.MontantTTC) }} TTC)
         sera supprimée définitivement. Cette action est irréversible.
       </p>
 
       <div class="modal-actions">
-        <button class="btn-cancel" (click)="cancelDelete()" [disabled]="deleting">
-          Annuler
-        </button>
+        <button class="btn-cancel" (click)="cancelDelete()" [disabled]="deleting">Annuler</button>
         <button class="btn-confirm-danger" (click)="confirmDelete()" [disabled]="deleting">
           @if (deleting) { <span class="spinner-sm"></span> }
           @else          { Supprimer }

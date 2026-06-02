@@ -76,6 +76,52 @@
         </textarea>
       </div>
 
+      <!-- Catégorie -->
+      <div class="form-group">
+        <label for="CatSelect">Catégorie <span class="required">*</span></label>
+
+        <!-- Dropdown existing categories -->
+        <select
+          id="CatSelect"
+          class="form-control"
+          [class.is-invalid]="isInvalid('Categorie') && !showNewCategoryInput"
+          [ngModel]="catSelectValue"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="onCategorySelectChange($event)"
+          [disabled]="loadingCategories">
+          <option value="">
+            {{ loadingCategories ? 'Chargement…' : '-- Sélectionner une catégorie --' }}
+          </option>
+          @for (cat of categories; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+          <option value="__new__">➕ Nouvelle catégorie…</option>
+        </select>
+
+        <!-- Text input shown when "Nouvelle catégorie" is selected -->
+        @if (showNewCategoryInput) {
+          <input
+            type="text"
+            formControlName="Categorie"
+            class="form-control"
+            [class.is-invalid]="isInvalid('Categorie')"
+            placeholder="Nom de la nouvelle catégorie"
+            autocomplete="off"
+            style="margin-top: 6px" />
+          <span class="field-hint">La catégorie sera créée automatiquement avec le produit.</span>
+        }
+
+        @if (isInvalid('Categorie')) {
+          <div class="field-error">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            La catégorie est requise.
+          </div>
+        }
+      </div>
+
       <hr class="section-divider" />
 
       <!-- Prix — grille 2 colonnes -->
@@ -91,7 +137,7 @@
               id="Prix_Vente"
               formControlName="Prix_Vente"
               class="form-control has-prefix"
-              [class.is-invalid]="isInvalid('Prix_Vente')"
+              [class.is-invalid]="isInvalid('Prix_Vente') || hasPriceOrderError"
               placeholder="0.000"
               (input)="formatDecimal($event, 'Prix_Vente')" />
           </div>
@@ -116,7 +162,7 @@
               id="Prix_Creation"
               formControlName="Prix_Creation"
               class="form-control has-prefix"
-              [class.is-invalid]="isInvalid('Prix_Creation')"
+              [class.is-invalid]="isInvalid('Prix_Creation') || hasPriceOrderError"
               placeholder="0.000"
               (input)="formatDecimal($event, 'Prix_Creation')" />
           </div>
@@ -157,6 +203,16 @@
         </div>
 
       </div>
+
+      @if (hasPriceOrderError) {
+        <div class="field-error">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Le prix de vente ne peut pas être inférieur au prix de création.
+        </div>
+      }
 
       <hr class="section-divider" />
 

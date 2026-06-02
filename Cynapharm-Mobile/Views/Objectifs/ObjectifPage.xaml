@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Objectifs"
+             xmlns:models="clr-namespace:Cynapharm_Mobile.Models.Field"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Objectifs.ObjectifPage"
+             x:DataType="vm:ObjectifViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <!-- ── Hero header ────────────────────────────────────────────────── -->
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
+              Padding="20,52,20,28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" ColumnDefinitions="44,*,44">
+                <Border Grid.Column="0"
+                        BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                        Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                        VerticalOptions="Center" HorizontalOptions="Start">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnHamburgerTapped" />
+                    </Border.GestureRecognizers>
+                    <!-- SVG Hamburger Menu -->
+                    <Path Data="M 5,7 L 19,7 M 5,12 L 19,12 M 5,17 L 19,17"
+                          Stroke="White" StrokeThickness="2.5"
+                          StrokeLineJoin="Round" StrokeLineCap="Round"
+                          HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+
+                <VerticalStackLayout Grid.Column="1" Spacing="3">
+                    <Label Text="Mes objectifs"
+                           FontSize="20" FontAttributes="Bold"
+                           FontFamily="OpenSansSemibold"
+                           TextColor="White"
+                           HorizontalOptions="Center" />
+                    <Label Text="Suivi de performance mensuel"
+                           FontSize="12" TextColor="#CCF5FF"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Global achievement pill -->
+            <Border Grid.Row="1"
+                    BackgroundColor="#26FFFFFF"
+                    StrokeShape="RoundRectangle 20"
+                    Stroke="Transparent"
+                    Padding="28,16"
+                    Margin="0,18,0,0"
+                    HorizontalOptions="Center">
+                <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+                    <Label Text="Taux global d'atteinte"
+                           FontSize="12" TextColor="#CCF5FF"
+                           HorizontalOptions="Center" />
+                    <Label Text="{Binding GlobalAchievement, StringFormat='{0:F0}%'}"
+                           FontSize="36" FontAttributes="Bold"
+                           FontFamily="OpenSansSemibold"
+                           TextColor="White"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Error banner -->
+        <controls:ErrorBanner Grid.Row="1"
+                              Message="{Binding ErrorMessage}"
+                              Margin="16,8,16,0" />
+
+        <ActivityIndicator Grid.Row="2"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="{StaticResource Primary}"
+                           HorizontalOptions="Center"
+                           Margin="0,8" />
+
+        <!-- ── Objectives list ───────────────────────────────────────────── -->
+        <RefreshView Grid.Row="3"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}"
+                     RefreshColor="{StaticResource Primary}">
+        <CollectionView ItemsSource="{Binding Objectifs}"
+                        ItemSizingStrategy="MeasureAllItems">
+            <CollectionView.Header>
+                <BoxView HeightRequest="10" Color="Transparent" />
+            </CollectionView.Header>
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                     Spacing="16" Padding="40" Margin="0,40,0,0">
+                    <Border BackgroundColor="{StaticResource PrimaryLight}"
+                            StrokeShape="RoundRectangle 50" Stroke="Transparent"
+                            WidthRequest="80" HeightRequest="80" HorizontalOptions="Center">
+                        <Label Text="🎯" FontSize="38"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Text="Aucun objectif défini"
+                           FontSize="16" FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}"
+                           HorizontalOptions="Center" />
+                    <Label Text="Les objectifs de cette période apparaîtront ici."
+                           Style="{StaticResource EmptyStateStyle}" FontSize="13" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Objectif">
+                    <Border Margin="16,0,16,10"
+                            BackgroundColor="{StaticResource CardBackground}"
+                            StrokeShape="RoundRectangle 16"
+                            Stroke="{StaticResource BorderColor}" StrokeThickness="1">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="12" Padding="14,14">
+                            <!-- Header row -->
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                <Label Grid.Column="0"
+                                       Text="{Binding TypeObjectif}"
+                                       FontAttributes="Bold" FontSize="15"
+                                       FontFamily="OpenSansSemibold"
+                                       TextColor="{StaticResource TextPrimary}" />
+                                <Border Grid.Column="1"
+                                        BackgroundColor="{StaticResource SecondaryLight}"
+                                        Padding="10,4"
+                                        StrokeShape="RoundRectangle 10"
+                                        Stroke="Transparent" VerticalOptions="Center">
+                                    <Label Text="{Binding Periode}"
+                                           FontSize="11" FontAttributes="Bold"
+                                           TextColor="{StaticResource SecondaryText}" />
+                                </Border>
+                            </Grid>
+
+                            <!-- Progress bar -->
+                            <ProgressBar Progress="{Binding ProgressValue}"
+                                         HeightRequest="8" />
+
+                            <!-- Values + percentage -->
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                <Label Grid.Column="0"
+                                       Text="{Binding ValeurActuelle, StringFormat='Réalisé : {0:N0}'}"
+                                       FontSize="12" TextColor="{StaticResource Primary}"
+                                       FontAttributes="Bold" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding ValeurCible, StringFormat='/ {0:N0}'}"
+                                       FontSize="12" TextColor="{StaticResource TextSecondary}" />
+                                <Border Grid.Column="2"
+                                        BackgroundColor="{StaticResource PrimaryLight}"
+                                        StrokeShape="RoundRectangle 8" Stroke="Transparent"
+                                        Padding="8,3">
+                                    <Label Text="{Binding ProgressValue, StringFormat='{0:P0}'}"
+                                           FontSize="11" FontAttributes="Bold"
+                                           TextColor="{StaticResource Primary}" />
+                                </Border>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.Footer>
+                <BoxView HeightRequest="24" Color="Transparent" />
+            </CollectionView.Footer>
+        </CollectionView>
+        </RefreshView>
+
+        <controls:AppLoader Grid.RowSpan="4" />
+
+    </Grid>
+</ContentPage>

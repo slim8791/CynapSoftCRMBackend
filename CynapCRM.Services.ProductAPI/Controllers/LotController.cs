@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.ProductAPI.Models.Dto;
+using CynapCRM.Services.ProductAPI.Models.Dto;
 using CynapCRM.Services.ProductAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +23,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             _productService = productService;
         }
 
+        [HttpGet("product/{id:int}")]
         [HttpGet("{id:int}/lots")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetLotsByIdProduct(int id)
@@ -85,7 +86,7 @@ namespace CynapCRM.Services.ProductAPI.Controllers
             }
         }
 
-        [HttpDelete("lot/{numeroLot}")]
+        [HttpDelete("{numeroLot}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteLot(string numeroLot)
         {

@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Products"
+             xmlns:models="clr-namespace:Cynapharm_Mobile.Models.Products"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Products.ProductListPage"
+             x:DataType="vm:ProductListViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
+
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}">
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Title + product count badge + hamburger -->
+                <Grid ColumnDefinitions="44,*,Auto" Padding="16,48,16,14">
+                    
+                    <!-- Hamburger on the Left -->
+                    <Border Grid.Column="0"
+                            BackgroundColor="#26FFFFFF" StrokeShape="RoundRectangle 12"
+                            Stroke="Transparent" HeightRequest="38" WidthRequest="38"
+                            VerticalOptions="Center" HorizontalOptions="Start">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnHamburgerTapped" />
+                        </Border.GestureRecognizers>
+                        <!-- SVG Hamburger Menu -->
+                        <Path Data="M 5,7 L 19,7 M 5,12 L 19,12 M 5,17 L 19,17"
+                              Stroke="White" StrokeThickness="2.5"
+                              StrokeLineJoin="Round" StrokeLineCap="Round"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                        <Label Text="Catalogue"
+                               FontSize="20" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="White" />
+                        <Label Text="Catalogue des produits Cynapharm"
+                               FontSize="12"
+                               TextColor="#CCF5FF" />
+                    </VerticalStackLayout>
+
+                    <Border Grid.Column="2"
+                            BackgroundColor="#26FFFFFF"
+                            StrokeShape="RoundRectangle 20"
+                            Stroke="Transparent"
+                            Padding="12,6"
+                            VerticalOptions="Center"
+                            IsVisible="{Binding ProductCount, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                        <Label Text="{Binding ProductCount, StringFormat='{0} produits'}"
+                               FontSize="12" FontAttributes="Bold"
+                               TextColor="White" />
+                    </Border>
+                </Grid>
+
+                <!-- Search bar (white card floating on header) -->
+                <Border BackgroundColor="White"
+                        StrokeShape="RoundRectangle 14"
+                        Stroke="Transparent"
+                        Padding="14,0"
+                        Margin="16,0,16,20">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="16" Opacity="0.14" />
+                    </Border.Shadow>
+                    <Grid ColumnDefinitions="20,*,Auto" ColumnSpacing="10" HeightRequest="48">
+                        <Label Grid.Column="0" Text="🔍" FontSize="15"
+                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                        <Entry Grid.Column="1"
+                               Placeholder="Rechercher un produit..."
+                               Text="{Binding SearchQuery}"
+                               PlaceholderColor="{StaticResource TextMuted}"
+                               TextColor="{StaticResource TextPrimary}"
+                               BackgroundColor="Transparent"
+                               ReturnType="Search"
+                               FontSize="14"
+                               HeightRequest="48"
+                               Margin="0"
+                               VerticalOptions="Center" />
+                        <Border Grid.Column="2"
+                                BackgroundColor="{StaticResource Gray200}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent"
+                                WidthRequest="26" HeightRequest="26"
+                                VerticalOptions="Center" HorizontalOptions="Center"
+                                IsVisible="{Binding SearchQuery, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                            <Label Text="✕" FontSize="11"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ClearSearchCommand}" />
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Offline banner -->
+                <Border BackgroundColor="{StaticResource SecondaryLight}"
+                        StrokeShape="RoundRectangle 10"
+                        Stroke="Transparent"
+                        Padding="12,8"
+                        Margin="16,0,16,12"
+                        IsVisible="{Binding IsOffline}">
+                    <Label Text="⚠️ Mode hors ligne — catalogue du dernier chargement"
+                           FontSize="12" FontAttributes="Bold"
+                           TextColor="{StaticResource SecondaryText}"
+                           HorizontalOptions="Center" />
+                </Border>
+
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Error banner -->
+        <controls:ErrorBanner Grid.Row="1"
+                              Message="{Binding ErrorMessage}"
+                              Margin="16,8,16,0" />
+
+        <!-- ── Category filter chips ─────────────────────────────────────── -->
+        <ScrollView Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalScrollBarVisibility="Never"
+                    IsVisible="{Binding Categories.Count, Converter={StaticResource IsNotNullOrEmptyConverter}}"
+                    BackgroundColor="{StaticResource PageBackground}">
+            <HorizontalStackLayout Padding="16,12" Spacing="8"
+                                   BindableLayout.ItemsSource="{Binding Categories}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Border Padding="16,8"
+                                StrokeThickness="1.5"
+                                Stroke="{StaticResource BorderColor}"
+                                BackgroundColor="{StaticResource CardBackground}">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20" />
+                            </Border.StrokeShape>
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,1" Radius="4" Opacity="0.06" />
+                            </Border.Shadow>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border"
+                                             Binding="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCategory}"
+                                             Value="{Binding .}">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                    <Setter Property="Stroke"          Value="{StaticResource Primary}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Label Text="{Binding .}" FontSize="13"
+                                   TextColor="{StaticResource TextSecondary}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label"
+                                                 Binding="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCategory}"
+                                                 Value="{Binding .}">
+                                        <Setter Property="TextColor"      Value="White" />
+                                        <Setter Property="FontAttributes" Value="Bold" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SetSelectedCategoryCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- Loading indicator + search hint -->
+        <VerticalStackLayout Grid.Row="3" Spacing="4"
+                             BackgroundColor="{StaticResource PageBackground}">
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="{StaticResource Primary}"
+                               HorizontalOptions="Center"
+                               Margin="0,8" />
+            <Label Text="Entrez au moins 3 caractères pour lancer la recherche"
+                   FontSize="11"
+                   TextColor="{StaticResource TextMuted}"
+                   IsVisible="{Binding ShowSearchHint}"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   Margin="16,4" />
+        </VerticalStackLayout>
+
+        <!-- Result count + live-search spinner -->
+        <Grid Grid.Row="4"
+              ColumnDefinitions="*,Auto"
+              Padding="20,2,20,0"
+              IsVisible="{Binding ProductCount, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+            <Label Grid.Column="0"
+                   Text="{Binding ProductCount, StringFormat='{0} produit(s) trouvé(s)'}"
+                   FontSize="12" FontAttributes="Bold"
+                   TextColor="{StaticResource TextSecondary}"
+                   Margin="0,0,0,6" />
+            <ActivityIndicator Grid.Column="1"
+                               IsRunning="{Binding IsSearching}"
+                               IsVisible="{Binding IsSearching}"
+                               Color="{StaticResource Primary}"
+                               HeightRequest="16" WidthRequest="16" />
+        </Grid>
+
+        <!-- ── Product list ───────────────────────────────────────────────── -->
+        <RefreshView Grid.Row="5"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}"
+                     RefreshColor="{StaticResource Primary}">
+            <CollectionView ItemsSource="{Binding Products}"
+                            ItemSizingStrategy="MeasureFirstItem">
+
+                <!-- Empty state -->
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                         Spacing="16" Padding="40" Margin="0,60,0,0">
+                        <Border BackgroundColor="{StaticResource PrimaryLight}"
+                                StrokeShape="RoundRectangle 50"
+                                Stroke="Transparent"
+                                WidthRequest="96" HeightRequest="96"
+                                HorizontalOptions="Center">
+                            <Label Text="💊" FontSize="44"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="Aucun produit trouvé"
+                               FontSize="17" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Essayez de modifier votre recherche ou votre filtre de catégorie."
+                               Style="{StaticResource EmptyStateStyle}"
+                               FontSize="13" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.Header>
+                    <BoxView HeightRequest="10" Color="Transparent" />
+                </CollectionView.Header>
+
+                <!-- Product card -->
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Product">
+                        <Border BackgroundColor="{StaticResource CardBackground}"
+                                StrokeShape="RoundRectangle 16"
+                                Stroke="{StaticResource BorderColor}"
+                                StrokeThickness="1"
+                                Margin="16,0,16,10"
+                                Padding="14">
+                            <Border.Shadow>
+                                <Shadow Brush="Black"
+                                        Offset="0,2"
+                                        Radius="8"
+                                        Opacity="0.06" />
+                            </Border.Shadow>
+
+                            <Grid ColumnDefinitions="88,*,Auto" ColumnSpacing="14">
+
+                                <!-- Placeholder (no image) -->
+                                <Border Grid.Column="0"
+                                        WidthRequest="80" HeightRequest="80"
+                                        BackgroundColor="{StaticResource PrimaryLight}"
+                                        Stroke="Transparent"
+                                        VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="14" />
+                                    </Border.StrokeShape>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding ImageUrl, Converter={StaticResource IsNotNullOrEmptyConverter}}"
+                                                     Value="True">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <VerticalStackLayout HorizontalOptions="Center"
+                                                         VerticalOptions="Center" Spacing="2">
+                                        <Label Text="💊" FontSize="28"
+                                               HorizontalOptions="Center" />
+                                        <Label Text="Rx" FontSize="10" FontAttributes="Bold"
+                                               TextColor="{StaticResource PrimaryText}"
+                                               HorizontalOptions="Center" />
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <!-- Image (when available) -->
+                                <Border Grid.Column="0"
+                                        WidthRequest="80" HeightRequest="80"
+                                        Stroke="{StaticResource BorderColor}"
+                                        StrokeThickness="1"
+                                        VerticalOptions="Center"
+                                        IsVisible="{Binding ImageUrl, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="14" />
+                                    </Border.StrokeShape>
+                                    <Image Source="{Binding ImageUrl}"
+                                           Aspect="AspectFill"
+                                           WidthRequest="80" HeightRequest="80" />
+                                </Border>
+
+                                <!-- Product info -->
+                                <VerticalStackLayout Grid.Column="1" Spacing="6"
+                                                     VerticalOptions="Center">
+
+                                    <Label Text="{Binding Nom}"
+                                           FontAttributes="Bold" FontSize="15"
+                                           FontFamily="OpenSansSemibold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           LineBreakMode="TailTruncation" />
+
+                                    <!-- Category badge -->
+                                    <Border BackgroundColor="{StaticResource PrimaryLight}"
+                                            Stroke="Transparent"
+                                            Padding="8,4"
+                                            HorizontalOptions="Start"
+                                            IsVisible="{Binding Categorie, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="8" />
+                                        </Border.StrokeShape>
+                                        <Label Text="{Binding Categorie}"
+                                               FontSize="11" FontAttributes="Bold"
+                                               TextColor="{StaticResource PrimaryText}" />
+                                    </Border>
+
+                                    <!-- Price (non-MEDECIN) -->
+                                    <Label Text="{Binding PrixDisplay}"
+                                           FontSize="15" FontAttributes="Bold"
+                                           IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.CanSeePrices}">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label"
+                                                         Binding="{Binding IsPriceDefined}"
+                                                         Value="True">
+                                                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label"
+                                                         Binding="{Binding IsPriceDefined}"
+                                                         Value="False">
+                                                <Setter Property="TextColor" Value="#AAAAAA" />
+                                                <Setter Property="FontAttributes" Value="Italic" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+
+                                    <!-- Disponible badge (MEDECIN only) -->
+                                    <Border BackgroundColor="#E8F5E9"
+                                            Stroke="Transparent"
+                                            Padding="8,4"
+                                            HorizontalOptions="Start"
+                                            IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.CanSeePrices, Converter={StaticResource InvertedBoolConverter}}">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="8" />
+                                        </Border.StrokeShape>
+                                        <Label Text="✓ Disponible" FontSize="11"
+                                               FontAttributes="Bold"
+                                               TextColor="#2E7D32" />
+                                    </Border>
+
+                                </VerticalStackLayout>
+
+                                <!-- Chevron arrow -->
+                                <Label Grid.Column="2"
+                                       Text="›"
+                                       FontSize="26"
+                                       TextColor="{StaticResource Gray300}"
+                                       VerticalOptions="Center"
+                                       HorizontalOptions="End"
+                                       Margin="0,0,2,0" />
+
+                            </Grid>
+
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.GoToDetailCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="24" Color="Transparent" />
+                </CollectionView.Footer>
+
+            </CollectionView>
+        </RefreshView>
+
+        <controls:AppLoader Grid.RowSpan="6" />
+
+    </Grid>
+</ContentPage>

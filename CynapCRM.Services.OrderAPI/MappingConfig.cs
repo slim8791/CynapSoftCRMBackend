@@ -15,7 +15,8 @@ namespace CynapCRM.Services.OrderAPI
             CreateMap<ReclamationDto, Reclamation>().ReverseMap();
             CreateMap<CreateOrderDto, Commande>().ReverseMap();
 
-            CreateMap<CreateOrUpdateLigneCommandeDto, LigneCommande>();
+            CreateMap<CreateOrUpdateLigneCommandeDto, LigneCommande>()
+                .ForMember(dest => dest.NumeroLot, opt => opt.Condition(src => src.NumeroLot != null));
 
 
         }

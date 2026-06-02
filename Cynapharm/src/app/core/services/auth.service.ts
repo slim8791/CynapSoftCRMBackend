@@ -1,7 +1,8 @@
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable } from 'rxjs';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
@@ -28,6 +29,7 @@ export interface User {
   role: UserRole;
   type?: UserType;
   isDeleted: boolean;
+  idRegion?: number;
 }
 
 @Injectable({
@@ -37,8 +39,8 @@ export class AuthService {
 
   private apiUrl = `${environment.apiUrl}/auth`;
 
-  // ✅ MODIF : typer le user
-  private currentUserSubject: BehaviorSubject<User | null>;
+  // ✅ MODIF : typer le user (via Signal)
+  private currentUserSignal = signal<User | null>(null);
   public currentUser$: Observable<User | null>;
 
   private isBrowser: boolean;
@@ -50,34 +52,36 @@ export class AuthService {
     this.isBrowser = isPlatformBrowser(this.platformId);
 
     // ✅ MODIF : récupération propre du user
-    this.currentUserSubject = new BehaviorSubject<User | null>(
-      this.isBrowser ? this.getUserFromStorage() : null
-    );
+    if (this.isBrowser) {
+      this.currentUserSignal.set(this.getUserFromStorage());
+    }
 
-    this.currentUser$ = this.currentUserSubject.asObservable();
+    this.currentUser$ = toObservable(this.currentUserSignal);
   }
 
   /**
    * ✅ LOGIN (OK – aligné backend)
    */
-  login(email: string, password: string): Observable<any> {
-  return this.http.post<any>(`${this.apiUrl}/login`, {
-    UserName: email,
-    password
-  }).pipe(
-    tap(res => {
-      const result = res?.result;
-      if (!result) return;
+  login(email: string, password: string, turnstileToken: string = ''): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/login`, {
+      UserName: email,
+      password,
+      turnstileToken
+    }).pipe(
+      tap(res => {
+        const result = res?.result;
+        if (!result) return;
 
-      if (this.isBrowser) {
-        localStorage.setItem('token', result.token);
-        localStorage.setItem('user', JSON.stringify(result.user));
-      }
-
-      this.currentUserSubject.next(result.user);
-    })
-  );
-}
+        if (result?.token && result?.user) {
+          if (this.isBrowser) {
+            localStorage.setItem('token', result.token);
+            localStorage.setItem('user', JSON.stringify(result.user));
+          }
+          this.currentUserSignal.set(result.user);
+        }
+      })
+    );
+  }
 
   /**
    * ✅ MODIF MAJEURE : REGISTER
@@ -97,7 +101,7 @@ export class AuthService {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     }
-    this.currentUserSubject.next(null);
+    this.currentUserSignal.set(null);
   }
 
   /**
@@ -108,17 +112,28 @@ export class AuthService {
   }
 
   /**
-   * ✅ AUTH CHECK
+   * ✅ AUTH CHECK — verifies token presence AND expiry
    */
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp > Date.now() / 1000;
+    } catch {
+      return false;
+    }
   }
 
   /**
    * ✅ ROLE UTILS (NOUVEAU)
    */
   getUserRole(): UserRole | null {
-    return this.currentUserSubject.value?.role ?? null;
+    return this.currentUserSignal()?.role ?? null;
+  }
+
+  getUserId(): number {
+    return this.currentUserSignal()?.id ?? 0;
   }
 
   hasRole(roles: UserRole[]): boolean {
@@ -136,17 +151,17 @@ export class AuthService {
     return userStr ? JSON.parse(userStr) : null;
   }
 
-/**
-   * ✅ CURRENT USER
-   */
+  /**
+     * ✅ CURRENT USER
+     */
   getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
+    return this.currentUserSignal();
   }
 
-/**
-   * ✅ NOUVEAU : FORGOT PASSWORD
-   * Demande un email de réinitialisation de mot de passe
-   */
+  /**
+     * ✅ NOUVEAU : FORGOT PASSWORD
+     * Demande un email de réinitialisation de mot de passe
+     */
   forgotPassword(email: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/forgot-password`, {
       Email: email
@@ -175,5 +190,24 @@ export class AuthService {
       CurrentPassword: currentPassword,
       NewPassword: newPassword
     });
+  }
+
+  updateProfile(payload: { email: string; name?: string; phoneNumber?: string; adresse?: string }): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/update-profile`, {
+      Email: payload.email,
+      Name: payload.name,
+      PhoneNumber: payload.phoneNumber,
+      Adresse: payload.adresse
+    });
+  }
+
+  updateCurrentUser(fields: Partial<User>): void {
+    const current = this.currentUserSignal();
+    if (!current) return;
+    const merged: User = { ...current, ...fields };
+    if (this.isBrowser) {
+      localStorage.setItem('user', JSON.stringify(merged));
+    }
+    this.currentUserSignal.set(merged);
   }
 }

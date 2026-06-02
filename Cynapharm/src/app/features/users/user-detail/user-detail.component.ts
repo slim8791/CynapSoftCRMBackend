@@ -1,11 +1,15 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
 
 import { UserService } from '../user.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { RapportService, RapportDto } from '../../field/rapports/services/rapport.service';
+import { InventoryBusinessService, StockSummaryDto } from '../../inventory/stocks/services/inventory-business.service';
+import { StockMovementService, StockMovementDto } from '../../inventory/movements/services/stock-movement.service';
+import { RegionService } from '../../field/regions/services/region.service';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
@@ -21,6 +25,14 @@ export class UserDetailComponent implements OnInit, OnDestroy {
   user: any = null;
   loading = true;
   error   = '';
+  regionName = '—';
+  activeTab: 'info' | 'rapports' | 'mouvements' = 'info';
+  rapports: RapportDto[] = [];
+  loadingRapports = false;
+  stockSummary: StockSummaryDto | null = null;
+  loadingStockSummary = false;
+  movements: StockMovementDto[] = [];
+  loadingMovements = false;
 
   // Modal confirmation
   showActionModal  = false;
@@ -34,7 +46,11 @@ export class UserDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private userService: UserService,
+    private rapportService: RapportService,
+    private inventoryBizSvc: InventoryBusinessService,
+    private movementSvc: StockMovementService,
     private toastService: ToastService,
+    private regionSvc: RegionService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -74,6 +90,17 @@ export class UserDetailComponent implements OnInit, OnDestroy {
             isDeleted:   raw.isDeleted   ?? raw.IsDeleted   ?? false
           };
           this.loading = false;
+          const role = (this.user?.role ?? '').toUpperCase();
+          if (role === 'DELEGUE') {
+            this.loadRapports();
+            this.loadStockSummary();
+            this.loadMovements();
+          }
+          if (this.user?.idRegion) {
+            this.loadRegionName(this.user.idRegion);
+          } else if (role === 'SUPERVISEUR') {
+            this.loadRegionBySuperviseur(this.user.id);
+          }
           this.cdr.markForCheck();
         },
         error: (err: any) => {
@@ -82,6 +109,79 @@ export class UserDetailComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  private loadRegionName(idRegion: number): void {
+    this.regionSvc.getAll()
+      .pipe(catchError(() => of([])), takeUntil(this.destroy$))
+      .subscribe(regions => {
+        const found = regions.find(r => {
+          const id = (r as any).Id_Region ?? r.id_Region;
+          return id === idRegion;
+        });
+        this.regionName = (found as any)?.NomRegion ?? found?.nomRegion ?? '—';
+        this.cdr.markForCheck();
+      });
+  }
+
+  private loadRegionBySuperviseur(superviseurId: number): void {
+    this.regionSvc.getBySuperviseur(superviseurId)
+      .pipe(catchError(() => of(null)), takeUntil(this.destroy$))
+      .subscribe(region => {
+        this.regionName = region?.nomRegion ?? '—';
+        this.cdr.markForCheck();
+      });
+  }
+
+  private loadRapports(): void {
+    this.loadingRapports = true;
+    this.rapportService.getByDelegue(this.userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: data => { this.rapports = data; this.loadingRapports = false; this.cdr.markForCheck(); },
+        error: ()   => { this.rapports = []; this.loadingRapports = false; this.cdr.markForCheck(); }
+      });
+  }
+
+  private loadStockSummary(): void {
+    this.loadingStockSummary = true;
+    this.inventoryBizSvc.getStockSummary(this.userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: data => { this.stockSummary = data; this.loadingStockSummary = false; this.cdr.markForCheck(); },
+        error: ()   => { this.stockSummary = null; this.loadingStockSummary = false; this.cdr.markForCheck(); }
+      });
+  }
+
+  private loadMovements(): void {
+    this.loadingMovements = true;
+    this.movementSvc.getMovementsByDelegue(this.userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: data => { this.movements = data; this.loadingMovements = false; this.cdr.markForCheck(); },
+        error: ()   => { this.movements = []; this.loadingMovements = false; this.cdr.markForCheck(); }
+      });
+  }
+
+  setTab(t: 'info' | 'rapports' | 'mouvements'): void { this.activeTab = t; }
+
+  getMovementClass(type: string): string {
+    switch ((type ?? '').toLowerCase()) {
+      case 'increment':     return 'mv-green';
+      case 'decrement':     return 'mv-orange';
+      case 'transfer-in':   return 'mv-cyan';
+      case 'transfer-out':  return 'mv-red';
+      default:              return '';
+    }
+  }
+
+  getResultatClass(r: string): string {
+    switch ((r ?? '').toUpperCase()) {
+      case 'POSITIF':    return 'chip-success';
+      case 'NEGATIF':    return 'chip-danger';
+      case 'EN_ATTENTE': return 'chip-warn';
+      default:           return '';
+    }
   }
 
   private resolveError(err: any): string {

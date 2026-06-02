@@ -4,6 +4,8 @@ namespace CynapCRM.Services.InventoryAPI.Service.IService
 {
     public interface IStockMovementService
     {
+        Task<IEnumerable<StockMovementDto>> GetMovementHistoryByDelegueAsync(
+    int idDelegue);
         //  movement stocks
         Task<bool> DecrementStockAsync(int idStock, int qte);
         Task<bool> IncrementStockAsync(int idStock, int qte);

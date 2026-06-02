@@ -19,7 +19,7 @@ export interface ReclamationDto {
   Id_Rec:           number;
   Message:          string;
   DateReclamation:  string;
-  Statut?:          string;   // "Ouverte" | "EnCours" | "Resolue"
+  Statut?:          string | number;   // 0/Ouverte, 1/EnCours, 2/Resolue
   Id_Commande:      number;
   Id_Ligne:         number;
   Id_Client:        number;
@@ -39,7 +39,7 @@ export class ReclamationService {
   }
 
   // Normalize: covers Id_Rec / id_Rec / idRec, Id_Commande / id_Commande / idCommande …
-  private normalizeRec(r: any): ReclamationDto {
+  normalizeRec(r: any): ReclamationDto {
     return {
       Id_Rec:          r.Id_Rec          ?? r.id_Rec          ?? r.idRec          ?? 0,
       Message:         r.Message         ?? r.message         ?? '',
@@ -51,27 +51,23 @@ export class ReclamationService {
     };
   }
 
-  statutToNumber(statut?: string): number {
-    const map: Record<string, number> = { Ouverte: 0, EnCours: 1, Resolue: 2 };
+  statutToNumber(statut?: string | number): number {
+    if (typeof statut === 'number') return statut;
+    const map: Record<string, number> = { Ouverte: 0, EnCours: 1, Resolue: 2, '0': 0, '1': 1, '2': 2 };
     return statut != null ? (map[statut] ?? 0) : 0;
   }
 
-  getStatutLabel(statut?: string): string {
+  getStatutLabel(statut?: string | number): string {
     return STATUT_REC_LABELS[this.statutToNumber(statut)] ?? statut ?? '—';
   }
 
-  getStatutClass(statut?: string): string {
+  getStatutClass(statut?: string | number): string {
     return STATUT_REC_CSS[this.statutToNumber(statut)] ?? 'chip-default';
   }
 
-  private toArray(r: any): ReclamationDto[] {
-    const raw = Array.isArray(r) ? r : (this.unwrap<any[]>(r) ?? []);
-    return Array.isArray(raw) ? raw.map(x => this.normalizeRec(x)) : [];
-  }
-
-  // GET /orders/reclamations → returns direct array (no ResponseDto wrapper)
-  getAll(): Observable<ReclamationDto[]> {
-    return this.api.get<any>(this.base).pipe(map(r => this.toArray(r)));
+  // Returns raw API response — callers unwrap result/Result themselves
+  getAll(): Observable<any> {
+    return this.api.get<any>(this.base);
   }
 
   getById(id: number): Observable<ReclamationDto | null> {
@@ -80,18 +76,15 @@ export class ReclamationService {
     );
   }
 
-  // 404 = aucune réclamation pour cette commande → retourne [] sans erreur
-  getByOrder(orderId: number): Observable<ReclamationDto[]> {
+  getByOrder(orderId: number): Observable<any> {
     return this.api.get<any>(`${this.base}/by-commande/${orderId}`).pipe(
-      map(r => this.toArray(r)),
-      catchError((err: HttpErrorResponse) => err.status === 404 ? of([] as ReclamationDto[]) : throwError(() => err))
+      catchError((err: HttpErrorResponse) => err.status === 404 ? of(null) : throwError(() => err))
     );
   }
 
-  getByClient(clientId: number): Observable<ReclamationDto[]> {
+  getByClient(clientId: number): Observable<any> {
     return this.api.get<any>(`${this.base}/by-client/${clientId}`).pipe(
-      map(r => this.toArray(r)),
-      catchError((err: HttpErrorResponse) => err.status === 404 ? of([] as ReclamationDto[]) : throwError(() => err))
+      catchError((err: HttpErrorResponse) => err.status === 404 ? of(null) : throwError(() => err))
     );
   }
 

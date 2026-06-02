@@ -7,9 +7,7 @@ namespace CynapCRM.Services.DocAPI.Controllers
 {
     [Route("api/factures")]
     [ApiController]
-
     [Authorize]
-
     public class FacturesController : ControllerBase
     {
         private readonly IFactureService _factureService;
@@ -23,13 +21,13 @@ namespace CynapCRM.Services.DocAPI.Controllers
 
         [HttpGet]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> GetAllFactures([FromQuery] int pageNumber = 1,
-                                                        [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetAllFactures(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20)
         {
             try
             {
                 var result = await _factureService.GetAllFacturesAsync(pageNumber, pageSize);
-
                 _response.Result = result;
                 return Ok(_response);
             }
@@ -42,8 +40,8 @@ namespace CynapCRM.Services.DocAPI.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
-
+        // FIX: ajout rôles CLIENT
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> GetFactureById(int id)
         {
             try
@@ -51,8 +49,8 @@ namespace CynapCRM.Services.DocAPI.Controllers
                 if (id <= 0)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "id invalide.";
-                    return BadRequest();
+                    _response.Message = "Id invalide.";
+                    return BadRequest(_response);
                 }
                 var facture = await _factureService.GetFactureByIdAsync(id);
                 if (facture == null)
@@ -71,9 +69,10 @@ namespace CynapCRM.Services.DocAPI.Controllers
                 return StatusCode(515, _response);
             }
         }
-        [HttpGet("client/{idClient:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
 
+        [HttpGet("client/{idClient:int}")]
+        // FIX: ajout rôles CLIENT
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
         public async Task<IActionResult> GetFacturesByClient(int idClient)
         {
             try
@@ -81,17 +80,62 @@ namespace CynapCRM.Services.DocAPI.Controllers
                 if (idClient <= 0)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "id invalide.";
-                    return BadRequest();
+                    _response.Message = "Id invalide.";
+                    return BadRequest(_response);
                 }
                 var factures = await _factureService.GetFacturesByClientAsync(idClient);
-                if (factures == null || !factures.Any())
+                _response.Result = factures;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
+        // FIX: endpoint manquant
+        [HttpGet("commande/{idCommande:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,PHARMACIEN,GROSSISTE,CLIENT")]
+        public async Task<IActionResult> GetFacturesByCommande(int idCommande)
+        {
+            try
+            {
+                if (idCommande <= 0)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Aucune facutre trouvée pour ce client.";
-                    return NotFound(_response);
+                    _response.Message = "Id invalide.";
+                    return BadRequest(_response);
                 }
+                var factures = await _factureService.GetFacturesByCommandeAsync(idCommande);
                 _response.Result = factures;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
+        [HttpGet("by-date")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetFacturesByDate(
+            [FromQuery] DateTime startDate,
+            [FromQuery] DateTime endDate)
+        {
+            try
+            {
+                if (startDate > endDate)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "La date de début doit être antérieure à la date de fin.";
+                    return BadRequest(_response);
+                }
+                var result = await _factureService.GetFacturesByDateAsync(startDate, endDate);
+                _response.Result = result;
                 return Ok(_response);
             }
             catch (Exception ex)
@@ -104,8 +148,8 @@ namespace CynapCRM.Services.DocAPI.Controllers
 
         [HttpPost("createUpdate")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-
-        public async Task<IActionResult> CreateOrUpdateFacture([FromBody] FactureDto factureDto)
+        public async Task<IActionResult> CreateOrUpdateFacture(
+            [FromBody] FactureDto factureDto)
         {
             try
             {
@@ -115,7 +159,6 @@ namespace CynapCRM.Services.DocAPI.Controllers
                     _response.Message = "Données invalides.";
                     return BadRequest(_response);
                 }
-
                 var result = await _factureService.CreateOrUpdateFactureAsync(factureDto);
                 if (result == null)
                 {
@@ -123,7 +166,6 @@ namespace CynapCRM.Services.DocAPI.Controllers
                     _response.Message = "Erreur lors de l'enregistrement de la facture.";
                     return BadRequest(_response);
                 }
-
                 _response.Result = result;
                 _response.Message = "Facture enregistrée avec succès.";
                 return Ok(_response);
@@ -135,26 +177,30 @@ namespace CynapCRM.Services.DocAPI.Controllers
                 return StatusCode(515, _response);
             }
         }
-        [HttpGet("by-date")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
-        public async Task<IActionResult> GetFactureByDate([FromQuery] DateTime startDate,
-                                                         [FromQuery] DateTime endDate)
+
+        // FIX: endpoint manquant
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> DeleteFacture(int id)
         {
             try
             {
-                if (startDate > endDate)
+                if (id <= 0)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "La date de début doit être antérieure à la date de fin.";
+                    _response.Message = "Id invalide.";
                     return BadRequest(_response);
                 }
-
-                var result = await _factureService.GetFacturesByDateAsync(startDate, endDate);
-
-                _response.Result = result;
+                var result = await _factureService.DeleteFactureAsync(id);
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Facture introuvable.";
+                    return NotFound(_response);
+                }
+                _response.Message = "Facture supprimée avec succès.";
                 return Ok(_response);
             }
-
             catch (Exception ex)
             {
                 _response.IsSuccess = false;

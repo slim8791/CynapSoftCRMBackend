@@ -1,67 +1,177 @@
 <div class="page">
-      <div class="page-header">
-        <h1>Mouvements de stock</h1>
-        <p class="subtitle">Historique des mouvements</p>
-      </div>
-
-      <div class="filter-bar">
-        <div class="search-field">
-          <label>ID Stock</label>
-          <input type="number" [(ngModel)]="filterStockId" placeholder="Ex: 12" (keyup.enter)="applyFilter()" />
-        </div>
-        <button class="btn btn-primary" (click)="applyFilter()" [disabled]="!filterStockId">Filtrer</button>
-        <button class="btn btn-secondary" (click)="clearFilter()" *ngIf="activeStockId">Effacer</button>
-      </div>
-
-      <div *ngIf="loading" class="loading-wrap">
-        <div class="spinner"></div><span>Chargement...</span>
-      </div>
-
-      <div *ngIf="error && !loading" class="error-banner">{{ error }}</div>
-
-      <div *ngIf="!loading && !error && movements.length === 0 && activeStockId">
-        <app-empty-state title="Aucun mouvement" message="Aucun mouvement trouvé pour ce stock."></app-empty-state>
-      </div>
-
-      <div *ngIf="!loading && !error && !activeStockId && movements.length === 0" class="hint-panel">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <p>Entrez un ID de stock et cliquez sur <strong>Filtrer</strong> pour voir les mouvements.</p>
-      </div>
-
-      <div *ngIf="!loading && movements.length > 0" class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>ID Stock</th>
-              <th>Quantité</th>
-              <th>Type</th>
-              <th>Date</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let m of movements">
-              <td class="mono">{{ m.id_Movement }}</td>
-              <td>{{ m.id_Stock }}</td>
-              <td>
-                <span class="qty-badge" [class.positive]="m.typeMovement?.toLowerCase() === 'increment'"
-                      [class.negative]="m.typeMovement?.toLowerCase() === 'decrement'">
-                  {{ m.quantite }}
-                </span>
-              </td>
-              <td>
-                <span class="type-chip" [class.chip-in]="m.typeMovement?.toLowerCase() === 'increment'"
-                      [class.chip-out]="m.typeMovement?.toLowerCase() === 'decrement'"
-                      [class.chip-other]="m.typeMovement?.toLowerCase() === 'transfer'">
-                  {{ m.typeMovement }}
-                </span>
-              </td>
-              <td>{{ m.dateMovement | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td class="desc">{{ m.description ?? '—' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <div class="page-header">
+    <div>
+      <h1>Mouvements de stock</h1>
+      <p class="subtitle">Historique des mouvements</p>
     </div>
-  
+    <div class="header-actions">
+      <a routerLink="/inventory/movements/new" class="btn btn-primary">+ Nouveau mouvement</a>
+    </div>
+  </div>
+
+  <!-- ── Filter bar ───────────────────────────────────────── -->
+  <div class="filter-bar">
+
+    <!-- FILTER 1: Délégué (visible uniquement pour ADMIN / SUPERVISEUR) -->
+    <div class="search-field" *ngIf="isAdmin">
+      <label for="filter-delegue">Filtrer par délégué</label>
+      <select id="filter-delegue"
+              [(ngModel)]="selectedDelegueId"
+              (ngModelChange)="applyClientFilters()">
+        <option [ngValue]="null">Tous les délégués</option>
+        <option *ngFor="let d of delegues" [ngValue]="d.id">{{ d.label }}</option>
+      </select>
+    </div>
+
+    <!-- FILTER 2: Produit -->
+    <div class="search-field">
+      <label for="filter-produit">Filtrer par produit</label>
+      <select id="filter-produit"
+              [(ngModel)]="selectedProduitId"
+              (ngModelChange)="applyClientFilters()">
+        <option [ngValue]="null">Tous les produits</option>
+        <option *ngFor="let p of produits" [ngValue]="p.id">{{ p.label }}</option>
+      </select>
+    </div>
+
+    <!-- FILTER 3: Date début -->
+    <div class="search-field">
+      <label for="filter-date-debut">Date début</label>
+      <input id="filter-date-debut"
+             type="date"
+             [(ngModel)]="dateDebut"
+             (ngModelChange)="applyClientFilters()" />
+    </div>
+
+    <!-- FILTER 4: Date fin -->
+    <div class="search-field">
+      <label for="filter-date-fin">Date fin</label>
+      <input id="filter-date-fin"
+             type="date"
+             [(ngModel)]="dateFin"
+             (ngModelChange)="applyClientFilters()" />
+    </div>
+
+    <!-- FILTER 5: Type mouvement -->
+    <div class="search-field">
+      <label for="filter-type">Type mouvement</label>
+      <select id="filter-type"
+              [(ngModel)]="typeMovement"
+              (ngModelChange)="applyClientFilters()">
+        <option value="">Tous les types</option>
+        <option value="Increment">Increment (Entrée)</option>
+        <option value="Decrement">Decrement (Sortie)</option>
+        <option value="Transfer-Out">Transfer-Out (Sortie)</option>
+        <option value="Transfer-In">Transfer-In (Entrée)</option>
+      </select>
+    </div>
+
+    <!-- Reset button -->
+    <div class="filter-actions">
+      <button id="btn-reset-filters"
+              class="btn btn-reset"
+              (click)="resetFilters()"
+              [disabled]="!hasActiveFilters()">
+        ↺ Réinitialiser les filtres
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── Loading spinner ─────────────────────────────────── -->
+  <div *ngIf="loading" class="loading-wrap">
+    <div class="spinner"></div><span>Chargement des mouvements...</span>
+  </div>
+
+  <!-- ── Error ───────────────────────────────────────────── -->
+  <div *ngIf="error && !loading" class="error-banner">{{ error }}</div>
+
+  <!-- ── Active filter badges ────────────────────────────── -->
+  <div *ngIf="!loading && hasActiveFilters() && allMovements.length > 0" class="active-filters">
+    <span *ngIf="selectedDelegueId" class="filter-badge">
+      🧑‍💼 {{ getDelegueLabel(selectedDelegueId) }}
+      <button class="badge-clear" (click)="selectedDelegueId = null; applyClientFilters()">×</button>
+    </span>
+    <span *ngIf="selectedProduitId" class="filter-badge">
+      💊 {{ getProduitLabel(selectedProduitId) }}
+      <button class="badge-clear" (click)="selectedProduitId = null; applyClientFilters()">×</button>
+    </span>
+    <span *ngIf="dateDebut" class="filter-badge">
+      📅 Depuis {{ dateDebut }}
+      <button class="badge-clear" (click)="dateDebut = ''; applyClientFilters()">×</button>
+    </span>
+    <span *ngIf="dateFin" class="filter-badge">
+      📅 Jusqu'au {{ dateFin }}
+      <button class="badge-clear" (click)="dateFin = ''; applyClientFilters()">×</button>
+    </span>
+    <span *ngIf="typeMovement" class="filter-badge">
+      🔄 {{ typeMovement }}
+      <button class="badge-clear" (click)="typeMovement = ''; applyClientFilters()">×</button>
+    </span>
+    <span class="results-count">{{ movements.length }} résultat(s)</span>
+  </div>
+
+  <!-- ── Empty state — no movements after filters ─────────── -->
+  <div *ngIf="!loading && !error && movements.length === 0 && allMovements.length > 0">
+    <app-empty-state
+      title="Aucun mouvement"
+      message="Aucun mouvement ne correspond aux filtres sélectionnés.">
+    </app-empty-state>
+  </div>
+
+  <!-- ── Empty state — no movements at all ──────────────── -->
+  <div *ngIf="!loading && !error && allMovements.length === 0" class="hint-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p>Aucun mouvement de stock enregistré.</p>
+  </div>
+
+  <!-- ── Movements table ─────────────────────────────────── -->
+  <div *ngIf="!loading && !error && movements.length > 0" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th *ngIf="isAdmin">Délégué</th>
+          <th>Produit</th>
+          <th>Type</th>
+          <th>Quantité</th>
+          <th>Sens</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of movements">
+          <td>{{ m.dateMovement | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td *ngIf="isAdmin">
+            <span class="delegue-label">{{ m.delegueLabel ?? '—' }}</span>
+          </td>
+          <td>
+            <span class="produit-label">{{ m.produitLabel ?? '—' }}</span>
+          </td>
+          <td>
+            <span class="type-chip"
+                  [class.chip-in]="!isSortie(m.typeMovement)"
+                  [class.chip-out]="isSortie(m.typeMovement)">
+              {{ m.typeMovement }}
+            </span>
+          </td>
+          <td>
+            <span class="qty-badge"
+                  [class.positive]="!isSortie(m.typeMovement)"
+                  [class.negative]="isSortie(m.typeMovement)">
+              {{ isSortie(m.typeMovement) ? '−' : '+' }}{{ m.quantite | number }}
+            </span>
+          </td>
+          <td>
+            <span class="sens-chip"
+                  [class.sens-entree]="!isSortie(m.typeMovement)"
+                  [class.sens-sortie]="isSortie(m.typeMovement)">
+              {{ isSortie(m.typeMovement) ? '↓ Sortie' : '↑ Entrée' }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Cynapharm_Mobile.Controls.ErrorBanner"
+             x:Name="rootView"
+             IsVisible="False">
+
+    <Border BackgroundColor="{StaticResource ErrorLight}"
+            Stroke="{StaticResource ErrorColor}"
+            StrokeThickness="1"
+            Padding="12,10"
+            Margin="0,0,0,8">
+        <Border.StrokeShape>
+            <RoundRectangle CornerRadius="8" />
+        </Border.StrokeShape>
+
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+
+            <!-- Icon -->
+            <Label Grid.Column="0"
+                   Text="⚠️"
+                   VerticalOptions="Center"
+                   FontSize="16" />
+
+            <!-- Message -->
+            <Label Grid.Column="1"
+                   Text="{Binding Message, Source={x:Reference rootView}}"
+                   TextColor="{StaticResource ErrorColor}"
+                   FontSize="13"
+                   VerticalOptions="Center"
+                   LineBreakMode="WordWrap" />
+
+            <!-- Dismiss -->
+            <ImageButton Grid.Column="2"
+                         Command="{Binding DismissCommand, Source={x:Reference rootView}}"
+                         VerticalOptions="Center"
+                         BackgroundColor="Transparent"
+                         Padding="4">
+                <ImageButton.Source>
+                    <FontImageSource Glyph="✕"
+                                     Color="{StaticResource ErrorColor}"
+                                     Size="12" />
+                </ImageButton.Source>
+            </ImageButton>
+
+        </Grid>
+    </Border>
+</ContentView>

@@ -6,7 +6,8 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
     {
 
         Task<IEnumerable<RapportVisiteDto>> GetAllRapportsAsync();
-
+        Task<IEnumerable<RapportVisiteDto>> GetRapportsByDelegueAsync(
+    int idDelegue);
         Task<RapportVisiteDto?> GetRapportByIdAsync(int idRapport);
 
         Task<RapportVisiteDto?> CreateOrUpdateRapportAsync(RapportVisiteDto dto);

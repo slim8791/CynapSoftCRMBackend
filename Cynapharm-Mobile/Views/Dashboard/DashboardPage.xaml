@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Dashboard"
+             xmlns:field="clr-namespace:Cynapharm_Mobile.Models.Field"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             x:Class="Cynapharm_Mobile.Views.Dashboard.DashboardPage"
+             x:DataType="vm:DashboardViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ── Hero header ────────────────────────────────────────────────── -->
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
+              Padding="20,52,20,28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Hamburger + Avatar + greeting + bell -->
+            <Grid Grid.Row="0" ColumnDefinitions="38,50,*,38" ColumnSpacing="12">
+
+                <!-- Hamburger button (≡) — opens flyout drawer -->
+                <Border Grid.Column="0"
+                        BackgroundColor="#26FFFFFF"
+                        StrokeShape="RoundRectangle 12"
+                        Stroke="Transparent"
+                        HeightRequest="38" WidthRequest="38"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnHamburgerTapped" />
+                    </Border.GestureRecognizers>
+                    <!-- SVG Hamburger Menu -->
+                    <Path Data="M 5,7 L 19,7 M 5,12 L 19,12 M 5,17 L 19,17"
+                          Stroke="White" StrokeThickness="2.5"
+                          StrokeLineJoin="Round" StrokeLineCap="Round"
+                          HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+
+                <Border Grid.Column="1"
+                        BackgroundColor="#33FFFFFF"
+                        StrokeShape="RoundRectangle 25"
+                        Stroke="White" StrokeThickness="1.5"
+                        HeightRequest="46" WidthRequest="46"
+                        VerticalOptions="Center">
+                    <Label Text="{Binding GreetingInitials}"
+                           FontSize="20" FontAttributes="Bold"
+                           FontFamily="OpenSansSemibold"
+                           TextColor="White"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <VerticalStackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center">
+                    <Label Text="{Binding UserDisplayName, StringFormat='Bonjour, {0} !'}"
+                           FontSize="17" FontAttributes="Bold"
+                           FontFamily="OpenSansSemibold"
+                           TextColor="White" />
+                    <Label Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat='{0:dddd d MMMM yyyy}'}"
+                           TextColor="#CCF5FF" FontSize="11" />
+                </VerticalStackLayout>
+
+                <Border Grid.Column="3"
+                        BackgroundColor="#26FFFFFF"
+                        StrokeShape="RoundRectangle 12"
+                        Stroke="Transparent"
+                        HeightRequest="38" WidthRequest="38"
+                        VerticalOptions="Center" HorizontalOptions="End">
+                    <Label Text="🔔" FontSize="18"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+            </Grid>
+
+            <!-- Quick stat strip inside header -->
+            <Border Grid.Row="1"
+                    BackgroundColor="#26FFFFFF"
+                    StrokeShape="RoundRectangle 14"
+                    Stroke="Transparent"
+                    Padding="16,12"
+                    Margin="0,16,0,0">
+                <Grid ColumnDefinitions="*,1,*" ColumnSpacing="0">
+                    <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" Spacing="2">
+                        <Label Text="{Binding TodayVisitCount}"
+                               FontSize="24" FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalOptions="Center" />
+                        <Label Text="Visites aujourd'hui"
+                               FontSize="11" TextColor="#CCF5FF"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                    <BoxView Grid.Column="1" BackgroundColor="#40FFFFFF"
+                             WidthRequest="1" VerticalOptions="Fill" />
+                    <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="2">
+                        <Label Text="{Binding TauxConversion, StringFormat='{0:F0}%'}"
+                               FontSize="24" FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalOptions="Center"
+                               IsVisible="{Binding IsDelegue}" />
+                        <Label Text="—"
+                               FontSize="24" FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalOptions="Center"
+                               IsVisible="{Binding IsDelegue, Converter={StaticResource InvertedBoolConverter}}" />
+                        <Label Text="Taux de conversion"
+                               FontSize="11" TextColor="#CCF5FF"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ── Scrollable body ───────────────────────────────────────────── -->
+        <RefreshView Grid.Row="1"
+                     Command="{Binding LoadDashboardCommand}"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     RefreshColor="{StaticResource Primary}">
+            <ScrollView>
+                <VerticalStackLayout Padding="16,16,16,24" Spacing="16">
+
+                    <controls:ErrorBanner Message="{Binding ErrorMessage}" />
+
+                    <!-- ── Stock summary — DELEGUE only ──────────────────── -->
+                    <Border Style="{StaticResource CardStyle}"
+                            IsVisible="{Binding StockSummary, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                        <VerticalStackLayout Spacing="12">
+
+                            <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                                <BoxView Grid.Column="0" BackgroundColor="{StaticResource Primary}"
+                                         CornerRadius="2" WidthRequest="4" />
+                                <Label Grid.Column="1" Text="Mon stock"
+                                       FontSize="13" FontAttributes="Bold"
+                                       FontFamily="OpenSansSemibold"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                            <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                <Border Grid.Column="0"
+                                        BackgroundColor="{StaticResource PrimaryLight}"
+                                        StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                                        Padding="12,10">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding StockSummary.TotalProduits}"
+                                               FontSize="22" FontAttributes="Bold"
+                                               TextColor="{StaticResource Primary}" />
+                                        <Label Text="Produits"
+                                               FontSize="11" TextColor="{StaticResource TextSecondary}" />
+                                    </VerticalStackLayout>
+                                </Border>
+                                <Border Grid.Column="1"
+                                        BackgroundColor="{StaticResource SecondaryLight}"
+                                        StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                                        Padding="12,10">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding StockSummary.TotalQteDisponible}"
+                                               FontSize="22" FontAttributes="Bold"
+                                               TextColor="{StaticResource Secondary}" />
+                                        <Label Text="Qté disponible"
+                                               FontSize="11" TextColor="{StaticResource TextSecondary}" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                <Border Grid.Column="0"
+                                        BackgroundColor="{StaticResource AccentLight}"
+                                        StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                                        Padding="12,10">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding StockSummary.TotalDistributions}"
+                                               FontSize="22" FontAttributes="Bold"
+                                               TextColor="{StaticResource Accent}" />
+                                        <Label Text="Distributions"
+                                               FontSize="11" TextColor="{StaticResource TextSecondary}" />
+                                    </VerticalStackLayout>
+                                </Border>
+                                <Border Grid.Column="1"
+                                        BackgroundColor="{StaticResource SurfaceBackground}"
+                                        StrokeShape="RoundRectangle 12" Stroke="{StaticResource BorderColor}"
+                                        Padding="12,10">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding StockSummary.TotalQteDistribuee}"
+                                               FontSize="22" FontAttributes="Bold"
+                                               TextColor="{StaticResource TextPrimary}" />
+                                        <Label Text="Qté distribuée"
+                                               FontSize="11" TextColor="{StaticResource TextSecondary}" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </Grid>
+
+                            <!-- Stock faible — hidden when count = 0 -->
+                            <Border BackgroundColor="{StaticResource SecondaryLight}"
+                                    StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                    Padding="12,8"
+                                    IsVisible="{Binding HasStockFaible}">
+                                <Label Text="{Binding StockFaibleLabel}"
+                                       FontSize="12" FontAttributes="Bold"
+                                       TextColor="{StaticResource SecondaryText}" />
+                            </Border>
+                            <!-- Rupture de stock — hidden when count = 0 -->
+                            <Border BackgroundColor="{StaticResource DangerLight}"
+                                    StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                    Padding="12,8"
+                                    IsVisible="{Binding HasRuptureStock}">
+                                <Label Text="{Binding RuptureStockLabel}"
+                                       FontSize="12" FontAttributes="Bold"
+                                       TextColor="{StaticResource DangerText}" />
+                            </Border>
+
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- ── Quick access ───────────────────────────────────── -->
+                    <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                        <BoxView Grid.Column="0" BackgroundColor="{StaticResource Secondary}"
+                                 CornerRadius="2" WidthRequest="4" />
+                        <Label Grid.Column="1" Text="Accès rapide"
+                               FontSize="13" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Border Grid.Column="0"
+                                BackgroundColor="{StaticResource CardBackground}"
+                                StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                Padding="16,14">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
+                            </Border.Shadow>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToVisitsCommand}" />
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                                <Border BackgroundColor="{StaticResource PrimaryLight}"
+                                        StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                                        WidthRequest="44" HeightRequest="44"
+                                        HorizontalOptions="Center">
+                                    <Label Text="📋" FontSize="22"
+                                           HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <Label Text="Mes visites"
+                                       FontSize="13" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Border>
+                        <Border Grid.Column="1"
+                                BackgroundColor="{StaticResource CardBackground}"
+                                StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                Padding="16,14">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
+                            </Border.Shadow>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToPlanningCommand}" />
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                                <Border BackgroundColor="{StaticResource SecondaryLight}"
+                                        StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                                        WidthRequest="44" HeightRequest="44"
+                                        HorizontalOptions="Center">
+                                    <Label Text="📅" FontSize="22"
+                                           HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <Label Text="Planning"
+                                       FontSize="13" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <!-- ── Objectives ─────────────────────────────────────── -->
+                    <Grid ColumnDefinitions="4,*" ColumnSpacing="10" Margin="0,4,0,0">
+                        <BoxView Grid.Column="0" BackgroundColor="{StaticResource Primary}"
+                                 CornerRadius="2" WidthRequest="4" />
+                        <Label Grid.Column="1" Text="Mes objectifs du mois"
+                               FontSize="13" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <VerticalStackLayout Spacing="10"
+                                         BindableLayout.ItemsSource="{Binding ObjectifItems}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="field:Objectif">
+                                <Border Style="{StaticResource CardStyle}">
+                                    <VerticalStackLayout Spacing="10">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding TypeObjectif}"
+                                                   FontAttributes="Bold" FontSize="14"
+                                                   FontFamily="OpenSansSemibold"
+                                                   TextColor="{StaticResource TextPrimary}" />
+                                            <Border Grid.Column="1"
+                                                    BackgroundColor="{StaticResource SecondaryLight}"
+                                                    StrokeShape="RoundRectangle 10"
+                                                    Stroke="Transparent" Padding="8,4">
+                                                <Label Text="{Binding Periode}"
+                                                       TextColor="{StaticResource SecondaryText}"
+                                                       FontSize="11" FontAttributes="Bold" />
+                                            </Border>
+                                        </Grid>
+                                        <ProgressBar Progress="{Binding ProgressValue}" />
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding ValeurActuelle, StringFormat='Réalisé : {0:N0}'}"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource Primary}" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding ValeurCible, StringFormat='Cible : {0:N0}'}"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource TextSecondary}" />
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                            StrokeShape="RoundRectangle 14" Stroke="{StaticResource BorderColor}"
+                            Padding="20,24"
+                            IsVisible="{Binding ObjectifItems.Count, Converter={StaticResource InvertedBoolConverter}}">
+                        <VerticalStackLayout HorizontalOptions="Center" Spacing="10">
+                            <Border BackgroundColor="{StaticResource PrimaryLight}"
+                                    StrokeShape="RoundRectangle 40" Stroke="Transparent"
+                                    WidthRequest="64" HeightRequest="64" HorizontalOptions="Center">
+                                <Label Text="🎯" FontSize="30"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Text="Aucun objectif pour cette période"
+                                   Style="{StaticResource EmptyStateStyle}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- ── KPIs ───────────────────────────────────────────── -->
+                    <Grid ColumnDefinitions="4,*" ColumnSpacing="10" Margin="0,4,0,0">
+                        <BoxView Grid.Column="0" BackgroundColor="{StaticResource Accent}"
+                                 CornerRadius="2" WidthRequest="4" />
+                        <Label Grid.Column="1" Text="KPIs du mois"
+                               FontSize="13" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <VerticalStackLayout Spacing="10"
+                                         BindableLayout.ItemsSource="{Binding PerformanceItems}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="field:PerformanceDto">
+                                <Border Style="{StaticResource CardStyle}">
+                                    <VerticalStackLayout Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding TypeLabel}"
+                                                   FontAttributes="Bold" FontSize="14"
+                                                   FontFamily="OpenSansSemibold"
+                                                   TextColor="{StaticResource TextPrimary}" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Pourcentage, StringFormat='{0:N0}%'}"
+                                                   TextColor="{StaticResource Primary}"
+                                                   FontAttributes="Bold" FontSize="16"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                            <Border Grid.Column="0"
+                                                    BackgroundColor="{StaticResource BorderColor}"
+                                                    StrokeShape="RoundRectangle 4"
+                                                    HeightRequest="8"
+                                                    VerticalOptions="Center">
+                                                <BoxView BackgroundColor="{StaticResource Primary}"
+                                                         CornerRadius="4"
+                                                         HorizontalOptions="Start"
+                                                         WidthRequest="{Binding Pourcentage}" />
+                                            </Border>
+                                            <Label Grid.Column="1"
+                                                   FontSize="11"
+                                                   VerticalOptions="Center">
+                                                <Label.FormattedText>
+                                                    <FormattedString>
+                                                        <Span Text="{Binding ValeurRealisee}"
+                                                              FontAttributes="Bold"
+                                                              TextColor="{StaticResource Primary}" />
+                                                        <Span Text=" / "
+                                                              TextColor="{StaticResource TextMuted}" />
+                                                        <Span Text="{Binding ValeurCible}"
+                                                              TextColor="{StaticResource TextMuted}" />
+                                                    </FormattedString>
+                                                </Label.FormattedText>
+                                            </Label>
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                            StrokeShape="RoundRectangle 14" Stroke="{StaticResource BorderColor}"
+                            Padding="20,24"
+                            IsVisible="{Binding PerformanceItems.Count, Converter={StaticResource InvertedBoolConverter}}">
+                        <VerticalStackLayout HorizontalOptions="Center" Spacing="10">
+                            <Border BackgroundColor="{StaticResource AccentLight}"
+                                    StrokeShape="RoundRectangle 40" Stroke="Transparent"
+                                    WidthRequest="64" HeightRequest="64" HorizontalOptions="Center">
+                                <Label Text="📊" FontSize="30"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Text="Aucun KPI disponible pour cette période"
+                                   Style="{StaticResource EmptyStateStyle}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+        <!-- ── Loader ────────────────────────────────────────────────────── -->
+        <controls:AppLoader Grid.RowSpan="2" />
+
+    </Grid>
+</ContentPage>

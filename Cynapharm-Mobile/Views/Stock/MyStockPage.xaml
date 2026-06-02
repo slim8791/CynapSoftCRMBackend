@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Stock"
+             xmlns:models="clr-namespace:Cynapharm_Mobile.Models.Inventory"
+             xmlns:inv="clr-namespace:Cynapharm_Mobile.Models.Inventory"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Stock.MyStockPage"
+             x:DataType="vm:MyStockViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <controls:AppHeader Grid.Row="0"
+                            Title="Mon stock"
+                            Subtitle="Échantillons, promos et historique"
+                            ShowHamburger="True" />
+
+        <!-- Error banner -->
+        <controls:ErrorBanner Grid.Row="1"
+                              Message="{Binding ErrorMessage}"
+                              Margin="16,8,16,0" />
+
+        <!-- ── Tab bar ───────────────────────────────────────────────────── -->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,*,*"
+              BackgroundColor="{StaticResource CardBackground}">
+
+            <VerticalStackLayout Grid.Column="0" Spacing="0">
+                <Button Text="Échantillons"
+                        Command="{Binding SetSegmentCommand}" CommandParameter="0"
+                        BackgroundColor="Transparent"
+                        HeightRequest="48" FontSize="13" Margin="0">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="0">
+                            <Setter Property="TextColor"     Value="{StaticResource Primary}" />
+                            <Setter Property="FontAttributes" Value="Bold" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="1">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <BoxView HeightRequest="2.5" CornerRadius="2">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="0">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="1">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="1" Spacing="0">
+                <Button Text="Stock Promo"
+                        Command="{Binding SetSegmentCommand}" CommandParameter="1"
+                        BackgroundColor="Transparent"
+                        HeightRequest="48" FontSize="13" Margin="0">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="0">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="1">
+                            <Setter Property="TextColor"     Value="{StaticResource Primary}" />
+                            <Setter Property="FontAttributes" Value="Bold" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <BoxView HeightRequest="2.5" CornerRadius="2">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="0">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="1">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="2" Spacing="0">
+                <Button Text="Historique"
+                        Command="{Binding SetSegmentCommand}" CommandParameter="2"
+                        BackgroundColor="Transparent"
+                        HeightRequest="48" FontSize="13" Margin="0">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="0">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="1">
+                            <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="TextColor"     Value="{StaticResource Primary}" />
+                            <Setter Property="FontAttributes" Value="Bold" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <BoxView HeightRequest="2.5" CornerRadius="2">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="0">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="1">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding ActiveSegment}" Value="2">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+            </VerticalStackLayout>
+        </Grid>
+
+        <ActivityIndicator Grid.Row="3"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="{StaticResource Primary}"
+                           HorizontalOptions="Center"
+                           Margin="0,8" />
+
+        <!-- ── Stock list (segments 0 & 1) ──────────────────────────────── -->
+        <RefreshView Grid.Row="4"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     IsVisible="{Binding IsStockSegment}"
+                     RefreshColor="{StaticResource Primary}">
+            <CollectionView ItemsSource="{Binding StockLines}">
+                <CollectionView.Header>
+                    <BoxView HeightRequest="8" Color="Transparent" />
+                </CollectionView.Header>
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                         Spacing="16" Padding="40" Margin="0,40,0,0">
+                        <Border BackgroundColor="{StaticResource PrimaryLight}"
+                                StrokeShape="RoundRectangle 50" Stroke="Transparent"
+                                WidthRequest="80" HeightRequest="80" HorizontalOptions="Center">
+                            <Label Text="📦" FontSize="38"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="Aucun stock disponible"
+                               FontSize="16" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:StockDisplayItem">
+                        <Border Margin="16,0,16,10"
+                                BackgroundColor="{StaticResource CardBackground}"
+                                StrokeShape="RoundRectangle 16"
+                                Stroke="{StaticResource BorderColor}" StrokeThickness="1">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
+                            </Border.Shadow>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding ShowLowStockWarning}" Value="True">
+                                    <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout Spacing="12" Padding="14,14">
+                                <!-- Product name + quantity badge -->
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding ProductNom}"
+                                           FontAttributes="Bold" FontSize="15"
+                                           FontFamily="OpenSansSemibold"
+                                           TextColor="{StaticResource TextPrimary}" />
+                                    <Border Grid.Column="1"
+                                            Padding="12,5"
+                                            StrokeShape="RoundRectangle 12"
+                                            Stroke="Transparent" VerticalOptions="Center">
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding ShowLowStockWarning}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding ShowLowStockWarning}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource DangerLight}" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label Text="{Binding QuantiteLabel}"
+                                               FontAttributes="Bold" FontSize="13">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding ShowLowStockWarning}" Value="False">
+                                                    <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding ShowLowStockWarning}" Value="True">
+                                                    <Setter Property="TextColor" Value="{StaticResource Danger}" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Expiry date -->
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6"
+                                      IsVisible="{Binding HasExpiry}">
+                                    <Label Grid.Column="0" Text="📅" FontSize="12"
+                                           VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding ExpiryLabel}"
+                                           FontSize="12" TextColor="{StaticResource TextSecondary}"
+                                           VerticalOptions="Center" />
+                                </Grid>
+
+                                <!-- Progress bar -->
+                                <ProgressBar Progress="{Binding ProgressValue}"
+                                             HeightRequest="6"
+                                             ProgressColor="{StaticResource Primary}"
+                                             BackgroundColor="#E0E0E0" />
+
+                                <!-- Alert + Distribute -->
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                    <Border Grid.Column="0"
+                                            BackgroundColor="{StaticResource DangerLight}"
+                                            StrokeShape="RoundRectangle 8" Stroke="Transparent"
+                                            Padding="10,6"
+                                            IsVisible="{Binding CanDistribute, Converter={StaticResource InvertedBoolConverter}}">
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding IsEchantillon}" Value="False">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label Text="⚠️ Stock insuffisant"
+                                               TextColor="{StaticResource Danger}" FontSize="12"
+                                               FontAttributes="Bold" />
+                                    </Border>
+
+                                    <Button Grid.Column="1"
+                                            Text="Distribuer"
+                                            FontSize="12"
+                                            HeightRequest="40"
+                                            CornerRadius="10"
+                                            Margin="0"
+                                            IsEnabled="{Binding CanDistribute}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DistributeSampleCommand}"
+                                            CommandParameter="{Binding .}"
+                                            IsVisible="{Binding IsEchantillon}">
+                                        <Button.Triggers>
+                                            <DataTrigger TargetType="Button" Binding="{Binding CanDistribute}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                                <Setter Property="TextColor" Value="White" />
+                                                <Setter Property="Opacity" Value="1" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Button" Binding="{Binding CanDistribute}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource BorderColor}" />
+                                                <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+                                                <Setter Property="Opacity" Value="0.7" />
+                                            </DataTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="24" Color="Transparent" />
+                </CollectionView.Footer>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- ── History list (segment 2) ──────────────────────────────────── -->
+        <RefreshView Grid.Row="4"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     IsVisible="{Binding IsHistorySegment}"
+                     RefreshColor="{StaticResource Primary}">
+            <CollectionView ItemsSource="{Binding StockMovements}">
+                <CollectionView.Header>
+                    <BoxView HeightRequest="8" Color="Transparent" />
+                </CollectionView.Header>
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                         Spacing="16" Padding="40" Margin="0,40,0,0">
+                        <Border BackgroundColor="{StaticResource PrimaryLight}"
+                                StrokeShape="RoundRectangle 50" Stroke="Transparent"
+                                WidthRequest="80" HeightRequest="80" HorizontalOptions="Center">
+                            <Label Text="📋" FontSize="38"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="Aucun mouvement de stock"
+                               FontSize="16" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="inv:StockMouvement">
+                        <Border Margin="16,0,16,10"
+                                BackgroundColor="{StaticResource CardBackground}"
+                                StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                Padding="0">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,1" Radius="4" Opacity="0.05" />
+                            </Border.Shadow>
+                            <Grid ColumnDefinitions="5,*">
+                                <BoxView Grid.Column="0" VerticalOptions="Fill"
+                                         BackgroundColor="{StaticResource BorderColor}">
+                                    <BoxView.Triggers>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding TypeMouvement}" Value="Increment">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding TypeMouvement}" Value="Decrement">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Secondary}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding TypeMouvement}" Value="Transfer-In">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding TypeMouvement}" Value="Transfer-Out">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Danger}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding TypeMouvement}" Value="Distribution">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Danger}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding TypeMouvement}" Value="Distribution-Annulée">
+                                            <Setter Property="BackgroundColor" Value="#4CAF50" />
+                                        </DataTrigger>
+                                    </BoxView.Triggers>
+                                </BoxView>
+                                <Grid Grid.Column="1"
+                                      ColumnDefinitions="56,*,Auto,Auto"
+                                      ColumnSpacing="10" Padding="12,12">
+                                    <!-- Date block — uses guarded DateDay/DateYear (shows "—" for unset dates) -->
+                                    <Border Grid.Column="0"
+                                            BackgroundColor="{StaticResource SurfaceBackground}"
+                                            StrokeShape="RoundRectangle 10" Stroke="{StaticResource BorderColor}"
+                                            Padding="8,6" VerticalOptions="Center">
+                                        <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
+                                            <Label Text="{Binding DateDay}"
+                                                   FontSize="13" FontAttributes="Bold"
+                                                   TextColor="{StaticResource TextPrimary}"
+                                                   HorizontalOptions="Center" />
+                                            <Label Text="{Binding DateYear}"
+                                                   FontSize="10" TextColor="{StaticResource TextMuted}"
+                                                   HorizontalOptions="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <!-- Product name -->
+                                    <Label Grid.Column="1"
+                                           Text="{Binding ProductNom}"
+                                           FontSize="13" FontAttributes="Bold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           VerticalOptions="Center"
+                                           LineBreakMode="TailTruncation" />
+
+                                    <!-- Type badge -->
+                                    <Border Grid.Column="2"
+                                            Padding="8,4"
+                                            StrokeShape="RoundRectangle 8"
+                                            Stroke="Transparent"
+                                            BackgroundColor="{StaticResource SurfaceBackground}"
+                                            VerticalOptions="Center">
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding TypeMouvement}" Value="Increment">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding TypeMouvement}" Value="Decrement">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource SecondaryLight}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding TypeMouvement}" Value="Transfer-In">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource AccentLight}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding TypeMouvement}" Value="Transfer-Out">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource DangerLight}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding TypeMouvement}" Value="Distribution">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource DangerLight}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding TypeMouvement}" Value="Distribution-Annulée">
+                                                <Setter Property="BackgroundColor" Value="#E8F5E9" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label Text="{Binding TypeMouvement}"
+                                               FontSize="10" FontAttributes="Bold"
+                                               TextColor="{StaticResource TextPrimary}" />
+                                    </Border>
+
+                                    <!-- Quantity — signed label (+5 / -3) coloured by direction -->
+                                    <Label Grid.Column="3"
+                                           Text="{Binding QuantiteLabel}"
+                                           FontSize="18" FontAttributes="Bold"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"
+                                           MinimumWidthRequest="30">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsPositive}" Value="True">
+                                                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsPositive}" Value="False">
+                                                <Setter Property="TextColor" Value="{StaticResource Danger}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="24" Color="Transparent" />
+                </CollectionView.Footer>
+            </CollectionView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

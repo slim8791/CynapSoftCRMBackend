@@ -1,10 +1,12 @@
-﻿using CynapCRM.Services.FieldAPI.Models.Dto;
+using CynapCRM.Services.FieldAPI.Models.Dto;
 
 namespace CynapCRM.Services.FieldAPI.Service.IService
 {
     public interface IVisiteService
     {
-
+        Task<IEnumerable<VisiteDto>> GetAllVisitesAsync(
+    DateTime? startDate = null,
+    DateTime? endDate = null);
         Task<VisiteDto?> CreateOrUpdateVisiteAsync(CreateVisiteDto dto);
 
         Task<VisiteDto?> GetVisiteByIdAsync(int idVisite);
@@ -22,6 +24,9 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 
         // Business security: ownership
         Task<bool> IsVisiteOwnedByDelegueAsync(int idVisite, int idDelegue);
+
+        // Démarrer la visite sur le terrain
+        Task<VisiteDto?> StartVisiteAsync(int idVisite);
 
     }
 }

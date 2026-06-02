@@ -1,10 +1,12 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CynapCRM.Services.AuthAPI.Data;
 using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Models.Dto;
 using CynapCRM.Services.AuthAPI.Service.IService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace CynapCRM.Services.AuthAPI.Service
 {
@@ -30,8 +32,6 @@ namespace CynapCRM.Services.AuthAPI.Service
         }
         public async Task<ResponseDto> Register(RegistrationRequestDto model)
         {
-
-            // verify email 
             if (await _userManager.FindByEmailAsync(model.Email) != null)
             {
                 return new ResponseDto
@@ -53,6 +53,7 @@ namespace CynapCRM.Services.AuthAPI.Service
                         Email = model.Email,
                         UserName = model.Email,
                         Adresse = model.Adresse,
+                        PhoneNumber = model.PhoneNumber,
                         NomOfficine = model.NomOfficine,
                         TypePharmacie = model.TypePharmacie,
                         IsDeleted = false
@@ -63,26 +64,41 @@ namespace CynapCRM.Services.AuthAPI.Service
                         Email = model.Email,
                         UserName = model.Email,
                         Adresse = model.Adresse,
+                        PhoneNumber = model.PhoneNumber,
                         RaisonSociale = model.RaisonSociale,
                         IsDeleted = false
                     },
-
                     _ => throw new ArgumentException("UserType invalide pour un Client.")
                 };
             }
-
+            else if (model.Role == UserRole.MEDECIN)
+            {
+                user = new Medecin
+                {
+                    Name = model.Name,
+                    Email = model.Email,
+                    UserName = model.Email,
+                    Adresse = model.Adresse,
+                    PhoneNumber = model.PhoneNumber,
+                    Specialite = model.Specialite ?? string.Empty,
+                    TypeEtablissement = model.TypeEtablissement ?? string.Empty,
+                    IsDeleted = false
+                };
+            }
             else
             {
-                // ADMIN / SUPERVISEUR / DELEGUE / MEDECIN 
                 user = new Utilisateur
                 {
                     Name = model.Name,
                     Email = model.Email,
                     UserName = model.Email,
                     Adresse = model.Adresse,
+                    PhoneNumber = model.PhoneNumber,
                     IsDeleted = false
                 };
             }
+
+            user.IdRegion = model.IdRegion;
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
@@ -94,19 +110,18 @@ namespace CynapCRM.Services.AuthAPI.Service
                     Message = result.Errors.FirstOrDefault()?.Description
                 };
             }
+
             var role = model.Role.ToString().ToUpper();
-            // Rôle Identity
+
             if (!await _roleManager.RoleExistsAsync(role))
-            {
                 await _roleManager.CreateAsync(new IdentityRole<int> { Name = role });
-            }
 
             await _userManager.AddToRoleAsync(user, role);
 
             return new ResponseDto
             {
                 IsSuccess = true,
-                Message = $"Inscription réussie avec le rôle {role} "
+                Message = $"Inscription réussie avec le rôle {role}"
             };
         }
 
@@ -161,8 +176,8 @@ namespace CynapCRM.Services.AuthAPI.Service
                 Name = user.Name,
                 PhoneNumber = user.PhoneNumber,
                 Adresse = user.Adresse,
-
-                Role = roles.First().ToUpper()
+                Role = roles.First().ToUpper(),
+                IdRegion = user.IdRegion
             };
 
             return new LoginResponseDto
@@ -189,7 +204,9 @@ namespace CynapCRM.Services.AuthAPI.Service
                 PhoneNumber = user.PhoneNumber ?? "",
                 Adresse = user.Adresse ?? "",
                 Role = role,
-                IsDeleted = user.IsDeleted
+                IsDeleted = user.IsDeleted,
+                TypeClient = GetTypeClient(user),
+                IdRegion = user.IdRegion
             };
         }
 
@@ -247,38 +264,32 @@ namespace CynapCRM.Services.AuthAPI.Service
         }
         public async Task<LoginResponseDto> ChangeRole(ChangeRoleDto model)
         {
-
-
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null || user.IsDeleted)
-                return null;
 
-            // Delete old roles
+            // ✅ retourne objet vide au lieu de null
+            if (user == null || user.IsDeleted)
+                return new LoginResponseDto { User = null, Token = "" };
+
             var currentRoles = await _userManager.GetRolesAsync(user);
             if (currentRoles.Any())
                 await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
             var roleName = model.NewRole.ToString();
 
-            // Create the role if necessary
             if (!await _roleManager.RoleExistsAsync(roleName))
             {
                 var roleResult = await _roleManager.CreateAsync(
                     new IdentityRole<int> { Name = roleName });
 
                 if (!roleResult.Succeeded)
-                    return null;
+                    return new LoginResponseDto { User = null, Token = "" }; // ✅
             }
 
-            // Add the new role
             var result = await _userManager.AddToRoleAsync(user, roleName);
             if (!result.Succeeded)
-                return null;
+                return new LoginResponseDto { User = null, Token = "" }; // ✅
 
-            // Retrieve updated roles
             var updatedRoles = await _userManager.GetRolesAsync(user);
-
-            // GENERATE A NEW TOKEN
             var newToken = _jwtTokenGenerator.GenerateToken(user, updatedRoles);
 
             return new LoginResponseDto
@@ -290,11 +301,11 @@ namespace CynapCRM.Services.AuthAPI.Service
                     Name = user.Name,
                     PhoneNumber = user.PhoneNumber,
                     Adresse = user.Adresse,
-                    Role = updatedRoles.FirstOrDefault() ?? ""
+                    Role = updatedRoles.FirstOrDefault() ?? "",
+                    IdRegion = user.IdRegion
                 },
                 Token = newToken
             };
-
         }
         public async Task<bool> ChangePassword(ChangePasswordDto model)
         {
@@ -354,13 +365,75 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                 };
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            // Decode the token robustly
+            var decodedToken = model.Token;
+            
+            // 1. Unescape URL and fix spaces that might have replaced '+' signs
+            decodedToken = Uri.UnescapeDataString(decodedToken).Replace(" ", "+");
+
+            // 2. ASP.NET Core Identity tokens typically start with "CfDJ"
+            if (!decodedToken.StartsWith("CfDJ"))
+            {
+                try 
+                {
+                    // Try standard Base64 decoding
+                    var bytes = Convert.FromBase64String(decodedToken);
+                    var decodedString = Encoding.UTF8.GetString(bytes);
+                    if (decodedString.StartsWith("CfDJ"))
+                    {
+                        decodedToken = decodedString;
+                    }
+                }
+                catch 
+                {
+                    try
+                    {
+                        // Try Base64Url decoding (standard ASP.NET Core approach)
+                        var bytes = WebEncoders.Base64UrlDecode(decodedToken);
+                        var decodedString = Encoding.UTF8.GetString(bytes);
+                        if (decodedString.StartsWith("CfDJ"))
+                        {
+                            decodedToken = decodedString;
+                        }
+                    }
+                    catch { }
+                }
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
             if (!result.Succeeded)
             {
+                // Separate token errors from password policy errors
+                var passwordErrors = result.Errors
+                    .Where(e => e.Code != "InvalidToken")
+                    .ToList();
+
+                if (passwordErrors.Count == 0)
+                {
+                    // Only the token itself was invalid
+                    return new ResponseDto
+                    {
+                        IsSuccess = false,
+                        Message = "Lien de réinitialisation invalide ou expiré."
+                    };
+                }
+
+                // Password does not meet the policy — return translated messages
+                var message = string.Join(" ", passwordErrors.Select(e => e.Code switch
+                {
+                    "PasswordTooShort"                => "Le mot de passe est trop court (minimum 6 caractères).",
+                    "PasswordRequiresDigit"           => "Ajoutez au moins un chiffre (0–9).",
+                    "PasswordRequiresUpper"           => "Ajoutez au moins une lettre majuscule (A–Z).",
+                    "PasswordRequiresLower"           => "Ajoutez au moins une lettre minuscule (a–z).",
+                    "PasswordRequiresNonAlphanumeric" => "Ajoutez au moins un caractère spécial (ex. @ # ! %).",
+                    "PasswordRequiresUniqueChars"     => "Utilisez des caractères plus variés.",
+                    _                                 => e.Description
+                }));
+
                 return new ResponseDto
                 {
                     IsSuccess = false,
-                    Message = "Lien de réinitialisation invalide ou expiré."
+                    Message = message
                 };
             }
 
@@ -402,17 +475,31 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                 .AsNoTracking()
                 .ToListAsync();
 
-            return users.Select(u => new UserDto
+            var result = new List<UserDto>();
+
+            // ✅ rôle maintenant chargé pour chaque utilisateur
+            foreach (var user in users)
             {
-                Id = u.Id,
-                Email = u.Email,
-                Name = u.Name,
-                PhoneNumber = u.PhoneNumber,
-                Adresse = u.Adresse,
-                Role = "" 
-            });
+                var roles = await _userManager.GetRolesAsync(user);
+                result.Add(new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Adresse = user.Adresse,
+                    Role = roles.FirstOrDefault() ?? "",
+                    IsDeleted = user.IsDeleted,
+                    TypeClient = GetTypeClient(user),
+                    IdRegion = user.IdRegion
+                });
+            }
+
+            return result;
         }
-        public async Task<IEnumerable<UserDto>> SearchUsersAsync(string keyword, bool? isActive = null)
+        public async Task<IEnumerable<UserDto>> SearchUsersAsync(
+    string keyword,
+    bool? isActive = null)
         {
             var lower = keyword?.Trim().ToLower() ?? string.Empty;
 
@@ -427,9 +514,7 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
             }
 
             if (isActive.HasValue)
-            {
                 query = query.Where(u => u.IsDeleted == !isActive.Value);
-            }
 
             var users = await query.AsNoTracking().ToListAsync();
             var result = new List<UserDto>();
@@ -439,13 +524,67 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                 var roles = await _userManager.GetRolesAsync(user);
                 result.Add(new UserDto
                 {
-                    Id        = user.Id,
-                    Email     = user.Email,
-                    Name      = user.Name,
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
                     PhoneNumber = user.PhoneNumber,
-                    Adresse   = user.Adresse,
-                    Role      = roles.FirstOrDefault() ?? "",
-                    IsDeleted = user.IsDeleted
+                    Adresse = user.Adresse,
+                    Role = roles.FirstOrDefault() ?? "",
+                    IsDeleted = user.IsDeleted,
+                    TypeClient = GetTypeClient(user),
+                    IdRegion = user.IdRegion
+                });
+            }
+
+            return result;
+        }
+
+        public async Task<IEnumerable<UserDto>> GetUsersByRoleAsync(string role)
+        {
+            var users = await _userManager.GetUsersInRoleAsync(role);
+            var result = new List<UserDto>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                result.Add(new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Adresse = user.Adresse,
+                    Role = roles.FirstOrDefault() ?? "",
+                    IsDeleted = user.IsDeleted,
+                    TypeClient = GetTypeClient(user),
+                    IdRegion = user.IdRegion
+                });
+            }
+
+            return result;
+        }
+
+        public async Task<IEnumerable<UserDto>> GetUsersByRegionAsync(int idRegion)
+        {
+            var users = await _userManager.Users
+                .Where(u => u.IdRegion == idRegion && !u.IsDeleted)
+                .ToListAsync();
+
+            var result = new List<UserDto>();
+            foreach (var u in users)
+            {
+                var roles = await _userManager.GetRolesAsync(u);
+                result.Add(new UserDto
+                {
+                    Id          = u.Id,
+                    Name        = u.Name,
+                    Email       = u.Email ?? "",
+                    PhoneNumber = u.PhoneNumber ?? "",
+                    Adresse     = u.Adresse,
+                    Role        = roles.FirstOrDefault() ?? "",
+                    IdRegion    = u.IdRegion,
+                    IsDeleted   = u.IsDeleted,
+                    TypeClient  = GetTypeClient(u)
                 });
             }
             return result;
@@ -470,12 +609,70 @@ public async Task<ResponseDto> GeneratePasswordResetToken(string email)
                     Name = user.Name,
                     PhoneNumber = user.PhoneNumber,
                     Adresse = user.Adresse,
-                    Role = roles.FirstOrDefault() ?? "" ,
-                    IsDeleted = user.IsDeleted
-
+                    Role = roles.FirstOrDefault() ?? "",
+                    IsDeleted = user.IsDeleted,
+                    TypeClient = GetTypeClient(user),
+                    IdRegion = user.IdRegion
                 });
             }
             return result;
         }
+        private static string? GetTypeClient(Utilisateur user) => user switch
+        {
+            Pharmacien => "PHARMACIEN",
+            Grossiste  => "GROSSISTE",
+            _          => null
+        };
+
+        public async Task<ResponseDto> UpdateProfileAsync(UpdateProfileDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null || user.IsDeleted)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "Utilisateur introuvable."
+                };
+            }
+
+            // Mise à jour des champs modifiables
+            user.Name = model.Name ?? user.Name;
+            user.PhoneNumber = model.PhoneNumber ?? user.PhoneNumber;
+            user.Adresse = model.Adresse ?? user.Adresse;
+            if (model.IdRegion.HasValue)
+                user.IdRegion = model.IdRegion;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = result.Errors.FirstOrDefault()?.Description
+                };
+            }
+
+            // Retourner les données mises à jour
+            var roles = await _userManager.GetRolesAsync(user);
+            return new ResponseDto
+            {
+                IsSuccess = true,
+                Message = "Profil mis à jour avec succès.",
+                Result = new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Adresse = user.Adresse,
+                    Role = roles.FirstOrDefault() ?? "",
+                    IdRegion = user.IdRegion
+                }
+            };
+        }
+        
     }
 }

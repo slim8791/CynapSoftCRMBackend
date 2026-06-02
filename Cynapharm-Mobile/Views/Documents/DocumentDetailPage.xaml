@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Documents"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Documents.DocumentDetailPage"
+             x:DataType="vm:DocumentDetailViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Partager" Command="{Binding ShareCommand}" IconImageSource="share.png" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <controls:AppHeader Grid.Row="0"
+                            Title="{Binding Title}"
+                            ShowBackButton="True" />
+
+        <!-- ── Body ──────────────────────────────────────────────────────── -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,16,16,8" Spacing="14">
+
+                <controls:ErrorBanner Message="{Binding ErrorMessage}" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Color="{StaticResource Primary}"
+                                   HorizontalOptions="Center" />
+
+                <!-- ── Facture ────────────────────────────────────────────── -->
+                <Border Style="{StaticResource CardStyle}" Padding="16,14"
+                        IsVisible="{Binding IsFacture}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                            <BoxView Grid.Column="0" BackgroundColor="{StaticResource Primary}"
+                                     CornerRadius="2" WidthRequest="4" />
+                            <Label Grid.Column="1" Text="Facture"
+                                   FontSize="13" FontAttributes="Bold"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                        <Label Text="{Binding Facture.NumeroFacture}"
+                               FontSize="22" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource TextPrimary}" />
+                        <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" RowSpacing="14">
+                            <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="3">
+                                <Label Text="Date" FontSize="11" TextColor="{StaticResource TextMuted}" />
+                                <Label Text="{Binding Facture.DateFacture, StringFormat='{0:dd/MM/yyyy}'}"
+                                       FontSize="14" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="3">
+                                <Label Text="Montant HT" FontSize="11" TextColor="{StaticResource TextMuted}" />
+                                <Label Text="{Binding Facture.MontantHT, StringFormat='{0:N3} TND'}"
+                                       FontSize="14" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="3">
+                                <Label Text="TVA" FontSize="11" TextColor="{StaticResource TextMuted}" />
+                                <Label Text="{Binding Facture.TVA, StringFormat='{0:N3} TND'}"
+                                       FontSize="14" TextColor="{StaticResource TextPrimary}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <!-- Total TTC highlighted -->
+                        <Border BackgroundColor="{StaticResource PrimaryLight}"
+                                StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                                Padding="14,12">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="Montant TTC"
+                                       FontSize="13" FontAttributes="Bold"
+                                       TextColor="{StaticResource PrimaryText}"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Facture.MontantTTC, StringFormat='{0:N3} TND'}"
+                                       FontSize="22" FontAttributes="Bold"
+                                       TextColor="{StaticResource Primary}" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── Bon de commande ────────────────────────────────────── -->
+                <Border Style="{StaticResource CardStyle}" Padding="16,14"
+                        IsVisible="{Binding IsBonCommande}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                            <BoxView Grid.Column="0" BackgroundColor="{StaticResource Accent}"
+                                     CornerRadius="2" WidthRequest="4" />
+                            <Label Grid.Column="1" Text="Bon de commande"
+                                   FontSize="13" FontAttributes="Bold"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                        <Label Text="{Binding BonCommande.NumeroBon}"
+                               FontSize="22" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource TextPrimary}" />
+                        <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="Date d'émission" FontSize="11" TextColor="{StaticResource TextMuted}" />
+                            <Label Text="{Binding BonCommande.DateEmission, StringFormat='{0:dd/MM/yyyy}'}"
+                                   FontSize="14" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── Bon de livraison ───────────────────────────────────── -->
+                <Border Style="{StaticResource CardStyle}" Padding="16,14"
+                        IsVisible="{Binding IsBonLivraison}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                            <BoxView Grid.Column="0" BackgroundColor="{StaticResource TextSecondary}"
+                                     CornerRadius="2" WidthRequest="4" />
+                            <Label Grid.Column="1" Text="Bon de livraison"
+                                   FontSize="13" FontAttributes="Bold"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                        <Label Text="{Binding BonLivraison.NumeroBon}"
+                               FontSize="22" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource TextPrimary}" />
+                        <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="Date de livraison" FontSize="11" TextColor="{StaticResource TextMuted}" />
+                            <Label Text="{Binding BonLivraison.DateLivraison, StringFormat='{0:dd/MM/yyyy}'}"
+                                   FontSize="14" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- ── Sticky share button ────────────────────────────────────────── -->
+        <Grid Grid.Row="2" BackgroundColor="{StaticResource CardBackground}">
+            <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}"
+                     VerticalOptions="Start" />
+            <Button Text="🔗  Partager ce document"
+                    Command="{Binding ShareCommand}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Margin="16,12,16,28" />
+        </Grid>
+
+        <controls:AppLoader Grid.RowSpan="3" />
+    </Grid>
+</ContentPage>

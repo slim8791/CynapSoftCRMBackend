@@ -71,17 +71,8 @@ export class PromotionListComponent implements OnInit, OnDestroy {
   private load(): void {
     this.loading = true;
     this.svc.getAll().pipe(takeUntil(this.destroy$)).subscribe({
-      next: data => {
-        this.promotions = data;
-        console.log('Promotions chargées :', this.promotions); // Debug log
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.error = 'Erreur lors du chargement des promotions.';
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
+      next: data => { this.promotions = data.filter(p => !this.isExpired(p)); this.loading = false; this.cdr.markForCheck(); },
+      error: () => { this.error = 'Erreur lors du chargement des promotions.'; this.loading = false; this.cdr.markForCheck(); }
     });
   }
 

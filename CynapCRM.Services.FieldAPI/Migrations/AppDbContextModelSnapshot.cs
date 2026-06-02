@@ -103,11 +103,23 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     b.Property<DateTime>("DateRapport")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("IdSuperviseurValidateur")
+                        .HasColumnType("int");
+
                     b.Property<int>("Id_User_Delegue")
                         .HasColumnType("int");
 
                     b.Property<int>("Id_Visite")
                         .HasColumnType("int");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("ProduitsDiscutes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Resultat")
                         .IsRequired()
@@ -131,10 +143,11 @@ namespace CynapCRM.Services.FieldAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Region"));
 
-                    b.Property<int>("CodePostal")
-                        .HasColumnType("int");
+                    b.Property<string>("CodePostal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Id_User_Delegue")
+                    b.Property<int?>("Id_Superviseur")
                         .HasColumnType("int");
 
                     b.Property<string>("NomRegion")
@@ -145,7 +158,7 @@ namespace CynapCRM.Services.FieldAPI.Migrations
 
                     b.HasIndex("CodePostal");
 
-                    b.HasIndex("Id_User_Delegue");
+                    b.HasIndex("Id_Superviseur");
 
                     b.ToTable("Regions");
                 });
@@ -159,6 +172,9 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Visite"));
 
                     b.Property<DateTime>("DateVisite")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("HeureDebut")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("Id_Medecin")
@@ -177,6 +193,9 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsStarted")
                         .HasColumnType("bit");
 
                     b.Property<int>("Type")

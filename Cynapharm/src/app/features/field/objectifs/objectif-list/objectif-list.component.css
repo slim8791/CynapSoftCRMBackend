@@ -11,6 +11,9 @@
     .error-banner { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 8px; font-size: 14px; display: flex; align-items: center; gap: 12px; }
     .retry-btn { background: none; border: 1px solid #dc2626; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
     .retry-btn:hover { background: #dc2626; color: #fff; }
+    .filter-bar { display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:12px 14px; margin:16px 0; }
+    .filter-bar label { font-size:12px; font-weight:600; color:#6b7280; }
+    .filter-bar select { min-width:240px; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; }
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
     .obj-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.05); display: flex; flex-direction: column; gap: 12px; }
     .obj-top { display: flex; align-items: flex-start; justify-content: space-between; }
@@ -31,4 +34,80 @@
     .link-btn { font-size: 13px; color: #6366f1; text-decoration: none; font-weight: 500; }
     .link-btn:hover { text-decoration: underline; }
     .mono { font-family: monospace; }
+
+    /* ── Action buttons ──────────────────────────────────── */
+    .action-row { display: flex; gap: 6px; }
+    .act-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #64748b;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .act-btn svg { width: 15px; height: 15px; }
+    .act-btn.edit:hover { background: #f0f9ff; border-color: #00b4d8; color: #0077b6; }
+    .act-btn.delete:hover { background: #fef2f2; border-color: #f87171; color: #e11d48; }
+
+    /* ── Modal ───────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: overlayIn 0.15s ease;
+    }
+    @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-box {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 36px 32px;
+      max-width: 420px;
+      width: 92%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      text-align: center;
+      animation: modalPop 0.3s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.92) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-icon-danger {
+      width: 60px;
+      height: 60px;
+      background: #fef2f2;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .modal-icon-danger svg { width: 28px; height: 28px; color: #e11d48; stroke: #e11d48; }
+    .modal-title { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 10px; }
+    .modal-body { font-size: 15px; color: #64748b; line-height: 1.6; margin: 0 0 28px; }
+    .modal-actions { display: flex; gap: 12px; justify-content: center; }
+    .btn-cancel {
+      padding: 12px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc;
+      font-size: 14px; font-weight: 600; cursor: pointer; color: #475569; transition: all 0.2s;
+    }
+    .btn-cancel:hover { background: #f1f5f9; }
+    .btn-confirm-danger {
+      padding: 12px 24px; background: #e11d48; color: #ffffff; border: none; border-radius: 12px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-confirm-danger:hover { background: #be123c; }
+    .spinner-sm {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #ffffff;
+      border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block;
+    }
   

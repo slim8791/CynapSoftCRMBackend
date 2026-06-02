@@ -11,5 +11,7 @@
 
         public string TypeDocument { get; set; } = string.Empty;
 
+        public string? CloudinaryUrl { get; set; }
+
     }
 }

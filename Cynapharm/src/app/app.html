@@ -5,10 +5,19 @@
 
     <!-- Brand -->
     <div class="sidebar-brand">
-      <div class="brand-icon-box">
-        <i class="ti ti-circle-plus" aria-hidden="true"></i>
+      <div class="brand-icon">
+        <svg viewBox="0 0 40 40" fill="none" style="width: 28px; height: 28px;">
+          <circle cx="20" cy="20" r="20" fill="rgba(0,180,216,0.18)"/>
+          <g transform="rotate(-30 11 13)">
+            <rect x="8" y="6" width="6" height="14" rx="3" fill="none" stroke="#00b4d8" stroke-width="2"/>
+            <line x1="8" y1="13" x2="14" y2="13" stroke="#00b4d8" stroke-width="2"/>
+          </g>
+          <path d="M 23 21 C 23 11, 32 9, 32 9 C 32 17, 27 21, 23 21 Z" fill="#00b4d8"/>
+          <rect x="12" y="21" width="16" height="4" rx="1" fill="#00b4d8"/>
+          <path d="M 14 25 V 29 A 3 3 0 0 0 17 32 H 23 A 3 3 0 0 0 26 29 V 25" fill="none" stroke="#00b4d8" stroke-width="2"/>
+        </svg>
       </div>
-      <span class="brand-name">Cynap<strong>harm</strong></span>
+      <span class="brand-name">Cyna<strong>Pharm</strong></span>
     </div>
 
     <!-- Navigation -->
@@ -16,7 +25,7 @@
 
       <!-- Dashboard -->
       <a routerLink="/dashboard" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-layout-dashboard nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
         <span class="nav-label">Dashboard</span>
       </a>
 
@@ -27,15 +36,15 @@
       </div>
 
       <a routerLink="/products" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-pill nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
         <span class="nav-label">Produits</span>
       </a>
       <a routerLink="/lots" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-package nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="M3.3 7l8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
         <span class="nav-label">Lots</span>
       </a>
-      <a routerLink="/promotions" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-tag nav-icon" aria-hidden="true"></i>
+      <a routerLink="/promotions" routerLinkActive="nav-active" class="nav-item" *ngIf="isAdmin || isSuperviseur">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
         <span class="nav-label">Promotions</span>
       </a>
 
@@ -46,11 +55,11 @@
       </div>
 
       <a routerLink="/orders" routerLinkActive="nav-active" [routerLinkActiveOptions]="{exact:true}" class="nav-item">
-        <i class="ti ti-shopping-cart nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
         <span class="nav-label">Commandes</span>
       </a>
       <a routerLink="/orders/reclamations" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-alert-triangle nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
         <span class="nav-label">Réclamations</span>
       </a>
 
@@ -61,19 +70,19 @@
       </div>
 
       <a routerLink="/inventory/stocks" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-building-store nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         <span class="nav-label">Stocks délégués</span>
       </a>
       <a routerLink="/inventory/movements" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-arrows-exchange nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
         <span class="nav-label">Mouvements</span>
       </a>
       <a routerLink="/inventory/distributions" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-flask nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
         <span class="nav-label">Distributions</span>
       </a>
-      <a routerLink="/inventory/promo-stocks" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-gift nav-icon" aria-hidden="true"></i>
+      <a routerLink="/inventory/promo-stocks" routerLinkActive="nav-active" class="nav-item" *ngIf="isAdmin || isSuperviseur">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
         <span class="nav-label">Promo-stocks</span>
       </a>
 
@@ -83,91 +92,107 @@
         <div class="nav-section-line"></div>
       </div>
 
-      <a routerLink="/field/visites" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-map-pin nav-icon" aria-hidden="true"></i>
-        <span class="nav-label">Visites</span>
-      </a>
+      @if (isDelegue) {
+        <a routerLink="/field/visites" routerLinkActive="nav-active" class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span class="nav-label">Visites</span>
+        </a>
+      }
+      @if (isAdmin || isSuperviseur) {
+        <a routerLink="/field/visites/all" routerLinkActive="nav-active" class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="14" x2="10" y2="14"></line><line x1="14" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="10" y2="18"></line><line x1="14" y1="18" x2="16" y2="18"></line></svg>
+          <span class="nav-label">Toutes les visites</span>
+        </a>
+      }
       <a routerLink="/field/plannings" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-calendar-event nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
         <span class="nav-label">Plannings</span>
       </a>
       <a routerLink="/field/rapports" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-file-text nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
         <span class="nav-label">Rapports</span>
       </a>
       <a routerLink="/field/objectifs" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-target nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
         <span class="nav-label">Objectifs</span>
       </a>
       <a routerLink="/field/regions" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-map-2 nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
         <span class="nav-label">Régions</span>
       </a>
       <a routerLink="/field/kpi" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-chart-line nav-icon" aria-hidden="true"></i>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
         <span class="nav-label">KPI</span>
       </a>
 
-      <!-- ── Documents ── -->
-      <div class="nav-section">
+      <!-- ── Documents (BC, BL, Factures) — ADMIN / SUPERVISEUR only ── -->
+      <div class="nav-section" *ngIf="isAdmin || isSuperviseur">
         <span class="nav-section-title">Documents</span>
         <div class="nav-section-line"></div>
       </div>
 
-      <a routerLink="/documents/bons-commandes" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-clipboard-list nav-icon" aria-hidden="true"></i>
+      <a routerLink="/documents/bons-commandes" routerLinkActive="nav-active" class="nav-item" *ngIf="isAdmin || isSuperviseur">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
         <span class="nav-label">Bons commande</span>
       </a>
-      <a routerLink="/documents/bons-livraison" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-truck-delivery nav-icon" aria-hidden="true"></i>
+      <a routerLink="/documents/bons-livraison" routerLinkActive="nav-active" class="nav-item" *ngIf="isAdmin || isSuperviseur">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
         <span class="nav-label">Bons livraison</span>
       </a>
-      <a routerLink="/documents/factures" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-receipt nav-icon" aria-hidden="true"></i>
+      <a routerLink="/documents/factures" routerLinkActive="nav-active" class="nav-item" *ngIf="isAdmin || isSuperviseur">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
         <span class="nav-label">Factures</span>
       </a>
 
-      <!-- ── Admin ── -->
-      <div class="nav-section">
+      <!-- ── Admin — ADMIN only ── -->
+      <div class="nav-section" *ngIf="isAdmin || isSuperviseur">
         <span class="nav-section-title">Admin</span>
         <div class="nav-section-line"></div>
       </div>
 
-      <a routerLink="/users" routerLinkActive="nav-active" class="nav-item">
-        <i class="ti ti-users nav-icon" aria-hidden="true"></i>
+      <a routerLink="/users" routerLinkActive="nav-active" class="nav-item" *ngIf="isAdmin || isSuperviseur">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         <span class="nav-label">Utilisateurs</span>
       </a>
 
-      <!-- ── Bas ── -->
-      <div class="nav-spacer"></div>
-
-      <div class="nav-bottom">
-        <a routerLink="/settings" routerLinkActive="nav-active" class="nav-item">
-          <i class="ti ti-settings nav-icon" aria-hidden="true"></i>
-          <span class="nav-label">Paramètres</span>
-        </a>
-        <a href="#" class="nav-item nav-logout" (click)="logout(); $event.preventDefault()">
-          <i class="ti ti-logout nav-icon" aria-hidden="true"></i>
-          <span class="nav-label">Déconnexion</span>
-        </a>
-      </div>
-
     </nav>
 
-    <!-- User strip -->
-    <div class="sidebar-user">
-      <div class="user-avatar">AD</div>
-      <div class="user-info">
-        <span class="user-name">Admin Délégué</span>
-        <span class="user-role">Administrateur</span>
+    <!-- User strip wrapper -->
+    <div class="sidebar-user-wrapper">
+
+      <!-- Popup menu -->
+      <div class="user-popup" *ngIf="showUserMenu">
+        <a routerLink="/settings" class="user-popup-item" (click)="closeUserMenu()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-2.82.33 1.65 1.65 0 0 0 0 1.82 2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83c.5-.5.78-1.15.78-1.82s-.28-1.32-.78-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 2.82-.33 1.65 1.65 0 0 0 0-1.82 2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 2.82z"></path></svg>
+          Paramètres
+        </a>
+        <div class="user-popup-divider"></div>
+        <button class="user-popup-item danger" (click)="logout(); closeUserMenu()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          Se déconnecter
+        </button>
       </div>
-      <i class="ti ti-chevron-up user-chevron" aria-hidden="true"></i>
+
+      <!-- User strip -->
+      <div class="sidebar-user" (click)="toggleUserMenu()">
+        <div class="user-avatar">{{ userInitials }}</div>
+        <div class="user-info">
+          <span class="user-name">{{ currentUser?.name || 'Utilisateur' }}</span>
+          <span class="user-role">{{ currentUser?.role || '—' }}</span>
+        </div>
+        <svg class="user-chevron" [class.rotated]="showUserMenu"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+      </div>
+
     </div>
 
   </aside>
 
   <!-- ── Main ──────────────────────────────────── -->
   <main class="main-content">
+    <app-toast></app-toast>
     <router-outlet></router-outlet>
   </main>
 

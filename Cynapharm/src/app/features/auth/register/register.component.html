@@ -1,69 +1,71 @@
 <div class="register-container">
-  <app-card title="Create a Cynapharm Account">
+  <app-card title="Créer un compte Cynapharm">
 
     <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
 
-      <!-- ✅ Name -->
+      <!-- Nom complet -->
       <div class="form-group">
-        <label>Name</label>
-        <input class="form-control" formControlName="name" />
+        <label>Nom complet</label>
+        <input class="form-control" formControlName="name" placeholder="Prénom Nom" />
       </div>
 
-      <!-- ✅ Email -->
+      <!-- Email -->
       <div class="form-group">
-        <label>Email</label>
-        <input class="form-control" formControlName="email" />
+        <label>Adresse email</label>
+        <input class="form-control" type="email" formControlName="email" placeholder="votre@email.com" />
       </div>
 
-      <!-- ✅ Password -->
+      <!-- Mot de passe -->
       <div class="form-group">
-        <label>Password</label>
-        <input type="password" class="form-control" formControlName="password" />
+        <label>Mot de passe</label>
+        <input type="password" class="form-control" formControlName="password" placeholder="6 caractères minimum avec un caractère spécial" />
+        <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('pattern')" class="field-error">
+          Le mot de passe doit contenir au moins un caractère non alphanumérique (ex. !, @, #).
+        </div>
       </div>
 
-      <!-- ✅ Adresse -->
+      <!-- Adresse -->
       <div class="form-group">
         <label>Adresse</label>
-        <input class="form-control" formControlName="adresse" />
+        <input class="form-control" formControlName="adresse" placeholder="Ville, Pays" />
       </div>
 
-      <!-- ✅ Role -->
+      <!-- Rôle -->
       <div class="form-group">
-        <label>Role</label>
+        <label>Rôle</label>
         <select class="form-control" formControlName="role">
           <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
         </select>
       </div>
 
-      <!-- ✅ UserType (CLIENT uniquement) -->
+      <!-- Type d'utilisateur (CLIENT uniquement) -->
       <div class="form-group" *ngIf="registerForm.value.role === 'CLIENT'">
-        <label>User Type</label>
+        <label>Type d'utilisateur</label>
         <select class="form-control" formControlName="userType">
           <option *ngFor="let t of userTypes" [value]="t">{{ t }}</option>
         </select>
       </div>
 
-      <!-- ✅ Pharmacien -->
+      <!-- Pharmacien -->
       <div *ngIf="registerForm.value.userType === 'PHARMACIEN'">
-        <input class="form-control" placeholder="Nom Officine" formControlName="nomOfficine" />
-        <input class="form-control" placeholder="Type Pharmacie" formControlName="typePharmacie" />
+        <input class="form-control" placeholder="Nom de l'officine" formControlName="nomOfficine" />
+        <input class="form-control" placeholder="Type de pharmacie" formControlName="typePharmacie" />
       </div>
 
-      <!-- ✅ Grossiste -->
+      <!-- Grossiste -->
       <div *ngIf="registerForm.value.userType === 'GROSSISTE'">
-        <input class="form-control" placeholder="Raison Sociale" formControlName="raisonSociale" />
+        <input class="form-control" placeholder="Raison sociale" formControlName="raisonSociale" />
       </div>
 
       <app-button
-  type="submit"
-  label="Register"
-  variant="primary"
-  [disabled]="registerForm.invalid || loading">
-</app-button>
-
+        type="submit"
+        label="S'inscrire"
+        variant="primary"
+        [disabled]="registerForm.invalid || loading">
+      </app-button>
 
       <div *ngIf="error" class="error">{{ error }}</div>
-      <div *ngIf="success" class="success">Utilisateur créé avec succès ✅</div>
+      <div *ngIf="success" class="success">Compte créé avec succès. Redirection vers la connexion…</div>
 
     </form>
 

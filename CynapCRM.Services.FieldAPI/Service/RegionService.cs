@@ -25,9 +25,9 @@ namespace CynapCRM.Services.FieldAPI.Service
             {
                 region = new Region
                 {
-                    NomRegion = dto.NomRegion,
-                    CodePostal = dto.CodePostal,
-                    Id_User_Delegue = dto.Id_User_Delegue
+                    NomRegion      = dto.NomRegion,
+                    CodePostal     = dto.CodePostal,
+                    Id_Superviseur = dto.Id_Superviseur
                 };
 
                 _db.Regions.Add(region);
@@ -40,8 +40,9 @@ namespace CynapCRM.Services.FieldAPI.Service
                 if (region == null)
                     return null;
 
-                region.NomRegion = dto.NomRegion;
-                region.CodePostal = dto.CodePostal;
+                region.NomRegion      = dto.NomRegion;
+                region.CodePostal     = dto.CodePostal;
+                region.Id_Superviseur = dto.Id_Superviseur;
 
             }
             await _db.SaveChangesAsync();
@@ -57,11 +58,17 @@ namespace CynapCRM.Services.FieldAPI.Service
             return region == null ? null : _mapper.Map<RegionDto>(region);
         }
 
-        public async Task<IEnumerable<RegionDto>> GetRegionsByDelegueAsync(int idDelegue)
+        // NOTE: the Region entity has no Delegue FK — a delegue's region is stored
+        // on the User entity (User.idRegion) in the AuthAPI, not here.
+        // This endpoint cannot resolve the delegue→region link from this service alone.
+        public Task<IEnumerable<RegionDto>> GetRegionsByDelegueAsync(int idDelegue)
+            => Task.FromResult(Enumerable.Empty<RegionDto>());
+
+        public async Task<IEnumerable<RegionDto>> GetRegionsBySuperviseurAsync(int idSuperviseur)
         {
             var list = await _db.Regions
                 .AsNoTracking()
-                .Where(r => r.Id_User_Delegue == idDelegue)
+                .Where(r => r.Id_Superviseur == idSuperviseur)
                 .OrderBy(r => r.NomRegion)
                 .ToListAsync();
 
@@ -70,20 +77,24 @@ namespace CynapCRM.Services.FieldAPI.Service
 
         public async Task<bool> DeleteRegionAsync(int idRegion)
         {
-            var region = await _db.Regions.FirstOrDefaultAsync(r => r.Id_Region == idRegion);
+            var region = await _db.Regions
+                .FirstOrDefaultAsync(r => r.Id_Region == idRegion);
             if (region == null) return false;
+
+            // Vérifier si des visites ou plannings sont liés
+            var hasVisites = await _db.Visites
+                .AnyAsync(v => v.Id_Region == idRegion); // si FK existe
+            if (hasVisites) return false;
 
             _db.Regions.Remove(region);
             await _db.SaveChangesAsync();
             return true;
         }
 
-        
+
         public async Task<int> GetNombreRegionsCouvreAsync(int idDelegue)
         {
-
-            return await _db.Regions.CountAsync(r => r.Id_User_Delegue == idDelegue);
-
+            return await _db.Regions.CountAsync(r => r.Id_Superviseur == idDelegue);
         }
 
 

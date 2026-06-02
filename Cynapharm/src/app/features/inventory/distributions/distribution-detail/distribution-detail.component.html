@@ -25,12 +25,12 @@
             <span class="value mono">{{ item.id_Distribution ?? '—' }}</span>
           </div>
           <div class="detail-item">
-            <span class="label">Délégué (ID)</span>
-            <span class="value">{{ item.id_Delegue }}</span>
+            <span class="label">Délégué</span>
+            <span class="value">{{ delegueName || '—' }}</span>
           </div>
           <div class="detail-item">
-            <span class="label">Stock (ID)</span>
-            <span class="value">{{ item.id_Stock }}</span>
+            <span class="label">Stock</span>
+            <span class="value">{{ stockLabel || '—' }}</span>
           </div>
           <div class="detail-item">
             <span class="label">Quantité</span>
@@ -45,16 +45,17 @@
             <span class="value">{{ item.dateDistribution | date:'dd/MM/yyyy HH:mm' }}</span>
           </div>
           <div class="detail-item">
-            <span class="label">Médecin (ID)</span>
-            <span class="value">{{ item.id_Medecin ?? '—' }}</span>
+            <span class="label">Médecin</span>
+            <span class="value">{{ medecinName || '—' }}</span>
           </div>
           <div class="detail-item">
-            <span class="label">Pharmacien (ID)</span>
-            <span class="value">{{ item.id_Pharmacien ?? '—' }}</span>
+            <span class="label">Pharmacien</span>
+            <span class="value">{{ pharmacienName || '—' }}</span>
           </div>
         </div>
         <div class="actions">
           <a routerLink="/inventory/distributions" class="btn btn-secondary">Retour à la liste</a>
+          <button class="btn btn-danger" (click)="onDelete()">Supprimer</button>
         </div>
       </div>
     </div>

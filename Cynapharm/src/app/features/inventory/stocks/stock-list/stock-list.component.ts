@@ -1,145 +1,181 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, forkJoin, of } from 'rxjs';
-import { takeUntil, catchError } from 'rxjs/operators';
+import { RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { StockService, StockDelegueDto } from '../services/stock.service';
-import { ProductService } from '../../../products/product.service';
 import { UserService } from '../../../users/user.service';
+import { ProductService } from '../../../products/product.service';
+import { LotService } from '../../../lots/lot.service';
+import { ToastService } from '../../../../shared/services/toast.service';
 import { StockType } from '../../../../core/models/enums';
 import { PaginatorComponent } from '../../../../shared/components/paginator/paginator.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
-import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-stock-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, PaginatorComponent, EmptyStateComponent],
+  imports: [CommonModule, FormsModule, RouterLink, PaginatorComponent, EmptyStateComponent],
   templateUrl: './stock-list.component.html',
   styleUrls: ['./stock-list.component.css']
 })
 export class StockListComponent implements OnInit, OnDestroy {
-
-  stocks:   StockDelegueDto[] = [];
+  stocks:    StockDelegueDto[] = [];
+  allStocks: StockDelegueDto[] = [];
   loading   = false;
   error     = '';
   page      = 1;
   pageSize  = 20;
   total     = 0;
 
-  productMap:  Map<number, string> = new Map();
-  delegateMap: Map<number, string> = new Map();
+  filterDelegueId: number | null = null;
+  filterProduitId:  number | null = null;
 
-  // Delete confirmation
-  showDeleteModal = false;
-  deletingStock:  StockDelegueDto | null = null;
-  deleting        = false;
+  // resolved display names / dates
+  delegueNames: Record<number, string> = {};
+  productNames: Record<number, string> = {};
+  lotDates:     Record<string, string> = {};
+
+  // delete modal
+  showDeleteModal  = false;
+  deletingStock:   StockDelegueDto | null = null;
+  deleting         = false;
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private svc:        StockService,
-    private productSvc: ProductService,
-    private userSvc:    UserService,
     private toast:      ToastService,
+    private userSvc:    UserService,
+    private productSvc: ProductService,
+    private lotSvc:     LotService,
     private cdr:        ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void  { this.loadAll(); }
+  ngOnInit():    void { this.load(); }
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 
-  private unwrapArray(r: any): any[] {
-    const raw = r?.result ?? r?.Result ?? r;
-    return Array.isArray(raw) ? raw : [];
-  }
-
-  private loadAll(): void {
+  load(): void {
     this.loading = true;
-    forkJoin({
-      stocks:   this.svc.getAll(this.page, this.pageSize).pipe(catchError(() => of([]))),
-      products: this.productSvc.getProducts().pipe(catchError(() => of([]))),
-      users:    this.userSvc.getUsers().pipe(catchError(() => of([]))),
-    }).pipe(takeUntil(this.destroy$)).subscribe({
-      next: ({ stocks, products, users }) => {
-
-        // Products: CamelCase API → id_Produit
-        this.productMap.clear();
-        this.unwrapArray(products).forEach((p: any) => {
-          const id  = p['id_Produit'] ?? p.Id_Produit ?? p.idProduit ?? 0;
-          const nom = p.nom ?? p.Nom ?? p.name ?? `Product ${id}`;
-          if (id) this.productMap.set(Number(id), nom);
-        });
-
-        // Users (delegates): already normalized by UserService
-        this.delegateMap.clear();
-        this.unwrapArray(users).forEach((u: any) => {
-          const id   = u.id ?? u.Id ?? u.userId ?? 0;
-          const name = u.name ?? u.Name ?? u.nom ?? `User ${id}`;
-          if (id) this.delegateMap.set(Number(id), name);
-        });
-
-        this.stocks  = stocks as StockDelegueDto[];
-        this.total   = this.stocks.length;
-        this.loading = false;
-        this.cdr.markForCheck();
+    this.svc.getAll(this.page, this.pageSize).pipe(takeUntil(this.destroy$)).subscribe({
+      next: data => {
+        this.allStocks = data;
+        this.loading   = false;
+        this.loadRelatedData(data);
+        this.applyFilters();
       },
-      error: () => {
-        this.error   = 'Error loading data.';
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
+      error: () => { this.error = 'Erreur lors du chargement.'; this.loading = false; this.cdr.markForCheck(); }
     });
   }
 
-  load():            void { this.loadAll(); }
   onPage(p: number): void { this.page = p; this.load(); }
 
-  productName(id: number):  string { return this.productMap.get(id)  ?? `Product #${id}`; }
-  delegateName(id: number): string { return this.delegateMap.get(id) ?? `Delegate #${id}`; }
+  // ── Delete ────────────────────────────────────────────
 
-  // ── Delete ──────────────────────────────────────────
   openDelete(s: StockDelegueDto): void {
     this.deletingStock   = s;
     this.showDeleteModal = true;
+    this.cdr.markForCheck();
   }
 
   cancelDelete(): void {
     this.showDeleteModal = false;
     this.deletingStock   = null;
+    this.cdr.markForCheck();
   }
 
   confirmDelete(): void {
     if (!this.deletingStock?.id_stock) return;
     this.deleting = true;
     this.svc.delete(this.deletingStock.id_stock, StockType.Delegue)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
+      .pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
-          this.toast.showSuccess('Stock entry deleted.');
+          this.toast.showSuccess('Stock supprimé.');
           this.showDeleteModal = false;
           this.deletingStock   = null;
           this.deleting        = false;
           this.load();
         },
         error: () => {
-          this.toast.showError('Error deleting stock entry.');
+          this.toast.showError('Erreur lors de la suppression.');
           this.deleting = false;
           this.cdr.markForCheck();
         }
       });
   }
 
-  stockStatus(s: StockDelegueDto): string {
-    if (s.qteDisponible === 0) return 'status-out';
-    if (s.qteDisponible <= 5)  return 'status-low';
-    return 'status-ok';
+  // ── Related data ──────────────────────────────────────
+
+  private loadRelatedData(stocks: StockDelegueDto[]): void {
+    const delegueIds = [...new Set(stocks.map(s => s.id_User_Delegue).filter(id => id > 0))];
+    delegueIds.forEach(id => {
+      if (this.delegueNames[id]) return;
+      this.userSvc.getUserById(id).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (res: any) => {
+          const u = res?.Result ?? res?.result ?? res;
+          this.delegueNames[id] =
+            u?.fullName ?? u?.FullName ?? u?.name ?? u?.Name ?? u?.email ?? `#${id}`;
+          this.cdr.markForCheck();
+        },
+        error: () => { this.delegueNames[id] = `#${id}`; }
+      });
+    });
+
+    const productIds = [...new Set(stocks.map(s => s.id_Produit).filter(id => id > 0))];
+    productIds.forEach(id => {
+      if (this.productNames[id]) return;
+      this.productSvc.getProductById(id).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (data: any) => {
+          const raw = data?.Result ?? data?.result ?? data;
+          this.productNames[id] = raw?.Nom ?? raw?.nom ?? `#${id}`;
+          this.cdr.markForCheck();
+        },
+        error: () => { this.productNames[id] = `#${id}`; }
+      });
+    });
+
+    const lots = [...new Set(stocks.map(s => s.numeroLot).filter(n => !!n))];
+    lots.forEach(num => {
+      if (this.lotDates[num]) return;
+      this.lotSvc.getLotByNumero(num).pipe(takeUntil(this.destroy$)).subscribe({
+        next: lot => { this.lotDates[num] = lot.dateExpiration ?? ''; this.cdr.markForCheck(); },
+        error: () => {}
+      });
+    });
   }
 
-  stockLabel(s: StockDelegueDto): string {
-    if (s.qteDisponible === 0) return 'Out of stock';
-    if (s.qteDisponible <= 5)  return 'Low';
-    return 'In stock';
+  getDelegrueName(id: number): string { return this.delegueNames[id] ?? `#${id}`; }
+  getProductName(id: number):  string { return this.productNames[id] ?? `#${id}`; }
+  getLotDate(num: string, fallback: string): string { return this.lotDates[num] ?? fallback; }
+
+  applyFilters(): void {
+    let result = this.allStocks;
+    if (this.filterDelegueId) {
+      result = result.filter(s => s.id_User_Delegue === +this.filterDelegueId!);
+    }
+    if (this.filterProduitId) {
+      result = result.filter(s => s.id_Produit === +this.filterProduitId!);
+    }
+    this.stocks = result;
+    this.total  = result.length;
+    this.cdr.markForCheck();
+  }
+
+  clearFilters(): void {
+    this.filterDelegueId = null;
+    this.filterProduitId  = null;
+    this.stocks = this.allStocks;
+    this.total  = this.allStocks.length;
+    this.cdr.markForCheck();
+  }
+
+  getDelegueEntries(): { id: number; name: string }[] {
+    return Object.entries(this.delegueNames).map(([id, name]) => ({ id: +id, name }));
+  }
+
+  getProductEntries(): { id: number; name: string }[] {
+    return Object.entries(this.productNames).map(([id, name]) => ({ id: +id, name }));
   }
 }

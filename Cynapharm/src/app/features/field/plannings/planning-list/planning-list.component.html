@@ -4,14 +4,75 @@
           <h1>Plannings</h1>
           <p class="subtitle">Plannings des délégués</p>
         </div>
-        <a routerLink="/field/plannings/new" class="btn btn-primary">+ Nouveau planning</a>
       </div>
 
       <div class="filter-bar">
-        <label>ID Délégué</label>
-        <input type="number" [(ngModel)]="delegueId" placeholder="Ex: 3" (keyup.enter)="load()" />
+        <label>Délégué</label>
+        <select [(ngModel)]="delegueId" (ngModelChange)="load()">
+          <option [ngValue]="null">-- Sélectionner un délégué --</option>
+          <option *ngFor="let d of delegues" [ngValue]="d.id ?? d.Id">{{ userName(d) }}</option>
+        </select>
         <button class="btn btn-outline" (click)="load()" [disabled]="!delegueId || loading">Rechercher</button>
       </div>
+
+<!-- ═══ MODAL : Confirmer la suppression ═══════════════════ -->
+@if (showDeleteModal && deletingItem) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+
+      <div class="modal-icon-danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </div>
+
+      <h3 class="modal-title">Supprimer le planning ?</h3>
+      <p class="modal-body">
+        Le planning du <strong>{{ deletingItem.date | date:'dd/MM/yyyy' }}</strong>
+        sera supprimé définitivement. Cette action est irréversible.
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelDelete()" [disabled]="deleting">Annuler</button>
+        <button class="btn-confirm-danger" (click)="confirmDelete()" [disabled]="deleting">
+          @if (deleting) { <span class="spinner-sm"></span> }
+          @else          { Supprimer }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ═══ MODAL : Confirmer l'activation ═══════════════════ -->
+@if (showActivateModal && activatingItem) {
+  <div class="modal-overlay" (click)="cancelActivate()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+
+      <div class="modal-icon-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+
+      <h3 class="modal-title">Activer le planning</h3>
+      <p class="modal-body">
+        Le planning du <strong>{{ activatingItem.date | date:'dd/MM/yyyy' }}</strong>
+        sera activé.
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelActivate()" [disabled]="activating">Annuler</button>
+        <button class="btn-confirm-success" (click)="confirmActivate()" [disabled]="activating">
+          @if (activating) { <span class="spinner-sm"></span> }
+          @else            { Activer }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
 
       <div *ngIf="loading" class="loading-wrap">
         <div class="spinner"></div><span>Chargement...</span>
@@ -27,7 +88,6 @@
         <table>
           <thead>
             <tr>
-              <th>ID</th>
               <th>Délégué</th>
               <th>Date</th>
               <th>Heure début</th>
@@ -38,21 +98,29 @@
           </thead>
           <tbody>
             <tr *ngFor="let p of plannings">
-              <td class="mono">{{ p.idPlanning }}</td>
-              <td>{{ p.id_User_Delegue }}</td>
+              <td>{{ delegueName(p.id_User_Delegue) }}</td>
               <td>{{ p.date | date:'dd/MM/yyyy' }}</td>
               <td>{{ p.heureDebut }}</td>
               <td>{{ p.heureFin }}</td>
               <td>
                 <span class="status-badge"
-                      [class.badge-pending]="p.etatPlanning === EtatPlanning.EnAttente"
-                      [class.badge-confirmed]="p.etatPlanning === EtatPlanning.Confirme"
-                      [class.badge-cancelled]="p.etatPlanning === EtatPlanning.Annule">
-                  {{ statusLabel(p.etatPlanning) }}
+                      [class.badge-pending]="p.etat === EtatPlanning.EnAttente"
+                      [class.badge-confirmed]="p.etat === EtatPlanning.Confirme"
+                      [class.badge-cancelled]="p.etat === EtatPlanning.Annule">
+                  {{ statusLabel(p.etat) }}
                 </span>
               </td>
               <td>
-                <a [routerLink]="['/field/plannings/edit', p.idPlanning]" class="link-btn">Modifier</a>
+                <div class="action-row">
+                  @if (isAdmin || isSuperviseur) {
+                    <button (click)="validatePlanning(p)" class="act-btn validate" [disabled]="p.etat === EtatPlanning.Confirme" [title]="p.etat === EtatPlanning.Confirme ? 'Confirmé' : 'Valider'">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </button>
+                    <button (click)="deletePlanning(p)" class="act-btn delete" [disabled]="p.etat === EtatPlanning.Confirme" title="Supprimer">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    </button>
+                  }
+                </div>
               </td>
             </tr>
           </tbody>

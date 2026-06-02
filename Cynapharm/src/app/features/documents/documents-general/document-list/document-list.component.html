@@ -1,30 +1,39 @@
 <div class="pw">
-      <div class="ph">
-        <div><h1 class="pt">Documents</h1><p class="ps">{{ docs.length }} document(s)</p></div>
-        <a routerLink="/documents/new" class="btn-p">+ Nouveau document</a>
-      </div>
-      @if (error)   { <div class="ae">{{ error }}</div> }
-      @if (loading) { <div class="lb"><div class="sp"></div> Chargement…</div> }
-      @else if (docs.length === 0) {
-        <app-empty-state title="Aucun document" message="Créez votre premier document."></app-empty-state>
-      } @else {
-        <div class="tc">
-          <table class="dt">
-            <thead><tr><th>N° Doc</th><th>Type</th><th>Client</th><th>Commande</th><th>Date</th></tr></thead>
-            <tbody>
-              @for (d of docs; track d.numeroDoc) {
-                <tr>
-                  <td class="mono">{{ d.numeroDoc }}</td>
-                  <td>{{ d.type }}</td>
-                  <td>#{{ d.id_Client }}</td>
-                  <td>{{ d.id_Commande ? '#' + d.id_Commande : '—' }}</td>
-                  <td>{{ d.dateDocument | date:'dd/MM/yy' }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-          <app-paginator [page]="page" [pageSize]="pageSize" [total]="total" (pageChange)="onPage($event)"></app-paginator>
-        </div>
-      }
+  <div class="ph">
+    <div><h1 class="pt">Documents</h1><p class="ps">{{ docs.length }} document(s)</p></div>
+    <a routerLink="/documents/new" class="btn-p">+ Nouveau document</a>
+  </div>
+
+  <!-- Type filter tabs -->
+  <div class="type-tabs">
+    <button class="type-tab" [class.active]="typeFilter === ''"        (click)="setTypeFilter('')">Tous</button>
+    <button class="type-tab" [class.active]="typeFilter === 'FACTURE'" (click)="setTypeFilter('FACTURE')">Factures</button>
+    <button class="type-tab" [class.active]="typeFilter === 'BC'"      (click)="setTypeFilter('BC')">Bons de commande</button>
+    <button class="type-tab" [class.active]="typeFilter === 'BL'"      (click)="setTypeFilter('BL')">Bons de livraison</button>
+  </div>
+
+  @if (error)   { <div class="ae">{{ error }}</div> }
+  @if (loading) { <div class="lb"><div class="sp"></div> Chargement…</div> }
+  @else if (docs.length === 0) {
+    <app-empty-state title="Aucun document" message="Créez votre premier document."></app-empty-state>
+  } @else {
+    <div class="tc">
+      <table class="dt">
+        <thead><tr><th>N° Doc</th><th>Type</th><th>Client</th><th>Commande</th><th>Date</th></tr></thead>
+        <tbody>
+          @for (d of docs; track d.numero_Doc) {
+            <tr>
+              <td class="mono">{{ d.numero_Doc }}</td>
+              <td>{{ d.type }}</td>
+              <td>{{ clientName(d.id_Client) }}</td>
+              <td>{{ d.id_Commande ? '#' + d.id_Commande : '—' }}</td>
+              <td>{{ d.dateDocument | date:'dd/MM/yy' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-paginator [page]="page" [pageSize]="pageSize" [total]="total" (pageChange)="onPage($event)"></app-paginator>
     </div>
+  }
+</div>
   

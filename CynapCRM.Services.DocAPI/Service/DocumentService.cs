@@ -20,13 +20,17 @@ namespace CynapCRM.Services.DocAPI.Service
             _db = db;
             _mapper = mapper;
         }
-        public async Task<IEnumerable<DocumentDto>> GetAllDocumentsAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<DocumentDto>> GetAllDocumentsAsync(
+            int pageNumber, int pageSize)
         {
+            // FIX: ajout filtre IsDeleted
             var docs = await _db.Documents
-                        .OrderByDescending(d => d.DateCreation).AsNoTracking()
-                        .Skip((pageNumber - 1) * pageSize)
-                        .Take(pageSize)
-                        .ToListAsync();
+                .Where(d => !d.IsDeleted)
+                .OrderByDescending(d => d.DateCreation)
+                .AsNoTracking()
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
             return _mapper.Map<IEnumerable<DocumentDto>>(docs);
         }
@@ -35,41 +39,75 @@ namespace CynapCRM.Services.DocAPI.Service
         {
             var doc = await _db.Documents
                 .AsNoTracking()
-                .FirstOrDefaultAsync(d => d.Numero_Doc == numeroDoc && !d.IsDeleted);
-            if (doc == null)
-            {
-                return null;
-            }
-            return _mapper.Map<DocumentDto>(doc);
+                .FirstOrDefaultAsync(d =>
+                    d.Numero_Doc == numeroDoc &&
+                    !d.IsDeleted);
+
+            return doc == null ? null : _mapper.Map<DocumentDto>(doc);
         }
 
-        public async Task<IEnumerable<DocumentDto>> GetDocumentsByClientAsync(int idClient)
+        public async Task<IEnumerable<DocumentDto>> GetDocumentsByClientAsync(
+            int idClient)
         {
-            var doc = await _db.Documents
-                        .Where(d => d.Id_Client == idClient && !d.IsDeleted)
-                        .AsNoTracking()
-                        .OrderByDescending(d => d.DateCreation)
-                        .ToListAsync();
+            var docs = await _db.Documents
+                .Where(d => d.Id_Client == idClient && !d.IsDeleted)
+                .AsNoTracking()
+                .OrderByDescending(d => d.DateCreation)
+                .ToListAsync();
 
-            return _mapper.Map<IEnumerable<DocumentDto>>(doc);
+            return _mapper.Map<IEnumerable<DocumentDto>>(docs);
         }
 
-        public async Task<IEnumerable<DocumentDto>> GetDocumentsByCommandeAsync(int idCommande)
+        public async Task<IEnumerable<DocumentDto>> GetDocumentsByCommandeAsync(
+            int idCommande)
         {
-            var doc = await _db.Documents
-                        .Where(d => d.Id_Commande == idCommande && !d.IsDeleted).AsNoTracking()
-                        .OrderByDescending(d => d.DateCreation)
-                        .ToListAsync();
-            return _mapper.Map<IEnumerable<DocumentDto>>(doc);
+            var docs = await _db.Documents
+                .Where(d => d.Id_Commande == idCommande && !d.IsDeleted)
+                .AsNoTracking()
+                .OrderByDescending(d => d.DateCreation)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<DocumentDto>>(docs);
         }
 
+        // FIX: nouvelle méthode — filtre par type
+        public async Task<IEnumerable<DocumentDto>> GetDocumentsByTypeAsync(
+            string typeDocument,
+            int pageNumber,
+            int pageSize)
+        {
+            var docs = await _db.Documents
+                .Where(d => d.TypeDocument == typeDocument && !d.IsDeleted)
+                .AsNoTracking()
+                .OrderByDescending(d => d.DateCreation)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
+            return _mapper.Map<IEnumerable<DocumentDto>>(docs);
+        }
+
+        // FIX: nouvelle méthode — filtre par client + type
+        public async Task<IEnumerable<DocumentDto>> GetDocumentsByClientAndTypeAsync(
+            int idClient,
+            string typeDocument)
+        {
+            var docs = await _db.Documents
+                .Where(d =>
+                    d.Id_Client == idClient &&
+                    d.TypeDocument == typeDocument &&
+                    !d.IsDeleted)
+                .AsNoTracking()
+                .OrderByDescending(d => d.DateCreation)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<DocumentDto>>(docs);
+        }
 
         public async Task<DocumentDto?> CreateOrUpdateDocumentAsync(DocumentDto dto)
         {
             Document document;
 
-            // If Numero_Doc is 0, we create a new document. Otherwise, we try to update an existing one.
             if (dto.Numero_Doc == 0)
             {
                 document = new Document
@@ -80,15 +118,14 @@ namespace CynapCRM.Services.DocAPI.Service
                     TypeDocument = "GENERIC",
                     DateCreation = DateTime.UtcNow
                 };
-
                 _db.Documents.Add(document);
             }
             else
             {
-                document = await _db.Documents.FirstOrDefaultAsync(d => d.Numero_Doc == dto.Numero_Doc);
+                document = await _db.Documents
+                    .FirstOrDefaultAsync(d => d.Numero_Doc == dto.Numero_Doc);
 
-                if (document == null)
-                    return null;
+                if (document == null) return null;
 
                 document.Nom_Doc = dto.Nom_Doc;
             }
@@ -105,18 +142,16 @@ namespace CynapCRM.Services.DocAPI.Service
                 TypeDocument = document.TypeDocument
             };
         }
+
+        // FIX: soft delete au lieu de suppression physique
         public async Task<bool> DeleteDocumentAsync(int numeroDoc)
         {
             var doc = await _db.Documents.FindAsync(numeroDoc);
-            if (doc == null)
-            {
-                return false;
-            }
+            if (doc == null) return false;
 
-            _db.Documents.Remove(doc);
+            doc.IsDeleted = true;
             await _db.SaveChangesAsync();
             return true;
         }
-
     }
 }

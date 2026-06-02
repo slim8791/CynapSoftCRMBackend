@@ -9,7 +9,6 @@ namespace CynapCRM.Services.ProductAPI.Service
 {
     public class PromoService : IPromoService
     {
-
         private readonly AppDbContext _db;
         private readonly IMapper _mapper;
 
@@ -19,12 +18,15 @@ namespace CynapCRM.Services.ProductAPI.Service
             _mapper = mapper;
         }
 
-        //  Gestion des promotions
+        // ─── Gestion des promotions ───────────────────────────────────────
 
         public async Task<IEnumerable<PromotionDto>> GetAllPromotionsAsync()
         {
             var promotions = await _db.Promotions
                 .Include(p => p.Lot)
+                .Where(p => p.Lot != null
+                         && p.NumeroLot != null
+                         && p.DateDebut != null)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<PromotionDto>>(promotions);
@@ -39,71 +41,39 @@ namespace CynapCRM.Services.ProductAPI.Service
             return promo == null ? null : _mapper.Map<PromotionDto>(promo);
         }
 
-        public async Task<PromotionDto> CreateOrUpdatePromotionAsync(PromotionDto promotionDto)
+        public async Task<PromotionDto?> CreateOrUpdatePromotionAsync(PromotionDto promotionDto)
         {
-            // "All lots" scope: create/update one promotion record per lot of the product
-            if (promotionDto.PorteeSurTousLesLots && promotionDto.Id_Produit.HasValue)
-            {
-                var today = DateTime.UtcNow;
-                var lots = await _db.Lots
-                    .Where(l => l.Id_Produit == promotionDto.Id_Produit.Value
-                             && l.DateExpiration > today
-                             && l.Quantite > 0)
-                    .ToListAsync();
+            // Vérifier que le lot existe avant de créer/modifier
+            var lotExists = await _db.Lots
+                .AnyAsync(l => l.NumeroLot == promotionDto.NumeroLot);
 
-                Promotion? lastSaved = null;
-                foreach (var lot in lots)
-                {
-                    var perLotDto = CloneForLot(promotionDto, lot.Numero);
-                    lastSaved = await UpsertSinglePromotion(perLotDto);
-                }
-                // Return the first saved record (representative)
-                return lastSaved != null
-                    ? _mapper.Map<PromotionDto>(lastSaved)
-                    : _mapper.Map<PromotionDto>(new Promotion());
+            if (!lotExists) return null;
+
+            // FIX 8: block if this lot already has an active promotion (create path only)
+            if (promotionDto.Id_Promo == 0)
+            {
+                var hasActivePromo = await _db.Promotions
+                    .AnyAsync(p =>
+                        p.NumeroLot == promotionDto.NumeroLot &&
+                        p.EstActive);
+                if (hasActivePromo) return null;
             }
 
-            var saved = await UpsertSinglePromotion(promotionDto);
-            return _mapper.Map<PromotionDto>(saved);
-        }
-
-        private static PromotionDto CloneForLot(PromotionDto src, string numeroLot)
-        {
-            return new PromotionDto
-            {
-                Id_Promo             = 0,   // always insert
-                CodePromo            = src.CodePromo,
-                TypePromotion        = src.TypePromotion,
-                Pourcentage          = src.Pourcentage,
-                SeuilAchat           = src.SeuilAchat,
-                QuantiteGratuite     = src.QuantiteGratuite,
-                PorteeSurTousLesLots = true,
-                NumeroLot            = numeroLot,
-                Id_Produit           = src.Id_Produit,
-                DateDebut            = src.DateDebut,
-                DateExpiration       = src.DateExpiration,
-                EstActive            = src.EstActive
-            };
-        }
-
-        private async Task<Promotion> UpsertSinglePromotion(PromotionDto dto)
-        {
-            var promo = dto.Id_Promo > 0
-                ? await _db.Promotions.FirstOrDefaultAsync(p => p.Id_Promo == dto.Id_Promo)
-                : null;
+            var promo = await _db.Promotions
+                .FirstOrDefaultAsync(p => p.Id_Promo == promotionDto.Id_Promo);
 
             if (promo == null)
             {
-                promo = _mapper.Map<Promotion>(dto);
+                promo = _mapper.Map<Promotion>(promotionDto);
                 _db.Promotions.Add(promo);
             }
             else
             {
-                _mapper.Map(dto, promo);
+                _mapper.Map(promotionDto, promo);
             }
 
             await _db.SaveChangesAsync();
-            return promo;
+            return _mapper.Map<PromotionDto>(promo);
         }
 
         public async Task<bool> DeletePromotionAsync(int promotionId)
@@ -116,7 +86,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return true;
         }
 
-        //  Application des promotions
+        // ─── Application des promotions ───────────────────────────────────
 
         public async Task<decimal> ApplyBestPromotionAsync(int productId, decimal initialPrice)
         {
@@ -126,6 +96,7 @@ namespace CynapCRM.Services.ProductAPI.Service
                 .Include(p => p.Lot)
                 .Where(p =>
                     p.EstActive &&
+                    p.DateDebut != null &&
                     p.DateDebut <= today &&
                     p.DateExpiration >= today &&
                     p.Lot != null &&
@@ -154,13 +125,14 @@ namespace CynapCRM.Services.ProductAPI.Service
                 .Include(p => p.Lot)
                 .AnyAsync(p =>
                     p.EstActive &&
+                    p.DateDebut != null &&
                     p.DateDebut <= today &&
                     p.DateExpiration >= today &&
                     p.Lot != null &&
                     p.Lot.Id_Produit == productId);
         }
 
-        //  Consultation par contexte
+        // ─── Consultation par contexte ────────────────────────────────────
 
         public async Task<IEnumerable<PromotionDto>> GetPromotionsByProductAsync(int productId)
         {
@@ -175,13 +147,14 @@ namespace CynapCRM.Services.ProductAPI.Service
         public async Task<IEnumerable<PromotionDto>> GetPromotionsByLotAsync(string numeroLot)
         {
             var promotions = await _db.Promotions
+                .Include(p => p.Lot)
                 .Where(p => p.NumeroLot == numeroLot)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<PromotionDto>>(promotions);
         }
 
-        //  Validation métier
+        // ─── Validation métier ────────────────────────────────────────────
 
         public async Task<bool> IsPromotionValidAsync(int promotionId)
         {
@@ -190,6 +163,7 @@ namespace CynapCRM.Services.ProductAPI.Service
             return await _db.Promotions.AnyAsync(p =>
                 p.Id_Promo == promotionId &&
                 p.EstActive &&
+                p.DateDebut != null &&
                 p.DateDebut <= today &&
                 p.DateExpiration >= today);
         }
@@ -199,11 +173,12 @@ namespace CynapCRM.Services.ProductAPI.Service
             return await _db.Promotions.AnyAsync(p =>
                 p.Id_Promo == promotionId &&
                 p.EstActive &&
+                p.DateDebut != null &&
                 p.DateDebut <= referenceDate &&
                 p.DateExpiration >= referenceDate);
         }
 
-        //  Indicateurs / pilotage
+        // ─── Indicateurs / pilotage ───────────────────────────────────────
 
         public async Task<double> GetPromotionCoverageRateAsync()
         {
@@ -216,6 +191,7 @@ namespace CynapCRM.Services.ProductAPI.Service
                 .Include(p => p.Lot)
                 .Where(p =>
                     p.EstActive &&
+                    p.DateDebut != null &&
                     p.DateDebut <= today &&
                     p.DateExpiration >= today &&
                     p.Lot != null)
@@ -232,6 +208,7 @@ namespace CynapCRM.Services.ProductAPI.Service
 
             return await _db.Promotions.CountAsync(p =>
                 p.EstActive &&
+                p.DateDebut != null &&
                 p.DateDebut <= today &&
                 p.DateExpiration >= today);
         }

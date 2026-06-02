@@ -4,7 +4,9 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 {
     public interface IPlanningService
     {
-
+        Task<IEnumerable<PlanningVisiteDto>> GetAllPlanningsAsync(
+    DateTime? startDate = null,
+    DateTime? endDate = null);
         Task<PlanningVisiteDto?> CreateOrUpdatePlanningAsync(PlanningVisiteDto dto);
 
         Task<PlanningVisiteDto?> GetPlanningByIdAsync(int idPlanning);

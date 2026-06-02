@@ -3,8 +3,8 @@ import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angula
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { takeUntil, switchMap, map } from 'rxjs/operators';
 
 import { ProductService }         from '../product.service';
 import { LotService }             from '../../lots/lot.service';
@@ -13,6 +13,7 @@ import { ProductAdvancedService } from '../services/product-advanced.service';
 import { InventoryService, StockDelegue } from '../../inventory/inventory.service';
 import { AuthService, UserRole }  from '../../../core/services/auth.service';
 import { ToastService }           from '../../../shared/services/toast.service';
+import { CloudinaryService }      from '../../../core/services/cloudinary.service';
 import { CurrencyTNDPipe }        from '../../../shared/pipes/currency-tnd.pipe';
 import { LotStatusPipe }          from '../../../shared/pipes/lot-status.pipe';
 
@@ -58,12 +59,15 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   loadingFilesFor                     = new Set<number>();
   supportFiles: Record<number, any[]> = {};
 
-  // ── Fichiers — gestion inline ─────────────────────────────────────────────
-  showFileModal          = false;
-  fileSaving             = false;
-  fileFormError          = '';
-  fileTargetSupport: any = null;
-  fileForm!: FormGroup;
+  // ── Fichiers — upload Cloudinary par support ──────────────────────────────
+  fileUploadingFor                    = new Set<number>();
+  fileUploadErrorFor: Record<number, string> = {};
+
+  // ── Image produit (Cloudinary) ────────────────────────────────────────────
+  imageSupport: any | null  = null;
+  imageUploading            = false;
+  imageUploadError          = '';
+  imagePreviewUrl: string | null = null;
 
   // ── Permissions ───────────────────────────────────────────────────────────
   canManageMarketing = false;
@@ -83,17 +87,18 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   ];
 
   private readonly destroy$         = new Subject<void>();
-  private readonly router           = inject(Router);
-  private readonly route            = inject(ActivatedRoute);
-  private readonly fb               = inject(FormBuilder);
-  private readonly productService   = inject(ProductService);
-  private readonly lotService       = inject(LotService);
-  private readonly marketingService = inject(MarketingService);
-  private readonly productAdvanced  = inject(ProductAdvancedService);
-  private readonly inventoryService = inject(InventoryService);
-  private readonly authService      = inject(AuthService);
-  private readonly toastService     = inject(ToastService);
-  private readonly cdr              = inject(ChangeDetectorRef);
+  private readonly router             = inject(Router);
+  private readonly route              = inject(ActivatedRoute);
+  private readonly fb                 = inject(FormBuilder);
+  private readonly productService     = inject(ProductService);
+  private readonly lotService         = inject(LotService);
+  private readonly marketingService   = inject(MarketingService);
+  private readonly productAdvanced    = inject(ProductAdvancedService);
+  private readonly inventoryService   = inject(InventoryService);
+  private readonly authService        = inject(AuthService);
+  private readonly toastService       = inject(ToastService);
+  private readonly cloudinaryService  = inject(CloudinaryService);
+  private readonly cdr                = inject(ChangeDetectorRef);
 
   // ── Cycle de vie ──────────────────────────────────────────────────────────
 
@@ -102,7 +107,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.canManageMarketing = role === UserRole.ADMIN || role === UserRole.SUPERVISEUR;
 
     this.initSupportForm();
-    this.initFileForm();
 
     this.route.params
       .pipe(takeUntil(this.destroy$))
@@ -127,15 +131,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  private initFileForm(): void {
-    this.fileForm = this.fb.group({
-      nomFichier: ['', Validators.required],
-      url:        ['', Validators.required],
-      extension:  [''],
-      taille:     [0, Validators.min(0)],
-    });
-  }
-
   // ── Chargement produit ────────────────────────────────────────────────────
 
   loadProduct(): void {
@@ -153,7 +148,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
             Id_Produit:    raw?.id_Produit    ?? raw?.Id_Produit,
             Nom:           raw?.nom           ?? raw?.Nom,
             Description:   raw?.description   ?? raw?.Description,
-            Prix_Vente:    raw?.prix_Vente    ?? raw?.Prix_Vente    ?? 0,
+            Categorie:     raw?.categorie     ?? raw?.Categorie     ?? '',
+            Prix_Vente:    raw?.prixVente     ?? raw?.PrixVente     ?? 0,
             Prix_Creation: raw?.prix_Creation ?? raw?.Prix_Creation ?? 0,
             TVA:           raw?.tva           ?? raw?.TVA           ?? 0,
             IsActive:      raw?.isActive      ?? raw?.IsActive      ?? true,
@@ -206,6 +202,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           if (data.length === 1 && Array.isArray(data[0])) data = data[0];
 
           this.supports = data.map(s => this.normalizeSupport(s));
+          this.imageSupport = this.supports.find(s => s.type === 'Image' && s.isActive) ?? null;
+          if (this.imageSupport) this.loadFilesForSupport(this.imageSupport);
           this.cdr.markForCheck();
           this.loadPromotions();
         },
@@ -386,69 +384,55 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     return Array.isArray(embedded) ? embedded.map((f: any) => this.normalizeFichier(f)) : [];
   }
 
-  // ── FICHIERS — Modal ajouter ──────────────────────────────────────────────
+  // ── FICHIERS — Upload Cloudinary ─────────────────────────────────────────
 
-  openAddFile(support: any): void {
-    this.fileTargetSupport = support;
-    this.fileFormError     = '';
-    this.fileForm.reset({ nomFichier: '', url: '', extension: '', taille: 0 });
-    this.showFileModal = true;
-  }
+  onSupportFileSelected(event: Event, support: any): void {
+    const input = event.target as HTMLInputElement;
+    const file  = input.files?.[0];
+    input.value = ''; // allow re-selecting same file
+    if (!file) return;
 
-  closeFileModal(): void {
-    this.showFileModal     = false;
-    this.fileTargetSupport = null;
-    this.fileFormError     = '';
-  }
+    const id = support.idSupportMarketting;
 
-  onFileUrlChange(url: string): void {
-    if (!url) return;
-    const ext = url.split('.').pop()?.split('?')[0]?.toLowerCase() ?? '';
-    if (ext && ext.length <= 5) {
-      this.fileForm.patchValue({ extension: ext }, { emitEvent: false });
-    }
-  }
-
-  submitFileForm(): void {
-    if (this.fileForm.invalid) {
-      this.fileForm.markAllAsTouched();
+    if (file.size > 20 * 1024 * 1024) {
+      this.fileUploadErrorFor[id] = 'Fichier trop volumineux (max 20 Mo).';
+      this.cdr.markForCheck();
       return;
     }
-    this.fileSaving    = true;
-    this.fileFormError = '';
 
-    const v = this.fileForm.value;
+    this.fileUploadingFor.add(id);
+    delete this.fileUploadErrorFor[id];
+    this.cdr.markForCheck();
 
-    // PascalCase : correspond exactement au FichierDto C# attendu par AutoMapper
-    const payload: FichierDto = {
-      NomFichier: v.nomFichier,
-      Url:        v.url,
-      Extension:  v.extension || (v.url.split('.').pop()?.split('?')[0] ?? ''),
-      Taille:     Number(v.taille) || 0,
-      Id_Support: this.fileTargetSupport.idSupportMarketting
-                    ?? this.fileTargetSupport.Id_SupportMarketting,
-    };
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
 
-    this.marketingService.addFileToSupport(payload)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.fileSaving = false;
-          this.closeFileModal();
-          this.toastService.showSuccess('Fichier ajouté avec succès.');
-          const id = payload.Id_Support;
-          delete this.supportFiles[id];
-          if (this.expandedSupports.has(id)) {
-            this.loadFilesForSupport(this.fileTargetSupport ?? { idSupportMarketting: id });
-          }
-          this.loadSupports();
-        },
-        error: (err: any) => {
-          this.fileFormError = err?.error?.message ?? 'Erreur lors de l\'ajout du fichier.';
-          this.fileSaving    = false;
-          this.cdr.markForCheck();
-        },
-      });
+    this.cloudinaryService.uploadFile(file).pipe(
+      switchMap(secureUrl => {
+        const fichier: FichierDto = {
+          NomFichier: file.name,
+          Url:        secureUrl,
+          Extension:  ext,
+          Taille:     file.size,
+          Id_Support: id,
+        };
+        return this.marketingService.addFileToSupport(fichier);
+      }),
+      takeUntil(this.destroy$),
+    ).subscribe({
+      next: () => {
+        this.fileUploadingFor.delete(id);
+        this.toastService.showSuccess('Fichier ajouté avec succès.');
+        delete this.supportFiles[id];
+        if (this.expandedSupports.has(id)) this.loadFilesForSupport(support);
+        this.loadSupports();
+      },
+      error: (err: any) => {
+        this.fileUploadingFor.delete(id);
+        this.fileUploadErrorFor[id] =
+          err?.error?.message ?? err?.message ?? 'Erreur lors de l\'upload.';
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   // ── FICHIERS — Supprimer ──────────────────────────────────────────────────
@@ -467,6 +451,121 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           this.loadSupports();
         },
         error: () => this.toastService.showError('Erreur lors de la suppression.'),
+      });
+  }
+
+  // ── Image produit (Cloudinary) ────────────────────────────────────────────
+
+  get productImageUrl(): string | null {
+    if (!this.imageSupport) return null;
+    const id     = this.imageSupport.idSupportMarketting;
+    const cached = this.supportFiles[id];
+    if (cached && cached.length > 0) return cached[0].url;
+    const embedded: any[] = this.imageSupport.fichiers ?? [];
+    return embedded.length > 0 ? embedded[0].url : null;
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file  = input.files?.[0];
+    input.value = ''; // allow re-selecting same file
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      this.imageUploadError = 'Format non accepté. Utilisez JPG, PNG ou WEBP.';
+      this.cdr.markForCheck();
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.imageUploadError = 'Image trop volumineuse (max 5 Mo).';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.imageUploadError = '';
+    const reader = new FileReader();
+    reader.onload = e => {
+      this.imagePreviewUrl = e.target?.result as string;
+      this.cdr.markForCheck();
+    };
+    reader.readAsDataURL(file);
+
+    this.uploadAndSaveImage(file);
+  }
+
+  private uploadAndSaveImage(file: File): void {
+    this.imageUploading = true;
+    this.imageUploadError = '';
+    const oldSupport = this.imageSupport; // capture before async ops
+    this.cdr.markForCheck();
+
+    this.cloudinaryService.uploadImage(file).pipe(
+      switchMap(secureUrl => {
+        // disable old image support first so only one active image exists
+        const disable$ = oldSupport
+          ? this.marketingService.disableSupport(oldSupport.idSupportMarketting)
+          : of(null);
+        return disable$.pipe(map(() => secureUrl));
+      }),
+      switchMap(secureUrl => {
+        const payload: SupportMarketingDto = {
+          Type:         'Image',
+          CampaignName: 'Photo produit',
+          IsActive:     true,
+          Id_Produit:   Number(this.productId),
+        };
+        return this.marketingService.createOrUpdateSupport(payload).pipe(
+          map(response => {
+            const raw = response?.Result ?? response?.result ?? response;
+            const id: number =
+              raw?.['id_SupportMarketting'] ??
+              raw?.Id_SupportMarketting      ??
+              raw?.idSupportMarketting;
+            return { id, secureUrl };
+          })
+        );
+      }),
+      switchMap(({ id, secureUrl }) => {
+        const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+        const fichier: FichierDto = {
+          NomFichier: file.name,
+          Url:        secureUrl,
+          Extension:  ext,
+          Taille:     file.size,
+          Id_Support: id,
+        };
+        return this.marketingService.addFileToSupport(fichier);
+      }),
+      takeUntil(this.destroy$),
+    ).subscribe({
+      next: () => {
+        this.imageUploading  = false;
+        this.imagePreviewUrl = null;
+        this.toastService.showSuccess('Image enregistrée avec succès.');
+        this.loadSupports();
+      },
+      error: (err: any) => {
+        this.imageUploading   = false;
+        this.imagePreviewUrl  = null;
+        this.imageUploadError =
+          err?.error?.message ?? err?.message ?? 'Erreur lors de l\'enregistrement de l\'image.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  deleteProductImage(): void {
+    if (!this.imageSupport) return;
+    this.marketingService.disableSupport(this.imageSupport.idSupportMarketting)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess('Image supprimée.');
+          this.imageSupport = null;
+          this.loadSupports();
+        },
+        error: () => this.toastService.showError('Erreur lors de la suppression de l\'image.'),
       });
   }
 
@@ -502,6 +601,27 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const id = support.idSupportMarketting;
     if (this.supportFiles[id]) return this.supportFiles[id].length;
     return (support.fichiers ?? support.Fichiers ?? []).length;
+  }
+
+  /** Returns the URL to use in <a href>. Raw Cloudinary files get fl_attachment injected
+   *  so the browser skips inline rendering (and the CORS preflight that goes with it)
+   *  and triggers a direct file download instead. */
+  getFileHref(file: any): string {
+    const url = (file.url ?? '') as string;
+    if (url.includes('/raw/upload/') && !url.includes('fl_attachment')) {
+      return url.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+    }
+    return url;
+  }
+
+  /** True when a file was mistakenly uploaded via /image/upload for a non-image type.
+   *  These files return 401 because Cloudinary stores them as private image assets. */
+  isFileBroken(file: any): boolean {
+    const url = (file.url ?? '') as string;
+    const ext = (file.extension ?? '').toLowerCase().replace('.', '');
+    const nonImageExts = ['pdf','doc','docx','xls','xlsx','ppt','pptx',
+                          'mp4','mov','avi','mkv','zip','rar','7z','txt','csv'];
+    return url.includes('/image/upload/') && nonImageExts.includes(ext);
   }
 
   formatFileSize(bytes: number): string {
@@ -606,11 +726,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   isSupportFieldInvalid(field: string): boolean {
     const c = this.supportForm.get(field);
-    return !!(c?.invalid && c?.touched);
-  }
-
-  isFileFieldInvalid(field: string): boolean {
-    const c = this.fileForm.get(field);
     return !!(c?.invalid && c?.touched);
   }
 }

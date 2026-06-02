@@ -4,7 +4,10 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 {
     public interface IKPIService
     {
-
+        Task<double> GetTauxConversionAsync(
+    int idDelegue,
+    DateTime debut,
+    DateTime fin);
         Task<int> GetNombreVisitesAsync(int idDelegue, DateTime debut, DateTime fin);
 
         // Check if a visit already exists on a given date.  

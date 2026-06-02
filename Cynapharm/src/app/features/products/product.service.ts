@@ -25,13 +25,15 @@ export class ProductService {
   getProducts(): Observable<any[]> {
     return this.apiService
       .get<any>(this.endpoint)
-      .pipe(map(r => this.unwrapResult<any[]>(r)));
+      .pipe(
+        map(r => this.unwrapResult<any[]>(r) ?? []),
+        catchError(() => of([]))
+      );
   }
 
-  /** GET /products/filter?allowArchived=true&pageSize=1000 — includes archived products */
+  /** GET /products/filter?page=1&pageSize=1000 — returns all products (active + inactive + archived) */
   getProductsAll(): Observable<any[]> {
     const params = new HttpParams()
-      .set('allowArchived', 'true')
       .set('page', '1')
       .set('pageSize', '1000');
     return this.apiService
@@ -45,6 +47,24 @@ export class ProductService {
       );
   }
 
+  getCategories(): Observable<string[]> {
+    return this.apiService
+      .get<any>(`${this.endpoint}/categories`)
+      .pipe(
+        map(r => this.unwrapResult<string[]>(r) ?? []),
+        catchError(() => of([]))
+      );
+  }
+
+  getVisibleProducts(): Observable<any[]> {
+    return this.apiService
+      .get<any>(`${this.endpoint}/visible`)
+      .pipe(
+        map(r => this.unwrapResult<any[]>(r) ?? []),
+        catchError(() => of([]))
+      );
+  }
+
   getProductById(id: string | number): Observable<any> {
     return this.apiService
       .get<any>(`${this.endpoint}/${id}`)
@@ -55,7 +75,7 @@ export class ProductService {
     return this.apiService.post<any>(this.endpoint, data);
   }
 
-  updateProduct(id: string | number, data: any): Observable<any> {
+  updateProduct(_id: string | number, data: any): Observable<any> {
     // ✅ Backend utilise POST pour créer ET mettre à jour (CreateOrUpdateProduct)
     return this.apiService.post<any>(this.endpoint, data);
   }
@@ -64,6 +84,10 @@ export class ProductService {
 
   deleteProduct(id: string): Observable<any> {
     return this.apiService.put<any>(`${this.endpoint}/${id}/deactivate`, {});
+  }
+
+  hardDeleteProduct(id: string): Observable<any> {
+    return this.apiService.delete<any>(`${this.endpoint}/${id}`);
   }
 
   activateProduct(id: string): Observable<any> {
@@ -95,6 +119,15 @@ export class ProductService {
     return this.apiService
       .get<any>(`${this.endpoint}/search`, params)
       .pipe(map(r => this.unwrapResult<any[]>(r) ?? []));
+  }
+
+  getLotsByProduct(productId: number): Observable<any[]> {
+    return this.apiService
+      .get<any>(`${this.endpoint}/lots/product/${productId}`)
+      .pipe(
+        map(r => this.unwrapResult<any[]>(r) ?? []),
+        catchError(() => of([]))
+      );
   }
 
   // ── Filtre paginé — aligne sur FilterProductsAsync ────

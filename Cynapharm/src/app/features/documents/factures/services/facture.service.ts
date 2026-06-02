@@ -5,12 +5,16 @@ import { map } from 'rxjs/operators';
 import { ApiService } from '../../../../core/services/api.service';
 
 export interface FactureDto {
-  id?:           number;
-  id_Client:     number;
-  montantHT:     number;
-  montantTTC:    number;
-  tva:           number;
+  numero_Doc:    number;
+  nom_Doc?:      string;
+  id_Client?:    number;
+  id_Commande?:  number;
+  montantHT?:    number;
+  montantTTC?:   number;
   dateFacture?:  string;
+  typeDocument?: string;
+  cloudinaryUrl?: string;
+  url?:          string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -29,7 +33,11 @@ export class FactureService {
     const p = new HttpParams().set('startDate', start).set('endDate', end);
     return this.api.get<any>(`${this.base}/by-date`, p).pipe(map(r => this.u<FactureDto[]>(r) ?? []));
   }
+  getByCommande(id: number): Observable<FactureDto[]> {
+    return this.api.get<any>(`${this.base}/commande/${id}`).pipe(map(r => this.u<FactureDto[]>(r) ?? []));
+  }
   createOrUpdate(dto: FactureDto): Observable<FactureDto> {
     return this.api.post<any>(`${this.base}/createUpdate`, dto).pipe(map(r => this.u<FactureDto>(r)));
   }
+  delete(id: number): Observable<void> { return this.api.delete<void>(`${this.base}/${id}`); }
 }

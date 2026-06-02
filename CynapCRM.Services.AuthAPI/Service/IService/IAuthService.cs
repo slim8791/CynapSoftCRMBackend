@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.AuthAPI.Models;
+using CynapCRM.Services.AuthAPI.Models;
 using CynapCRM.Services.AuthAPI.Models.Dto;
 
 namespace CynapCRM.Services.AuthAPI.Service.IService
@@ -6,7 +6,7 @@ namespace CynapCRM.Services.AuthAPI.Service.IService
     public interface IAuthService
     {
         Task<ResponseDto> Register(RegistrationRequestDto model);
-
+        Task<ResponseDto> UpdateProfileAsync(UpdateProfileDto model);
         Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto);
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<bool> AssignRole(string email, UserRole role);
@@ -20,6 +20,8 @@ Task<ResponseDto> GeneratePasswordResetToken(string email);
         Task<UserDto?> GetUserByIdAsync(int id);
         Task<IEnumerable<UserDto>> GetDisabledUsersAsync();
         Task<IEnumerable<UserDto>> SearchUsersAsync(string keyword, bool? isActive = null);
+        Task<IEnumerable<UserDto>> GetUsersByRoleAsync(string role);
+        Task<IEnumerable<UserDto>> GetUsersByRegionAsync(int idRegion);
     }
 
     

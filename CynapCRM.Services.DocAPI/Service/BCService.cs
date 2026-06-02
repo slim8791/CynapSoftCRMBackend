@@ -18,34 +18,76 @@ namespace CynapCRM.Services.DocAPI.Service
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<BonCommandeDto>> GetBonsCommandeByClientAsync(int idClient)
-        {
-            var bonsCommande = await _db.BonsCommandes
-                    .Where(bl => bl.Id_Client == idClient).AsNoTracking()
-                    .OrderByDescending(bl => bl.DateCreation)
-                    .ToListAsync();
-
-            if (!bonsCommande.Any())
-            {
-                return Enumerable.Empty<BonCommandeDto>();
-            }
-
-            return _mapper.Map<IEnumerable<BonCommandeDto>>(bonsCommande);
-        }
-
-
         public async Task<BonCommandeDto?> GetBonCommandeByIdAsync(int idBC)
         {
-            var bonCommande = await _db.BonsCommandes
-                .OfType<BonCommande>().AsNoTracking()
-                .FirstOrDefaultAsync(bc => bc.Numero_Doc == idBC);
-            if (bonCommande == null)
-            {
-                return null;
-            }
-            return _mapper.Map<BonCommandeDto>(bonCommande);
+            var bc = await _db.BonsCommandes
+                .OfType<BonCommande>()
+                .AsNoTracking()
+                // FIX: ajout filtre IsDeleted
+                .FirstOrDefaultAsync(bc => bc.Numero_Doc == idBC && !bc.IsDeleted);
+
+            return bc == null ? null : _mapper.Map<BonCommandeDto>(bc);
         }
-        public async Task<BonCommandeDto?> CreateOrUpdateBonCommandeAsync(BonCommandeDto bcDto)
+
+        public async Task<IEnumerable<BonCommandeDto>> GetBonsCommandeByClientAsync(
+            int idClient)
+        {
+            var bons = await _db.BonsCommandes
+                .OfType<BonCommande>()
+                .Where(bc => bc.Id_Client == idClient && !bc.IsDeleted)
+                .AsNoTracking()
+                .OrderByDescending(bc => bc.DateCreation)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<BonCommandeDto>>(bons);
+        }
+
+        // FIX: nouvelle méthode — BC par commande
+        public async Task<IEnumerable<BonCommandeDto>> GetBonsCommandeByCommandeAsync(
+            int idCommande)
+        {
+            var bons = await _db.BonsCommandes
+                .Where(bc => bc.Id_Commande == idCommande && !bc.IsDeleted)
+                .AsNoTracking()
+                .OrderByDescending(bc => bc.DateCreation)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<BonCommandeDto>>(bons);
+        }
+
+        public async Task<IEnumerable<BonCommandeDto>> GetAllBonsCommandeAsync(
+            int pageNumber, int pageSize)
+        {
+            // FIX: ajout filtre IsDeleted
+            var bons = await _db.BonsCommandes
+                .Where(bc => !bc.IsDeleted)
+                .AsNoTracking()
+                .OrderByDescending(bc => bc.DateCreation)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<BonCommandeDto>>(bons);
+        }
+
+        public async Task<IEnumerable<BonCommandeDto>> GetBonsCommandeByDateAsync(
+            DateTime startDate, DateTime endDate)
+        {
+            // FIX: ajout filtre IsDeleted
+            var bons = await _db.BonsCommandes
+                .Where(bc =>
+                    bc.DateCreation >= startDate &&
+                    bc.DateCreation <= endDate &&
+                    !bc.IsDeleted)
+                .AsNoTracking()
+                .OrderByDescending(bc => bc.DateCreation)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<BonCommandeDto>>(bons);
+        }
+
+        public async Task<BonCommandeDto?> CreateOrUpdateBonCommandeAsync(
+            BonCommandeDto bcDto)
         {
             BonCommande bc;
 
@@ -53,31 +95,28 @@ namespace CynapCRM.Services.DocAPI.Service
             {
                 bc = new BonCommande
                 {
-                    // Fields inherited from Document
                     Nom_Doc = bcDto.Nom_Doc,
                     Id_Commande = bcDto.Id_Commande,
                     Id_Client = bcDto.Id_Client,
                     TypeDocument = "BC",
-                    DateCreation = DateTime.UtcNow
+                    DateCreation = DateTime.UtcNow,
+                    CloudinaryUrl = bcDto.CloudinaryUrl
                 };
-
                 _db.BonsCommandes.Add(bc);
             }
             else
             {
-                bc = await _db.BonsCommandes.FirstOrDefaultAsync(b => b.Numero_Doc == bcDto.Numero_Doc);
+                bc = await _db.BonsCommandes
+                    .FirstOrDefaultAsync(b => b.Numero_Doc == bcDto.Numero_Doc);
 
-                if (bc == null)
-                    return null;
-                // Modifiable fields
+                if (bc == null) return null;
+
                 bc.Nom_Doc = bcDto.Nom_Doc;
-
-                
+                bc.CloudinaryUrl = bcDto.CloudinaryUrl;
             }
 
             await _db.SaveChangesAsync();
 
-            // manual dto return
             return new BonCommandeDto
             {
                 Numero_Doc = bc.Numero_Doc,
@@ -85,32 +124,20 @@ namespace CynapCRM.Services.DocAPI.Service
                 DateCreation = bc.DateCreation,
                 Id_Commande = bc.Id_Commande,
                 Id_Client = bc.Id_Client,
-                TypeDocument = "BC"
+                TypeDocument = "BC",
+                CloudinaryUrl = bc.CloudinaryUrl
             };
         }
-        public async Task<IEnumerable<BonCommandeDto>> GetAllBonsCommandeAsync(int pageNumber, int pageSize)
+
+        // FIX: soft delete ajouté
+        public async Task<bool> DeleteBonCommandeAsync(int idBC)
         {
+            var bc = await _db.BonsCommandes.FindAsync(idBC);
+            if (bc == null) return false;
 
-            var bons = await _db.BonsCommandes
-                    .AsNoTracking()
-                    .OrderByDescending(bc => bc.DateCreation)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
-            return _mapper.Map<IEnumerable<BonCommandeDto>>(bons);
-        }
-
-        public async Task<IEnumerable<BonCommandeDto>> GetBonsCommandeByDateAsync(DateTime startDate, DateTime endDate)
-        {
-
-            var bons = await _db.BonsCommandes
-                    .AsNoTracking()
-                    .Where(bc =>
-                        bc.DateCreation >= startDate &&
-                        bc.DateCreation <= endDate)
-                    .OrderByDescending(bc => bc.DateCreation)
-                    .ToListAsync();
-            return _mapper.Map<IEnumerable<BonCommandeDto>>(bons);
+            bc.IsDeleted = true;
+            await _db.SaveChangesAsync();
+            return true;
         }
     }
 }

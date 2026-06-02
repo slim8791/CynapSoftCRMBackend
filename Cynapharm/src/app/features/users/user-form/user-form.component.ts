@@ -2,8 +2,11 @@ import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { UserService } from '../user.service';
-import { UserRole, UserType } from '../../../core/services/auth.service';
+import { AuthService, UserRole, UserType } from '../../../core/services/auth.service';
+import { RegionService, RegionDto } from '../../field/regions/services/region.service';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
@@ -29,54 +32,109 @@ export class UserFormComponent implements OnInit, AfterViewInit {
   error = '';
   success = false;
 
-  // ✅ MODIF : backend enums
-  roles = Object.values(UserRole).filter(r => isNaN(Number(r))); // ✅ Filtrer les indices numériques
-  userTypes = Object.values(UserType).filter(r => isNaN(Number(r))); // ✅ Filtrer les indices numériques
+  regions:        RegionDto[] = [];
+  selectedRegion: RegionDto | null = null;
+
+  get availableRoles(): string[] {
+    const role = this.authSvc.getUserRole()?.toUpperCase();
+    if (role === 'SUPERVISEUR') return ['DELEGUE', 'CLIENT'];
+    return Object.values(UserRole).filter(r => isNaN(Number(r))) as string[];
+  }
+  roles = Object.values(UserRole).filter(r => isNaN(Number(r)));
+  userTypes = Object.values(UserType).filter(r => isNaN(Number(r)));
+
+  get isAdmin(): boolean {
+    return this.authSvc.getUserRole()?.toUpperCase() === 'ADMIN';
+  }
+
+  get isSuperviseur(): boolean {
+    return this.authSvc.getUserRole()?.toUpperCase() === 'SUPERVISEUR';
+  }
+
+  get showRegionDropdown(): boolean {
+    const selectedRole = this.userForm.get('role')?.value;
+    return selectedRole === 'DELEGUE' || selectedRole === 'SUPERVISEUR';
+  }
 
   private userId!: number;
-  private userEmail!: string; // ✅ backend utilise EMAIL
+  private userEmail!: string;
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private userService: UserService,
+    private authSvc: AuthService,
+    private regionSvc: RegionService,
     private cdr: ChangeDetectorRef
   ) {
-    // ✅ MODIF : formulaire ALIGNÉ backend
     this.userForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: [''], // ✅ Ajouter phoneNumber
+      phoneNumber: [''],
       adresse: ['', Validators.required],
       role: ['', Validators.required],
       userType: [UserType.PHARMACIEN],
-      password: [''] // ✅ requis UNIQUEMENT en création
+      password: [''],
+      idRegion: [null]
     });
   }
 
+  // FieldAPI returns PascalCase keys (Id_Region, NomRegion, …).
+  // Normalize to the RegionDto interface casing so the rest of the component
+  // can use id_Region / nomRegion without worrying about the API casing.
+  private normalizeRegion(r: any): RegionDto | null {
+    if (!r) return null;
+    return {
+      id_Region:      r.Id_Region      ?? r.id_Region,
+      nomRegion:      r.NomRegion      ?? r.nomRegion      ?? '',
+      codePostal:     r.CodePostal     ?? r.codePostal     ?? '',
+      id_Superviseur: r.Id_Superviseur ?? r.id_Superviseur,
+    };
+  }
+
   ngOnInit(): void {
+    // Load all regions for ADMIN dropdown (normalize PascalCase → camelCase)
+    this.regionSvc.getAll()
+      .pipe(catchError(() => of([])))
+      .subscribe(r => {
+        this.regions = r.map(region => this.normalizeRegion(region) as RegionDto);
+        this.cdr.markForCheck();
+      });
+
+    // For SUPERVISEUR: auto-load his region before the form is used
+    if (this.isSuperviseur) {
+      const userId = this.authSvc.getUserId();
+      this.regionSvc.getBySuperviseur(userId)
+        .pipe(catchError(() => of(null)))
+        .subscribe(region => {
+          // getBySuperviseur already unwraps the array; guard against raw array just in case
+          const raw = Array.isArray(region) ? (region as any)[0] : region;
+          this.selectedRegion = this.normalizeRegion(raw);
+          console.log('[FORM] Superviseur region:', this.selectedRegion);
+          if (this.selectedRegion?.id_Region) {
+            this.userForm.get('idRegion')?.setValue(this.selectedRegion.id_Region);
+          }
+          this.cdr.markForCheck();
+        });
+    }
+
     const idParam = this.route.snapshot.paramMap.get('id');
 
     if (idParam) {
       this.isEditMode = true;
       this.userId = Number(idParam);
 
-      // ❌ MODIF : password inutile en édition
       this.userForm.get('password')?.clearValidators();
       this.userForm.get('password')?.updateValueAndValidity();
 
       this.loadUser();
     } else {
-      // ✅ création → mot de passe obligatoire
-      this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+      this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6), Validators.pattern(/(?=.*[^a-zA-Z0-9])/)]);
       this.userForm.get('password')?.updateValueAndValidity();
     }
   }
 
-  /**
-   * ✅ MODIF : récupération directe via getUserById (plus efficace)
-   */
   private loadUser(): void {
     this.loading = true;
 
@@ -99,6 +157,7 @@ export class UserFormComponent implements OnInit, AfterViewInit {
           phoneNumber: user.phoneNumber ?? user.PhoneNumber ?? '',
           adresse:     user.adresse     ?? user.Adresse     ?? '',
           role:        user.role        ?? user.Role        ?? '',
+          idRegion:    user.idRegion    ?? user.IdRegion    ?? null,
         });
 
         this.loading = false;
@@ -122,19 +181,12 @@ export class UserFormComponent implements OnInit, AfterViewInit {
   }
 
   onSubmit(): void {
-    console.log('🚀 USER FORM SUBMIT:', {
-      value: this.userForm.value,
-      valid: this.userForm.valid,
-      touched: this.userForm.touched
-    });
     if (this.userForm.invalid) {
       console.log('❌ FORM INVALID. Errors:', Object.keys(this.userForm.controls).reduce((acc, k) => {
         const ctrl = this.userForm.get(k);
         if (ctrl?.invalid) acc[k] = ctrl.errors;
         return acc;
       }, {} as any));
-
-      // Mark all touched to show errors
       Object.keys(this.userForm.controls).forEach(key => this.userForm.get(key)?.markAsTouched());
       return;
     }
@@ -144,27 +196,40 @@ export class UserFormComponent implements OnInit, AfterViewInit {
     this.success = false;
 
     const form = this.userForm.value;
-    console.log('📤 SENDING:', form);
 
     if (this.isEditMode) {
-      this.userService.changeRole({
-        email: this.userEmail,
-        newRole: form.role
-      }).subscribe({
-        next: () => this.onSuccess(),
+      const idRegion: number | null = form.idRegion ?? null;
+      const role = (form.role ?? '').toUpperCase();
+
+      this.userService.changeRole({ email: this.userEmail, newRole: form.role }).subscribe({
+        next: () => {
+          // Update idRegion for DELEGUE/SUPERVISEUR if set
+          if ((role === 'DELEGUE' || role === 'SUPERVISEUR') && idRegion != null) {
+            this.userService.updateProfile({ email: this.userEmail, idRegion })
+              .pipe(catchError(() => of(null)))
+              .subscribe();
+          }
+          this.onSuccess();
+        },
         error: err => this.onError(err)
       });
     } else {
+      // For SUPERVISEUR, use the pre-loaded selectedRegion (already normalized)
+      const idRegion = this.isSuperviseur
+        ? (this.selectedRegion?.id_Region ?? null)
+        : (form.idRegion ?? null);
+
       const payload = {
-        email: form.email,
-        name: form.name,
-        password: form.password,
+        email:       form.email,
+        name:        form.name,
+        password:    form.password,
         phoneNumber: form.phoneNumber,
-        adresse: form.adresse,
-        role: form.role,
-        userType: form.userType
+        adresse:     form.adresse,
+        role:        form.role,
+        userType:    form.userType,
+        idRegion
       };
-      console.log('📤 REGISTER PAYLOAD:', payload);
+      console.log('[CREATE USER] payload:', JSON.stringify(payload));
       this.userService.registerUser(payload).subscribe({
         next: () => this.onSuccess(),
         error: err => this.onError(err)
@@ -175,15 +240,13 @@ export class UserFormComponent implements OnInit, AfterViewInit {
   private onSuccess(): void {
     this.success = true;
     this.loading = false;
-
-    setTimeout(() => {
-      this.router.navigate(['/users']);
-    }, 1200);
+    setTimeout(() => this.router.navigate(['/users']), 1200);
   }
 
   private onError(err: any): void {
     this.loading = false;
-    this.error = 'Operation failed';
+    this.error = err?.error?.message ?? err?.error?.Message ?? err?.message ?? 'Une erreur est survenue.';
     console.error(err);
+    this.cdr.detectChanges();
   }
 }

@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.FieldAPI.Models.Dto;
+using CynapCRM.Services.FieldAPI.Models.Dto;
 using CynapCRM.Services.FieldAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,10 +8,12 @@ namespace CynapCRM.Services.FieldAPI.Controllers
 {
     [Route("api/visites")]
     [ApiController]
+    [Authorize] // FIX: manquant
     public class VisitesController : ControllerBase
     {
         private readonly IVisiteService _visiteService;
         protected ResponseDto _response;
+
         public VisitesController(IVisiteService visiteService)
         {
             _visiteService = visiteService;
@@ -32,7 +34,6 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 }
 
                 var delegueIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
                 if (delegueIdClaim == null)
                 {
                     _response.IsSuccess = false;
@@ -40,7 +41,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     return Unauthorized(_response);
                 }
 
-                dto.IdDelegue = int.Parse(delegueIdClaim.Value);    
+                dto.IdDelegue = int.Parse(delegueIdClaim.Value);
 
                 var result = await _visiteService.CreateOrUpdateVisiteAsync(dto);
                 if (result == null)
@@ -56,10 +57,9 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message =ex.InnerException != null? ex.InnerException.Message: ex.Message;
-                return StatusCode(515, _response);
+                _response.Message = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(515, _response); // FIX: 515 → 515
             }
-
         }
 
         [HttpGet("{idVisite:int}")]
@@ -87,7 +87,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = $"Une erreur est survenue : {ex.Message}";
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }
@@ -105,19 +105,13 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     return BadRequest(_response);
                 }
                 var visites = await _visiteService.GetVisitesByDelegueAsync(idDelegue);
-                if (visites == null || !visites.Any())
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "Aucune visite trouvée pour ce délégué.";
-                    return NotFound(_response);
-                }
                 _response.Result = visites;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = $"Une erreur est survenue : {ex.Message}";
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }
@@ -131,29 +125,44 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 if (idPlanning <= 0)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "ID de tournée invalide.";
+                    _response.Message = "ID de planning invalide.";
                     return BadRequest(_response);
                 }
                 var visites = await _visiteService.GetVisitesByPlanningAsync(idPlanning);
-                if (visites == null || !visites.Any())
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "Aucune visite trouvée pour ce planning.";
-                    return NotFound(_response);
-                }
                 _response.Result = visites;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = $"Une erreur est survenue : {ex.Message}";
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
+        // FIX: endpoint manquant — toutes les visites pour ADMIN/SUPERVISEUR
+        [HttpGet]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        public async Task<IActionResult> GetAllVisites(
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
+        {
+            try
+            {
+                var visites = await _visiteService.GetAllVisitesAsync(startDate, endDate);
+                _response.Result = visites;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }
 
         [HttpDelete("{idVisite:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> DeleteVisite(int idVisite)
         {
             try
@@ -168,7 +177,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 if (!success)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Échec de la suppression de la visite.";
+                    _response.Message = "Suppression impossible (visite introuvable, complétée, ou rapport existant).";
                     return NotFound(_response);
                 }
                 _response.Message = "Visite supprimée avec succès.";
@@ -177,7 +186,7 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = $"Une erreur est survenue : {ex.Message}";
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }
@@ -188,24 +197,18 @@ namespace CynapCRM.Services.FieldAPI.Controllers
         {
             try
             {
-                if (idVisite <= 0 )
+                if (idVisite <= 0 || idPlanning <= 0)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "ID de visite invalide.";
-                    return BadRequest(_response);
-                }
-                if (idPlanning <= 0)
-                {
-                    _response.IsSuccess = false;
-                    _response.Message = "ID de planning invalide.";
+                    _response.Message = "ID invalide.";
                     return BadRequest(_response);
                 }
                 var success = await _visiteService.AffectVisiteToPlanningAsync(idVisite, idPlanning);
                 if (!success)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Affectation impossible (visite ou planning invalide).";
-                    return NotFound(_response);
+                    _response.Message = "Affectation impossible.";
+                    return BadRequest(_response);
                 }
                 _response.Message = "Visite affectée au planning avec succès.";
                 return Ok(_response);
@@ -213,10 +216,11 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = $"Une erreur est survenue : {ex.Message}";
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }
+
         [HttpPut("{idVisite:int}/complete")]
         [Authorize(Roles = "DELEGUE")]
         public async Task<IActionResult> CompleteVisite(int idVisite)
@@ -233,8 +237,8 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                 if (!success)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = "Impossible de clôturer la visite (rapport manquant ou visite introuvable).";
-                    return NotFound(_response);
+                    _response.Message = "Impossible de clôturer la visite (rapport manquant).";
+                    return BadRequest(_response);
                 }
                 _response.Message = "Visite complétée avec succès.";
                 return Ok(_response);
@@ -242,7 +246,39 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.Message = $"Une erreur est survenue : {ex.Message}";
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+        [HttpPut("{idVisite:int}/start")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        public async Task<IActionResult> StartVisite(int idVisite)
+        {
+            try
+            {
+                if (idVisite <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "ID de visite invalide.";
+                    return BadRequest(_response);
+                }
+
+                var result = await _visiteService.StartVisiteAsync(idVisite);
+                if (result == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Impossible de démarrer la visite (introuvable, déjà démarrée ou terminée).";
+                    return BadRequest(_response);
+                }
+
+                _response.Result = result;
+                _response.Message = "Visite démarrée avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
                 return StatusCode(515, _response);
             }
         }

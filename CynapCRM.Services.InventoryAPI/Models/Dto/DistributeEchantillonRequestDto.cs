@@ -7,6 +7,5 @@
         public int? Id_Pharmacien { get; set; }
         public int IdStock { get; set; }
         public int Qte { get; set; }
-
     }
 }

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Products"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Products.DocumentViewerPage"
+             x:DataType="vm:DocumentViewerViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="Black">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <controls:AppHeader Grid.Row="0"
+                            Title="{Binding NomFichier}"
+                            ShowBackButton="True"
+                            BackCommand="{Binding GoBackCommand}"
+                            RightIconGlyph="&#xea96;"
+                            RightIconFontFamily="Tabler"
+                            RightCommand="{Binding OpenExternalCommand}" />
+
+        <!-- ── Content ───────────────────────────────────────────────────── -->
+        <Grid Grid.Row="1">
+            <WebView Source="{Binding PdfViewerUrl}"
+                     IsVisible="{Binding IsImage, Converter={StaticResource InvertedBoolConverter}}"
+                     VerticalOptions="FillAndExpand"
+                     HorizontalOptions="FillAndExpand" />
+            <ScrollView IsVisible="{Binding IsImage}"
+                        VerticalOptions="FillAndExpand"
+                        BackgroundColor="Black">
+                <Image Source="{Binding Url}"
+                       Aspect="AspectFit"
+                       VerticalOptions="FillAndExpand"
+                       HorizontalOptions="FillAndExpand"
+                       MinimumHeightRequest="300" />
+            </ScrollView>
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="{StaticResource Primary}"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center" />
+        </Grid>
+
+    </Grid>
+</ContentPage>

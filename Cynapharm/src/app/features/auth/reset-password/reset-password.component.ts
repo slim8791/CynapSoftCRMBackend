@@ -1,10 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { CardComponent } from '../../../shared/components/card/card.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { passwordMatchValidator } from '../../../core/validators/password-match.validator';
 
 @Component({
   selector: 'app-reset-password',
@@ -14,13 +13,11 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
     FormsModule,
     ReactiveFormsModule,
     RouterLink,
-    CardComponent,
-    ButtonComponent
   ],
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css']
 })
-export class ResetPasswordComponent implements OnInit {
+export class ResetPasswordComponent implements OnInit, OnDestroy {
 
   resetForm: FormGroup;
   loading = false;
@@ -29,23 +26,31 @@ export class ResetPasswordComponent implements OnInit {
   success = false;
   email = '';
   token = '';
+  showNewPassword     = false;
+  showConfirmPassword = false;
+
+  private redirectTimeout: any;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private cdr: ChangeDetectorRef,
   ) {
     this.resetForm = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required, Validators.minLength(6)]]
-    });
+      newPassword: ['', [
+        Validators.required,
+        Validators.minLength(6),
+        Validators.pattern(/(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[^a-zA-Z0-9])/)
+      ]],
+      confirmPassword: ['', [Validators.required]]
+    }, { validators: passwordMatchValidator('newPassword', 'confirmPassword') });
   }
 
   ngOnInit(): void {
-    // Get email and token from query params
-    this.email = this.route.snapshot.queryParamMap.get('email') || '';
-    this.token = this.route.snapshot.queryParamMap.get('token') || '';
+    const urlParams = new URLSearchParams(window.location.search);
+    this.token = urlParams.get('token') ?? '';
+    this.email = urlParams.get('email') ?? '';
 
     if (!this.email || !this.token) {
       this.error = 'Lien de réinitialisation invalide.';
@@ -55,32 +60,50 @@ export class ResetPasswordComponent implements OnInit {
   onSubmit(): void {
     if (this.resetForm.invalid) return;
 
-    const { newPassword, confirmPassword } = this.resetForm.value;
-
-    if (newPassword !== confirmPassword) {
-      this.error = 'Les mots de passe ne correspondent pas.';
-      return;
-    }
-
+    const { newPassword } = this.resetForm.value;
     this.loading = true;
-    this.error = '';
+    this.error   = '';
     this.message = '';
 
     this.authService.resetPassword(this.email, this.token, newPassword).subscribe({
-      next: (response) => {
+      next: (res: any) => {
         this.loading = false;
-        if (response.IsSuccess) {
+        if (res?.isSuccess === true || res?.IsSuccess === true) {
           this.success = true;
-          this.message = response.Message || 'Mot de passe réinitialisé avec succès.';
+          this.message = res?.message ?? res?.Message ?? 'Mot de passe réinitialisé avec succès.';
+          this.error   = '';
+          this.redirectTimeout = setTimeout(() => this.router.navigate(['/login']), 3000);
         } else {
-          this.error = response.Message || 'Erreur lors de la réinitialisation.';
+          // 200 OK but isSuccess = false — show the backend error message
+          this.error = res?.message ?? res?.Message ?? 'Une erreur est survenue.';
         }
+        this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading = false;
-        this.error = err.error?.Message || 'Erreur lors de la réinitialisation.';
+        this.error   = err?.error?.message ?? err?.error?.Message ?? 'Une erreur est survenue.';
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  get passwordErrors(): string[] {
+    const ctrl = this.resetForm.get('newPassword');
+    if (!ctrl || !ctrl.touched || !ctrl.errors) return [];
+    const msgs: string[] = [];
+    if (ctrl.errors['required'])   msgs.push('Le mot de passe est requis.');
+    if (ctrl.errors['minlength'])  msgs.push('Minimum 6 caractères.');
+    if (ctrl.errors['pattern'])    msgs.push('Le mot de passe doit contenir au moins un caractère non alphanumérique (ex. !, @, #).');
+    return msgs;
+  }
+
+  get mismatchError(): boolean {
+    const ctrl = this.resetForm.get('confirmPassword');
+    return !!(ctrl?.touched && this.resetForm.errors?.['passwordMismatch']);
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.redirectTimeout);
   }
 
   goToLogin(): void {

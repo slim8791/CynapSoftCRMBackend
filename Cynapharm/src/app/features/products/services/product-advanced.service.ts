@@ -11,7 +11,7 @@ export class ProductAdvancedService {
   constructor(private api: ApiService) {}
 
   getProductDashboard(): Observable<any> {
-    return this.api.get('/api/products/dashboard');
+    return this.api.get('/products/dashboard');
   }
 
   getPromotionsByProduct(productId: number): Observable<any[]> {
@@ -24,29 +24,29 @@ export class ProductAdvancedService {
   }
 
   getTotalStock(productId: number): Observable<number> {
-    return this.api.get(`/api/products/${productId}/stock`).pipe(
+    return this.api.get(`/products/${productId}/stock`).pipe(
       map((response: any) => response.Result ?? 0)
     );
   }
 
   archiveProduct(productId: number): Observable<any> {
-    return this.api.put(`/api/products/${productId}/archive`, {});
+    return this.api.put(`/products/${productId}/archive`, {});
   }
 
   getAvailableProducts(): Observable<any[]> {
-    return this.api.get('/api/products/available');
+    return this.api.get('/products/available');
   }
 
   getLowStockProducts(seuil: number): Observable<any[]> {
-    return this.api.get(`/api/products/low-stock?seuil=${seuil}`);
+    return this.api.get(`/products/low-stock?seuil=${seuil}`);
   }
 
   searchProducts(keyword: string): Observable<any[]> {
-    return this.api.get(`/api/products/search?keyword=${keyword}`);
+    return this.api.get(`/products/search?keyword=${keyword}`);
   }
 
   getCategories(): Observable<string[]> {
-    return this.api.get('/api/products/categories');
+    return this.api.get('/products/categories');
   }
 }
 

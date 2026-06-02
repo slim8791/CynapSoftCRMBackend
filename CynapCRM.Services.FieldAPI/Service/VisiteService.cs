@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CynapCRM.Services.FieldAPI.Data;
 using CynapCRM.Services.FieldAPI.Models;
 using CynapCRM.Services.FieldAPI.Models.Dto;
@@ -58,7 +58,26 @@ namespace CynapCRM.Services.FieldAPI.Service
             await _db.SaveChangesAsync();
             return _mapper.Map<VisiteDto>(visite);
         }
+        public async Task<IEnumerable<VisiteDto>> GetAllVisitesAsync(
+    DateTime? startDate = null,
+    DateTime? endDate = null)
+        {
+            var query = _db.Visites
+                .Include(v => v.Rapport)
+                .AsNoTracking()
+                .AsQueryable();
 
+            if (startDate.HasValue)
+                query = query.Where(v => v.DateVisite >= startDate.Value);
+            if (endDate.HasValue)
+                query = query.Where(v => v.DateVisite <= endDate.Value);
+
+            var visites = await query
+                .OrderByDescending(v => v.DateVisite)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<VisiteDto>>(visites);
+        }
         public async Task<VisiteDto?> GetVisiteByIdAsync(int idVisite)
         {
             var visite = await _db.Visites
@@ -98,11 +117,16 @@ namespace CynapCRM.Services.FieldAPI.Service
 
         public async Task<bool> DeleteVisiteAsync(int idVisite)
         {
-            var visite = await _db.Visites.FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
+            var visite = await _db.Visites
+                .Include(v => v.Rapport) // ✅ inclure rapport
+                .FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
+
             if (visite == null || visite.IsCompleted)
-            {
                 return false;
-            }
+
+            // ✅ bloquer si rapport existe
+            if (visite.Rapport != null)
+                return false;
 
             _db.Visites.Remove(visite);
             await _db.SaveChangesAsync();
@@ -165,6 +189,22 @@ namespace CynapCRM.Services.FieldAPI.Service
                             .AnyAsync(v =>
                                 v.Id_Visite == idVisite &&
                                 v.Id_User_Delegue == idDelegue);
+        }
+
+        public async Task<VisiteDto?> StartVisiteAsync(int idVisite)
+        {
+            var visite = await _db.Visites
+                .Include(v => v.Rapport)
+                .FirstOrDefaultAsync(v => v.Id_Visite == idVisite);
+
+            if (visite == null || visite.IsStarted || visite.IsCompleted)
+                return null;
+
+            visite.IsStarted  = true;
+            visite.HeureDebut = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<VisiteDto>(visite);
         }
     }
 }

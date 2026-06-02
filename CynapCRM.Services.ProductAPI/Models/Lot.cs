@@ -6,7 +6,7 @@ namespace CynapCRM.Services.ProductAPI.Models
     public class Lot
     {
         [Key]
-        public string Numero { get; set; } = string.Empty; 
+        public string NumeroLot { get; set; } = string.Empty; 
 
         [Required]
         public DateTime DateExpiration { get; set; }

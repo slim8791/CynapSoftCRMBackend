@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Cynapharm_Mobile.Tests</RootNamespace>
+    <WindowsPackageType>None</WindowsPackageType>
+    <!-- Disable the MAUI resizetizer: it would otherwise error on the referenced
+         project's appicon being processed twice (test project has no images of its own). -->
+    <EnableMauiImageProcessing>false</EnableMauiImageProcessing>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk"    Version="17.12.0" />
+    <PackageReference Include="xunit"                     Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector"        Version="6.0.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Moq"                       Version="4.20.72" />
+    <!-- Needed to implement IFileSystem / IConnectivity / IPreferences stubs -->
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="10.0.20" />
+    <PackageReference Include="Microsoft.Maui.Controls"   Version="10.0.20" />
+    <PackageReference Include="CommunityToolkit.Mvvm"     Version="8.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cynapharm-Mobile\Cynapharm-Mobile.csproj" />
+  </ItemGroup>
+
+</Project>

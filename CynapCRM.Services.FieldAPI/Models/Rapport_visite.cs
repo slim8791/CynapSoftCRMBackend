@@ -1,4 +1,4 @@
-﻿
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,6 +18,11 @@ namespace CynapCRM.Services.FieldAPI.Models
         [Required]
         public DateTime DateRapport { get; set; }
 
+        // GPS coordinates captured at submission time on the delegate's mobile device.
+        // Nullable: GPS may be unavailable or refused by the user.
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+
         // Relation obligatoire avec Visite
         [Required]
         public int Id_Visite { get; set; }
@@ -27,5 +32,15 @@ namespace CynapCRM.Services.FieldAPI.Models
 
         [Required]
         public int Id_User_Delegue { get; set; }
+
+        // Nullable: only set when a SUPERVISEUR validates the report
+        public int? IdSuperviseurValidateur { get; set; }
+
+        /// <summary>
+        /// JSON-serialized array of products presented during the visit.
+        /// Example: [{"id":1,"nom":"Doliprane"},{"id":3,"nom":"Amoxicilline"}]
+        /// Null when no products were selected by the delegate.
+        /// </summary>
+        public string? ProduitsDiscutes { get; set; }
     }
 }

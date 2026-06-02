@@ -4,7 +4,7 @@ using CynapCRM.Services.FieldAPI.Models.Dto;
 
 
 
-namespace CynapCRM.Services.DocAPI
+namespace CynapCRM.Services.FieldAPI
 {
     public class MappingConfig : Profile
     {
@@ -25,7 +25,10 @@ namespace CynapCRM.Services.DocAPI
             
             CreateMap<Visite, VisiteDetailsDto>().ReverseMap();
 
-            CreateMap<Rapport_Visite, RapportVisiteDto>().ReverseMap();
+            CreateMap<Rapport_Visite, RapportVisiteDto>()
+                .ForMember(d => d.Date, opt => opt.MapFrom(s => s.DateRapport))
+                .ReverseMap()
+                .ForMember(s => s.DateRapport, opt => opt.MapFrom(d => d.Date));
 
             CreateMap<ActiviteHistoriqueDto, ActiviteHistoriqueDto>();
             CreateMap<PerformanceDto, PerformanceDto>();

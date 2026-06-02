@@ -80,13 +80,13 @@ namespace CynapCRM.Services.ProductAPI.Service
         public async Task<FichierDto> AddFileToSupportAsync(FichierDto fichierDto)
         {
             if (fichierDto.Id_Support <= 0)
-                throw new Exception("Id_Support invalide.");
+                throw new KeyNotFoundException("Id_Support invalide.");
 
             var supportExists = await _db.Support_Markettings
                 .AnyAsync(s => s.Id_SupportMarketting == fichierDto.Id_Support);
 
             if (!supportExists)
-                throw new Exception("Support marketing introuvable.");
+                throw new KeyNotFoundException("Support marketing introuvable.");
 
             var fichier = new Fichier
             {

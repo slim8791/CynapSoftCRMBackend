@@ -30,7 +30,7 @@ export class StockService {
   getByProduit(id: number)        { return this.api.get<any>(`${this.base}/by-produit/${id}`).pipe(map(r => this.u<StockDelegueDto[]>(r) ?? [])); }
   getByLot(numero: string)        { return this.api.get<any>(`${this.base}/by-lot/${numero}`).pipe(map(r => this.u<StockDelegueDto>(r))); }
   createOrUpdate(dto: StockDelegueDto): Observable<StockDelegueDto> {
-    return this.api.post<any>(`${this.base}/stock`, dto).pipe(map(r => this.u<StockDelegueDto>(r)));
+    return this.api.post<any>(this.base, dto).pipe(map(r => this.u<StockDelegueDto>(r)));
   }
   delete(id: number, type: StockType): Observable<void> {
     return this.api.delete<void>(`${this.base}/${id}?type=${type}`);

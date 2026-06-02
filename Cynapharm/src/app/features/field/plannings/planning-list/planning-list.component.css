@@ -4,8 +4,8 @@
     .subtitle { font-size: 13px; color: #9ca3af; margin: 0; }
     .filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
     .filter-bar label { font-size: 13px; font-weight: 500; color: #374151; }
-    .filter-bar input { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; width: 160px; }
-    .filter-bar input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+    .filter-bar input, .filter-bar select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; min-width: 160px; }
+    .filter-bar input:focus, .filter-bar select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
     .btn { padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
     .btn-primary { background: #6366f1; color: #fff; }
     .btn-primary:hover { background: #4f46e5; }
@@ -29,4 +29,75 @@
     .badge-cancelled { background: #fee2e2; color: #991b1b; }
     .link-btn { font-size: 13px; color: #6366f1; text-decoration: none; font-weight: 500; }
     .link-btn:hover { text-decoration: underline; }
-  
+
+    /* ── Modal ───────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: overlayIn 0.15s ease;
+    }
+    @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-box {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 36px 32px;
+      max-width: 420px;
+      width: 92%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      text-align: center;
+      animation: modalPop 0.3s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.92) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-icon-danger {
+      width: 60px;
+      height: 60px;
+      background: #fef2f2;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .modal-icon-danger svg { width: 28px; height: 28px; color: #e11d48; stroke: #e11d48; }
+    .modal-title { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 10px; }
+    .modal-body { font-size: 15px; color: #64748b; line-height: 1.6; margin: 0 0 28px; }
+    .modal-actions { display: flex; gap: 12px; justify-content: center; }
+    .btn-cancel {
+      padding: 12px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc;
+      font-size: 14px; font-weight: 600; cursor: pointer; color: #475569; transition: all 0.2s;
+    }
+    .btn-cancel:hover { background: #f1f5f9; }
+    .btn-confirm-danger {
+      padding: 12px 24px; background: #e11d48; color: #ffffff; border: none; border-radius: 12px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-confirm-danger:hover { background: #be123c; }
+    .spinner-sm {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #ffffff;
+      border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block;
+    }
+    .modal-icon-success {
+      width: 60px;
+      height: 60px;
+      background: #e6fcf5;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .modal-icon-success svg { width: 32px; height: 32px; color: #059669; stroke: #059669; }
+    .btn-confirm-success {
+      padding: 12px 24px; background: #059669; color: #ffffff; border: none; border-radius: 12px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-confirm-success:hover { background: #047857; }

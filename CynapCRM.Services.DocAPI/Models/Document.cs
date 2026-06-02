@@ -28,5 +28,7 @@ namespace CynapCRM.Services.DocAPI.Models
 
         public bool IsDeleted { get; set; } = false;
 
+        public string? CloudinaryUrl { get; set; }
+
     }
 }

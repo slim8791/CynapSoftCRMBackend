@@ -4,7 +4,9 @@
 
       @if (loading) { <div class="loading-block"><div class="spinner"></div></div> }
 
-      @if (!loading) {
+      @if (error) { <div class="alert-danger">{{ error }}</div> }
+
+      @if (!loading && !error) {
         <div class="kpi-row">
           <div class="kpi-card">
             <span class="kpi-val">{{ activeCount }}</span>

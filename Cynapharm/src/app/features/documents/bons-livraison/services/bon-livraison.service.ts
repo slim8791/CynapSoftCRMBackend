@@ -5,10 +5,14 @@ import { map } from 'rxjs/operators';
 import { ApiService } from '../../../../core/services/api.service';
 
 export interface BonLivraisonDto {
-  id?:            number;
-  id_Client:      number;
-  dateLivraison?: string;
-  adresseLivraison: string;
+  numero_Doc:       number;
+  nom_Doc?:         string;
+  id_Client?:       number;
+  id_Commande?:     number;
+  dateCreation?:    string;
+  typeDocument?:    string;
+  cloudinaryUrl?:   string;
+  url?:             string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -22,12 +26,16 @@ export class BonLivraisonService {
     return this.api.get<any>(this.base, p).pipe(map(r => this.u<BonLivraisonDto[]>(r) ?? []));
   }
   getById(id: number)     { return this.api.get<any>(`${this.base}/${id}`).pipe(map(r => this.u<BonLivraisonDto>(r))); }
-  getByClient(id: number) { return this.api.get<any>(`${this.base}/ByClient/${id}`).pipe(map(r => this.u<BonLivraisonDto[]>(r) ?? [])); }
+  getByClient(id: number) { return this.api.get<any>(`${this.base}/client/${id}`).pipe(map(r => this.u<BonLivraisonDto[]>(r) ?? [])); }
   getByDate(start: string, end: string): Observable<BonLivraisonDto[]> {
     const p = new HttpParams().set('startDate', start).set('endDate', end);
     return this.api.get<any>(`${this.base}/by-date`, p).pipe(map(r => this.u<BonLivraisonDto[]>(r) ?? []));
   }
+  getByCommande(id: number): Observable<BonLivraisonDto[]> {
+    return this.api.get<any>(`${this.base}/commande/${id}`).pipe(map(r => this.u<BonLivraisonDto[]>(r) ?? []));
+  }
   createOrUpdate(dto: BonLivraisonDto): Observable<BonLivraisonDto> {
     return this.api.post<any>(`${this.base}/createUpdate`, dto).pipe(map(r => this.u<BonLivraisonDto>(r)));
   }
+  delete(id: number): Observable<void> { return this.api.delete<void>(`${this.base}/${id}`); }
 }

@@ -7,7 +7,12 @@
         public int Id_Commande { get; set; }
         public int Quantite { get; set; }
         public decimal Remise { get; set; }
-        public string NumeroLot { get; set; } = string.Empty;
         public decimal PrixUnitaire { get; set; }
+
+        // FIX: nullable — lot assigné plus tard, pas à la création
+        public string? NumeroLot { get; set; }
+
+        // FIX: sous-total calculé utile pour l'affichage mobile
+        public decimal SousTotal => (PrixUnitaire * Quantite) * (1 - (Remise / 100));
     }
 }

@@ -4,14 +4,18 @@ import { map } from 'rxjs/operators';
 import { ApiService } from '../../../../core/services/api.service';
 
 export interface StockGratuiteDto {
-  id_stock?:       number;
-  id_User_Delegue: number;
-  id_Produit:      number;
-  numeroLot:       string;
-  qteDisponible:   number;
-  qteReservee:     number;
-  qteGratuite:     number;
-  typePromotion:   string;
+  id_stock?:          number;
+  id_User_Delegue:    number;
+  id_Produit:         number;
+  numeroLot:          string;
+  qteDisponible:      number;
+  qteReservee:        number;
+  qteGratuite:        number;
+  typePromotion:      string;
+  quantiteAchat?:     number;
+  quantiteGratuite?:  number;
+  dateDebut?:         string | null;
+  dateFin?:           string | null;
 }
 
 export interface StockEchantillonDto {
@@ -22,6 +26,9 @@ export interface StockEchantillonDto {
   qteDisponible:   number;
   qteReservee:     number;
   qteEchantillon:  number;
+  description?:    string | null;
+  dateDebut?:      string | null;
+  dateFin?:        string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -41,5 +48,13 @@ export class PromoStockService {
   }
   getEchantillon(idStock: number): Observable<StockEchantillonDto> {
     return this.api.get<any>(`${this.base}/echantillon/${idStock}`).pipe(map(r => this.u<StockEchantillonDto>(r)));
+  }
+  getAllGratuite(page = 1, size = 50): Observable<StockGratuiteDto[]> {
+    return this.api.get<any>(`${this.base}/gratuite?pageNumber=${page}&pageSize=${size}`)
+      .pipe(map(r => this.u<StockGratuiteDto[]>(r) ?? []));
+  }
+  getAllEchantillon(page = 1, size = 50): Observable<StockEchantillonDto[]> {
+    return this.api.get<any>(`${this.base}/echantillon?pageNumber=${page}&pageSize=${size}`)
+      .pipe(map(r => this.u<StockEchantillonDto[]>(r) ?? []));
   }
 }

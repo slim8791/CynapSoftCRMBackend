@@ -3,11 +3,25 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '../../../../core/services/api.service';
 
+export interface StockSummaryDto {
+  TotalProduits:      number;
+  TotalQteDisponible: number;
+  StocksVides:        number;
+  StocksFaibles:      number;
+  TotalDistributions: number;
+  TotalQteDistribuee: number;
+  DernierMouvement:   string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class InventoryBusinessService {
   private readonly base = '/inventory/inventory-business';
   constructor(private api: ApiService) {}
   private u<T>(r: any): T { return r?.Result ?? r?.result ?? r; }
+
+  getStockSummary(idDelegue: number): Observable<StockSummaryDto> {
+    return this.api.get<any>(`${this.base}/summary/${idDelegue}`).pipe(map(r => this.u<StockSummaryDto>(r)));
+  }
 
   checkAvailability(idStock: number, qte: number): Observable<boolean> {
     return this.api.get<any>(`${this.base}/check-availability?idStock=${idStock}&qte=${qte}`).pipe(map(r => this.u<boolean>(r) ?? false));

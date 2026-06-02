@@ -37,4 +37,9 @@ export class KpiService {
   getPerformanceRate(idDelegue: number): Observable<number> {
     return this.api.get<any>(`${this.base}/performance-rate/${idDelegue}`).pipe(map(r => this.u<number>(r) ?? 0));
   }
+
+  getTauxConversion(idDelegue: number, debut: string, fin: string): Observable<number> {
+    const p = new HttpParams().set('debut', debut).set('fin', fin);
+    return this.api.get<any>(`${this.base}/taux-conversion/${idDelegue}`, p).pipe(map(r => this.u<number>(r) ?? 0));
+  }
 }

@@ -57,7 +57,7 @@ namespace CynapCRM.Services.ProductAPI.Migrations
 
             modelBuilder.Entity("CynapCRM.Services.ProductAPI.Models.Lot", b =>
                 {
-                    b.Property<string>("Numero")
+                    b.Property<string>("NumeroLot")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("DateExpiration")
@@ -72,7 +72,7 @@ namespace CynapCRM.Services.ProductAPI.Migrations
                     b.Property<int>("Quantite")
                         .HasColumnType("int");
 
-                    b.HasKey("Numero");
+                    b.HasKey("NumeroLot");
 
                     b.HasIndex("Id_Produit");
 
@@ -86,6 +86,10 @@ namespace CynapCRM.Services.ProductAPI.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Produit"));
+
+                    b.Property<string>("Categorie")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -128,7 +132,7 @@ namespace CynapCRM.Services.ProductAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("DateDebut")
+                    b.Property<DateTime?>("DateDebut")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DateExpiration")
@@ -137,23 +141,11 @@ namespace CynapCRM.Services.ProductAPI.Migrations
                     b.Property<bool>("EstActive")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("Id_Produit")
-                        .HasColumnType("int");
-
                     b.Property<string>("NumeroLot")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<bool>("PorteeSurTousLesLots")
-                        .HasColumnType("bit");
-
                     b.Property<float?>("Pourcentage")
                         .HasColumnType("real");
-
-                    b.Property<int?>("QuantiteGratuite")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SeuilAchat")
-                        .HasColumnType("int");
 
                     b.Property<int>("TypePromotion")
                         .HasColumnType("int");

@@ -1,126 +1,91 @@
 <div class="page">
   <div class="page-header">
     <a routerLink="/inventory/stocks" class="back-link">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      Back
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour
     </a>
-    <h1>{{ isEdit ? 'Edit stock' : 'New stock' }}</h1>
+    <h1>{{ isEdit ? 'Modifier le stock' : 'Nouveau stock' }}</h1>
   </div>
 
   <div *ngIf="loadingData" class="loading-wrap">
-    <div class="spinner"></div><span>Loading…</span>
+    <div class="spinner"></div><span>Chargement...</span>
   </div>
+
   <div *ngIf="fetchError" class="error-banner">{{ fetchError }}</div>
 
   <form *ngIf="!loadingData" [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
     <div class="form-grid">
 
-      <!-- Delegate -->
+      <!-- 1. Délégué -->
       <div class="field">
-        <label>Delegate *</label>
-        @if (loadingDelegates) {
-          <div class="select-loading"><div class="spinner-xs"></div> Loading delegates…</div>
-        } @else {
-          <select formControlName="id_User_Delegue"
-                  [class.field-invalid]="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid">
-            <option [value]="null" disabled>— Select a delegate —</option>
-            @for (d of delegates; track d.id) {
-              <option [value]="d.id">{{ d.name }}</option>
-            }
-          </select>
-        }
-        <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">
-          Delegate required.
-        </span>
-      </div>
-
-      <!-- Product -->
-      <div class="field">
-        <label>Product *</label>
-        @if (loadingProducts) {
-          <div class="select-loading"><div class="spinner-xs"></div> Loading products…</div>
-        } @else {
-          <select formControlName="id_Produit"
-                  [class.field-invalid]="f['id_Produit'].touched && f['id_Produit'].invalid">
-            <option [value]="null" disabled>— Select a product —</option>
-            @for (p of products; track p.id) {
-              <option [value]="p.id">{{ p.nom }}</option>
-            }
-          </select>
-        }
-        <span *ngIf="f['id_Produit'].touched && f['id_Produit'].invalid" class="field-error">
-          Product required.
-        </span>
-      </div>
-
-      <!-- Lot (loaded when product is selected) -->
-      <div class="field">
-        <label>Lot *</label>
-        @if (!f['id_Produit'].value) {
-          <div class="select-hint">Select a product first to see available lots.</div>
-        } @else if (loadingLots) {
-          <div class="select-loading"><div class="spinner-xs"></div> Loading lots…</div>
-        } @else {
-          <select formControlName="numeroLot"
-                  [class.field-invalid]="f['numeroLot'].touched && f['numeroLot'].invalid">
-            <option [value]="null" disabled>— Select a lot —</option>
-            @for (l of lots; track l.numero) {
-              <option [value]="l.numero">{{ lotLabel(l) }}</option>
-            }
-          </select>
-          @if (!loadingLots && lots.length === 0) {
-            <span class="field-hint">No available lots for this product.</span>
+        <label>Délégué *</label>
+        <select formControlName="id_User_Delegue">
+          <option [ngValue]="null">-- Sélectionner un délégué --</option>
+          @for (u of delegues; track u.id) {
+            <option [ngValue]="u.id">{{ userName(u) }}</option>
           }
+        </select>
+        <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Délégué requis</span>
+      </div>
+
+      <!-- 2. Produit -->
+      <div class="field">
+        <label>Produit *</label>
+        <select formControlName="id_Produit">
+          <option [ngValue]="null">-- Sélectionner un produit --</option>
+          @for (p of products; track p.Id_Produit) {
+            <option [ngValue]="p.Id_Produit">{{ productName(p) }}</option>
+          }
+        </select>
+        <span *ngIf="f['id_Produit'].touched && f['id_Produit'].invalid" class="field-error">Produit requis</span>
+      </div>
+
+      <!-- 3. Numéro de lot (enabled by product selection) -->
+      <div class="field">
+        <label>Numéro de lot *</label>
+        <select formControlName="numeroLot">
+          <option value="">
+            @if (!f['id_Produit'].value) { -- Sélectionner d'abord un produit -- }
+            @else if (loadingLots) { Chargement des lots… }
+            @else { -- Sélectionner un lot -- }
+          </option>
+          @for (lot of lots; track lot.numero) {
+            <option [value]="lot.numero">
+              {{ lot.numero }}
+              (qté: {{ lot.quantite }} · exp: {{ lot.dateExpiration | date:'dd/MM/yyyy' }})
+            </option>
+          }
+        </select>
+        @if (f['id_Produit'].value && !loadingLots && lots.length === 0) {
+          <span class="field-hint">Aucun lot disponible (non expiré) pour ce produit.</span>
         }
-        <span *ngIf="f['numeroLot'].touched && f['numeroLot'].invalid" class="field-error">
-          Lot required.
-        </span>
+        <span *ngIf="f['numeroLot'].touched && f['numeroLot'].invalid" class="field-error">Lot requis</span>
       </div>
 
-      <!-- Expiry (auto-filled from lot) -->
-      <div class="field">
-        <label>Expiry date *</label>
-        <input type="date" formControlName="dateExpiration"
-               [class.field-invalid]="f['dateExpiration'].touched && f['dateExpiration'].invalid" />
-        <span class="field-hint">Auto-filled from the selected lot.</span>
-        <span *ngIf="f['dateExpiration'].touched && f['dateExpiration'].invalid" class="field-error">
-          Expiry date required.
-        </span>
-      </div>
 
-      <!-- Available qty -->
-      <div class="field">
-        <label>Available qty *</label>
-        <input type="number" formControlName="qteDisponible" min="0" placeholder="0"
-               [class.field-invalid]="f['qteDisponible'].touched && f['qteDisponible'].invalid" />
-        <span *ngIf="f['qteDisponible'].touched && f['qteDisponible'].invalid" class="field-error">
-          Invalid value (min 0).
-        </span>
-      </div>
 
-      <!-- Reserved qty -->
+      <!-- 5. Qté disponible (min 1, max lot quantite) -->
       <div class="field">
-        <label>Reserved qty</label>
-        <input type="number" formControlName="qteReservee" min="0" placeholder="0"
-               [class.field-invalid]="f['qteReservee'].touched && f['qteReservee'].invalid" />
-        <span *ngIf="f['qteReservee'].touched && f['qteReservee'].invalid" class="field-error">
-          Invalid value (min 0).
+        <label>Qté disponible *</label>
+        <input type="number" formControlName="qteDisponible" min="1" placeholder="Ex: 50" />
+        <span *ngIf="f['qteDisponible'].touched && f['qteDisponible'].errors?.['required']" class="field-error">Quantité requise</span>
+        <span *ngIf="f['qteDisponible'].touched && f['qteDisponible'].errors?.['min']" class="field-error">Valeur invalide (min 1)</span>
+        <span *ngIf="f['qteDisponible'].touched && f['qteDisponible'].errors?.['max']" class="field-error">
+          Stock insuffisant dans le lot (maximum {{ f['qteDisponible'].errors?.['max'].max }} unités)
         </span>
       </div>
 
     </div>
 
-    <div *ngIf="submitError" class="error-banner mt">{{ submitError }}</div>
+    <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
     <div *ngIf="successMsg"  class="success-banner">{{ successMsg }}</div>
 
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" [disabled]="saving">
         <span *ngIf="saving" class="btn-spinner"></span>
-        {{ saving ? 'Saving…' : (isEdit ? 'Update' : 'Create') }}
+        {{ saving ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
       </button>
-      <a routerLink="/inventory/stocks" class="btn btn-secondary">Cancel</a>
+      <a routerLink="/inventory/stocks" class="btn btn-secondary">Annuler</a>
     </div>
   </form>
 </div>

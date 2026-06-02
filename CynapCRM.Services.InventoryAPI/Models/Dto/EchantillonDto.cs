@@ -16,6 +16,12 @@
 
         public string NumeroLot { get; set; }
 
-        public DateTime DateDistribution { get; set; }
+        /// <summary>
+        /// Set by the mobile client to the moment of distribution.
+        /// Defaults to UTC now so that old clients that omit or send null
+        /// never fail model binding — the controller overwrites this with
+        /// DateTime.UtcNow anyway.
+        /// </summary>
+        public DateTime DateDistribution { get; set; } = DateTime.UtcNow;
     }
 }

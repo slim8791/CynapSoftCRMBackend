@@ -4,13 +4,15 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
 import { RapportService, RapportDto } from '../services/rapport.service';
-import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { UserService } from '../../../../features/users/user.service';
+import { VisiteService, VisiteDto } from '../../../field/visites/services/visite.service';
 
 @Component({
   selector: 'app-rapport-form',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, EmptyStateComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: './rapport-form.component.html',
   styleUrls: ['./rapport-form.component.css']
 })
@@ -24,6 +26,12 @@ export class RapportFormComponent implements OnInit, OnDestroy {
   submitError = '';
   successMsg = '';
 
+  delegues: any[] = [];
+  visites: VisiteDto[] = [];
+  loadingVisites = false;
+
+  readonly resultats = ['POSITIF', 'NEGATIF', 'EN_ATTENTE'];
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -31,27 +39,59 @@ export class RapportFormComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private svc: RapportService,
+    private userSvc: UserService,
+    private visiteSvc: VisiteService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      id_Visite:       [null, [Validators.required]],
       id_User_Delegue: [null, [Validators.required]],
-      commentaire:     ['',   [Validators.required]],
-      resultat:        ['',   [Validators.required]]
+      id_Visite: [null, [Validators.required]],
+      commentaire: ['', [Validators.required]],
+      resultat: ['', [Validators.required]]
     });
 
+    // Load delegues
+    this.userSvc.getUsersByRole('DELEGUE').pipe(takeUntil(this.destroy$))
+      .subscribe({ next: u => { this.delegues = u; this.cdr.markForCheck(); }, error: () => { } });
+
+    // When delegue changes, reload visites
+    this.form.get('id_User_Delegue')!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(id => {
+      this.form.patchValue({ id_Visite: null });
+      this.visites = [];
+      if (id) this.loadVisites(+id);
+    });
+
+    // Edit mode
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
       this.isEdit = true;
       this.editId = id;
       this.loadingData = true;
       this.svc.getById(id).pipe(takeUntil(this.destroy$)).subscribe({
-        next: data => { this.form.patchValue(data); this.loadingData = false; this.cdr.markForCheck(); },
+        next: data => {
+          this.form.patchValue(data);
+          // Load visites for the loaded delegue
+          if (data.id_User_Delegue) this.loadVisites(data.id_User_Delegue);
+          this.loadingData = false;
+          this.cdr.markForCheck();
+        },
         error: () => { this.fetchError = 'Impossible de charger le rapport.'; this.loadingData = false; this.cdr.markForCheck(); }
       });
     }
+  }
+
+  private loadVisites(delegueId: number): void {
+    this.loadingVisites = true;
+    this.visiteSvc.getByDelegue(delegueId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: v => { this.visites = v; this.loadingVisites = false; this.cdr.markForCheck(); },
+      error: () => { this.loadingVisites = false; this.cdr.markForCheck(); }
+    });
+  }
+
+  userName(u: any): string {
+    return this.userSvc.displayName(u, this.userSvc.userId(u) ?? undefined);
   }
 
   get f() { return this.form.controls; }
@@ -65,6 +105,8 @@ export class RapportFormComponent implements OnInit, OnDestroy {
 
     const dto: RapportDto = {
       ...this.form.value,
+      id_User_Delegue: +this.form.value.id_User_Delegue,
+      id_Visite: +this.form.value.id_Visite,
       ...(this.isEdit && this.editId ? { idRapport: this.editId } : {})
     };
 

@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.FieldAPI.Models;
+using CynapCRM.Services.FieldAPI.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -36,5 +36,9 @@ namespace CynapCRM.Services.FieldAPI.Models
         public virtual Rapport_Visite? Rapport { get; set; }
 
         public bool IsCompleted { get; set; } = false;
+
+        // Démarrage de la visite sur le terrain
+        public DateTime? HeureDebut { get; set; }
+        public bool IsStarted { get; set; } = false;
     }
 }

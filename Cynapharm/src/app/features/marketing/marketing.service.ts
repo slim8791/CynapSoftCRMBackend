@@ -2,12 +2,19 @@
 // Route backend C# : [Route("api/marketting")]  ← deux 't'
 // L'API Gateway préfixe avec '/products' → URL finale : /products/marketting/*
 //
-// CORRECTION : baseUrl = '/products/marketting'  ✅  (était déjà correct)
-// Le vrai problème était que l'API Gateway routait '/products/marketting'
-// vers un mauvais microservice (promos au lieu de ProductAPI).
-// Vérifiez votre configuration Ocelot / YARP et assurez-vous que :
-//   /products/marketting/** → ProductAPI (port 5xxx)
-//   /products/promos/**     → PromotionAPI (ou ProductAPI selon votre archi)
+// ── Routes du MarkettingController ──────────────────────────────────────────
+// GET    product/{productId}/supports       → GetSupportsByProduct
+// GET    support/{supportId}                → GetSupportById
+// POST   support                            → CreateOrUpdateSupport
+// DELETE file/{fichierId}                   → DeleteFile
+// GET    support/{supportId}/files          → GetFilesBySupport
+// POST   support/file                       → AddFileToSupport
+// GET    support/{supportId}/active         → IsSupportActive
+// GET    product/{productId}/visible-supports → GetVisibleSupportsByProduct
+// GET    campaign/{campaignName}            → GetSupportsByCampaign
+// GET    campaigns                          → GetCampaigns
+// PUT    support/{supportId}/disable        → DisableSupport
+// PUT    support/{supportId}/activate       → ActivateSupport
 
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
@@ -45,16 +52,6 @@ export interface SupportMarketingDto {
   fichiers?:             FichierDto[];
 }
 
-// ── Version camelCase (si JsonNamingPolicy.CamelCase est activé) ──────────────
-// export interface FichierDto {
-//   idFichier?: number; nomFichier: string; url: string;
-//   extension: string; taille: number; idSupport: number;
-// }
-// export interface SupportMarketingDto {
-//   idSupportMarketting?: number; type: string; idProduit: number;
-//   isActive?: boolean; campaignName?: string; fichiers?: FichierDto[];
-// }
-
 // ── Service ───────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
@@ -73,9 +70,7 @@ export class MarketingService {
 
   // ── Supports ──────────────────────────────────────────────────────────────
 
-  /** GET /products/marketting/product/{productId}/supports
-   *  Le backend retourne 404 si aucun support — on normalise en tableau vide.
-   */
+  /** GET /products/marketting/product/{productId}/supports */
   getSupportsByProductId(productId: number): Observable<any> {
     return this.apiService.get<any>(`${this.baseUrl}/product/${productId}/supports`).pipe(
       catchError(err => {
@@ -90,15 +85,12 @@ export class MarketingService {
     return this.apiService.get<any>(`${this.baseUrl}/support/${supportId}`);
   }
 
-  /** POST /products/marketting/support
-   *  Envoie un SupportMarketingDto avec les noms de champs PascalCase
-   *  pour correspondre au modèle C# attendu par AutoMapper.
-   */
+  /** POST /products/marketting/support */
   createOrUpdateSupport(payload: SupportMarketingDto): Observable<any> {
     return this.apiService.post<any>(`${this.baseUrl}/support`, payload);
   }
 
-  /** DELETE /products/marketting/support/{supportId} */
+  /** DELETE /products/marketting/file/{fichierId} */
   deleteSupport(supportId: number): Observable<any> {
     return this.apiService.delete<any>(`${this.baseUrl}/support/${supportId}`);
   }
@@ -127,9 +119,7 @@ export class MarketingService {
     return this.apiService.get<any>(`${this.baseUrl}/support/${supportId}/files`);
   }
 
-  /** POST /products/marketting/support/file
-   *  FichierDto doit avoir les champs PascalCase : NomFichier, Url, Extension, Taille, Id_Support
-   */
+  /** POST /products/marketting/support/file */
   addFileToSupport(fichierDto: FichierDto): Observable<any> {
     return this.apiService.post<any>(`${this.baseUrl}/support/file`, fichierDto);
   }
@@ -150,4 +140,4 @@ export class MarketingService {
   getSupportsByCampaign(campaignName: string): Observable<any> {
     return this.apiService.get<any>(`${this.baseUrl}/campaign/${encodeURIComponent(campaignName)}`);
   }
-}
+}

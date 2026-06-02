@@ -1,62 +1,165 @@
-<div class="page">
-      <div class="page-header">
-        <h1>Distributions</h1>
-        <a routerLink="/inventory/distributions/new" class="btn btn-primary">+ Nouvelle distribution</a>
-      </div>
+﻿<div class="page">
+  <div class="page-header">
+    <div><h1>Distributions</h1></div>
+    <a routerLink="/inventory/distributions/new" class="btn btn-primary">+ Nouvelle distribution</a>
+  </div>
 
-      <div class="tabs">
-        <button *ngFor="let t of tabs" class="tab" [class.active]="activeTab === t.key" (click)="switchTab(t.key)">
-          {{ t.label }}
-        </button>
-      </div>
+  <div class="tabs">
+    @for (t of tabs; track t.key) {
+      <button class="tab" [class.active]="activeTab === t.key" (click)="switchTab(t.key)">
+        {{ t.label }}
+      </button>
+    }
+  </div>
 
-      <div class="filter-row">
-        <label>{{ tabLabel }} (ID)</label>
-        <input type="number" [(ngModel)]="inputId" [placeholder]="'ID ' + tabLabel" (keyup.enter)="load()" />
-        <button class="btn btn-primary" (click)="load()" [disabled]="!inputId || loading">Rechercher</button>
-      </div>
+  @if (activeTab !== 'all') {
+    <div class="filter-row">
+      <label>{{ tabLabel }}</label>
+      <select [(ngModel)]="selectedUserId" (ngModelChange)="load()">
+        <option [ngValue]="null">-- Sélectionner --</option>
+        @for (u of filterUsers; track u.id) {
+          <option [ngValue]="u.id">{{ userName(u) }}</option>
+        }
+      </select>
+    </div>
+  }
 
-      <div *ngIf="loading" class="loading-wrap">
-        <div class="spinner"></div><span>Chargement...</span>
-      </div>
+  @if (loading) {
+    <div class="loading-wrap"><div class="spinner"></div><span>Chargement...</span></div>
+  }
 
-      <div *ngIf="error && !loading" class="error-banner">{{ error }}</div>
+  @if (error && !loading) {
+    <div class="error-banner">{{ error }}</div>
+  }
 
-      <div *ngIf="!loading && !error && distributions.length === 0 && searched">
-        <app-empty-state title="Aucune distribution" message="Aucun résultat pour cet identifiant."></app-empty-state>
-      </div>
+  @if (!loading && !error && distributions.length === 0 && searched && activeTab !== 'all') {
+    <app-empty-state title="Aucune distribution" message="Aucun résultat."></app-empty-state>
+  }
 
-      <div *ngIf="!loading && distributions.length > 0" class="table-wrap">
+  @if (activeTab !== 'all' && !loading && distributions.length > 0) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Délégué</th>
+            <th>Lot</th>
+            <th>Qté</th>
+            <th>Date</th>
+            <th>Médecin</th>
+            <th>Pharmacien</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of distributions; track d.id_Distribution) {
+            <tr>
+              <td>{{ getDelegrueName(d.id_Delegue) }}</td>
+              <td class="mono">{{ d.numeroLot }}</td>
+              <td class="qty">{{ d.qte }}</td>
+              <td>{{ d.dateDistribution | date:'dd/MM/yyyy' }}</td>
+              <td>{{ d.id_Medecin    ? getMedecinName(d.id_Medecin!)       : '—' }}</td>
+              <td>{{ d.id_Pharmacien ? getPharmacienName(d.id_Pharmacien!) : '—' }}</td>
+              <td class="actions-cell">
+                <a [routerLink]="['/inventory/distributions', d.id_Distribution]" class="btn-icon" title="Voir">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </a>
+                <button class="btn-icon danger" title="Supprimer" (click)="onDelete(d.id_Distribution!)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (activeTab === 'all') {
+    @if (loadingAll && allDistributions.length === 0) {
+      <div class="loading-wrap"><div class="spinner"></div><span>Chargement...</span></div>
+    }
+    @if (errorAll) {
+      <div class="error-banner">{{ errorAll }}</div>
+    }
+    @if (!loadingAll && !errorAll && allDistributions.length === 0) {
+      <app-empty-state title="Aucune distribution" message="Aucune distribution enregistrée."></app-empty-state>
+    } @else if (allDistributions.length > 0) {
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>ID Distribution</th>
               <th>Délégué</th>
-              <th>Stock (ID)</th>
+              <th>Destinataire</th>
+              <th>Lot</th>
               <th>Qté</th>
-              <th>N° Lot</th>
               <th>Date</th>
-              <th>Médecin</th>
-              <th>Pharmacien</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let d of distributions">
-              <td class="mono">{{ d.id_Distribution }}</td>
-              <td>{{ d.id_Delegue }}</td>
-              <td>{{ d.id_Stock }}</td>
-              <td class="qty">{{ d.qte }}</td>
-              <td class="mono">{{ d.numeroLot }}</td>
-              <td>{{ d.dateDistribution | date:'dd/MM/yyyy' }}</td>
-              <td>{{ d.id_Medecin ?? '—' }}</td>
-              <td>{{ d.id_Pharmacien ?? '—' }}</td>
-              <td>
-                <a [routerLink]="['/inventory/distributions', d.id_Distribution]" class="link-btn">Voir</a>
-              </td>
-            </tr>
+            @for (d of allDistributions; track d.id_Distribution) {
+              <tr>
+                <td>{{ getDelegrueName(d.id_Delegue) }}</td>
+                <td>
+                  @if (d.id_Medecin) { {{ getMedecinName(d.id_Medecin!) }} }
+                  @else if (d.id_Pharmacien) { {{ getPharmacienName(d.id_Pharmacien!) }} }
+                  @else { — }
+                </td>
+                <td class="mono">{{ d.numeroLot }}</td>
+                <td class="qty">{{ d.qte }}</td>
+                <td>{{ d.dateDistribution | date:'dd/MM/yyyy' }}</td>
+                <td class="actions-cell">
+                  <a [routerLink]="['/inventory/distributions', d.id_Distribution]" class="btn-icon" title="Voir">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </a>
+                  <button class="btn-icon danger" title="Supprimer" (click)="onDelete(d.id_Distribution!)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>
+      @if (hasMore) {
+        <div style="text-align:center;margin-top:1rem">
+          <button class="btn btn-primary" (click)="loadMore()" [disabled]="loadingAll">
+            @if (loadingAll) { Chargement… } @else { Charger plus }
+          </button>
+        </div>
+      } @else {
+        <p style="text-align:center;color:#888;font-size:.875rem;margin-top:.75rem">Toutes les distributions sont affichées.</p>
+      }
+    }
+  }
+</div>
+@if (showDeleteModal) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </div>
+      <h3>Supprimer la distribution</h3>
+      <p>Cette action est irréversible. La distribution sera supprimée et le stock sera réajusté.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+        <button class="btn-confirm-danger" (click)="confirmDelete()">Supprimer</button>
+      </div>
     </div>
-  
+  </div>
+}

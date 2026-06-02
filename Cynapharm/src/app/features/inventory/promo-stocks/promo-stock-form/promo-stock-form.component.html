@@ -1,0 +1,238 @@
+<div class="page">
+  <div class="page-header">
+    <a routerLink="/inventory/promo-stocks" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Retour
+    </a>
+    <h1>Nouveau stock promotionnel</h1>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+    <div class="form-grid">
+
+      <!-- 1. Délégué (filter) -->
+      <div class="field">
+        <label>Délégué *</label>
+        @if (loadingStocks) {
+          <div class="select-loading">
+            <div class="spinner-xs"></div>
+            <span>Chargement...</span>
+          </div>
+        } @else {
+          <select [(ngModel)]="selectedDelegueId" [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onDelegueChange($event)">
+            <option [ngValue]="null">-- Sélectionner un délégué --</option>
+            @for (id of uniqueDelegues; track id) {
+              <option [ngValue]="id">{{ delegueName(id) }}</option>
+            }
+          </select>
+        }
+      </div>
+
+      <!-- 2. Produit (filter, enabled after delegue) -->
+      <div class="field">
+        <label>Produit *</label>
+        @if (!selectedDelegueId) {
+          <div class="select-hint">Sélectionnez d'abord un délégué</div>
+        } @else {
+          <select [(ngModel)]="selectedProduitId" [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onProduitChange($event)">
+            <option [ngValue]="null">-- Sélectionner un produit --</option>
+            @for (id of filteredProduits; track id) {
+              <option [ngValue]="id">{{ produitName(id) }}</option>
+            }
+          </select>
+        }
+      </div>
+
+      <!-- 3. Lot (reactive form control, enabled after produit) -->
+      <div class="field">
+        <label>Numéro de lot *</label>
+        @if (!selectedProduitId) {
+          <div class="select-hint">Sélectionnez d'abord un produit</div>
+        } @else {
+          <select formControlName="id_Stock" [class.field-invalid]="fieldInvalid('id_Stock')">
+            <option [ngValue]="null">-- Sélectionner un lot --</option>
+            @for (s of filteredLots; track s.id_stock) {
+              <option [ngValue]="s.id_stock">
+                {{ s.numeroLot }}
+                (dispo: {{ s.qteDisponible }}
+                · exp: {{ s.dateExpiration | date:'dd/MM/yyyy' }})
+              </option>
+            }
+          </select>
+          @if (filteredLots.length === 0) {
+            <span class="field-hint">Aucun lot disponible pour ce produit.</span>
+          }
+          <span *ngIf="fieldInvalid('id_Stock')" class="field-error">
+            Veuillez sélectionner un lot.
+          </span>
+        }
+      </div>
+
+
+
+    </div>
+
+    <!-- Stock summary when selected -->
+    <div *ngIf="selectedStock" class="stock-summary">
+      <div class="summary-row">
+        <span>N° lot</span>
+        <strong class="mono">{{ selectedStock.numeroLot }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Délégué</span>
+        <strong>{{ delegueName(selectedStock.id_User_Delegue) }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Produit</span>
+        <strong>{{ produitName(selectedStock.id_Produit) }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Qté disponible</span>
+        <strong class="highlight">{{ selectedStock.qteDisponible }}</strong>
+      </div>
+    </div>
+
+    <!-- Type selector -->
+    <div class="field" style="margin-top:4px">
+      <label class="field-label">Type de stock promotionnel *</label>
+      <div class="radio-group">
+        <label class="radio-option" [class.radio-selected]="isEchantillon">
+          <input type="radio" formControlName="type" value="echantillon" />
+          <span class="radio-badge badge-teal">Échantillon</span>
+          <span class="radio-desc">Allocation gratuite aux médecins via les délégués</span>
+        </label>
+        <label class="radio-option" [class.radio-selected]="isGratuite">
+          <input type="radio" formControlName="type" value="gratuite" />
+          <span class="radio-badge badge-purple">Gratuité</span>
+          <span class="radio-desc">Achetez X unités → recevez Y gratuitement</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ── Échantillon section ── -->
+    <div *ngIf="isEchantillon" class="echantillon-section">
+      <h3>Campagne d'échantillonnage</h3>
+
+      <div class="field">
+        <label class="field-label">Quantité allouée *</label>
+        <input type="number" formControlName="qteEchantillon" min="1"
+               [max]="selectedStock?.qteDisponible ?? null"
+               [class.field-invalid]="fieldInvalid('qteEchantillon')"
+               placeholder="20" />
+        <small class="field-hint" *ngIf="selectedStock">
+          Stock disponible : {{ selectedStock.qteDisponible }} unités
+        </small>
+        <small *ngIf="qteError" class="field-error">
+          Quantité insuffisante (max {{ selectedStock?.qteDisponible }}).
+        </small>
+        <small *ngIf="form.touched && formErrors?.['qteRequired']" class="field-error">
+          La quantité est requise et doit être supérieure à 0.
+        </small>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Description de la campagne</label>
+        <input type="text" formControlName="description"
+               placeholder="Ex: Lancement Doliprane 1g" />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Date début</label>
+          <input type="date" formControlName="dateDebut" />
+        </div>
+        <div class="field">
+          <label class="field-label">Date fin</label>
+          <input type="date" formControlName="dateFin" />
+        </div>
+      </div>
+
+      <div class="info-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="info-icon">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Les échantillons sont distribués <strong>uniquement aux médecins</strong> via les distributions.
+        Ils ne peuvent pas être vendus.
+      </div>
+    </div>
+
+    <!-- ── Gratuité section ── -->
+    <div *ngIf="isGratuite" class="gratuite-section">
+      <h3>Règle de gratuité</h3>
+
+      <div class="gratuite-rule">
+        <span>Pour</span>
+        <input type="number" formControlName="quantiteAchat" min="1"
+               [class.field-invalid]="fieldInvalid('quantiteAchat')"
+               placeholder="6" />
+        <span>unités achetées →</span>
+        <input type="number" formControlName="quantiteGratuite" min="1"
+               [class.field-invalid]="fieldInvalid('quantiteGratuite')"
+               placeholder="1" />
+        <span>unité(s) offerte(s)</span>
+      </div>
+
+      <small *ngIf="form.touched && formErrors?.['gratuiteTooHigh']" class="field-error">
+        La quantité offerte doit être inférieure à la quantité achetée.
+      </small>
+      <small *ngIf="form.touched && formErrors?.['gratuiteRequired']" class="field-error">
+        Tous les champs de gratuité sont requis.
+      </small>
+
+      <div class="gratuite-preview"
+           *ngIf="form.get('quantiteAchat')?.value > 0 && form.get('quantiteGratuite')?.value > 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="gift-icon">
+          <polyline points="20 12 20 22 4 22 4 12"/>
+          <rect x="2" y="7" width="20" height="5"/>
+          <line x1="12" y1="22" x2="12" y2="7"/>
+          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+        </svg>
+        Achetez {{ form.get('quantiteAchat')?.value }}
+        → recevez {{ form.get('quantiteGratuite')?.value }} gratuit(s)
+      </div>
+
+      <div class="field">
+        <label class="field-label">Stock disponible pour cette offre *</label>
+        <input type="number" formControlName="qteDisponible" min="1"
+               [max]="selectedStock?.qteDisponible ?? null"
+               [class.field-invalid]="fieldInvalid('qteDisponible')"
+               placeholder="50" />
+        <small *ngIf="selectedStock" class="field-hint">
+          Maximum : {{ selectedStock.qteDisponible }}
+        </small>
+        <small *ngIf="fieldInvalid('qteDisponible')" class="field-error">
+          Quantité invalide (min 1, max {{ selectedStock?.qteDisponible }}).
+        </small>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Date début</label>
+          <input type="date" formControlName="dateDebut" />
+        </div>
+        <div class="field">
+          <label class="field-label">Date fin</label>
+          <input type="date" formControlName="dateFin" />
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="submitting || !selectedStock">
+        <span *ngIf="submitting" class="btn-spinner"></span>
+        {{ submitting ? 'Enregistrement...' : 'Créer le stock promo' }}
+      </button>
+      <a routerLink="/inventory/promo-stocks" class="btn btn-secondary">Annuler</a>
+    </div>
+
+  </form>
+</div>

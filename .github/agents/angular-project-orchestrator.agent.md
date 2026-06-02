@@ -71,8 +71,12 @@ src/
    - **Feedback**: User provides comments; send feedback back to `angular-project-planner` for revisions
 3. **Implementation Phase** (if approved): Invoke `angular-project-developer` to build the Angular project based on the approved plan.
 4. **Validation Phase**: Invoke `angular-project-reviewer` to validate the build and ensure quality.
+5. **Testing Phase**: Invoke `angular-project-tester` to test business logic using the code produced by `angular-project-developer` as input.
+   - **Pass**: All tests pass; workflow is complete.
+   - **Fail**: One or more tests fail; return to step 3 (`angular-project-developer`) with the test report so failing logic can be corrected, then re-run steps 4 and 5.
 
 ## Internal Subagents
 - `angular-project-planner`: Generates the initial plan
 - `angular-project-developer`: Implements the approved plan
 - `angular-project-reviewer`: Validates the implementation
+- `angular-project-tester`: Tests business logic (Components, Services, Guards, Pipes) and produces a pass/fail report

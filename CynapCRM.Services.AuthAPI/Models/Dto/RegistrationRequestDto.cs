@@ -15,8 +15,13 @@
         // Grossiste
         public string? RaisonSociale { get; set; }
 
+        // Medecin
+        public string? Specialite { get; set; }
+        public string? TypeEtablissement { get; set; }
+
 
         public UserRole Role { get; set; }      // CLIENT / ADMIN / SUPERVISEUR / DELEGUE / MEDECIN
         public UserType UserType { get; set; }  // PHARMACIEN / GROSSISTE
+        public int? IdRegion { get; set; }
     }
 }

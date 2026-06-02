@@ -1,5 +1,4 @@
-﻿using CynapCRM.Services.OrderAPI.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CynapCRM.Services.OrderAPI.Models
@@ -10,7 +9,7 @@ namespace CynapCRM.Services.OrderAPI.Models
         public int Id_Commande { get; set; }
 
         [Required]
-        public DateTime DateCommande { get; set; } = DateTime.Now;
+        public DateTime DateCommande { get; set; } = DateTime.UtcNow; // FIX: UtcNow
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -23,16 +22,17 @@ namespace CynapCRM.Services.OrderAPI.Models
         [Required]
         public EtatCommande Statut { get; set; } = EtatCommande.Brouillon;
 
-        // relation essentielle avec le client
-
-
         [Required]
-        public int Id_Client { get; set; } // Le client (Pharmacie/Grossiste) ===(AuthAPI)
+        public int Id_Client { get; set; }
 
-        // Une commande a plusieurs lignes
+        // FIX: soft delete
+        public bool IsDeleted { get; set; } = false;
+
+        // FIX: motif annulation
+        public string? MotifAnnulation { get; set; }
+
         public virtual ICollection<LigneCommande> Lignes { get; set; } = new List<LigneCommande>();
 
-        // Une commande peut avoir des réclamations
         public virtual ICollection<Reclamation>? Reclamations { get; set; }
     }
 }

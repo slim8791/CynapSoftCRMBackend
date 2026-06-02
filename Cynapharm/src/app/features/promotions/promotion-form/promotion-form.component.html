@@ -1,167 +1,119 @@
-<div class="page-wrapper">
+<div class="page">
   <div class="page-header">
-    <a routerLink="/promotions" class="back-link">← Promotions</a>
-    <h1>{{ isEdit ? 'Edit' : 'New' }} promotion</h1>
+    <a routerLink="/promotions" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Retour
+    </a>
+    <h1>{{ isEdit ? 'Modifier' : 'Nouvelle' }} promotion</h1>
   </div>
 
   <div class="form-card">
-    @if (loading && isEdit) { <div class="loading-block"><div class="spinner"></div></div> }
+    @if (loading) { <div class="loading-wrap"><div class="spinner"></div></div> }
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-
-      <!-- ── Promotion type ──────────────────────────────── -->
-      <div class="type-selector">
-        <button type="button"
-                class="type-btn"
-                [class.active]="isPercentage"
-                (click)="form.get('typePromotion')!.setValue('Pourcentage')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="19" y1="5" x2="5" y2="19"/>
-            <circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
-          </svg>
-          Percentage discount
-        </button>
-        <button type="button"
-                class="type-btn"
-                [class.active]="isFreebie"
-                (click)="form.get('typePromotion')!.setValue('Gratuite')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/>
-            <path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-          </svg>
-          Buy X get Y free
-        </button>
-      </div>
-
       <div class="form-grid">
 
-        <!-- Code -->
+        <!-- Code promo -->
         <div class="field">
-          <label>Promo code *</label>
-          <input type="text" formControlName="codePromo" class="input"
-                 [class.invalid]="isInvalid('codePromo')" placeholder="e.g. SUMMER25">
-          @if (isInvalid('codePromo')) { <span class="err">Code required.</span> }
-        </div>
-
-        <!-- ── Percentage fields ─────────────────────────── -->
-        @if (isPercentage) {
-          <div class="field">
-            <label>Discount (%) *</label>
-            <input type="number" formControlName="pourcentage" class="input"
-                   [class.invalid]="isInvalid('pourcentage')" min="1" max="100" placeholder="e.g. 20">
-            @if (isInvalid('pourcentage')) { <span class="err">Between 1 and 100.</span> }
-          </div>
-        }
-
-        <!-- ── Freebie fields ────────────────────────────── -->
-        @if (isFreebie) {
-          <div class="field">
-            <label>Min. purchase (units) *</label>
-            <input type="number" formControlName="seuilAchat" class="input"
-                   [class.invalid]="isInvalid('seuilAchat')" min="1" placeholder="e.g. 5">
-            <span class="hint">Customer must buy at least this many units.</span>
-            @if (isInvalid('seuilAchat')) { <span class="err">Required, min 1.</span> }
-          </div>
-          <div class="field">
-            <label>Free units *</label>
-            <input type="number" formControlName="quantiteGratuite" class="input"
-                   [class.invalid]="isInvalid('quantiteGratuite')" min="1" placeholder="e.g. 1">
-            <span class="hint">Units given free when threshold is met.</span>
-            @if (isInvalid('quantiteGratuite')) { <span class="err">Required, min 1.</span> }
-          </div>
-
-          @if (form.get('seuilAchat')!.value > 0 && form.get('quantiteGratuite')!.value > 0) {
-            <div class="freebie-preview field full">
-              <div class="preview-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                Buy <strong>{{ form.get('seuilAchat')!.value }}</strong> unit(s),
-                get <strong>{{ form.get('quantiteGratuite')!.value }}</strong> free
-              </div>
-            </div>
+          <label>Code promo *</label>
+          <input type="text" formControlName="codePromo"
+                 [class.field-invalid]="isInvalid('codePromo')"
+                 placeholder="EX: PROMO25">
+          @if (form.get('codePromo')?.errors?.['required'] && form.get('codePromo')?.touched) {
+            <span class="field-error">Code obligatoire.</span>
           }
-        }
-
-        <!-- ── Scope ─────────────────────────────────────── -->
-        <div class="field full scope-toggle">
-          <label class="scope-label">Applies to</label>
-          <div class="scope-options">
-            <label class="scope-opt">
-              <input type="radio" formControlName="porteeSurTousLesLots" [value]="false">
-              A specific lot
-            </label>
-            <label class="scope-opt">
-              <input type="radio" formControlName="porteeSurTousLesLots" [value]="true">
-              All lots of a product
-            </label>
-          </div>
+          @if (form.get('codePromo')?.errors?.['whitespace'] && form.get('codePromo')?.touched) {
+            <span class="field-error">Espaces interdits.</span>
+          }
         </div>
 
-        <!-- Specific lot dropdown -->
-        @if (!allLots) {
-          <div class="field full">
-            <label>Lot number *</label>
-            @if (loadingLots) {
-              <div class="select-loading"><div class="spinner-xs"></div> Loading lots…</div>
-            } @else {
-              <select formControlName="numeroLot" class="input" [class.invalid]="isInvalid('numeroLot')">
-                <option [value]="null" disabled>— Select a lot —</option>
-                @for (lot of lots; track lot.numero) {
-                  <option [value]="lot.numero">{{ lotLabel(lot) }}</option>
-                }
-              </select>
-            }
-            @if (isInvalid('numeroLot'))     { <span class="err">Lot required.</span> }
-            @if (!loadingLots && lots.length === 0) { <span class="err-hint">No available lots.</span> }
-          </div>
-        }
-
-        <!-- All lots: product dropdown -->
-        @if (allLots) {
-          <div class="field full">
-            <label>Product *</label>
-            @if (loadingProducts) {
-              <div class="select-loading"><div class="spinner-xs"></div> Loading products…</div>
-            } @else {
-              <select formControlName="id_Produit" class="input" [class.invalid]="isInvalid('id_Produit')">
-                <option [value]="null" disabled>— Select a product —</option>
-                @for (p of products; track p.id) {
-                  <option [value]="p.id">{{ p.nom }}</option>
-                }
-              </select>
-            }
-            @if (isInvalid('id_Produit')) { <span class="err">Product required.</span> }
-            <span class="hint">One promotion record will be created per active lot of this product.</span>
-          </div>
-        }
-
-        <!-- Date range -->
+        <!-- Réduction -->
         <div class="field">
-          <label>Start date *</label>
-          <input type="date" formControlName="dateDebut" class="input" [class.invalid]="isInvalid('dateDebut')">
+          <label>Réduction (%) *</label>
+          <input type="number" formControlName="pourcentage"
+                 [class.field-invalid]="isInvalid('pourcentage')"
+                 min="1" max="100" placeholder="Ex: 20">
+          @if (form.get('pourcentage')?.errors?.['required'] && form.get('pourcentage')?.touched) {
+            <span class="field-error">La réduction est obligatoire.</span>
+          }
+          @if ((form.get('pourcentage')?.errors?.['min'] || form.get('pourcentage')?.errors?.['max']) && form.get('pourcentage')?.touched) {
+            <span class="field-error">La réduction doit être entre 1 et 100.</span>
+          }
         </div>
+
+        <!-- N° de lot -->
         <div class="field">
-          <label>Expiry date *</label>
-          <input type="date" formControlName="dateExpiration" class="input" [class.invalid]="isInvalid('dateExpiration')">
-          @if (isInvalid('dateExpiration')) { <span class="err">Date required.</span> }
+          <label>N° de lot *</label>
+          @if (loadingLots) {
+            <select disabled>
+              <option>Chargement des lots…</option>
+            </select>
+          } @else {
+            <select formControlName="numeroLot" [class.field-invalid]="isInvalid('numeroLot')">
+              <option value="">-- Sélectionner un lot --</option>
+              @for (lot of availableLots; track lot.numero) {
+                <option [value]="lot.numero">
+                  {{ lot.numero }} — qté: {{ lot.quantite }}
+                  (exp: {{ lot.dateExpiration | date:'dd/MM/yyyy' }})
+                </option>
+              }
+            </select>
+          }
+          @if (availableLots.length === 0 && !loadingLots) {
+            <span class="field-error">Aucun lot disponible (non expiré, en stock).</span>
+          }
+          @if (isInvalid('numeroLot')) {
+            <span class="field-error">Veuillez sélectionner un lot.</span>
+          }
         </div>
 
-        <!-- Active -->
-        <div class="field field-check">
-          <label><input type="checkbox" formControlName="estActive"> Active promotion</label>
+        <!-- Date de début -->
+        <div class="field">
+          <label>Date de début *</label>
+          <input type="date" formControlName="dateDebut"
+                 [class.field-invalid]="isInvalid('dateDebut') || dateRangeInvalid">
+          @if (form.get('dateDebut')?.errors?.['required'] && form.get('dateDebut')?.touched) {
+            <span class="field-error">Date de début obligatoire.</span>
+          }
         </div>
 
+        <!-- Date d'expiration -->
+        <div class="field">
+          <label>Date d'expiration *</label>
+          <input type="date" formControlName="dateExpiration"
+                 [class.field-invalid]="isInvalid('dateExpiration') || dateRangeInvalid">
+          @if (form.get('dateExpiration')?.errors?.['required'] && form.get('dateExpiration')?.touched) {
+            <span class="field-error">Date d'expiration obligatoire.</span>
+          }
+          @if (form.get('dateExpiration')?.errors?.['dateRange'] && form.get('dateExpiration')?.touched) {
+            <span class="field-error">La date d'expiration doit être postérieure à la date de début.</span>
+          }
+        </div>
+
+      </div> <!-- End of form-grid -->
+
+      <!-- Statut Toggle Card -->
+      <div class="status-toggle-card">
+        <div class="toggle-info">
+          <strong>Statut de la promotion</strong>
+          <span>Une promotion inactive ne sera pas visible ni applicable par les commerciaux sur le terrain.</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" formControlName="estActive">
+          <span class="slider"></span>
+        </label>
       </div>
 
-      @if (error) { <div class="alert-danger">{{ error }}</div> }
+      @if (error) { <div class="error-banner">{{ error }}</div> }
 
       <div class="form-actions">
-        <a routerLink="/promotions" class="btn-cancel">Cancel</a>
-        <button type="submit" class="btn-submit" [disabled]="loading">
-          {{ loading ? '…' : (isEdit ? 'Update' : 'Create') }}
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          <span *ngIf="loading" class="btn-spinner"></span>
+          {{ loading ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer la promotion') }}
         </button>
+        <a routerLink="/promotions" class="btn btn-secondary">Annuler</a>
       </div>
     </form>
   </div>

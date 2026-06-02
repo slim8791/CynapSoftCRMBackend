@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Orders"
+             xmlns:models="clr-namespace:Cynapharm_Mobile.Models.Orders"
+             xmlns:products="clr-namespace:Cynapharm_Mobile.Models.Products"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="Cynapharm_Mobile.Views.Orders.CreateOrderPage"
+             x:DataType="vm:CreateOrderViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- ── Header with wizard steps ──────────────────────────────────── -->
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}"
+              Padding="20,52,20,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Label Grid.Row="0"
+                   Text="Nouvelle commande"
+                   FontSize="18" FontAttributes="Bold"
+                   FontFamily="OpenSansSemibold"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
+
+            <!-- Wizard: numbered circles + connecting bars -->
+            <Grid Grid.Row="1"
+                  ColumnDefinitions="36,*,36,*,36"
+                  Margin="20,18,20,4">
+                <!-- Step 1 circle -->
+                <Border Grid.Column="0"
+                        StrokeShape="RoundRectangle 18"
+                        BackgroundColor="White" Stroke="Transparent"
+                        HeightRequest="36" WidthRequest="36"
+                        HorizontalOptions="Center">
+                    <Label Text="1" FontSize="14" FontAttributes="Bold"
+                           TextColor="{StaticResource Primary}"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+                <!-- Bar 1-2 -->
+                <BoxView Grid.Column="1" HeightRequest="3" VerticalOptions="Center" CornerRadius="2">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding CurrentStep}" Value="1">
+                            <Setter Property="BackgroundColor" Value="#4DFFFFFF" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding CurrentStep}" Value="2">
+                            <Setter Property="BackgroundColor" Value="White" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding CurrentStep}" Value="3">
+                            <Setter Property="BackgroundColor" Value="White" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+                <!-- Step 2 circle -->
+                <Border Grid.Column="2"
+                        StrokeShape="RoundRectangle 18"
+                        Stroke="Transparent"
+                        HeightRequest="36" WidthRequest="36"
+                        HorizontalOptions="Center">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding CurrentStep}" Value="1">
+                            <Setter Property="BackgroundColor" Value="#4DFFFFFF" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding CurrentStep}" Value="2">
+                            <Setter Property="BackgroundColor" Value="White" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding CurrentStep}" Value="3">
+                            <Setter Property="BackgroundColor" Value="White" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Label Text="2" FontSize="14" FontAttributes="Bold"
+                           HorizontalOptions="Center" VerticalOptions="Center">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="1">
+                                <Setter Property="TextColor" Value="#99FFFFFF" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="2">
+                                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="3">
+                                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </Border>
+                <!-- Bar 2-3 -->
+                <BoxView Grid.Column="3" HeightRequest="3" VerticalOptions="Center" CornerRadius="2">
+                    <BoxView.Triggers>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding CurrentStep}" Value="1">
+                            <Setter Property="BackgroundColor" Value="#4DFFFFFF" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding CurrentStep}" Value="2">
+                            <Setter Property="BackgroundColor" Value="#4DFFFFFF" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="BoxView" Binding="{Binding CurrentStep}" Value="3">
+                            <Setter Property="BackgroundColor" Value="White" />
+                        </DataTrigger>
+                    </BoxView.Triggers>
+                </BoxView>
+                <!-- Step 3 circle -->
+                <Border Grid.Column="4"
+                        StrokeShape="RoundRectangle 18"
+                        Stroke="Transparent"
+                        HeightRequest="36" WidthRequest="36"
+                        HorizontalOptions="Center">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding CurrentStep}" Value="1">
+                            <Setter Property="BackgroundColor" Value="#4DFFFFFF" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding CurrentStep}" Value="2">
+                            <Setter Property="BackgroundColor" Value="#4DFFFFFF" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding CurrentStep}" Value="3">
+                            <Setter Property="BackgroundColor" Value="White" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Label Text="3" FontSize="14" FontAttributes="Bold"
+                           HorizontalOptions="Center" VerticalOptions="Center">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="1">
+                                <Setter Property="TextColor" Value="#99FFFFFF" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="2">
+                                <Setter Property="TextColor" Value="#99FFFFFF" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="3">
+                                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </Border>
+            </Grid>
+
+            <!-- Step labels -->
+            <Grid Grid.Row="2"
+                  ColumnDefinitions="36,*,36,*,36"
+                  Margin="20,0,20,0">
+                <Label Grid.Column="0" Text="Produits" FontSize="11"
+                       TextColor="White" HorizontalOptions="Center" />
+                <Label Grid.Column="2" Text="Panier" FontSize="11"
+                       HorizontalOptions="Center">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="1">
+                            <Setter Property="TextColor" Value="#80FFFFFF" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="2">
+                            <Setter Property="TextColor" Value="White" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="3">
+                            <Setter Property="TextColor" Value="White" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+                <Label Grid.Column="4" Text="Confirmer" FontSize="11"
+                       HorizontalOptions="Center">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="1">
+                            <Setter Property="TextColor" Value="#80FFFFFF" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="2">
+                            <Setter Property="TextColor" Value="#80FFFFFF" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding CurrentStep}" Value="3">
+                            <Setter Property="TextColor" Value="White" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </Grid>
+        </Grid>
+
+        <!-- ── Step content ──────────────────────────────────────────────── -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16,16,16,8" Spacing="14">
+
+                <controls:ErrorBanner Message="{Binding ErrorMessage}" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Color="{StaticResource Primary}"
+                                   HorizontalOptions="Center" />
+
+                <!-- ── Step 1: Product search + cart ─────────────────────── -->
+                <VerticalStackLayout Spacing="12" IsVisible="{Binding IsStep1}">
+
+                    <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                        <BoxView Grid.Column="0" BackgroundColor="{StaticResource Primary}"
+                                 CornerRadius="2" WidthRequest="4" />
+                        <Label Grid.Column="1" Text="Ajouter des produits"
+                               FontSize="13" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Search field -->
+                    <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                            StrokeShape="RoundRectangle 12"
+                            Stroke="{StaticResource FieldBorderInactive}"
+                            StrokeThickness="1.5"
+                            Padding="14,0" HeightRequest="52">
+                        <Grid ColumnDefinitions="22,*" ColumnSpacing="10">
+                            <Label Grid.Column="0" Text="🔍" FontSize="16"
+                                   VerticalOptions="Center" />
+                            <Entry Grid.Column="1"
+                                   Placeholder="Rechercher un produit..."
+                                   Text="{Binding SearchQuery}"
+                                   ReturnType="Search"
+                                   ReturnCommand="{Binding SearchProductCommand}"
+                                   BackgroundColor="Transparent"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   PlaceholderColor="{StaticResource TextMuted}"
+                                   HeightRequest="52"
+                                   Margin="0" VerticalOptions="Center">
+                                <Entry.Behaviors>
+                                    <toolkit:EventToCommandBehavior
+                                        EventName="TextChanged"
+                                        Command="{Binding SearchProductCommand}" />
+                                </Entry.Behaviors>
+                            </Entry>
+                        </Grid>
+                    </Border>
+
+                    <CollectionView ItemsSource="{Binding SearchResults}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="products:Product">
+                                <Border Margin="0,0,0,6"
+                                        BackgroundColor="{StaticResource CardBackground}"
+                                        StrokeShape="RoundRectangle 12"
+                                        Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                        Padding="14,12">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding Nom}"
+                                               FontAttributes="Bold" FontSize="14"
+                                               TextColor="{StaticResource TextPrimary}" />
+                                        <Label Grid.Column="1"
+                                               Text="{Binding PrixUnitaire, StringFormat='{0:#,##0.000} TND'}"
+                                               FontAttributes="Bold"
+                                               TextColor="{StaticResource Primary}" />
+                                    </Grid>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectProductCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- Selected product preview -->
+                    <Border BackgroundColor="{StaticResource PrimaryLight}"
+                            StrokeShape="RoundRectangle 12" Stroke="{StaticResource Primary}"
+                            StrokeThickness="1" Padding="14,12"
+                            IsVisible="{Binding SelectedProduct, Converter={StaticResource IsNotNullOrEmptyConverter}}">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Label Grid.Column="0" Text="✓" FontSize="16" FontAttributes="Bold"
+                                   TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding SelectedProduct.Nom, StringFormat='Sélectionné : {0}'}"
+                                   TextColor="{StaticResource PrimaryText}" FontAttributes="Bold" FontSize="14" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Quantité -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Quantité" FontSize="12" FontAttributes="Bold"
+                               TextColor="{StaticResource TextSecondary}" />
+                        <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="{StaticResource FieldBorderInactive}"
+                                StrokeThickness="1.5"
+                                Padding="14,0" HeightRequest="52">
+                            <Entry Placeholder="Quantité" Text="{Binding Quantity}"
+                                   Keyboard="Numeric"
+                                   BackgroundColor="Transparent"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   HeightRequest="52"
+                                   Margin="0" VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="{Binding QuantityError}"
+                               TextColor="{StaticResource Danger}" FontSize="12"
+                               IsVisible="{Binding QuantityError, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+                    </VerticalStackLayout>
+
+                    <Button Text="Ajouter au panier"
+                            Command="{Binding AddLineCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Margin="0" />
+
+                    <!-- Cart section -->
+                    <Grid ColumnDefinitions="4,*" ColumnSpacing="10" Margin="0,4,0,0">
+                        <BoxView Grid.Column="0" BackgroundColor="{StaticResource Primary}"
+                                 CornerRadius="2" WidthRequest="4" />
+                        <Label Grid.Column="1" Text="Panier"
+                               FontSize="13" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <CollectionView ItemsSource="{Binding CartLines}">
+                        <CollectionView.EmptyView>
+                            <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                                    StrokeShape="RoundRectangle 12" Stroke="{StaticResource BorderColor}"
+                                    Padding="16,20">
+                                <VerticalStackLayout HorizontalOptions="Center" Spacing="6">
+                                    <Label Text="🛒" FontSize="28" HorizontalOptions="Center" />
+                                    <Label Text="Panier vide"
+                                           Style="{StaticResource EmptyStateStyle}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:CartLine">
+                                <Border Margin="0,0,0,8"
+                                        BackgroundColor="{StaticResource CardBackground}"
+                                        StrokeShape="RoundRectangle 12"
+                                        Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                        Padding="14,12">
+                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="6">
+                                        <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6">
+                                            <Label Text="{Binding ProductNom}"
+                                                   FontAttributes="Bold" FontSize="14"
+                                                   TextColor="{StaticResource TextPrimary}" />
+                                            <Border BackgroundColor="{StaticResource SecondaryLight}"
+                                                    Padding="6,3" StrokeShape="RoundRectangle 8"
+                                                    Stroke="Transparent" IsVisible="{Binding HasPromo}">
+                                                <Label Text="{Binding PromoTitre}" FontSize="10"
+                                                       TextColor="{StaticResource SecondaryText}" FontAttributes="Bold" />
+                                            </Border>
+                                        </HorizontalStackLayout>
+                                        <Label Grid.Row="0" Grid.Column="1"
+                                               Text="{Binding Quantite, StringFormat='x{0}'}"
+                                               TextColor="{StaticResource TextSecondary}" FontSize="13"
+                                               VerticalOptions="Center" />
+                                        <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="8">
+                                            <Label Text="{Binding PrixOriginal, StringFormat='{0:#,##0.000} TND'}"
+                                                   TextColor="{StaticResource TextMuted}" FontSize="12"
+                                                   TextDecorations="Strikethrough"
+                                                   IsVisible="{Binding HasPromo}" />
+                                            <Label Text="{Binding PrixUnitaire, StringFormat='{}{0:#,##0.000} TND'}"
+                                                   FontSize="13" FontAttributes="Bold"
+                                                   TextColor="{StaticResource Primary}" />
+                                        </HorizontalStackLayout>
+                                        <Label Grid.Row="1" Grid.Column="1"
+                                               Text="{Binding SousTotal, StringFormat='{0:#,##0.000} TND'}"
+                                               FontAttributes="Bold" TextColor="{StaticResource Primary}"
+                                               FontSize="13" VerticalOptions="End" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- Totals card -->
+                    <Border BackgroundColor="{StaticResource SurfaceBackground}"
+                            StrokeShape="RoundRectangle 12"
+                            Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                            Padding="14,12">
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="Sous-total"
+                                       FontSize="13" TextColor="{StaticResource TextSecondary}" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding CartTotal, StringFormat='{0:#,##0.000} TND'}"
+                                       FontAttributes="Bold" FontSize="13"
+                                       TextColor="{StaticResource TextPrimary}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding HasCartSavings}">
+                                <Label Grid.Column="0" Text="Économies promo"
+                                       FontSize="13" TextColor="{StaticResource PrimaryText}" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding CartSavings, StringFormat='-{0:#,##0.000} TND'}"
+                                       FontAttributes="Bold" FontSize="13"
+                                       TextColor="{StaticResource PrimaryText}" />
+                            </Grid>
+                            <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="Total"
+                                       FontSize="16" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding CartTotal, StringFormat='{0:#,##0.000} TND'}"
+                                       FontAttributes="Bold" FontSize="16"
+                                       TextColor="{StaticResource Primary}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- ── Step 2: Cart review ────────────────────────────────── -->
+                <VerticalStackLayout Spacing="12" IsVisible="{Binding IsStep2}">
+                    <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+                        <BoxView Grid.Column="0" BackgroundColor="{StaticResource Primary}"
+                                 CornerRadius="2" WidthRequest="4" />
+                        <Label Grid.Column="1" Text="Réviser le panier"
+                               FontSize="13" FontAttributes="Bold"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                    </Grid>
+                    <CollectionView ItemsSource="{Binding CartLines}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:CartLine">
+                                <Border Margin="0,0,0,8"
+                                        BackgroundColor="{StaticResource CardBackground}"
+                                        StrokeShape="RoundRectangle 12"
+                                        Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                        Padding="14,12">
+                                    <Grid ColumnDefinitions="*,44" ColumnSpacing="8"
+                                          RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+
+                                        <!-- Row 0: product name + delete button -->
+                                        <Label Grid.Row="0" Grid.Column="0"
+                                               Text="{Binding ProductNom}"
+                                               FontAttributes="Bold" FontSize="14"
+                                               FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource TextPrimary}" />
+                                        <Border Grid.Row="0" Grid.Column="1"
+                                                BackgroundColor="{StaticResource DangerLight}"
+                                                StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                                HeightRequest="36" WidthRequest="36"
+                                                HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Label Text="✕" FontSize="14" FontAttributes="Bold"
+                                                   TextColor="{StaticResource Danger}"
+                                                   HorizontalOptions="Center" VerticalOptions="Center">
+                                                <Label.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveLineCommand}"
+                                                        CommandParameter="{Binding .}" />
+                                                </Label.GestureRecognizers>
+                                            </Label>
+                                        </Border>
+
+                                        <!-- Row 1: Qté × Prix unitaire = Sous-total formula -->
+                                        <HorizontalStackLayout Grid.Row="1" Grid.Column="0"
+                                                               Grid.ColumnSpan="2" Spacing="6">
+                                            <Label Text="{Binding Quantite, StringFormat='{0}'}"
+                                                   FontSize="13" FontAttributes="Bold"
+                                                   TextColor="{StaticResource TextSecondary}" />
+                                            <Label Text="×" FontSize="13"
+                                                   TextColor="{StaticResource TextMuted}" />
+                                            <Label Text="{Binding PrixUnitaire, StringFormat='{0:#,##0.000} TND'}"
+                                                   FontSize="13"
+                                                   TextColor="{StaticResource TextSecondary}" />
+                                            <Label Text="=" FontSize="13"
+                                                   TextColor="{StaticResource TextMuted}" />
+                                            <Label Text="{Binding SousTotal, StringFormat='{0:#,##0.000} TND'}"
+                                                   FontSize="13" FontAttributes="Bold"
+                                                   TextColor="{StaticResource Primary}" />
+                                        </HorizontalStackLayout>
+
+                                        <!-- Row 2: promo badge + crossed original price -->
+                                        <HorizontalStackLayout Grid.Row="2" Grid.Column="0"
+                                                               Grid.ColumnSpan="2" Spacing="8"
+                                                               IsVisible="{Binding HasPromo}">
+                                            <Border BackgroundColor="{StaticResource SecondaryLight}"
+                                                    Padding="6,3" StrokeShape="RoundRectangle 8"
+                                                    Stroke="Transparent">
+                                                <Label Text="{Binding PromoTitre}" FontSize="10"
+                                                       TextColor="{StaticResource SecondaryText}"
+                                                       FontAttributes="Bold" />
+                                            </Border>
+                                            <Label Text="{Binding PrixOriginal, StringFormat='{0:#,##0.000} TND'}"
+                                                   TextColor="{StaticResource TextMuted}" FontSize="11"
+                                                   TextDecorations="Strikethrough" />
+                                        </HorizontalStackLayout>
+
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <!-- Total summary -->
+                    <Border BackgroundColor="{StaticResource PrimaryLight}"
+                            StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                            Padding="14,12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="Total commande"
+                                       FontSize="12" TextColor="{StaticResource PrimaryText}" />
+                                <Label Text="{Binding CartTotal, StringFormat='{0:#,##0.000} TND'}"
+                                       FontAttributes="Bold" FontSize="22"
+                                       TextColor="{StaticResource Primary}" />
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1"
+                                    BackgroundColor="{StaticResource SecondaryLight}"
+                                    StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                    Padding="10,6" VerticalOptions="Center"
+                                    IsVisible="{Binding HasCartSavings}">
+                                <Label Text="{Binding CartSavings, StringFormat='Éco. {0:#,##0.000} TND'}"
+                                       TextColor="{StaticResource SecondaryText}"
+                                       FontAttributes="Bold" FontSize="12" />
+                            </Border>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- ── Step 3: Confirmation ───────────────────────────────── -->
+                <VerticalStackLayout Spacing="16" IsVisible="{Binding IsStep3}"
+                                     HorizontalOptions="Center" Margin="0,8,0,0">
+                    <Border BackgroundColor="{StaticResource PrimaryLight}"
+                            StrokeShape="RoundRectangle 50" Stroke="Transparent"
+                            HeightRequest="80" WidthRequest="80"
+                            HorizontalOptions="Center">
+                        <Label Text="✓" FontSize="34" FontAttributes="Bold"
+                               TextColor="{StaticResource Primary}"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Text="Commande prête à confirmer"
+                           FontSize="20" FontAttributes="Bold"
+                           FontFamily="OpenSansSemibold"
+                           TextColor="{StaticResource TextPrimary}"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Vérifiez les informations puis confirmez."
+                           FontSize="14" TextColor="{StaticResource TextSecondary}"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+                    <!-- Total -->
+                    <Border BackgroundColor="{StaticResource PrimaryLight}"
+                            StrokeShape="RoundRectangle 14" Stroke="Transparent"
+                            Padding="20,14" HorizontalOptions="Center">
+                        <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                            <Label Text="Total commande" FontSize="12"
+                                   TextColor="{StaticResource PrimaryText}"
+                                   HorizontalOptions="Center" />
+                            <Label Text="{Binding CartTotal, StringFormat='{0:#,##0.000} TND'}"
+                                   FontAttributes="Bold" FontSize="26"
+                                   TextColor="{StaticResource Primary}"
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- ── Sticky navigation ─────────────────────────────────────────── -->
+        <Grid Grid.Row="2" BackgroundColor="{StaticResource CardBackground}">
+            <BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderColor}"
+                     VerticalOptions="Start" />
+            <Grid ColumnDefinitions="*,*" Padding="16,12,16,28" ColumnSpacing="12">
+                <Button Grid.Column="0"
+                        Text="Précédent"
+                        Command="{Binding PreviousStepCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        HeightRequest="48" Margin="0"
+                        IsVisible="{Binding IsNotStep1}" />
+                <Button Grid.Column="1"
+                        Text="Suivant →"
+                        Command="{Binding NextStepCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        HeightRequest="48" Margin="0"
+                        IsVisible="{Binding IsNotStep3}" />
+                <Button Grid.Column="0" Grid.ColumnSpan="2"
+                        Text="Confirmer la commande"
+                        Command="{Binding SubmitOrderCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        HeightRequest="48" Margin="0"
+                        IsVisible="{Binding IsStep3}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+            </Grid>
+        </Grid>
+
+        <controls:AppLoader Grid.RowSpan="3" />
+    </Grid>
+</ContentPage>

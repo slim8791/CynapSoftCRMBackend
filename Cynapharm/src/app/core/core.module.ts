@@ -1,11 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 
 import { AuthService } from './services/auth.service';
 import { ApiService } from './services/api.service';
-import { TokenInterceptor } from './interceptors/token.interceptor';
-import { ErrorInterceptor } from './interceptors/error.interceptor';
 
 @NgModule({
   declarations: [],
@@ -15,17 +13,7 @@ import { ErrorInterceptor } from './interceptors/error.interceptor';
   ],
   providers: [
     AuthService,
-    ApiService,
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: TokenInterceptor,
-      multi: true
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: ErrorInterceptor,
-      multi: true
-    }
+    ApiService
   ]
 })
 export class CoreModule { }

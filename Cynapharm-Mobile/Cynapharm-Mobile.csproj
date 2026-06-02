@@ -31,7 +31,7 @@
 		<ApplicationTitle>Cynapharm-Mobile</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.cynapharmmobile</ApplicationId>
+		<ApplicationId>com.cynapharm.mobile</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -49,10 +49,10 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#1A6B3C" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#1A6B3C" BaseSize="128,128" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -67,7 +67,15 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Include="Microsoft.Maui.Essentials" Version="10.0.20" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="10.*" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="10.*" />
+		<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.*" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.9.*" />
+		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.*" />
 	</ItemGroup>
 
 </Project>

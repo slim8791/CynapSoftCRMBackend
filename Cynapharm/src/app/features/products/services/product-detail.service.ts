@@ -18,7 +18,7 @@ export class ProductDetailService {
   }
 
   getLots(productId: number): Observable<any[]> {
-    return this.api.get(`/api/lots/product/${productId}/available`);
+    return this.api.get(`/products/lots/available/${productId}`);
   }
 
   getPromotions(productId: number): Observable<any[]> {

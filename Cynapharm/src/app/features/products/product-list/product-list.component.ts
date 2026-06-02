@@ -13,7 +13,7 @@ import { LotDto, getLotStatus, STATUS_LABEL, STATUS_CSS_CLASS } from '../../lots
 import { ToastService } from '../../../shared/services/toast.service';
 
 type StatusFilter = 'all' | 'active' | 'inactive' | 'archived';
-type ConfirmAction = 'deactivate' | 'archive' | 'activate' | 'unarchive';
+type ConfirmAction = 'deactivate' | 'archive' | 'activate' | 'unarchive' | 'harddelete';
 
 @Component({
   selector: 'app-product-list',
@@ -37,7 +37,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
   totalArchived = 0;
   // ── Filtres & pagination ─────────────────────────────
   searchTerm = '';
-  statusFilter: StatusFilter = 'all';
+  statusFilter: StatusFilter = 'active';
+  categoryFilter = '';
   currentPage = 1;
   pageSize = 10;
   totalPages = 0;
@@ -144,12 +145,18 @@ export class ProductListComponent implements OnInit, OnDestroy {
         break;
     }
 
+    // Filtre par catégorie
+    if (this.categoryFilter) {
+      result = result.filter(p => (p.Categorie ?? '') === this.categoryFilter);
+    }
+
     // Filtre par mot-clé (dès 3 caractères, client-side)
     const term = this.searchTerm.trim().toLowerCase();
     if (term.length >= 3) {
       result = result.filter(p =>
         (p.Nom          ?? '').toLowerCase().includes(term) ||
-        (p.Description  ?? '').toLowerCase().includes(term)
+        (p.Description  ?? '').toLowerCase().includes(term) ||
+        (p.Categorie    ?? '').toLowerCase().includes(term)
       );
     }
 
@@ -158,9 +165,17 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  onSearch(): void             { this.currentPage = 1; this.applyFilters(); }
-  onStatusFilterChange(): void { this.currentPage = 1; this.applyFilters(); }
-  onPageSizeChange(): void     { this.currentPage = 1; this.applyFilters(); }
+  get availableCategories(): string[] {
+    const cats = this.products
+      .map(p => p.Categorie as string)
+      .filter(c => !!c);
+    return [...new Set(cats)].sort();
+  }
+
+  onSearch(): void              { this.currentPage = 1; this.applyFilters(); }
+  onStatusFilterChange(): void  { this.currentPage = 1; this.applyFilters(); }
+  onCategoryFilterChange(): void { this.currentPage = 1; this.applyFilters(); }
+  onPageSizeChange(): void      { this.currentPage = 1; this.applyFilters(); }
 
   // ── Gestion des clics KPI ────────────────────────────
   onKPIClick(filter: StatusFilter): void {
@@ -173,7 +188,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
   // ── Pagination ───────────────────────────────────────
 
   get paginatedProducts(): any[] {
-    return this.filteredProducts;
+    const start = (this.currentPage - 1) * +this.pageSize;
+    return this.filteredProducts.slice(start, start + +this.pageSize);
   }
 
   get pageNumbers(): number[] {
@@ -198,11 +214,48 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   // ── Actions avec confirmation ─────────────────────────
 
-  onDelete(id: number):    void { this.openConfirm(id, 'deactivate'); }
-  onArchive(id: number):   void { this.openConfirm(id, 'archive'); }
-  onActivate(id: number):  void { this.openConfirm(id, 'activate'); }
+  onDelete(id: number):      void { this.openConfirm(id, 'deactivate'); }
+  onActivate(id: number):    void { this.openConfirm(id, 'activate'); }
+  onUnarchive(id: number):   void { this.openConfirm(id, 'unarchive'); }
+  onHardDelete(id: number):  void { this.openConfirm(id, 'harddelete'); }
 
-  onUnarchive(id: number): void { this.openConfirm(id, 'unarchive'); }
+  onArchive(id: number): void {
+    this.error = '';
+    const cached = this.lotsCache[id];
+    if (cached !== undefined) {
+      this.checkStockThenArchive(id, cached);
+      return;
+    }
+    // Lots not yet loaded — fetch them first so we can check stock.
+    this.loadingLots.add(id);
+    this.cdr.markForCheck();
+    this.lotService.getLotsByProductId(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (lots: LotDto[]) => {
+          this.lotsCache[id] = lots;
+          this.loadingLots.delete(id);
+          this.checkStockThenArchive(id, lots);
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loadingLots.delete(id);
+          // Could not verify stock — let the backend be the final guard.
+          this.openConfirm(id, 'archive');
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private checkStockThenArchive(id: number, lots: LotDto[]): void {
+    const stock = lots.reduce((sum, l) => sum + (l.quantite ?? 0), 0);
+    if (stock > 0) {
+      this.error = `Archivage impossible : ce produit possède encore ${stock} unité(s) en stock.`;
+      this.cdr.markForCheck();
+    } else {
+      this.openConfirm(id, 'archive');
+    }
+  }
   private openConfirm(id: number, action: ConfirmAction): void {
     const product = this.products.find(p => p.Id_Produit === id);
     this.confirmProductId   = id;
@@ -226,6 +279,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
     archive:    this.productService.archiveProduct(String(this.confirmProductId)),
     unarchive:  this.productService.unarchiveProduct(String(this.confirmProductId)),
     activate:   this.productService.activateProduct(String(this.confirmProductId)),
+    harddelete: this.productService.hardDeleteProduct(String(this.confirmProductId)),
   };
 
   this.loading = true;
@@ -265,6 +319,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
       archive:    'archiver',
       unarchive:  'désarchiver',
       activate:   'activer',
+      harddelete: 'supprimer définitivement',
     };
     return map[this.confirmAction as ConfirmAction] ?? '';
   }
@@ -276,6 +331,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
       unarchive:  `Désarchiver le produit "${name}" ?`,
       archive:    `Archiver le produit "${name}" ?`,
       activate:   `Activer le produit "${name}" ?`,
+      harddelete: `Supprimer définitivement "${name}" ? Cette action est irréversible. Le produit doit être archivé et son stock doit être à zéro.`,
     };
     return map[this.confirmAction as ConfirmAction] ?? '';
   }
@@ -286,8 +342,9 @@ export class ProductListComponent implements OnInit, OnDestroy {
     return {
       Id_Produit:    p.Id_Produit    ?? p.id_Produit    ?? null,
       Nom:           p.Nom           ?? p.nom           ?? '',
+      Categorie:     p.Categorie     ?? p.categorie     ?? '',
       Description:   p.Description   ?? p.description   ?? '',
-      Prix_Vente:    p.Prix_Vente    ?? p.prix_Vente    ?? 0,
+      Prix_Vente:    p.PrixVente     ?? p.prixVente     ?? 0,
       Prix_Creation: p.Prix_Creation ?? p.prix_Creation ?? 0,
       TVA:           p.TVA           ?? p.tVA           ?? p.tva ?? 0,
       IsActive:      p.IsActive      ?? p.isActive      ?? false,

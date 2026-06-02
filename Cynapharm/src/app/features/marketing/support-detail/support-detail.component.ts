@@ -51,11 +51,11 @@ export class SupportDetailComponent implements OnInit {
         console.error('❌ Load error:', err);
         this.loading = false;
         if (err.status === 404) {
-          this.error = 'Support not found';
+          this.error = 'Support introuvable';
         } else if (err.status === 403) {
-          this.error = 'Access denied';
+          this.error = 'Accès refusé';
         } else {
-          this.error = 'Failed to load support details';
+          this.error = 'Impossible de charger le support';
         }
       }
     });
@@ -93,7 +93,7 @@ export class SupportDetailComponent implements OnInit {
   }
 
   onDelete(): void {
-    if (confirm('Are you sure you want to delete this support?')) {
+    if (confirm('Supprimer ce support ?')) {
       this.loading = true;
       this.marketingService.deleteSupport(this.supportId).subscribe({
         next: () => {
@@ -105,7 +105,7 @@ export class SupportDetailComponent implements OnInit {
         error: (err: any) => {
           console.error('❌ Delete error:', err);
           this.loading = false;
-          this.error = 'Failed to delete support';
+          this.error = 'Impossible de supprimer le support';
         }
       });
     }

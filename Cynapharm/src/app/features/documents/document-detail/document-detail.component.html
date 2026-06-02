@@ -1,0 +1,28 @@
+<div class="pw">
+  <a [routerLink]="backLink" class="back">← Retour</a>
+
+  <div class="ph">
+    <div>
+      <h1 class="pt">{{ title }}</h1>
+      <p class="ps">Document #{{ doc?.numero_Doc ?? doc?.numeroDoc ?? '-' }}</p>
+    </div>
+  </div>
+
+  @if (error) { <div class="ae">{{ error }}</div> }
+  @if (loading) { <div class="lb"><div class="sp"></div> Chargement…</div> }
+
+  @if (!loading && doc) {
+    <div class="detail-card">
+      <div class="detail-row"><span>N° Doc</span><strong>{{ doc.numero_Doc ?? doc.numeroDoc }}</strong></div>
+      <div class="detail-row"><span>Nom</span><strong>{{ doc.nom_Doc ?? doc.nomDoc ?? '-' }}</strong></div>
+      <div class="detail-row"><span>Client</span><strong>{{ clientName || '-' }}</strong></div>
+      <div class="detail-row"><span>Commande</span><strong>{{ doc.id_Commande ?? doc.idCommande ?? '-' }}</strong></div>
+      <div class="detail-row"><span>Date</span><strong>{{ documentDate ? (documentDate | date:'dd/MM/yyyy') : '-' }}</strong></div>
+
+      @if (kind === 'facture') {
+        <div class="detail-row"><span>Montant HT</span><strong>{{ doc.montantHT ?? '-' }}</strong></div>
+        <div class="detail-row"><span>Montant TTC</span><strong>{{ doc.montantTTC ?? '-' }}</strong></div>
+      }
+    </div>
+  }
+</div>

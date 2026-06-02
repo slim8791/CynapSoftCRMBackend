@@ -17,6 +17,29 @@ namespace CynapCRM.Services.InventoryAPI.Service
             _db = db;
             _mapper = mapper;
         }
+        public async Task<IEnumerable<StockMovementDto>> GetMovementHistoryByDelegueAsync(
+    int idDelegue)
+        {
+            var stockIds = await _db.StocksDelegues
+                .Where(s => s.Id_User_Delegue == idDelegue && !s.IsDeleted)
+                .Select(s => s.Id_stock)
+                .ToListAsync();
+
+            return await _db.StockMovements
+                .AsNoTracking()
+                .Where(m => stockIds.Contains(m.Id_Stock))
+                .OrderByDescending(m => m.DateMovement)
+                .Select(m => new StockMovementDto
+                {
+                    Id_Movement = m.Id_Movement,
+                    Id_Stock = m.Id_Stock,
+                    Quantite = m.Quantite,
+                    TypeMovement = m.TypeMovement,
+                    DateMovement = m.DateMovement,
+                    Description = m.Description
+                })
+                .ToListAsync();
+        }
         public async Task<bool> DecrementStockAsync(int idStock, int qte)
         {
             if (qte <= 0)
@@ -95,7 +118,7 @@ namespace CynapCRM.Services.InventoryAPI.Service
                 {
                     Id_Stock = idStockSource,
                     TypeMovement = "Transfer-Out",
-                    Quantite = qte,
+                    Quantite = -qte,
                     DateMovement = DateTime.UtcNow,
                     Description = $"Transfert vers stock {idStockDestination}"
                 });

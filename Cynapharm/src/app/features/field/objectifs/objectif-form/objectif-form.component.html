@@ -1,68 +1,87 @@
 <div class="page">
-      <div class="page-header">
-        <a routerLink="/field/objectifs" class="back-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Retour
-        </a>
-        <h1>{{ isEdit ? 'Modifier l\'objectif' : 'Nouvel objectif' }}</h1>
+  <div class="page-header">
+    <a routerLink="/field/objectifs" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour
+    </a>
+    <h1>{{ isEdit ? 'Modifier l\'objectif' : 'Nouvel objectif' }}</h1>
+  </div>
+
+  <div *ngIf="loadingData" class="loading-wrap">
+    <div class="spinner"></div><span>Chargement...</span>
+  </div>
+  <div *ngIf="fetchError" class="error-banner">{{ fetchError }}</div>
+
+  <form *ngIf="!loadingData" [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+    <div class="form-grid">
+
+      <!-- Délégué -->
+      <div class="field">
+        <label>Délégué *</label>
+        <select formControlName="id_User_Delegue">
+          <option [value]="null">-- Sélectionner un délégué --</option>
+          @for (u of delegues; track u.id) {
+            <option [value]="u.id">{{ userName(u) }}</option>
+          }
+        </select>
+        <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Délégué requis</span>
       </div>
 
-      <div *ngIf="loadingData" class="loading-wrap">
-        <div class="spinner"></div><span>Chargement...</span>
+      <!-- Type -->
+      <div class="field">
+        <label>Type d'objectif *</label>
+        <select formControlName="type">
+          <option value="">-- Sélectionner --</option>
+          <option *ngFor="let t of typeOptions" [value]="t.value">{{ t.label }}</option>
+        </select>
+        <span *ngIf="f['type'].touched && f['type'].invalid" class="field-error">Champ requis</span>
       </div>
 
-      <div *ngIf="fetchError" class="error-banner">{{ fetchError }}</div>
+      <!-- Période (auto-fills dates) -->
+      <div class="field">
+        <label>Période *</label>
+        <select formControlName="periode">
+          <option value="">-- Sélectionner --</option>
+          <option *ngFor="let p of periodeOptions" [value]="p.value">{{ p.label }}</option>
+        </select>
+        <span *ngIf="f['periode'].touched && f['periode'].invalid" class="field-error">Champ requis</span>
+        @if (f['periode'].value) {
+          <span class="field-hint">Les dates sont calculées automatiquement.</span>
+        }
+      </div>
 
-      <form *ngIf="!loadingData" [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
-        <div class="form-grid">
-          <div class="field">
-            <label>Délégué (ID) *</label>
-            <input type="number" formControlName="id_User_Delegue" placeholder="ID du délégué" />
-            <span *ngIf="f['id_User_Delegue'].touched && f['id_User_Delegue'].invalid" class="field-error">Champ requis</span>
-          </div>
-          <div class="field">
-            <label>Type d'objectif *</label>
-            <select formControlName="type">
-              <option value="">-- Sélectionner --</option>
-              <option *ngFor="let t of typeOptions" [value]="t.value">{{ t.label }}</option>
-            </select>
-            <span *ngIf="f['type'].touched && f['type'].invalid" class="field-error">Champ requis</span>
-          </div>
-          <div class="field">
-            <label>Période *</label>
-            <select formControlName="periode">
-              <option value="">-- Sélectionner --</option>
-              <option *ngFor="let p of periodeOptions" [value]="p.value">{{ p.label }}</option>
-            </select>
-            <span *ngIf="f['periode'].touched && f['periode'].invalid" class="field-error">Champ requis</span>
-          </div>
-          <div class="field">
-            <label>Valeur cible *</label>
-            <input type="number" formControlName="valeurCible" placeholder="0" min="0" />
-            <span *ngIf="f['valeurCible'].touched && f['valeurCible'].invalid" class="field-error">Champ requis (min 0)</span>
-          </div>
-          <div class="field">
-            <label>Date de début *</label>
-            <input type="date" formControlName="dateDebut" />
-            <span *ngIf="f['dateDebut'].touched && f['dateDebut'].invalid" class="field-error">Champ requis</span>
-          </div>
-          <div class="field">
-            <label>Date de fin *</label>
-            <input type="date" formControlName="dateFin" />
-            <span *ngIf="f['dateFin'].touched && f['dateFin'].invalid" class="field-error">Champ requis</span>
-          </div>
-        </div>
+      <!-- Valeur cible (min 1) -->
+      <div class="field">
+        <label>Valeur cible *</label>
+        <input type="number" formControlName="valeurCible" placeholder="1" min="1" />
+        <span *ngIf="f['valeurCible'].touched && f['valeurCible'].invalid" class="field-error">Valeur requise (min 1)</span>
+      </div>
 
-        <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
-        <div *ngIf="successMsg" class="success-banner">{{ successMsg }}</div>
+      <!-- Date début (auto-filled) -->
+      <div class="field">
+        <label>Date de début *</label>
+        <input type="date" formControlName="dateDebut" />
+        <span *ngIf="f['dateDebut'].touched && f['dateDebut'].invalid" class="field-error">Champ requis</span>
+      </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="saving">
-            <span *ngIf="saving" class="btn-spinner"></span>
-            {{ saving ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
-          </button>
-          <a routerLink="/field/objectifs" class="btn btn-secondary">Annuler</a>
-        </div>
-      </form>
+      <!-- Date fin (auto-filled) -->
+      <div class="field">
+        <label>Date de fin *</label>
+        <input type="date" formControlName="dateFin" />
+        <span *ngIf="f['dateFin'].touched && f['dateFin'].invalid" class="field-error">Champ requis</span>
+      </div>
+
     </div>
-  
+
+    <div *ngIf="submitError" class="error-banner" style="margin-top:16px">{{ submitError }}</div>
+    <div *ngIf="successMsg"  class="success-banner">{{ successMsg }}</div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        <span *ngIf="saving" class="btn-spinner"></span>
+        {{ saving ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+      </button>
+      <a routerLink="/field/objectifs" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>

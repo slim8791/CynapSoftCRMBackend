@@ -27,9 +27,9 @@ export class SupportListComponent implements OnInit {
 
   columns = [
     { key: 'type', label: 'Type' },
-    { key: 'campaignName', label: 'Campaign' },
-    { key: 'isActive', label: 'Status' },
-    { key: 'fichiers', label: 'Files Count' }
+    { key: 'campaignName', label: 'Campagne' },
+    { key: 'isActive', label: 'Statut' },
+    { key: 'fichiers', label: 'Fichiers' }
   ];
 
   constructor(
@@ -40,10 +40,10 @@ export class SupportListComponent implements OnInit {
 
   ngOnInit(): void {
     this.productId = Number(this.route.snapshot.paramMap.get('productId'));
-    this.productName = this.route.snapshot.queryParamMap.get('productName') || 'Product';
+    this.productName = this.route.snapshot.queryParamMap.get('productName') || 'Produit';
 
     if (!this.productId) {
-      this.error = 'Product ID is required';
+      this.error = 'ID produit requis';
       this.loading = false;
       return;
     }
@@ -75,11 +75,11 @@ export class SupportListComponent implements OnInit {
         this.loading = false;
 
         if (err.status === 404) {
-          this.error = 'No marketing supports found for this product';
+          this.error = 'Aucun support marketing trouvé pour ce produit';
         } else if (err.status === 403) {
-          this.error = 'Access denied';
+          this.error = 'Accès refusé';
         } else {
-          this.error = err.error?.message || 'Failed to load supports';
+          this.error = err.error?.message || 'Impossible de charger les supports';
         }
       }
     });
@@ -99,7 +99,7 @@ export class SupportListComponent implements OnInit {
 
   getValue(support: any, key: string): any {
     if (key === 'isActive') {
-      return support.isActive ? 'Active' : 'Inactive';
+      return support.isActive ? 'Actif' : 'Inactif';
     }
     if (key === 'fichiers') {
       return (support.fichiers || []).length;
@@ -120,7 +120,7 @@ export class SupportListComponent implements OnInit {
   }
 
   onDelete(support: any): void {
-    if (confirm(`Delete support "${support.type}"?`)) {
+    if (confirm(`Supprimer le support "${support.type}" ?`)) {
       this.marketingService.deleteSupport(support.idSupportMarketting).subscribe({
         next: () => {
           console.log('✅ Support deleted');
@@ -128,7 +128,7 @@ export class SupportListComponent implements OnInit {
         },
         error: (err: any) => {
           console.error('❌ Delete error:', err);
-          alert('Failed to delete support');
+          alert('Impossible de supprimer le support');
         }
       });
     }

@@ -26,61 +26,41 @@ export class LotAdvancedService {
    * Récupère les lots disponibles pour un produit (non expirés, quantité > 0)
    */
   getAvailableLots(productId: number): Observable<any[]> {
-    return this.api.get(`/product/${productId}/available-lots`).pipe(
-      map((response: any) => response.result ?? [])
+    return this.api.get(`/products/lots/available/${productId}`).pipe(
+      map((response: any) => response.Result ?? response.result ?? [])
     );
   }
 
-  /**
-   * Récupère les lots expirés
-   */
   getExpiredLots(): Observable<any[]> {
-    return this.api.get('/product/expired-lots').pipe(
-      map((response: any) => response.result ?? [])
+    return this.api.get('/products/lots/expiring').pipe(
+      map((response: any) => response.Result ?? response.result ?? [])
     );
   }
 
-  /**
-   * Récupère les lots par produit
-   */
   getLotsByProductId(productId: number): Observable<any[]> {
-    return this.api.get(`/product/${productId}/lots`).pipe(
-      map((response: any) => response.result ?? [])
+    return this.api.get(`/products/lots/product/${productId}`).pipe(
+      map((response: any) => response.Result ?? response.result ?? [])
     );
   }
 
-  /**
-   * Récupère un lot spécifique
-   */
   getLotByNumero(numeroLot: string): Observable<any> {
-    return this.api.get(`/product/lot/${numeroLot}`).pipe(
-      map((response: any) => response.result)
+    return this.api.get(`/products/lots/${numeroLot}`).pipe(
+      map((response: any) => response.Result ?? response.result)
     );
   }
 
-  /**
-   * Crée ou met à jour un lot
-   */
   createOrUpdateLot(lotData: any): Observable<any> {
-    return this.api.post('/product/lot', lotData).pipe(
-      map((response: any) => response.result)
+    return this.api.post('/products/lots/lot', lotData).pipe(
+      map((response: any) => response.Result ?? response.result)
     );
   }
 
-  /**
-   * Supprime un lot
-   */
   deleteLot(numeroLot: string): Observable<any> {
-    return this.api.delete(`/product/lot/${numeroLot}`);
+    return this.api.delete(`/products/lots/${numeroLot}`);
   }
 
-  /**
-   * Ajuste le stock d'un produit (logique FEFO appliquée au backend)
-   * @param productId ID du produit
-   * @param quantityChange Quantité à ajuster (positif pour augmenter, négatif pour diminuer)
-   */
   adjustStock(productId: number, quantityChange: number): Observable<any> {
-    return this.api.put(`/product/product/${productId}/adjust-stock?quantityChange=${quantityChange}`, {});
+    return this.api.put(`/products/${productId}/adjust-stock?quantityChange=${quantityChange}`, {});
   }
 
   /**

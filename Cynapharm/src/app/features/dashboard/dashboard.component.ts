@@ -4,14 +4,16 @@ import { Subject, of } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
-import { OrderApiService, Commande, OrderStats } from './services/order-api.service';
+import { OrderApiService, Commande, OrderStats, OrderDashboardDto } from './services/order-api.service';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { CurrencyTNDPipe } from '../../shared/pipes/currency-tnd.pipe';
+import { AuthService } from '../../core/services/auth.service';
+import { KpiDashboardComponent } from '../field/kpi/kpi-dashboard/kpi-dashboard.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule, CardComponent, CurrencyTNDPipe],
+  imports: [CommonModule, NgApexchartsModule, CardComponent, CurrencyTNDPipe, KpiDashboardComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -21,10 +23,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   error = '';
 
   // ── KPI Cards ─────────────────────────────────────────
-  commandesAujourdhui = 0;   // remplace visitesToday (KPI endpoint manquant)
+  commandesAujourdhui = 0;
   commandesEnAttente  = 0;
   caTotal             = 0;
-  tauxLivraison       = 0;   // remplace performanceRate (calculé localement)
+  tauxLivraison       = 0;
+  orderDash: OrderDashboardDto | null = null;
+  loadingDash = false;
 
   // ── Chart : Commandes par statut — barres ────────────
   statutBarSeries: any[] = [];
@@ -65,9 +69,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
 
+  get isAdmin(): boolean {
+    return this.authSvc.getUserRole()?.toUpperCase() === 'ADMIN';
+  }
+
+  get isSuperviseur(): boolean {
+    return this.authSvc.getUserRole()?.toUpperCase() === 'SUPERVISEUR';
+  }
+
+  get isDelegue(): boolean {
+    return this.authSvc.getUserRole()?.toUpperCase() === 'DELEGUE';
+  }
+
   constructor(
     private orderApi: OrderApiService,
-    private cdr: ChangeDetectorRef
+    private authSvc:  AuthService,
+    private cdr:      ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -85,11 +102,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error   = '';
 
-    this.orderApi.getAllOrders()
-      .pipe(
-        catchError(() => of([] as Commande[])),
-        takeUntil(this.destroy$)
-      )
+    const role   = this.authSvc.getUserRole()?.toUpperCase();
+    const userId = this.authSvc.getUserId();
+
+    // DÉLÉGUÉ: only his own orders; ADMIN/SUPERVISEUR: all orders
+    const orders$ = role === 'DELEGUE'
+      ? this.orderApi.getOrdersByClient(userId)
+      : this.orderApi.getAllOrders();
+
+    orders$
+      .pipe(catchError(() => of([] as Commande[])), takeUntil(this.destroy$))
       .subscribe({
         next: orders => {
           this.buildOrderCharts(orders);
@@ -102,6 +124,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+
+    // orderDash section: ADMIN and SUPERVISEUR only
+    if (role !== 'DELEGUE') {
+      this.loadingDash = true;
+      this.orderApi.getOrdersDashboard()
+        .pipe(catchError(() => of(null)), takeUntil(this.destroy$))
+        .subscribe(d => { this.orderDash = d; this.loadingDash = false; this.cdr.markForCheck(); });
+    } else {
+      this.orderDash = null;
+    }
   }
 
   // ── Construction de tous les graphiques depuis les commandes ──
@@ -114,10 +146,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.commandesEnAttente  = stats.countEnAttente;
     this.caTotal             = stats.totalCA;
 
-    // Taux de livraison = Livrées / (Total - Annulées) × 100
-    const denominator = stats.totalOrders - stats.countAnnulees;
-    this.tauxLivraison = denominator > 0
-      ? Math.round((stats.countLivrees / denominator) * 100)
+    // Taux de livraison = Livrées / total commandes × 100
+    this.tauxLivraison = stats.totalOrders > 0
+      ? Math.round((stats.countLivrees / stats.totalOrders) * 100)
       : 0;
 
     // Barres horizontales : commandes par statut

@@ -1,34 +1,60 @@
 <div class="pw">
-      <div class="ph">
-        <div><h1 class="pt">Bons de commande</h1><p class="ps">{{ bons.length }} bon(s)</p></div>
-        <a routerLink="/documents/bons-commandes/new" class="btn-p">+ Nouveau BC</a>
-      </div>
-      @if (error)   { <div class="ae">{{ error }}</div> }
-      @if (loading) { <div class="lb"><div class="sp"></div> Chargement…</div> }
-      @else if (bons.length === 0) {
-        <app-empty-state title="Aucun bon de commande"></app-empty-state>
-      } @else {
-        <div class="tc">
-          <table class="dt">
-            <thead><tr><th>ID</th><th>Client</th><th>Date création</th><th class="tr">Montant total</th><th>Actions</th></tr></thead>
-            <tbody>
-              @for (b of bons; track b.id) {
-                <tr>
-                  <td>#{{ b.id }}</td>
-                  <td>#{{ b.id_Client }}</td>
-                  <td>{{ b.dateCreation | date:'dd/MM/yy' }}</td>
-                  <td class="tr fw">{{ b.montantTotal | currencyTND }}</td>
-                  <td class="ac">
-                    <a [routerLink]="['/documents/bons-commandes', b.id]" class="ab view" title="Voir">👁</a>
-                    <a [routerLink]="['/documents/bons-commandes', b.id, 'edit']" class="ab edit" title="Modifier">✏</a>
-                    <button class="ab pdf" (click)="downloadPdf(b)" title="Télécharger PDF">⬇</button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-          <app-paginator [page]="page" [pageSize]="pageSize" [total]="total" (pageChange)="onPage($event)"></app-paginator>
-        </div>
-      }
+  <div class="ph">
+    <div><h1 class="pt">Bons de commande</h1><p class="ps">{{ bons.length }} bon(s)</p></div>
+  </div>
+  @if (error)   { <div class="ae">{{ error }}</div> }
+  @if (loading) { <div class="lb"><div class="sp"></div> Chargement…</div> }
+  @else if (bons.length === 0) {
+    <app-empty-state title="Aucun bon de commande"></app-empty-state>
+  } @else {
+    <div class="tc">
+      <table class="dt">
+        <thead>
+          <tr>
+            <th>N° Doc</th>
+            <th>Nom</th>
+            <th>Client</th>
+            <th>Commande</th>
+            <th>Date création</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of bons; track b.numero_Doc) {
+            <tr>
+              <td>{{ b.numero_Doc }}</td>
+              <td>{{ b.nom_Doc ?? '-' }}</td>
+              <td>{{ clientName(b.id_Client) }}</td>
+              <td>{{ b.id_Commande ?? '-' }}</td>
+              <td>{{ b.dateCreation | date:'dd/MM/yyyy' }}</td>
+              <td class="ac">
+                <div class="action-row" style="justify-content: center;">
+                  <a [routerLink]="['/documents/bons-commandes', b.numero_Doc]" class="act-btn view" title="Voir">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </a>
+                  <button class="act-btn edit" (click)="download(b)"
+                          [disabled]="regenerating[b.numero_Doc]"
+                          [title]="regenerating[b.numero_Doc] ? 'Génération…' : 'Télécharger'">
+                    @if (regenerating[b.numero_Doc]) {
+                      <span class="sp sp-sm"></span>
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                      </svg>
+                    }
+                  </button>
+                  <button class="act-btn delete" (click)="delete(b.numero_Doc)" title="Supprimer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-paginator [page]="page" [pageSize]="pageSize" [total]="total" (pageChange)="onPage($event)"></app-paginator>
     </div>
-  
+  }
+</div>
