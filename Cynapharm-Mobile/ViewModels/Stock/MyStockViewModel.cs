@@ -148,8 +148,8 @@ public partial class MyStockViewModel : BaseViewModel
                 ProductId        = e.ProductId,
                 ProductNom       = e.ProductNom,
                 NumeroLot        = e.NumeroLot,
-                QuantiteRestante = e.Quantite,
-                QuantiteAllouee  = e.Quantite,
+                QuantiteRestante = e.QteEchantillon,
+                QuantiteAllouee  = e.QteEchantillon,
                 DateExpiration   = e.DateExpiration
             });
 
@@ -294,7 +294,7 @@ public partial class MyStockViewModel : BaseViewModel
         if (src != null) src.QuantiteRestante = Math.Max(0, src.QuantiteRestante - quantite);
 
         var srcEchantillon = _echantillonStock.FirstOrDefault(s => s.Id == item.StockId);
-        if (srcEchantillon != null) srcEchantillon.Quantite = Math.Max(0, srcEchantillon.Quantite - quantite);
+        if (srcEchantillon != null) srcEchantillon.QteEchantillon = Math.Max(0, srcEchantillon.QteEchantillon - quantite);
 
         RefreshDisplayedList();
 
@@ -373,9 +373,9 @@ public partial class MyStockViewModel : BaseViewModel
                     NumeroLot        = s.NumeroLot,
                     ProductId        = s.ProductId,
                     ProductNom       = s.ProductNom,
-                    QuantiteLabel    = $"Qté : {s.Quantite}",
-                    QuantiteRestante = s.Quantite,
-                    QuantiteAllouee  = s.Quantite,
+                    QuantiteLabel    = $"Qté Échantillons : {s.QteEchantillon}",
+                    QuantiteRestante = s.QteEchantillon,
+                    QuantiteAllouee  = s.QteEchantillon,
                     PromoDetails     = details,
                     IsEchantillon    = true // Allow distribute
                 });
