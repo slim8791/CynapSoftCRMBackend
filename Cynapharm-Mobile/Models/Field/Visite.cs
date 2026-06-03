@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Cynapharm_Mobile.Models.Inventory;
 
 namespace Cynapharm_Mobile.Models.Field;
 
@@ -49,6 +50,34 @@ public class Visite
 
     [JsonIgnore]
     public string PharmacienNom { get; set; } = string.Empty;
+
+    // Resolved delegate name — used by the médecin's visit-history view
+    [JsonIgnore]
+    public string DelegueNom { get; set; } = string.Empty;
+
+    [JsonIgnore]
+    public bool HasDelegue => !string.IsNullOrEmpty(DelegueNom);
+
+    [JsonIgnore]
+    public string DelegueLabel => HasDelegue ? DelegueNom : $"Délégué #{IdDelegue}";
+
+    // ── Products discussed during the visit (from the linked rapport) ──────────
+    // Raw JSON [{ "id", "nom" }] from the backend; parsed names filled by the ViewModel.
+    [JsonPropertyName("produitsDiscutes")]
+    public string? ProduitsDiscutes { get; set; }
+
+    [JsonIgnore]
+    public List<string> ProduitsDiscutesNoms { get; set; } = new();
+
+    [JsonIgnore]
+    public bool HasProduitsDiscutes => ProduitsDiscutesNoms.Count > 0;
+
+    // ── Samples received during the visit (resolved by the ViewModel) ──────────
+    [JsonIgnore]
+    public List<EchantillonRecu> EchantillonsRecus { get; set; } = new();
+
+    [JsonIgnore]
+    public bool HasEchantillons => EchantillonsRecus.Count > 0;
 
     [JsonIgnore]
     public string ContactName =>

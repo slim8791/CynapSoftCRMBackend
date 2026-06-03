@@ -3,6 +3,7 @@ using CynapCRM.Services.InventoryAPI.Models.Dto;
 using CynapCRM.Services.InventoryAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CynapCRM.Services.InventoryAPI.Controllers
 {
@@ -134,8 +135,9 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
             }
         }
 
+        // MEDECIN inclus : un médecin peut consulter les échantillons qu'il a reçus.
         [HttpGet("by-medecin/{idMedecin:int}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,MEDECIN")]
         public async Task<IActionResult> GetDistributionsByMedecin(int idMedecin)
         {
             try
@@ -146,6 +148,19 @@ namespace CynapCRM.Services.InventoryAPI.Controllers
                     _response.Message = "Id médecin invalide.";
                     return BadRequest(_response);
                 }
+
+                // Sécurité métier : un médecin ne voit que ses propres échantillons.
+                if (User.IsInRole("MEDECIN"))
+                {
+                    var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (!int.TryParse(idClaim, out var currentUserId) || currentUserId != idMedecin)
+                    {
+                        _response.IsSuccess = false;
+                        _response.Message = "Accès refusé : vous ne pouvez consulter que vos propres échantillons.";
+                        return StatusCode(403, _response);
+                    }
+                }
+
                 var result = await _distributionService
                     .GetDistributionsByMedecinAsync(idMedecin);
                 _response.Result = result;

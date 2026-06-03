@@ -10,6 +10,8 @@ export interface StockMovementDto {
   typeMovement: string;
   dateMovement?: string;
   description?: string;
+  id_User_Delegue?: number;
+  id_Produit?: number;
 }
 
 @Injectable({ providedIn: 'root' })

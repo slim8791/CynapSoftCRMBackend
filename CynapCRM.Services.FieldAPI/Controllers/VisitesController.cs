@@ -116,6 +116,45 @@ namespace CynapCRM.Services.FieldAPI.Controllers
             }
         }
 
+        // Historique des visites reçues par un médecin.
+        // Un MEDECIN ne peut consulter que ses propres visites ; ADMIN/SUPERVISEUR/DELEGUE peuvent interroger n'importe quel médecin.
+        [HttpGet("by-medecin/{idMedecin:int}")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,MEDECIN")]
+        public async Task<IActionResult> GetVisitesByMedecinId(int idMedecin)
+        {
+            try
+            {
+                if (idMedecin <= 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "ID de médecin invalide.";
+                    return BadRequest(_response);
+                }
+
+                // Sécurité métier : un médecin ne voit que son propre historique.
+                if (User.IsInRole("MEDECIN"))
+                {
+                    var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (!int.TryParse(idClaim, out var currentUserId) || currentUserId != idMedecin)
+                    {
+                        _response.IsSuccess = false;
+                        _response.Message = "Accès refusé : vous ne pouvez consulter que vos propres visites.";
+                        return StatusCode(403, _response);
+                    }
+                }
+
+                var visites = await _visiteService.GetVisitesByMedecinAsync(idMedecin);
+                _response.Result = visites;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
         [HttpGet("by-planning/{idPlanning:int}")]
         [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
         public async Task<IActionResult> GetVisitesByPlanning(int idPlanning)

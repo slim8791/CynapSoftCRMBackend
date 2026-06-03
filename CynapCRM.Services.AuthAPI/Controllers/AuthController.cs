@@ -414,7 +414,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             return Ok(_response);
         }
         [HttpGet("users/by-role/{role}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,MEDECIN")]
         public async Task<IActionResult> GetUsersByRole(string role)
         {
             // DELEGUE can query CLIENT and MEDECIN roles
@@ -425,6 +425,15 @@ namespace CynapCRM.Services.AuthAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = "Accès refusé. Vous ne pouvez consulter que les clients et les médecins.";
+                return Forbid();
+            }
+
+            // MEDECIN can only query DELEGUE roles
+            if (callerRole == UserRole.MEDECIN.ToString() &&
+                !string.Equals(role, UserRole.DELEGUE.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Accès refusé. Un médecin ne peut voir que les délégués.";
                 return Forbid();
             }
 
@@ -443,7 +452,7 @@ namespace CynapCRM.Services.AuthAPI.Controllers
         }
 
         [HttpGet("users/{id}")]
-        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE")]
+        [Authorize(Roles = "ADMIN,SUPERVISEUR,DELEGUE,MEDECIN")]
         public async Task<IActionResult> GetUserById(int id)
         {
             try
@@ -460,6 +469,15 @@ namespace CynapCRM.Services.AuthAPI.Controllers
                 if (callerRole == UserRole.DELEGUE.ToString() &&
                     user.Role != UserRole.CLIENT.ToString() &&
                     user.Role != UserRole.MEDECIN.ToString())
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Acces refuse.";
+                    return Forbid();
+                }
+
+                // MEDECIN can only look up DELEGUE users (to see who visited them)
+                if (callerRole == UserRole.MEDECIN.ToString() &&
+                    user.Role != UserRole.DELEGUE.ToString())
                 {
                     _response.IsSuccess = false;
                     _response.Message = "Acces refuse.";

@@ -58,6 +58,18 @@ public class InventoryService
         => _api.GetAsync<object>("inventory/distributions");
 
     /// <summary>
+    /// Samples received by the currently logged-in médecin.
+    /// Gateway: GET /inventory/distributions/by-medecin/{userId}
+    /// The backend enforces that a MEDECIN can only read their own distributions.
+    /// </summary>
+    public async Task<List<EchantillonRecu>?> GetEchantillonsByMedecinAsync()
+    {
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        if (!int.TryParse(userIdStr, out var userId)) return null;
+        return await _api.GetAsync<List<EchantillonRecu>>($"inventory/distributions/by-medecin/{userId}");
+    }
+
+    /// <summary>
     /// Records a sample distribution on the backend.
     /// Gateway: POST /inventory/distributions → InventoryAPI POST /api/distributions
     /// Exactly one of idMedecin or idPharmacien must be non-null.

@@ -104,6 +104,18 @@ namespace CynapCRM.Services.FieldAPI.Service
             return _mapper.Map<IEnumerable<VisiteDto>>(visites);
         }
 
+        public async Task<IEnumerable<VisiteDto>> GetVisitesByMedecinAsync(int idMedecin)
+        {
+            var visites = await _db.Visites
+            .Include(v => v.Rapport)
+            .Where(v => v.Id_Medecin == idMedecin)
+            .OrderByDescending(v => v.DateVisite)
+            .AsNoTracking()
+            .ToListAsync();
+
+            return _mapper.Map<IEnumerable<VisiteDto>>(visites);
+        }
+
         public async Task<IEnumerable<VisiteDto>> GetVisitesByPlanningAsync(int idPlanning)
         {
             var visites = await _db.Visites

@@ -106,7 +106,8 @@ public partial class OrderDetailViewModel : BaseViewModel
                     Date    = f.DateFacture,
                     Type    = "FACTURE",
                     Statut  = f.Statut,
-                    Montant = f.MontantTTC
+                    Montant = f.MontantTTC,
+                    Url     = f.CloudinaryUrl
                 });
 
         var bcs = await _documentService.GetBCByCommandeAsync(commandeId);
@@ -119,7 +120,8 @@ public partial class OrderDetailViewModel : BaseViewModel
                     Date    = b.DateEmission,
                     Type    = "BC",
                     Statut  = b.Statut,
-                    Montant = b.MontantTotal
+                    Montant = b.MontantTotal,
+                    Url     = b.CloudinaryUrl
                 });
 
         var bls = await _documentService.GetBLByCommandeAsync(commandeId);
@@ -131,13 +133,75 @@ public partial class OrderDetailViewModel : BaseViewModel
                     Numero = bl.NumeroBon,
                     Date   = bl.DateLivraison,
                     Type   = "BL",
-                    Statut = bl.Statut
+                    Statut = bl.Statut,
+                    Url    = bl.CloudinaryUrl
                 });
 
         HasLinkedDocuments = LinkedFactures.Count > 0 || LinkedBC.Count > 0 || LinkedBL.Count > 0;
     }
 
     protected override Task RetryAsync() => LoadAsync();
+
+    // Download a linked document (Facture / BC / BL) and open it.
+    // Available to every role that can view the order (délégué + client grossiste/pharmacien):
+    // the PDF is fetched from its public Cloudinary URL, no extra authorization needed.
+    [RelayCommand]
+    private Task DownloadDocumentAsync(DocumentSummary? doc) => ExecuteAsync(async () =>
+    {
+        if (doc is null) return;
+
+        var label = DocumentLabel(doc);
+
+        // Case 1: the document row exists but no PDF was ever generated/uploaded
+        // (CloudinaryUrl is empty). The PDF is produced by the web app, not mobile.
+        if (string.IsNullOrEmpty(doc.Url))
+        {
+            await ShowErrorAlertAsync(
+                "Document non généré",
+                $"Le {label} n'a pas encore de fichier PDF. " +
+                "Générez-le depuis l'application web (la facture, le BC et le BL doivent être générés chacun de leur côté), puis réessayez.");
+            return;
+        }
+
+        // Case 2: a URL exists but the file could not be fetched (deleted, wrong
+        // resource type, or network issue) — distinct message so the cause is clear.
+        var bytes = await _documentService.DownloadFileAsync(doc.Url);
+        if (bytes is null || bytes.Length == 0)
+        {
+            await ShowErrorAlertAsync(
+                "Téléchargement échoué",
+                $"Le fichier du {label} est introuvable sur le serveur. " +
+                "Il a peut-être été supprimé ou enregistré de manière incorrecte.");
+            return;
+        }
+
+        var fileName = BuildFileName(doc);
+        var pdfPath = Path.Combine(FileSystem.CacheDirectory, fileName);
+        await File.WriteAllBytesAsync(pdfPath, bytes);
+        await Launcher.OpenAsync(
+            new OpenFileRequest(fileName, new ReadOnlyFile(pdfPath, "application/pdf")));
+    });
+
+    private static string DocumentLabel(DocumentSummary doc) => doc.Type?.ToUpperInvariant() switch
+    {
+        "FACTURE" => "facture",
+        "BC"      => "bon de commande",
+        "BL"      => "bon de livraison",
+        _         => "document"
+    };
+
+    private static string BuildFileName(DocumentSummary doc)
+    {
+        var prefix = doc.Type?.ToUpperInvariant() switch
+        {
+            "FACTURE" => "Facture",
+            "BC"      => "BC",
+            "BL"      => "BL",
+            _         => "Document"
+        };
+        var numero = string.IsNullOrWhiteSpace(doc.Numero) ? doc.Id.ToString() : doc.Numero;
+        return $"{prefix}_{numero}.pdf";
+    }
 
     [RelayCommand]
     private Task CancelOrderAsync() => ExecuteAsync(async () =>

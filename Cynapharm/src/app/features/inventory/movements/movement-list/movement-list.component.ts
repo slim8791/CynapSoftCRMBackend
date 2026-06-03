@@ -108,12 +108,13 @@ export class MovementListComponent implements OnInit, OnDestroy {
 
       // ── Build stock lookup: stockId → { delegueId, produitId } ──
       this.stockLookup.clear();
-      (Array.isArray(stocks) ? stocks : []).forEach((s: StockDelegueDto) => {
-        if (s.id_stock != null) {
-          this.stockLookup.set(s.id_stock, {
-            delegueId: s.id_User_Delegue,
-            produitId: s.id_Produit
-          });
+      (Array.isArray(stocks) ? stocks : []).forEach((s: any) => {
+        const stockId = s?.id_stock ?? s?.id_Stock ?? s?.Id_stock ?? s?.Id_Stock;
+        const delegueId = s?.id_User_Delegue ?? s?.Id_User_Delegue;
+        const produitId = s?.id_Produit ?? s?.Id_Produit;
+
+        if (stockId != null) {
+          this.stockLookup.set(stockId, { delegueId, produitId });
         }
       });
 
@@ -187,23 +188,41 @@ export class MovementListComponent implements OnInit, OnDestroy {
 
   /** Attach resolved delegue/product IDs and display labels to each movement row */
   private resolveMovementLabels(): void {
-    this.allMovements = this.allMovements.map(m => {
-      const entry      = this.stockLookup.get(m.id_Stock);
-      const delegueId  = entry?.delegueId;
-      const produitId  = entry?.produitId;
-      const delegueLabel = delegueId != null
+    this.allMovements = this.allMovements.map((m: any) => {
+      const stockId = m?.id_Stock ?? m?.id_stock ?? m?.Id_Stock ?? m?.Id_stock;
+      const entry      = this.stockLookup.get(stockId);
+
+      const delegueId  = m?.id_User_Delegue ?? m?.Id_User_Delegue ?? entry?.delegueId;
+      const produitId  = m?.id_Produit ?? m?.Id_Produit ?? entry?.produitId;
+
+      const delegueLabel = delegueId != null && delegueId > 0
         ? (this.delegues.find(d => d.id === delegueId)?.label ?? `Délégué #${delegueId}`)
         : '—';
-      const produitLabel = produitId != null
+      const produitLabel = produitId != null && produitId > 0
         ? (this.produits.find(p => p.id === produitId)?.label ?? `Produit #${produitId}`)
         : '—';
-      return { ...m, resolvedDelegueId: delegueId, resolvedProduitId: produitId, delegueLabel, produitLabel };
+
+      return { 
+        ...m, 
+        dateMovement: m?.dateMovement ?? m?.DateMovement,
+        typeMovement: m?.typeMovement ?? m?.TypeMovement,
+        quantite: m?.quantite ?? m?.Quantite ?? 0,
+        resolvedDelegueId: delegueId, 
+        resolvedProduitId: produitId, 
+        delegueLabel, 
+        produitLabel 
+      };
     });
   }
 
-  isSortie(type: string | undefined): boolean {
+  isSortie(type: string | undefined, quantite: number = 0): boolean {
+    if (quantite < 0) return true;
     const t = type?.toLowerCase() ?? '';
-    return t === 'decrement' || t === 'transfer-out';
+    return t === 'decrement' || t === 'transfer-out' || t === 'distribution';
+  }
+
+  getAbsQuantite(q: number): number {
+    return Math.abs(q || 0);
   }
 
   resetFilters(): void {
@@ -225,16 +244,25 @@ export class MovementListComponent implements OnInit, OnDestroy {
 
     if (this.dateDebut) {
       const start = new Date(`${this.dateDebut}T00:00:00`);
-      result = result.filter(m => m.dateMovement && new Date(m.dateMovement) >= start);
+      result = result.filter(m => {
+        const d = (m as any).dateMovement ?? (m as any).DateMovement;
+        return d && new Date(d) >= start;
+      });
     }
 
     if (this.dateFin) {
       const end = new Date(`${this.dateFin}T23:59:59`);
-      result = result.filter(m => m.dateMovement && new Date(m.dateMovement) <= end);
+      result = result.filter(m => {
+        const d = (m as any).dateMovement ?? (m as any).DateMovement;
+        return d && new Date(d) <= end;
+      });
     }
 
     if (this.typeMovement) {
-      result = result.filter(m => m.typeMovement?.toLowerCase() === this.typeMovement.toLowerCase());
+      result = result.filter(m => {
+        const t = (m as any).typeMovement ?? (m as any).TypeMovement ?? '';
+        return t.toLowerCase() === this.typeMovement.toLowerCase();
+      });
     }
 
     if (this.selectedDelegueId != null) {

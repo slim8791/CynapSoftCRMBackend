@@ -1,4 +1,4 @@
-﻿namespace CynapCRM.Services.InventoryAPI.Models.Dto
+namespace CynapCRM.Services.InventoryAPI.Models.Dto
 {
     public class StockMovementDto
     {
@@ -9,6 +9,9 @@
         public string TypeMovement { get; set; } = string.Empty;
         public DateTime DateMovement { get; set; }
         public string? Description { get; set; }
+
+        public int Id_User_Delegue { get; set; }
+        public int Id_Produit { get; set; }
 
     }
 }

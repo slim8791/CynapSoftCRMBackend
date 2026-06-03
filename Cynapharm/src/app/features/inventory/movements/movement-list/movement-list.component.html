@@ -151,23 +151,23 @@
           </td>
           <td>
             <span class="type-chip"
-                  [class.chip-in]="!isSortie(m.typeMovement)"
-                  [class.chip-out]="isSortie(m.typeMovement)">
+                  [class.chip-in]="!isSortie(m.typeMovement, m.quantite)"
+                  [class.chip-out]="isSortie(m.typeMovement, m.quantite)">
               {{ m.typeMovement }}
             </span>
           </td>
           <td>
             <span class="qty-badge"
-                  [class.positive]="!isSortie(m.typeMovement)"
-                  [class.negative]="isSortie(m.typeMovement)">
-              {{ isSortie(m.typeMovement) ? '−' : '+' }}{{ m.quantite | number }}
+                  [class.positive]="!isSortie(m.typeMovement, m.quantite)"
+                  [class.negative]="isSortie(m.typeMovement, m.quantite)">
+              {{ isSortie(m.typeMovement, m.quantite) ? '−' : '+' }}{{ getAbsQuantite(m.quantite) | number }}
             </span>
           </td>
           <td>
             <span class="sens-chip"
-                  [class.sens-entree]="!isSortie(m.typeMovement)"
-                  [class.sens-sortie]="isSortie(m.typeMovement)">
-              {{ isSortie(m.typeMovement) ? '↓ Sortie' : '↑ Entrée' }}
+                  [class.sens-entree]="!isSortie(m.typeMovement, m.quantite)"
+                  [class.sens-sortie]="isSortie(m.typeMovement, m.quantite)">
+              {{ isSortie(m.typeMovement, m.quantite) ? '↓ Sortie' : '↑ Entrée' }}
             </span>
           </td>
         </tr>

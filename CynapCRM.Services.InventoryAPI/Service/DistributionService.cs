@@ -123,16 +123,28 @@ namespace CynapCRM.Services.InventoryAPI.Service
         }
         public async Task<IEnumerable<EchantillonDto>> GetDistributionsByMedecinAsync(int idMedecin)
         {
+            // Join with the delegate stock to resolve the product id (Id_Stock → Id_Produit),
+            // so the client can display the distributed sample's product.
+            var distributions = await (
+                from e in _db.Echantillons.AsNoTracking()
+                where e.Id_Medecin == idMedecin && !e.IsDeleted
+                join s in _db.StocksDelegues.AsNoTracking() on e.Id_Stock equals s.Id_stock into sj
+                from s in sj.DefaultIfEmpty()
+                orderby e.DateDistribution descending
+                select new EchantillonDto
+                {
+                    Id_Distribution  = e.Id_Distribution,
+                    Id_Delegue       = e.Id_Delegue,
+                    Id_Medecin       = e.Id_Medecin,
+                    Id_Pharmacien    = e.Id_Pharmacien,
+                    Id_Stock         = e.Id_Stock,
+                    Id_Produit       = s != null ? s.Id_Produit : 0,
+                    Qte              = e.Qte,
+                    NumeroLot        = e.NumeroLot,
+                    DateDistribution = e.DateDistribution
+                }).ToListAsync();
 
-            var distributions = await _db.Echantillons
-                            .AsNoTracking()
-                            .Where(e =>
-                                e.Id_Medecin == idMedecin &&
-                                !e.IsDeleted)
-                            .OrderByDescending(e => e.DateDistribution)
-                            .ToListAsync();
-
-            return _mapper.Map<IEnumerable<EchantillonDto>>(distributions);
+            return distributions;
         }
         public async Task<IEnumerable<EchantillonDto>> GetDistributionsByPharmacienAsync(int idPharmacien)
         {

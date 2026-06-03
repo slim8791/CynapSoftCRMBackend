@@ -16,6 +16,9 @@ namespace CynapCRM.Services.FieldAPI.Models.Dto
         public bool HasRapport { get; set; }
         public string? ClientNom { get; set; }
 
+        // Produits présentés/discutés pendant la visite (JSON [{ "id", "nom" }] issu du rapport).
+        public string? ProduitsDiscutes { get; set; }
+
         // Démarrage de la visite
         public DateTime? HeureDebut { get; set; }
         public bool IsStarted { get; set; }

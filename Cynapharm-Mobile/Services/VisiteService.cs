@@ -25,6 +25,23 @@ public class VisiteService
         ).ToList();
     }
 
+    // ── Historique des visites reçues par le médecin connecté ──────────────────
+    // Le backend filtre par le médecin authentifié (un médecin ne voit que ses visites).
+    public async Task<List<Visite>?> GetVisitesForMedecinAsync(DateTime? from, DateTime? to, string? status)
+    {
+        var userIdStr = await SecureStorage.GetAsync(StorageKeys.UserId);
+        if (!int.TryParse(userIdStr, out var userId)) return null;
+
+        var all = await _api.GetAsync<List<Visite>>($"fields/visites/by-medecin/{userId}");
+        if (all == null) return null;
+
+        return all.Where(v =>
+            (from   == null || v.DateVisite.Date >= from.Value.Date)  &&
+            (to     == null || v.DateVisite.Date <= to.Value.Date)    &&
+            (status == null || string.Equals(v.Statut, status, StringComparison.OrdinalIgnoreCase))
+        ).ToList();
+    }
+
     public Task<Visite?> GetVisiteByIdAsync(int id)
         => _api.GetAsync<Visite>($"fields/visites/{id}");
 

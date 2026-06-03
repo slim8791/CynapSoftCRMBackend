@@ -25,6 +25,7 @@ public partial class AppShell : Shell
     // ── Flyout role visibility (custom panel) ────────────────────────────
     public bool ShowDashboard    { get; private set; }
     public bool ShowVisites      { get; private set; }
+    public bool ShowMedecinVisites { get; private set; }
     public bool ShowPlanning     { get; private set; }
     public bool ShowCatalogue    { get; private set; } = true;
     public bool ShowOrders       { get; private set; }
@@ -42,6 +43,7 @@ public partial class AppShell : Shell
     // ── Navigation commands ───────────────────────────────────────────────
     public IAsyncRelayCommand GoToDashboardCommand    { get; }
     public IAsyncRelayCommand GoToVisitesCommand      { get; }
+    public IAsyncRelayCommand GoToMedecinVisitesCommand { get; }
     public IAsyncRelayCommand GoToPlanningCommand     { get; }
     public IAsyncRelayCommand GoToCatalogueCommand    { get; }
     public IAsyncRelayCommand GoToOrdersCommand       { get; }
@@ -56,6 +58,7 @@ public partial class AppShell : Shell
     {
         GoToDashboardCommand    = new AsyncRelayCommand(() => Navigate("//dashboard"));
         GoToVisitesCommand      = new AsyncRelayCommand(() => Navigate("//visits"));
+        GoToMedecinVisitesCommand = new AsyncRelayCommand(() => Navigate("//medecinvisits"));
         GoToPlanningCommand     = new AsyncRelayCommand(() => Navigate("//planning"));
         GoToCatalogueCommand    = new AsyncRelayCommand(() => Navigate("//products"));
         GoToOrdersCommand       = new AsyncRelayCommand(() => Navigate("//orders"));
@@ -101,6 +104,7 @@ public partial class AppShell : Shell
 
         ShowDashboard    = isDelegue;
         ShowVisites      = isDelegue;
+        ShowMedecinVisites = isMedecin;
         ShowPlanning     = isDelegue;
         ShowCatalogue    = isDelegue || isClient || isMedecin;
         ShowOrders       = isClient || isDelegue;
@@ -115,12 +119,14 @@ public partial class AppShell : Shell
 
         NotifyAll();
 
-        // Flyout disabled for MEDECIN (tab-bar-only UX: Catalogue + Profil)
-        Shell.SetFlyoutBehavior(this, isMedecin ? FlyoutBehavior.Disabled : FlyoutBehavior.Flyout);
+        // Flyout enabled for every role. MEDECIN gets a reduced menu
+        // (Mes visites + Catalogue + Profil) via the Show* flags below.
+        Shell.SetFlyoutBehavior(this, FlyoutBehavior.Flyout);
 
         // Tab bar visibility — role-specific tabs; Catalogue and Profil tabs are always visible
         if (FlyoutDashboard  is not null) FlyoutDashboard.IsVisible  = isDelegue;
         if (FlyoutVisites    is not null) FlyoutVisites.IsVisible    = isDelegue;
+        if (FlyoutMedecinVisites is not null) FlyoutMedecinVisites.IsVisible = isMedecin;
         if (FlyoutPlanning   is not null) FlyoutPlanning.IsVisible   = isDelegue;
         if (FlyoutOrders     is not null) FlyoutOrders.IsVisible     = isClient || isDelegue;
         if (FlyoutDocuments  is not null) FlyoutDocuments.IsVisible  = isClient;
@@ -166,6 +172,7 @@ public partial class AppShell : Shell
         OnPropertyChanged(nameof(IsMedecin));
         OnPropertyChanged(nameof(ShowDashboard));
         OnPropertyChanged(nameof(ShowVisites));
+        OnPropertyChanged(nameof(ShowMedecinVisites));
         OnPropertyChanged(nameof(ShowPlanning));
         OnPropertyChanged(nameof(ShowCatalogue));
         OnPropertyChanged(nameof(ShowOrders));

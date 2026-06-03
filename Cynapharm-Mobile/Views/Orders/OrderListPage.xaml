@@ -250,7 +250,7 @@
                     Margin="16,12,16,28" />
         </Grid>
 
-        <controls:AppLoader Grid.RowSpan="6" />
+        <controls:AppLoader Grid.RowSpan="6" IsBusy="{Binding IsBusy}" />
 
     </Grid>
 </ContentPage>

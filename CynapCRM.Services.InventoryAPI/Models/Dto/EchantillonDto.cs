@@ -12,6 +12,10 @@
 
         public int Id_Stock { get; set; }
 
+        // Résolu depuis le stock délégué (Echantillon.Id_Stock → Stock_Delegue.Id_Produit).
+        // Permet au client d'afficher le nom du produit distribué.
+        public int Id_Produit { get; set; }
+
         public int Qte { get; set; }
 
         public string NumeroLot { get; set; }

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Visites"
+             xmlns:models="clr-namespace:Cynapharm_Mobile.Models.Field"
+             xmlns:inv="clr-namespace:Cynapharm_Mobile.Models.Inventory"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Visites.MedecinVisitHistoryPage"
+             x:DataType="vm:MedecinVisitHistoryViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <controls:AppHeader Grid.Row="0" Title="Mes visites"
+                            Subtitle="Historique des visites de votre délégué"
+                            ShowHamburger="True" />
+
+        <VerticalStackLayout Grid.Row="1" BackgroundColor="{StaticResource Primary}" Padding="0,0,0,16">
+            <!-- Floating search bar -->
+            <Border BackgroundColor="White"
+                    StrokeShape="RoundRectangle 14"
+                    Stroke="Transparent"
+                    Padding="14,0"
+                    Margin="16,0,16,4">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,4" Radius="12" Opacity="0.12" />
+                </Border.Shadow>
+                <Grid ColumnDefinitions="20,*" ColumnSpacing="10" HeightRequest="48">
+                    <Label Grid.Column="0" Text="🔍" FontSize="15"
+                           TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                    <Entry Grid.Column="1"
+                           Placeholder="Rechercher (délégué, date…)"
+                           Text="{Binding SearchQuery}"
+                           ReturnType="Search"
+                           PlaceholderColor="{StaticResource TextMuted}"
+                           TextColor="{StaticResource TextPrimary}"
+                           BackgroundColor="Transparent"
+                           FontSize="14" HeightRequest="48"
+                           Margin="0" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
+
+        <!-- Error banner -->
+        <controls:ErrorBanner Grid.Row="2"
+                              Message="{Binding ErrorMessage}"
+                              Margin="16,8,16,0" />
+
+        <!-- ── Date range filter ─────────────────────────────────────────── -->
+        <Grid Grid.Row="3"
+              ColumnDefinitions="*,*" ColumnSpacing="12"
+              BackgroundColor="{StaticResource PageBackground}"
+              Padding="16,10,16,4">
+            <Border Grid.Column="0"
+                    Stroke="{StaticResource FieldBorderInactive}"
+                    BackgroundColor="{StaticResource SurfaceBackground}"
+                    StrokeThickness="1.5"
+                    Padding="12,0" HeightRequest="46">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <DatePicker Date="{Binding FilterStartDate}"
+                            Format="dd/MM/yyyy"
+                            BackgroundColor="Transparent"
+                            TextColor="{StaticResource TextPrimary}"
+                            VerticalOptions="Center" />
+            </Border>
+            <Border Grid.Column="1"
+                    Stroke="{StaticResource FieldBorderInactive}"
+                    BackgroundColor="{StaticResource SurfaceBackground}"
+                    StrokeThickness="1.5"
+                    Padding="12,0" HeightRequest="46">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <DatePicker Date="{Binding FilterEndDate}"
+                            Format="dd/MM/yyyy"
+                            BackgroundColor="Transparent"
+                            TextColor="{StaticResource TextPrimary}"
+                            VerticalOptions="Center" />
+            </Border>
+        </Grid>
+
+        <!-- ── Visit history list (read-only) ────────────────────────────── -->
+        <RefreshView Grid.Row="4"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     RefreshColor="{StaticResource Primary}">
+            <CollectionView ItemsSource="{Binding Visites}"
+                            ItemSizingStrategy="MeasureFirstItem">
+                <CollectionView.Header>
+                    <BoxView HeightRequest="6" Color="Transparent" />
+                </CollectionView.Header>
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                         Spacing="16" Padding="40" Margin="0,40,0,0">
+                        <Border BackgroundColor="{StaticResource PrimaryLight}"
+                                StrokeShape="RoundRectangle 50" Stroke="Transparent"
+                                WidthRequest="80" HeightRequest="80" HorizontalOptions="Center">
+                            <Label Text="📋" FontSize="38"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="Aucune visite trouvée"
+                               FontSize="16" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               HorizontalOptions="Center" />
+                        <Label Text="Aucun délégué n'a encore enregistré de visite sur cette période."
+                               Style="{StaticResource EmptyStateStyle}" FontSize="13"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Visite">
+                        <Border Margin="16,0,16,10"
+                                BackgroundColor="{StaticResource CardBackground}"
+                                StrokeShape="RoundRectangle 16"
+                                Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                Padding="0">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06" />
+                            </Border.Shadow>
+                            <Grid ColumnDefinitions="5,*">
+                                <!-- Decorative accent bar (no status meaning) -->
+                                <BoxView Grid.Column="0" VerticalOptions="Fill"
+                                         BackgroundColor="{StaticResource Primary}" />
+                                <Grid Grid.Column="1"
+                                      ColumnDefinitions="*"
+                                      Padding="14,14" ColumnSpacing="10">
+                                    <!-- Date, delegate name, products discussed, samples received -->
+                                    <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                        <!-- Line 1: Date -->
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                            <Label Grid.Column="0" Text="📅" FontSize="12"
+                                                   VerticalOptions="Center" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding DateVisite, StringFormat='{0:dd/MM/yyyy}'}"
+                                                   FontSize="13" FontAttributes="Bold"
+                                                   TextColor="{StaticResource TextPrimary}"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                        <!-- Line 2: Delegate name -->
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                            <Label Grid.Column="0" Text="👤" FontSize="12"
+                                                   VerticalOptions="Center" />
+                                            <Label Grid.Column="1" Text="{Binding DelegueLabel}"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource TextSecondary}"
+                                                   LineBreakMode="TailTruncation"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+
+                                        <!-- Line 3: Products discussed -->
+                                        <VerticalStackLayout Spacing="4" Margin="0,4,0,0"
+                                                             IsVisible="{Binding HasProduitsDiscutes}">
+                                            <Label Text="Produits présentés" FontSize="11"
+                                                   FontAttributes="Bold"
+                                                   TextColor="{StaticResource TextMuted}" />
+                                            <FlexLayout Wrap="Wrap" AlignItems="Center"
+                                                        BindableLayout.ItemsSource="{Binding ProduitsDiscutesNoms}">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="x:String">
+                                                        <Border Padding="8,3" Margin="0,0,6,4"
+                                                                Stroke="Transparent"
+                                                                BackgroundColor="{StaticResource PrimaryLight}">
+                                                            <Border.StrokeShape>
+                                                                <RoundRectangle CornerRadius="8" />
+                                                            </Border.StrokeShape>
+                                                            <Label Text="{Binding .}" FontSize="11"
+                                                                   TextColor="{StaticResource Primary}" />
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </FlexLayout>
+                                        </VerticalStackLayout>
+
+                                        <!-- Line 4: Samples received -->
+                                        <VerticalStackLayout Spacing="3" Margin="0,4,0,0"
+                                                             IsVisible="{Binding HasEchantillons}">
+                                            <Label Text="Échantillons reçus" FontSize="11"
+                                                   FontAttributes="Bold"
+                                                   TextColor="{StaticResource TextMuted}" />
+                                            <VerticalStackLayout Spacing="2"
+                                                                 BindableLayout.ItemsSource="{Binding EchantillonsRecus}">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="inv:EchantillonRecu">
+                                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                                            <Label Grid.Column="0" Text="💊" FontSize="11"
+                                                                   VerticalOptions="Center" />
+                                                            <Label Grid.Column="1" Text="{Binding Display}"
+                                                                   FontSize="12"
+                                                                   TextColor="{StaticResource TextSecondary}"
+                                                                   VerticalOptions="Center" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </VerticalStackLayout>
+                                        </VerticalStackLayout>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="8" Color="Transparent" />
+                </CollectionView.Footer>
+            </CollectionView>
+        </RefreshView>
+
+        <controls:AppLoader Grid.RowSpan="5" IsBusy="{Binding IsBusy}" />
+
+    </Grid>
+</ContentPage>

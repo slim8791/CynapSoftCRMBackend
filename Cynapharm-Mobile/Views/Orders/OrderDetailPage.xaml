@@ -238,7 +238,12 @@
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="docs:DocumentSummary">
                                 <Border Style="{StaticResource CardStyle}">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DownloadDocumentCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
                                         <Border Grid.Column="0" BackgroundColor="{StaticResource PrimaryLight}"
                                                 StrokeShape="RoundRectangle 10" Stroke="Transparent"
                                                 HeightRequest="38" WidthRequest="38">
@@ -261,6 +266,22 @@
                                                    FontSize="11" FontAttributes="Bold"
                                                    TextColor="{StaticResource TextPrimary}" />
                                         </Border>
+                                        <Border Grid.Column="3"
+                                                BackgroundColor="{StaticResource Primary}"
+                                                StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                                HeightRequest="38" WidthRequest="38"
+                                                VerticalOptions="Center">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DownloadDocumentCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Border.GestureRecognizers>
+                                            <Path Data="M12 3v10M8 11l4 4 4-4M5 19h14"
+                                                  Stroke="White" StrokeThickness="2"
+                                                  StrokeLineCap="Round" StrokeLineJoin="Round"
+                                                  Aspect="Uniform" HeightRequest="18" WidthRequest="18"
+                                                  HorizontalOptions="Center" VerticalOptions="Center" />
+                                        </Border>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -270,7 +291,12 @@
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="docs:DocumentSummary">
                                 <Border Style="{StaticResource CardStyle}">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DownloadDocumentCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
                                         <Border Grid.Column="0" BackgroundColor="{StaticResource AccentLight}"
                                                 StrokeShape="RoundRectangle 10" Stroke="Transparent"
                                                 HeightRequest="38" WidthRequest="38">
@@ -293,6 +319,22 @@
                                                    FontSize="11" FontAttributes="Bold"
                                                    TextColor="{StaticResource TextPrimary}" />
                                         </Border>
+                                        <Border Grid.Column="3"
+                                                BackgroundColor="{StaticResource Primary}"
+                                                StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                                HeightRequest="38" WidthRequest="38"
+                                                VerticalOptions="Center">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DownloadDocumentCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Border.GestureRecognizers>
+                                            <Path Data="M12 3v10M8 11l4 4 4-4M5 19h14"
+                                                  Stroke="White" StrokeThickness="2"
+                                                  StrokeLineCap="Round" StrokeLineJoin="Round"
+                                                  Aspect="Uniform" HeightRequest="18" WidthRequest="18"
+                                                  HorizontalOptions="Center" VerticalOptions="Center" />
+                                        </Border>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -302,7 +344,12 @@
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="docs:DocumentSummary">
                                 <Border Style="{StaticResource CardStyle}">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DownloadDocumentCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
                                         <Border Grid.Column="0" BackgroundColor="{StaticResource SurfaceBackground}"
                                                 StrokeShape="RoundRectangle 10" Stroke="{StaticResource BorderColor}"
                                                 HeightRequest="38" WidthRequest="38">
@@ -324,6 +371,22 @@
                                             <Label Text="{Binding Statut}"
                                                    FontSize="11" FontAttributes="Bold"
                                                    TextColor="{StaticResource TextPrimary}" />
+                                        </Border>
+                                        <Border Grid.Column="3"
+                                                BackgroundColor="{StaticResource Primary}"
+                                                StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                                                HeightRequest="38" WidthRequest="38"
+                                                VerticalOptions="Center">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DownloadDocumentCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Border.GestureRecognizers>
+                                            <Path Data="M12 3v10M8 11l4 4 4-4M5 19h14"
+                                                  Stroke="White" StrokeThickness="2"
+                                                  StrokeLineCap="Round" StrokeLineJoin="Round"
+                                                  Aspect="Uniform" HeightRequest="18" WidthRequest="18"
+                                                  HorizontalOptions="Center" VerticalOptions="Center" />
                                         </Border>
                                     </Grid>
                                 </Border>

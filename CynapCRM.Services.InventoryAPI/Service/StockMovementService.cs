@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CynapCRM.Services.InventoryAPI.Data;
 using CynapCRM.Services.InventoryAPI.Models;
 using CynapCRM.Services.InventoryAPI.Models.Dto;
@@ -17,28 +17,38 @@ namespace CynapCRM.Services.InventoryAPI.Service
             _db = db;
             _mapper = mapper;
         }
-        public async Task<IEnumerable<StockMovementDto>> GetMovementHistoryByDelegueAsync(
-    int idDelegue)
+        public async Task<IEnumerable<StockMovementDto>> GetMovementHistoryByDelegueAsync(int idDelegue)
         {
-            var stockIds = await _db.StocksDelegues
+            var stocks = await _db.StocksDelegues
                 .Where(s => s.Id_User_Delegue == idDelegue && !s.IsDeleted)
-                .Select(s => s.Id_stock)
+                .Select(s => new { s.Id_stock, s.Id_User_Delegue, s.Id_Produit })
                 .ToListAsync();
 
-            return await _db.StockMovements
+            var stockIds = stocks.Select(s => s.Id_stock).ToList();
+
+            var movements = await _db.StockMovements
                 .AsNoTracking()
                 .Where(m => stockIds.Contains(m.Id_Stock))
                 .OrderByDescending(m => m.DateMovement)
-                .Select(m => new StockMovementDto
+                .ToListAsync();
+
+            var result = new List<StockMovementDto>();
+            foreach(var m in movements)
+            {
+                var stock = stocks.FirstOrDefault(s => s.Id_stock == m.Id_Stock);
+                result.Add(new StockMovementDto
                 {
                     Id_Movement = m.Id_Movement,
                     Id_Stock = m.Id_Stock,
                     Quantite = m.Quantite,
                     TypeMovement = m.TypeMovement,
                     DateMovement = m.DateMovement,
-                    Description = m.Description
-                })
-                .ToListAsync();
+                    Description = m.Description,
+                    Id_User_Delegue = stock?.Id_User_Delegue ?? 0,
+                    Id_Produit = stock?.Id_Produit ?? 0
+                });
+            }
+            return result;
         }
         public async Task<bool> DecrementStockAsync(int idStock, int qte)
         {

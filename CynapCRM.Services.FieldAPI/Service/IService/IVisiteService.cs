@@ -13,6 +13,9 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
 
         Task<IEnumerable<VisiteDto>> GetVisitesByDelegueAsync(int idDelegue);
 
+        // Historique des visites reçues par un médecin (consultable par le médecin lui-même)
+        Task<IEnumerable<VisiteDto>> GetVisitesByMedecinAsync(int idMedecin);
+
         Task<IEnumerable<VisiteDto>> GetVisitesByPlanningAsync(int idPlanning);
 
         Task<bool> DeleteVisiteAsync(int idVisite);
