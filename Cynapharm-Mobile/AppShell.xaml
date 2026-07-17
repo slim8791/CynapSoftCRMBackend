@@ -15,6 +15,7 @@
        xmlns:documents="clr-namespace:Cynapharm_Mobile.Views.Documents"
        xmlns:reclamations="clr-namespace:Cynapharm_Mobile.Views.Reclamations"
        xmlns:clients="clr-namespace:Cynapharm_Mobile.Views.Clients"
+       xmlns:medsample="clr-namespace:Cynapharm_Mobile.Views.Stock"
        xmlns:profile="clr-namespace:Cynapharm_Mobile.Views.Profile"
        Shell.FlyoutBehavior="Flyout"
        Shell.TabBarIsVisible="False"
@@ -174,6 +175,33 @@
                         </Border>
                         <Label Grid.Column="2"
                                Text="Mes visites"
+                               FontSize="15" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               VerticalOptions="Center" />
+                        <Label Grid.Column="3" Text="›" FontSize="20"
+                               TextColor="{StaticResource Gray300}"
+                               VerticalOptions="Center" HorizontalOptions="End" />
+                    </Grid>
+
+                    <!-- Mes échantillons (MEDECIN) -->
+                    <Grid HeightRequest="64" Padding="20,0"
+                          ColumnDefinitions="46,12,*,20"
+                          IsVisible="{Binding ShowMedecinEchantillons, Source={x:Reference AppShellRoot}}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding GoToMedecinEchantillonsCommand, Source={x:Reference AppShellRoot}}" />
+                        </Grid.GestureRecognizers>
+                        <Border Grid.Column="0"
+                                BackgroundColor="#FFF3E0"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent"
+                                HeightRequest="42" WidthRequest="42"
+                                HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="💊" FontSize="18"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Grid.Column="2"
+                               Text="Mes échantillons"
                                FontSize="15" FontAttributes="Bold"
                                TextColor="{StaticResource TextPrimary}"
                                VerticalOptions="Center" />
@@ -582,6 +610,13 @@
     <FlyoutItem x:Name="FlyoutMedecinVisites" FlyoutItemIsVisible="False" IsVisible="False">
         <ShellContent Route="medecinvisits"
                       ContentTemplate="{DataTemplate visites:MedecinVisitHistoryPage}"
+                      Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
+
+    <!-- ── MÉDECIN — Échantillons reçus ───────────────────────── -->
+    <FlyoutItem x:Name="FlyoutMedecinEchantillons" FlyoutItemIsVisible="False" IsVisible="False">
+        <ShellContent Route="medecinechantillons"
+                      ContentTemplate="{DataTemplate medsample:MedecinEchantillonsPage}"
                       Shell.NavBarIsVisible="False" />
     </FlyoutItem>
 

@@ -5,6 +5,8 @@ using CynapCRM.Services.ProductAPI.Models.Dto;
 using CynapCRM.Services.ProductAPI.Service.IService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using CynapCRM.MessageBus.Events;
+using MassTransit;
 
 namespace CynapCRM.Services.ProductAPI.Service
 {
@@ -12,11 +14,13 @@ namespace CynapCRM.Services.ProductAPI.Service
     {
         private readonly AppDbContext _db;
         private readonly IMapper _mapper;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public ProductService(AppDbContext db, IMapper mapper)
+        public ProductService(AppDbContext db, IMapper mapper, IPublishEndpoint publishEndpoint)
         {
             _db = db;
             _mapper = mapper;
+            _publishEndpoint = publishEndpoint;
         }
 
         // ═══════════════════════════════════════
@@ -88,6 +92,13 @@ namespace CynapCRM.Services.ProductAPI.Service
             }
 
             await _db.SaveChangesAsync();
+            await _publishEndpoint.Publish(new ProductPriceChangedEvent
+            {
+                ProductId = product.Id_Produit,
+                NomProduit = product.Nom,
+                NouveauPrix = (decimal)product.PrixVente,
+                DateModification = DateTime.UtcNow
+            });
             return _mapper.Map<ProduitDto>(product);
         }
 

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CynapCRM.Services.FieldAPI.Models;
 using CynapCRM.Services.FieldAPI.Models.Dto;
 
@@ -22,6 +22,7 @@ namespace CynapCRM.Services.FieldAPI
                 .ForMember(d => d.IdPharmacien, o => o.MapFrom(s => s.Id_Pharmacien))
                 .ForMember(d => d.IdPlanning, o => o.MapFrom(s => s.Id_Planning))
                 .ForMember(d => d.HasRapport, o => o.MapFrom(s => s.Rapport != null))
+                .ForMember(d => d.IsRejected, o => o.MapFrom(s => s.Rapport != null && s.Rapport.IsRejected))
                 .ForMember(d => d.ProduitsDiscutes, o => o.MapFrom(s => s.Rapport != null ? s.Rapport.ProduitsDiscutes : null));
             
             CreateMap<Visite, VisiteDetailsDto>().ReverseMap();

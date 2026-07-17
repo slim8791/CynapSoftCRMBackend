@@ -21,6 +21,9 @@ namespace CynapCRM.Services.FieldAPI.Models.Dto
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
 
+        public bool IsRejected { get; set; }
+        public string? MotifRejet { get; set; }
+
         /// <summary>
         /// JSON-serialized array of products discussed during the visit.
         /// Populated by the mobile app; null when no products were selected.

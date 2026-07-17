@@ -1,3 +1,6 @@
+using CynapCRM.MessageBus;
+using CynapCRM.MessageBus.Extensions;
+using CynapCRM.Services.DocAPI.Consumers;
 using CynapCRM.Services.DocAPI.Data;
 using CynapCRM.Services.DocAPI.Extensions;
 using CynapCRM.Services.DocAPI.Service;
@@ -49,6 +52,12 @@ builder.Services.AddScoped<IBCService, BCService>();
 builder.Services.AddScoped<IBLService, BLService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IFactureService, FactureService>();
+
+builder.Services.AddCynapMessageBus(builder.Configuration, x =>
+{
+    x.AddConsumer<OrderCreatedConsumer>();
+    x.AddConsumer<OrderStatusChangedConsumer>();
+});
 
 var app = builder.Build();
 

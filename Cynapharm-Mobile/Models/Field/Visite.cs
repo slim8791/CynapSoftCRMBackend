@@ -41,8 +41,21 @@ public class Visite
     [JsonPropertyName("hasRapport")]
     public bool HasRapport { get; set; }
 
+    [JsonPropertyName("isRejected")]
+    public bool IsRejected { get; set; }
+
     [JsonIgnore]
-    public string Statut => IsCompleted ? "Complétée" : IsStarted ? "En cours" : "Planifiée";
+    public string Statut
+    {
+        get
+        {
+            if (IsCompleted) return "Validée";
+            if (IsRejected) return "Rejetée";
+            if (HasRapport) return "En attente";
+            if (IsStarted) return "En cours";
+            return "Planifiée";
+        }
+    }
 
     // ── Resolved display names (populated by ViewModel after load, never from API)
     [JsonIgnore]

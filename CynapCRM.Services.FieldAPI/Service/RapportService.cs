@@ -4,6 +4,8 @@ using CynapCRM.Services.FieldAPI.Models;
 using CynapCRM.Services.FieldAPI.Models.Dto;
 using CynapCRM.Services.FieldAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
+using CynapCRM.MessageBus.Events;
+using MassTransit;
 
 namespace CynapCRM.Services.FieldAPI.Service
 {
@@ -11,11 +13,13 @@ namespace CynapCRM.Services.FieldAPI.Service
     {
         private readonly AppDbContext _db;
         private readonly IMapper _mapper;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public RapportService(AppDbContext db, IMapper mapper)
+        public RapportService(AppDbContext db, IMapper mapper, IPublishEndpoint publishEndpoint)
         {
             _db = db;
             _mapper = mapper;
+            _publishEndpoint = publishEndpoint;
         }
         public async Task<IEnumerable<RapportVisiteDto>> GetRapportsByDelegueAsync(
     int idDelegue)
@@ -108,9 +112,22 @@ namespace CynapCRM.Services.FieldAPI.Service
 
                 // Update products discussed (delegate may have changed selection)
                 rapport.ProduitsDiscutes = dto.ProduitsDiscutes;
+
+                // Clear rejection state when delegate re-submits after a rejection
+                rapport.IsRejected = false;
+                rapport.MotifRejet = null;
             }
 
             await _db.SaveChangesAsync();
+            await _publishEndpoint.Publish(new VisiteCompletedEvent
+            {
+                VisiteId = rapport.Id_Visite,
+                RapportId = rapport.Id_Rapport,
+                DelegueId = rapport.Id_User_Delegue,
+                Resultat = rapport.Resultat,
+                ProduitsDiscutes = rapport.ProduitsDiscutes,
+                DateRapport = rapport.DateRapport
+            });
             return _mapper.Map<RapportVisiteDto>(rapport);
         }
 
@@ -147,7 +164,30 @@ namespace CynapCRM.Services.FieldAPI.Service
                 return false;
 
             rapport.IdSuperviseurValidateur = idSuperviseur;
+            rapport.IsRejected = false;
+            rapport.MotifRejet = null;
             rapport.Visite.IsCompleted = true;
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RejectRapportAsync(int idRapport, int idSuperviseur, string motif)
+        {
+            var rapport = await _db.Rapports
+                .Include(r => r.Visite)
+                .FirstOrDefaultAsync(r => r.Id_Rapport == idRapport);
+
+            if (rapport?.Visite == null)
+                return false;
+
+            // Cannot reject an already-completed (validated) visite
+            if (rapport.Visite.IsCompleted)
+                return false;
+
+            rapport.IsRejected = true;
+            rapport.MotifRejet = motif;
+            rapport.IdSuperviseurValidateur = null;
+            rapport.Visite.IsCompleted = false;
             await _db.SaveChangesAsync();
             return true;
         }

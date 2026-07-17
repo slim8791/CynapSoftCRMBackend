@@ -36,6 +36,12 @@ namespace CynapCRM.Services.FieldAPI.Models
         // Nullable: only set when a SUPERVISEUR validates the report
         public int? IdSuperviseurValidateur { get; set; }
 
+        /// <summary>True when a SUPERVISEUR has rejected the report and asked the delegate to correct it.</summary>
+        public bool IsRejected { get; set; } = false;
+
+        /// <summary>Reason provided by the SUPERVISEUR when rejecting. Null when not rejected.</summary>
+        public string? MotifRejet { get; set; }
+
         /// <summary>
         /// JSON-serialized array of products presented during the visit.
         /// Example: [{"id":1,"nom":"Doliprane"},{"id":3,"nom":"Amoxicilline"}]

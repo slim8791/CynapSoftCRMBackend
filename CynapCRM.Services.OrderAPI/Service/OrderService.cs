@@ -4,7 +4,9 @@ using CynapCRM.Services.OrderAPI.Models;
 using CynapCRM.Services.OrderAPI.Models.Dto;
 using CynapCRM.Services.OrderAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
-
+using MassTransit;
+using Microsoft.Extensions.Logging;
+using CynapCRM.MessageBus.Events;
 namespace CynapCRM.Services.OrderAPI.Service
 {
     
@@ -12,10 +14,15 @@ namespace CynapCRM.Services.OrderAPI.Service
     {
         private readonly IMapper _mapper;
         private readonly AppDbContext _db;
-        public OrderService(IMapper mapper, AppDbContext db)
+        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ILogger<OrderService> _logger;
+
+        public OrderService(IMapper mapper, AppDbContext db, IPublishEndpoint publishEndpoint, ILogger<OrderService> logger)
         {
             _mapper = mapper;
             _db = db;
+            _publishEndpoint = publishEndpoint;
+            _logger = logger;
         }
         public async Task<IEnumerable<CommandeDto>> GetAllOrdersAsync(
     int page,
@@ -131,6 +138,29 @@ namespace CynapCRM.Services.OrderAPI.Service
 
             _db.Commandes.Add(order);
             await _db.SaveChangesAsync();
+            // Publier l'événement "commande créée" dans RabbitMQ
+            try
+            {
+                _logger.LogInformation("Publishing OrderCreatedEvent for Order {OrderId}", order.Id_Commande);
+                await _publishEndpoint.Publish(new OrderCreatedEvent
+                {
+                    OrderId = order.Id_Commande,
+                    ClientId = order.Id_Client,
+                    OrderDate = order.DateCommande,
+                    MontantTotalHT = order.MontantTotalHT,
+                    Lines = order.Lignes.Select(l => new OrderLineItem
+                    {
+                        ProductId = l.Id_Produit,
+                        Quantity = l.Quantite,
+                        NumeroLot = l.NumeroLot
+                    }).ToList()
+                });
+                _logger.LogInformation("OrderCreatedEvent published for Order {OrderId}", order.Id_Commande);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish OrderCreatedEvent for Order {OrderId}", order.Id_Commande);
+            }
             return _mapper.Map<CommandeDto>(order);
         }
         public async Task<IEnumerable<CommandeDto>> GetOrdersByDateRangeAsync(
@@ -237,6 +267,7 @@ namespace CynapCRM.Services.OrderAPI.Service
         public async Task<bool> UpdateOrderStatusAsync(UpdateOrderStatusDto dto)
         {
             var order = await _db.Commandes
+                .Include(o => o.Lignes)
                 .FirstOrDefaultAsync(o =>
                     o.Id_Commande == dto.Id_Commande &&
                     !o.IsDeleted);
@@ -251,6 +282,20 @@ namespace CynapCRM.Services.OrderAPI.Service
 
             order.Statut = dto.NouveauStatut;
             await _db.SaveChangesAsync();
+            await _publishEndpoint.Publish(new OrderStatusChangedEvent
+            {
+                OrderId = order.Id_Commande,
+                ClientId = order.Id_Client,
+                OldStatus = order.Statut.ToString(),
+                NewStatus = dto.NouveauStatut.ToString(),
+                ChangedAt = DateTime.UtcNow,
+                Lines = order.Lignes.Select(l => new OrderLineItem
+                {
+                    ProductId = l.Id_Produit,
+                    Quantity = l.Quantite,
+                    NumeroLot = l.NumeroLot
+                }).ToList()
+            });
             return true;
         }
 

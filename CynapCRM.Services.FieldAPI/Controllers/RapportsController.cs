@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.FieldAPI.Models.Dto;
+using CynapCRM.Services.FieldAPI.Models.Dto;
 using CynapCRM.Services.FieldAPI.Service.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -207,6 +207,39 @@ namespace CynapCRM.Services.FieldAPI.Controllers
                     return BadRequest(_response);
                 }
                 _response.Message = "Rapport validé et visite clôturée avec succès.";
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(515, _response);
+            }
+        }
+
+        [HttpPut("{idRapport:int}/reject")]
+        [Authorize(Roles = "SUPERVISEUR")]
+        public async Task<IActionResult> RejectRapport(
+            int idRapport,
+            [FromQuery] int idSuperviseur,
+            [FromQuery] string motif)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(motif))
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Le motif de rejet est obligatoire.";
+                    return BadRequest(_response);
+                }
+                var result = await _rapportService.RejectRapportAsync(idRapport, idSuperviseur, motif);
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Rejet impossible (rapport introuvable ou déjà validé).";
+                    return BadRequest(_response);
+                }
+                _response.Message = "Rapport rejeté. Le délégué pourra corriger et re-soumettre.";
                 return Ok(_response);
             }
             catch (Exception ex)

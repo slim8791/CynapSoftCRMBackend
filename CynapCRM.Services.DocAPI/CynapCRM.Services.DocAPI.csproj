@@ -28,4 +28,8 @@
     <Folder Include="Models\Dto\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CynapCRM.MessageBus\CynapCRM.MessageBus.csproj" />
+  </ItemGroup>
+
 </Project>

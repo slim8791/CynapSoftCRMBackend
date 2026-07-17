@@ -121,11 +121,17 @@ namespace CynapCRM.Services.FieldAPI.Migrations
                     b.Property<int>("Id_Visite")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsRejected")
+                        .HasColumnType("bit");
+
                     b.Property<double?>("Latitude")
                         .HasColumnType("float");
 
                     b.Property<double?>("Longitude")
                         .HasColumnType("float");
+
+                    b.Property<string>("MotifRejet")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProduitsDiscutes")
                         .HasColumnType("nvarchar(max)");

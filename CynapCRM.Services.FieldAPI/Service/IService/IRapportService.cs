@@ -1,4 +1,4 @@
-﻿using CynapCRM.Services.FieldAPI.Models.Dto;
+using CynapCRM.Services.FieldAPI.Models.Dto;
 
 namespace CynapCRM.Services.FieldAPI.Service.IService
 {
@@ -14,6 +14,7 @@ namespace CynapCRM.Services.FieldAPI.Service.IService
         Task<RapportVisiteDto?> GetRapportByVisiteAsync(int idVisite);
         Task<bool> DeleteRapportAsync(int idRapport);
         Task<bool> ValidateRapportAsync(int idRapport, int idSuperviseur);
+        Task<bool> RejectRapportAsync(int idRapport, int idSuperviseur, string motif);
         Task<bool> CanCreateRapportAsync(int idVisite);
         Task<bool> HasRapportAsync(int idVisite);
     }

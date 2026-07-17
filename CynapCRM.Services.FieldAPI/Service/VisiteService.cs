@@ -96,6 +96,7 @@ namespace CynapCRM.Services.FieldAPI.Service
         public async Task<IEnumerable<VisiteDto>> GetVisitesByDelegueAsync(int idDelegue)
         {
             var visites = await _db.Visites
+            .Include(v => v.Rapport)
             .Where(v => v.Id_User_Delegue == idDelegue)
             .OrderByDescending(v => v.DateVisite)
             .AsNoTracking()

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
+using CynapCRM.MessageBus.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Si vous avez cette ligne :
@@ -63,6 +63,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.AddAppAuthentication();
+builder.Services.AddCynapMessageBus(builder.Configuration);
 
 var app = builder.Build();
 //if (app.Environment.IsDevelopment())

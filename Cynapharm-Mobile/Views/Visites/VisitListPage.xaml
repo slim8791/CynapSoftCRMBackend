@@ -169,12 +169,19 @@
                                 <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06" />
                             </Border.Shadow>
                             <Grid ColumnDefinitions="5,*">
-                                <!-- Status color bar: orange = pending, green = completed -->
-                                <BoxView Grid.Column="0" VerticalOptions="Fill"
-                                         BackgroundColor="#FF9800">
+                                <!-- Status color bar -->
+                                <BoxView Grid.Column="0" VerticalOptions="Fill" BackgroundColor="#9E9E9E">
                                     <BoxView.Triggers>
-                                        <DataTrigger TargetType="BoxView"
-                                                     Binding="{Binding IsCompleted}" Value="True">
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding Statut}" Value="En cours">
+                                            <Setter Property="BackgroundColor" Value="#2196F3" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding Statut}" Value="En attente">
+                                            <Setter Property="BackgroundColor" Value="#FF9800" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding Statut}" Value="Rejetée">
+                                            <Setter Property="BackgroundColor" Value="#F44336" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding Statut}" Value="Validée">
                                             <Setter Property="BackgroundColor" Value="#4CAF50" />
                                         </DataTrigger>
                                     </BoxView.Triggers>
@@ -216,24 +223,39 @@
                                     <Border Grid.Column="1"
                                             Padding="10,4"
                                             Stroke="Transparent"
-                                            BackgroundColor="#FFF3E0"
+                                            BackgroundColor="#F5F5F5"
                                             VerticalOptions="Center">
                                         <Border.StrokeShape>
                                             <RoundRectangle CornerRadius="10" />
                                         </Border.StrokeShape>
                                         <Border.Triggers>
-                                            <DataTrigger TargetType="Border"
-                                                         Binding="{Binding IsCompleted}" Value="True">
+                                            <DataTrigger TargetType="Border" Binding="{Binding Statut}" Value="En cours">
+                                                <Setter Property="BackgroundColor" Value="#E3F2FD" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding Statut}" Value="En attente">
+                                                <Setter Property="BackgroundColor" Value="#FFF3E0" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding Statut}" Value="Rejetée">
+                                                <Setter Property="BackgroundColor" Value="#FFEBEE" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding Statut}" Value="Validée">
                                                 <Setter Property="BackgroundColor" Value="#E8F5E9" />
                                             </DataTrigger>
                                         </Border.Triggers>
-                                        <Label Text="Non complétée"
+                                        <Label Text="{Binding Statut}"
                                                FontSize="11" FontAttributes="Bold"
-                                               TextColor="#E65100">
+                                               TextColor="#616161">
                                             <Label.Triggers>
-                                                <DataTrigger TargetType="Label"
-                                                             Binding="{Binding IsCompleted}" Value="True">
-                                                    <Setter Property="Text"      Value="Complétée" />
+                                                <DataTrigger TargetType="Label" Binding="{Binding Statut}" Value="En cours">
+                                                    <Setter Property="TextColor" Value="#1565C0" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Statut}" Value="En attente">
+                                                    <Setter Property="TextColor" Value="#E65100" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Statut}" Value="Rejetée">
+                                                    <Setter Property="TextColor" Value="#C62828" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Statut}" Value="Validée">
                                                     <Setter Property="TextColor" Value="#2E7D32" />
                                                 </DataTrigger>
                                             </Label.Triggers>

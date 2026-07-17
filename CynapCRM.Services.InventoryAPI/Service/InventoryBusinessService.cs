@@ -4,6 +4,8 @@ using CynapCRM.Services.InventoryAPI.Models;
 using CynapCRM.Services.InventoryAPI.Models.Dto;
 using CynapCRM.Services.InventoryAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
+using CynapCRM.MessageBus.Events;
+using MassTransit;
 
 namespace CynapCRM.Services.InventoryAPI.Service
 {
@@ -15,14 +17,16 @@ namespace CynapCRM.Services.InventoryAPI.Service
         private readonly IStockMovementService _stockMovementService;
         private readonly IDistributionService _distributionService;
         private readonly IStockDelegueService _stockDelegueService;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public InventoryBusinessService(AppDbContext db, IMapper mapper, IStockMovementService stockMovementService, IDistributionService distributionService, IStockDelegueService stockDelegueService )
+        public InventoryBusinessService(AppDbContext db, IMapper mapper, IStockMovementService stockMovementService, IDistributionService distributionService, IStockDelegueService stockDelegueService, IPublishEndpoint publishEndpoint )
         {
             _db = db;
             _mapper = mapper;
             _stockMovementService = stockMovementService;
             _distributionService = distributionService;
             _stockDelegueService = stockDelegueService;
+            _publishEndpoint = publishEndpoint;
         }
         public async Task<bool> CheckStockAvailabilityAsync(int idStock, int quantite)
         {
@@ -75,7 +79,16 @@ namespace CynapCRM.Services.InventoryAPI.Service
 
             };
             await _distributionService.CreateOrUpdateEchantillonAsync(echantillon);
-
+            await _publishEndpoint.Publish(new StockDistributedEvent
+            {
+                DelegueId = idDelegue,
+                MedecinId = idMedecin,
+                PharmacienId = idPharmacien,
+                StockId = idStock,
+                Quantite = qte,
+                NumeroLot = stock.NumeroLot,
+                DateDistribution = DateTime.UtcNow
+            });
             return true;
 
         }

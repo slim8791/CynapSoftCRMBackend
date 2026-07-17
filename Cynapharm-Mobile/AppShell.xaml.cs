@@ -32,6 +32,7 @@ public partial class AppShell : Shell
     public bool ShowDocuments    { get; private set; }
     public bool ShowReclamations { get; private set; }
     public bool ShowStock        { get; private set; }
+    public bool ShowMedecinEchantillons { get; private set; }
     public bool ShowObjectifs    { get; private set; }
     public bool ShowClients      { get; private set; }
 
@@ -53,6 +54,7 @@ public partial class AppShell : Shell
     public IAsyncRelayCommand GoToObjectifsCommand    { get; }
     public IAsyncRelayCommand GoToProfileCommand      { get; }
     public IAsyncRelayCommand GoToClientsCommand      { get; }
+    public IAsyncRelayCommand GoToMedecinEchantillonsCommand { get; }
 
     public AppShell()
     {
@@ -68,6 +70,7 @@ public partial class AppShell : Shell
         GoToObjectifsCommand    = new AsyncRelayCommand(() => Navigate("//objectifs"));
         GoToProfileCommand      = new AsyncRelayCommand(() => Navigate("//profile"));
         GoToClientsCommand      = new AsyncRelayCommand(() => Navigate("//clients"));
+        GoToMedecinEchantillonsCommand = new AsyncRelayCommand(() => Navigate("//medecinechantillons"));
 
         BindingContext = this;
         InitializeComponent();
@@ -85,6 +88,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("clients/detail",         typeof(ClientDetailPage));
         Routing.RegisterRoute("clients/form",           typeof(ClientFormPage));
         Routing.RegisterRoute("planning/form",          typeof(PlanningFormPage));
+        Routing.RegisterRoute("medecinechantillons",     typeof(Views.Stock.MedecinEchantillonsPage));
     }
 
     private async Task Navigate(string route)
@@ -113,6 +117,7 @@ public partial class AppShell : Shell
         ShowStock        = isDelegue;
         ShowObjectifs    = isDelegue;
         ShowClients      = isDelegue;
+        ShowMedecinEchantillons = isMedecin;
 
         // User display for flyout header (loaded from SecureStorage)
         _ = LoadUserInfoAsync();
@@ -135,6 +140,7 @@ public partial class AppShell : Shell
         if (FlyoutObjectifs    is not null) FlyoutObjectifs.IsVisible    = isDelegue;
         if (FlyoutReclamations is not null) FlyoutReclamations.IsVisible = isClient;
         if (FlyoutClients      is not null) FlyoutClients.IsVisible      = isDelegue;
+        if (FlyoutMedecinEchantillons is not null) FlyoutMedecinEchantillons.IsVisible = isMedecin;
     }
 
     private async Task LoadUserInfoAsync()
@@ -181,5 +187,6 @@ public partial class AppShell : Shell
         OnPropertyChanged(nameof(ShowStock));
         OnPropertyChanged(nameof(ShowObjectifs));
         OnPropertyChanged(nameof(ShowClients));
+        OnPropertyChanged(nameof(ShowMedecinEchantillons));
     }
 }

@@ -14,6 +14,8 @@ export interface RapportDto {
   latitude?:         number | null;
   longitude?:        number | null;
   produitsDiscutes?: string | null;
+  isRejected?:       boolean;
+  motifRejet?:       string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -36,6 +38,8 @@ export class RapportService {
       latitude:        r.latitude        ?? r.Latitude        ?? null,
       longitude:       r.longitude       ?? r.Longitude       ?? null,
       produitsDiscutes: r.produitsDiscutes ?? r.ProduitsDiscutes ?? null,
+      isRejected:       r.isRejected       ?? r.IsRejected       ?? false,
+      motifRejet:       r.motifRejet       ?? r.MotifRejet       ?? null,
     };
   }
 
@@ -64,6 +68,9 @@ export class RapportService {
   }
   validate(id: number, idSuperviseur: number): Observable<void> {
     return this.api.put<void>(`${this.base}/${id}/validate?idSuperviseur=${idSuperviseur}`, {});
+  }
+  reject(id: number, idSuperviseur: number, motif: string): Observable<void> {
+    return this.api.put<void>(`${this.base}/${id}/reject?idSuperviseur=${idSuperviseur}&motif=${encodeURIComponent(motif)}`, {});
   }
   delete(id: number): Observable<void> { return this.api.delete<void>(`${this.base}/${id}`); }
 }

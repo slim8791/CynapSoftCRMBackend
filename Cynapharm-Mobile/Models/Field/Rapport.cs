@@ -34,4 +34,10 @@ public class Rapport
     /// </summary>
     [JsonPropertyName("produitsDiscutes")]
     public string? ProduitsDiscutes { get; set; }
+
+    [JsonPropertyName("isRejected")]
+    public bool IsRejected { get; set; }
+
+    [JsonPropertyName("motifRejet")]
+    public string? MotifRejet { get; set; }
 }

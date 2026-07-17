@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
-
+using CynapCRM.MessageBus.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -81,6 +81,7 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
+builder.Services.AddCynapMessageBus(builder.Configuration);
 
 var app = builder.Build();
 

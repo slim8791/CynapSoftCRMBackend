@@ -14,6 +14,7 @@ namespace CynapCRM.Services.FieldAPI.Models.Dto
 
         public bool IsCompleted { get; set; }
         public bool HasRapport { get; set; }
+        public bool IsRejected { get; set; }
         public string? ClientNom { get; set; }
 
         // Produits présentés/discutés pendant la visite (JSON [{ "id", "nom" }] issu du rapport).

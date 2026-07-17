@@ -38,6 +38,31 @@
                            HorizontalOptions="Center" />
                 </Border>
 
+                <!-- Rejection banner — visible when superviseur rejects the rapport -->
+                <Border IsVisible="{Binding ShowRejectionBanner}"
+                        BackgroundColor="{StaticResource DangerLight}"
+                        StrokeShape="RoundRectangle 12"
+                        Stroke="{StaticResource Danger}" StrokeThickness="1"
+                        Padding="16,12">
+                    <VerticalStackLayout Spacing="6">
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="⚠️" FontSize="16" VerticalOptions="Center" />
+                            <Label Text="Rapport rejeté par le superviseur"
+                                   FontSize="13" FontAttributes="Bold"
+                                   TextColor="{StaticResource DangerText}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding MotifRejet}"
+                               FontSize="12"
+                               TextColor="{StaticResource DangerText}"
+                               LineBreakMode="WordWrap" />
+                        <Label Text="Veuillez corriger et re-soumettre le rapport."
+                               FontSize="11"
+                               TextColor="{StaticResource TextMuted}"
+                               FontAttributes="Italic" />
+                    </VerticalStackLayout>
+                </Border>
+
                 <!-- Planning association indicator -->
                 <Border BackgroundColor="#E8F4FD"
                         StrokeShape="RoundRectangle 8"

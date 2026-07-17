@@ -13,6 +13,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["CynapCRM.Services.DocAPI/CynapCRM.Services.DocAPI.csproj", "CynapCRM.Services.DocAPI/"]
+COPY ["CynapCRM.MessageBus/CynapCRM.MessageBus.csproj", "CynapCRM.MessageBus/"]
 RUN dotnet restore "./CynapCRM.Services.DocAPI/CynapCRM.Services.DocAPI.csproj"
 COPY . .
 WORKDIR "/src/CynapCRM.Services.DocAPI"

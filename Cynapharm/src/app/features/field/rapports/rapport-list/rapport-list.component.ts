@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subject, forkJoin, of } from 'rxjs';
 import { takeUntil, switchMap, map, catchError } from 'rxjs/operators';
@@ -13,7 +14,7 @@ import { AuthService, UserRole } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-rapport-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, EmptyStateComponent],
+  imports: [CommonModule, FormsModule, RouterLink, EmptyStateComponent],
   templateUrl: './rapport-list.component.html',
   styleUrls: ['./rapport-list.component.css']
 })
@@ -24,7 +25,13 @@ export class RapportListComponent implements OnInit, OnDestroy {
   successMsg = '';
   expandedRapportId: number | null = null;
   validating: Record<number, boolean> = {};
+  rejecting:  Record<number, boolean> = {};
   validatedRapports: Record<number, boolean> = {};
+
+  // Rejection modal state
+  showRejectModal = false;
+  rejectingItem: RapportDto | null = null;
+  rejectMotif = '';
 
   delegueNames: Record<number, string> = {};
   visiteDetails: Record<number, VisiteDto> = {};
@@ -126,6 +133,22 @@ export class RapportListComponent implements OnInit, OnDestroy {
       || this.visiteDetails[r.id_Visite]?.isCompleted === true;
   }
 
+  isRejected(r: RapportDto): boolean {
+    return r.isRejected === true;
+  }
+
+  getStatusLabel(r: RapportDto): string {
+    if (this.isValidated(r)) return 'Validé';
+    if (this.isRejected(r))  return 'Rejeté';
+    return 'Soumis';
+  }
+
+  getStatusClass(r: RapportDto): string {
+    if (this.isValidated(r)) return 'valid';
+    if (this.isRejected(r))  return 'rejected';
+    return 'pending';
+  }
+
   isValidating(r: RapportDto): boolean {
     return !!(r.idRapport && this.validating[r.idRapport]);
   }
@@ -153,6 +176,52 @@ export class RapportListComponent implements OnInit, OnDestroy {
       error: () => {
         this.error = 'Impossible de valider le rapport.';
         this.validating[idRapport] = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  rejectReport(r: RapportDto): void {
+    const idRapport = r.idRapport;
+    const currentUserId = this.authSvc.getCurrentUser()?.id;
+    if (!idRapport || !currentUserId || this.rejecting[idRapport] || this.isValidated(r)) return;
+
+    this.rejectingItem = r;
+    this.rejectMotif = '';
+    this.showRejectModal = true;
+  }
+
+  cancelReject(): void {
+    this.showRejectModal = false;
+    this.rejectingItem = null;
+    this.rejectMotif = '';
+  }
+
+  confirmReject(): void {
+    const r = this.rejectingItem;
+    if (!r || !this.rejectMotif.trim()) return;
+
+    const idRapport = r.idRapport;
+    const currentUserId = this.authSvc.getCurrentUser()?.id;
+    if (!idRapport || !currentUserId) return;
+
+    this.rejecting[idRapport] = true;
+    this.svc.reject(idRapport, currentUserId, this.rejectMotif.trim()).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        r.isRejected = true;
+        r.motifRejet = this.rejectMotif.trim();
+        r.idSuperviseurValidateur = null;
+        this.successMsg = 'Rapport rejeté. Le délégué sera informé.';
+        this.rejecting[idRapport] = false;
+        this.showRejectModal = false;
+        this.rejectingItem = null;
+        this.rejectMotif = '';
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.error = 'Impossible de rejeter le rapport.';
+        this.rejecting[idRapport] = false;
+        this.showRejectModal = false;
         this.cdr.markForCheck();
       }
     });

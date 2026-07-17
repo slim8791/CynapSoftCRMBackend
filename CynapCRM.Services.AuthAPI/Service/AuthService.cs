@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
+using CynapCRM.MessageBus.Events;
+using MassTransit;
 
 namespace CynapCRM.Services.AuthAPI.Service
 {
@@ -17,11 +19,13 @@ namespace CynapCRM.Services.AuthAPI.Service
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IEmailService _emailService;
+        private readonly IPublishEndpoint _publishEndpoint;
         public AuthService(AppDbContext db,
             UserManager<Utilisateur> userManager,
             RoleManager<IdentityRole<int>> roleManager,
             IJwtTokenGenerator jwtTokenGenerator,
-            IEmailService emailService
+            IEmailService emailService,
+            IPublishEndpoint publishEndpoint
             )
         {
             _db = db;
@@ -29,6 +33,7 @@ namespace CynapCRM.Services.AuthAPI.Service
             _roleManager = roleManager;
             _jwtTokenGenerator = jwtTokenGenerator;
             _emailService = emailService;
+            _publishEndpoint = publishEndpoint;
         }
         public async Task<ResponseDto> Register(RegistrationRequestDto model)
         {
@@ -117,7 +122,15 @@ namespace CynapCRM.Services.AuthAPI.Service
                 await _roleManager.CreateAsync(new IdentityRole<int> { Name = role });
 
             await _userManager.AddToRoleAsync(user, role);
-
+            await _publishEndpoint.Publish(new UserCreatedEvent
+            {
+                UserId = user.Id,
+                Email = user.Email ?? string.Empty,
+                Name = user.Name ?? string.Empty,
+                Role = role,
+                IdRegion = user.IdRegion,
+                DateCreation = DateTime.UtcNow
+            });
             return new ResponseDto
             {
                 IsSuccess = true,

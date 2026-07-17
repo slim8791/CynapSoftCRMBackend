@@ -73,6 +73,19 @@ public partial class VisitDetailViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(CanDelete))]
     private bool _isStarted;
 
+    // ── Rejection state ──────────────────────────────────────────────────────
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowRejectionBanner))]
+    [NotifyPropertyChangedFor(nameof(ShowEditRapport))]
+    private bool _isRejected;
+
+    [ObservableProperty]
+    private string _motifRejet = string.Empty;
+
+    /// <summary>True when the rapport was rejected by the superviseur — shows a red banner.</summary>
+    public bool ShowRejectionBanner => IsExisting && HasRapport && IsRejected && !IsCompleted;
+
     [ObservableProperty]
     private string _heurDebutLabel = string.Empty;
 
@@ -202,6 +215,18 @@ public partial class VisitDetailViewModel : BaseViewModel
                 HeurDebutLabel     = visite.HeurDebutLabel;
                 SelectedMedecin    = Medecins.FirstOrDefault(m => m.Id == visite.IdMedecin);
                 SelectedPharmacien = Pharmaciens.FirstOrDefault(p => p.Id == visite.IdPharmacien);
+
+                // Load rejection state from the linked rapport
+                if (HasRapport)
+                {
+                    var rapports = await _visiteService.GetRapportsAsync(VisiteId);
+                    var rapport = rapports?.FirstOrDefault();
+                    if (rapport != null)
+                    {
+                        IsRejected = rapport.IsRejected;
+                        MotifRejet = rapport.MotifRejet ?? string.Empty;
+                    }
+                }
             }
         }
 

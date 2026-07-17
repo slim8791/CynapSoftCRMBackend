@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Cynapharm_Mobile.ViewModels.Stock"
+             xmlns:inv="clr-namespace:Cynapharm_Mobile.Models.Inventory"
+             xmlns:controls="clr-namespace:Cynapharm_Mobile.Controls"
+             x:Class="Cynapharm_Mobile.Views.Stock.MedecinEchantillonsPage"
+             x:DataType="vm:MedecinEchantillonsViewModel"
+             Title="{Binding Title}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <!-- ── Header ─────────────────────────────────────────────────────── -->
+        <controls:AppHeader Grid.Row="0" Title="Mes échantillons"
+                            Subtitle="Échantillons reçus de vos délégués"
+                            ShowHamburger="True" />
+
+        <!-- ── Search bar (inside green zone) ─────────────────────────────── -->
+        <VerticalStackLayout Grid.Row="1" BackgroundColor="{StaticResource Primary}" Padding="0,0,0,16">
+            <Border BackgroundColor="White"
+                    StrokeShape="RoundRectangle 14"
+                    Stroke="Transparent"
+                    Padding="14,0"
+                    Margin="16,0,16,4">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,4" Radius="12" Opacity="0.12" />
+                </Border.Shadow>
+                <Grid ColumnDefinitions="20,*" ColumnSpacing="10" HeightRequest="48">
+                    <Label Grid.Column="0" Text="🔍" FontSize="15"
+                           TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                    <Entry Grid.Column="1"
+                           Placeholder="Rechercher un produit, lot…"
+                           Text="{Binding SearchQuery}"
+                           ReturnType="Search"
+                           PlaceholderColor="{StaticResource TextMuted}"
+                           TextColor="{StaticResource TextPrimary}"
+                           BackgroundColor="Transparent"
+                           FontSize="14" HeightRequest="48"
+                           Margin="0" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
+
+        <!-- ── Stats summary strip ────────────────────────────────────────── -->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,*" ColumnSpacing="12"
+              Padding="16,12,16,4">
+            <!-- Total items -->
+            <Border Grid.Column="0"
+                    BackgroundColor="{StaticResource CardBackground}"
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                    Padding="14,10">
+                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                    <Label Text="{Binding ItemCount}"
+                           FontSize="22" FontAttributes="Bold"
+                           TextColor="{StaticResource Primary}"
+                           HorizontalOptions="Center" />
+                    <Label Text="Distributions"
+                           FontSize="11"
+                           TextColor="{StaticResource TextSecondary}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+            <!-- Total quantity -->
+            <Border Grid.Column="1"
+                    BackgroundColor="{StaticResource CardBackground}"
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                    Padding="14,10">
+                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                    <Label Text="{Binding TotalQuantity}"
+                           FontSize="22" FontAttributes="Bold"
+                           TextColor="{StaticResource Secondary}"
+                           HorizontalOptions="Center" />
+                    <Label Text="Échantillons reçus"
+                           FontSize="11"
+                           TextColor="{StaticResource TextSecondary}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- ── Échantillons list ───────────────────────────────────────────── -->
+        <RefreshView Grid.Row="3"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     RefreshColor="{StaticResource Primary}">
+            <CollectionView ItemsSource="{Binding Echantillons}"
+                            ItemSizingStrategy="MeasureFirstItem">
+                <CollectionView.Header>
+                    <BoxView HeightRequest="6" Color="Transparent" />
+                </CollectionView.Header>
+
+                <!-- Empty state -->
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center"
+                                         Spacing="16" Padding="40" Margin="0,40,0,0">
+                        <Border BackgroundColor="{StaticResource PrimaryLight}"
+                                StrokeShape="RoundRectangle 50" Stroke="Transparent"
+                                WidthRequest="80" HeightRequest="80" HorizontalOptions="Center">
+                            <Label Text="💊" FontSize="38"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="Aucun échantillon reçu"
+                               FontSize="16" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               HorizontalOptions="Center" />
+                        <Label Text="Vous n'avez pas encore reçu d'échantillons de vos délégués."
+                               FontSize="13"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontAttributes="Italic"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <!-- Item template -->
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="inv:EchantillonRecu">
+                        <Border Margin="16,0,16,10"
+                                BackgroundColor="{StaticResource CardBackground}"
+                                StrokeShape="RoundRectangle 16"
+                                Stroke="{StaticResource BorderColor}" StrokeThickness="1"
+                                Padding="0">
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06" />
+                            </Border.Shadow>
+                            <Grid ColumnDefinitions="5,*">
+                                <!-- Accent bar -->
+                                <BoxView Grid.Column="0" VerticalOptions="Fill"
+                                         BackgroundColor="{StaticResource Primary}" />
+                                <Grid Grid.Column="1" Padding="14,14" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
+                                    <!-- Row 0: Product name + quantity badge -->
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding ProduitLabel}"
+                                               FontSize="14" FontAttributes="Bold"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               LineBreakMode="TailTruncation" />
+                                        <Border Grid.Column="1"
+                                                BackgroundColor="{StaticResource PrimaryLight}"
+                                                StrokeShape="RoundRectangle 12"
+                                                Stroke="Transparent"
+                                                Padding="10,4">
+                                            <Label FontSize="12" FontAttributes="Bold"
+                                                   TextColor="{StaticResource PrimaryText}">
+                                                <Label.Text>
+                                                    <MultiBinding StringFormat="× {0}">
+                                                        <Binding Path="Quantite" />
+                                                    </MultiBinding>
+                                                </Label.Text>
+                                            </Label>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Row 1: Lot number -->
+                                    <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                        <Label Grid.Column="0" Text="🏷️" FontSize="12"
+                                               VerticalOptions="Center" />
+                                        <Label Grid.Column="1"
+                                               Text="{Binding NumeroLot, StringFormat='Lot : {0}'}"
+                                               FontSize="12"
+                                               TextColor="{StaticResource TextSecondary}"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+
+                                    <!-- Row 2: Date -->
+                                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                        <Label Grid.Column="0" Text="📅" FontSize="12"
+                                               VerticalOptions="Center" />
+                                        <Label Grid.Column="1"
+                                               Text="{Binding DateDistribution, StringFormat='{0:dd/MM/yyyy à HH:mm}'}"
+                                               FontSize="12"
+                                               TextColor="{StaticResource TextSecondary}"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="8" Color="Transparent" />
+                </CollectionView.Footer>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Loader overlay -->
+        <controls:AppLoader Grid.RowSpan="4" IsBusy="{Binding IsBusy}" />
+
+    </Grid>
+</ContentPage>

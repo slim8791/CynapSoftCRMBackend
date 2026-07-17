@@ -141,6 +141,7 @@ public static class MauiProgram
         builder.Services.AddTransient<PlanningFormViewModel>();
         builder.Services.AddTransient<RapportViewModel>();
         builder.Services.AddTransient<MyStockViewModel>();
+        builder.Services.AddTransient<MedecinEchantillonsViewModel>();
         builder.Services.AddTransient<ObjectifViewModel>();
         builder.Services.AddTransient<ProductListViewModel>();
         builder.Services.AddTransient<ProductDetailViewModel>();
@@ -169,6 +170,7 @@ public static class MauiProgram
         builder.Services.AddTransient<PlanningFormPage>();
         builder.Services.AddTransient<RapportPage>();
         builder.Services.AddTransient<MyStockPage>();
+        builder.Services.AddTransient<MedecinEchantillonsPage>();
         builder.Services.AddTransient<ObjectifPage>();
         builder.Services.AddTransient<ProductListPage>();
         builder.Services.AddTransient<ProductDetailPage>();

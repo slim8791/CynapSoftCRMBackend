@@ -37,6 +37,44 @@
   </div>
 }
 
+<!-- ═══ MODAL : Rejeter le rapport ═══════════════════════ -->
+@if (showRejectModal && rejectingItem) {
+  <div class="modal-overlay" (click)="cancelReject()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+
+      <div class="modal-icon-reject">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      </div>
+
+      <h3 class="modal-title">Rejeter le rapport ?</h3>
+      <p class="modal-body">
+        Le rapport de la visite <strong>#{{ rejectingItem.id_Visite }}</strong>
+        sera renvoyé au délégué pour correction.
+      </p>
+
+      <div class="reject-field">
+        <label class="reject-label" for="rejectMotif">Motif du rejet <span class="required">*</span></label>
+        <textarea id="rejectMotif"
+                  class="reject-textarea"
+                  [(ngModel)]="rejectMotif"
+                  placeholder="Décrivez la raison du rejet (ex : contenu insuffisant, résultat incohérent...)"
+                  rows="3"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelReject()">Annuler</button>
+        <button class="btn-confirm-danger" (click)="confirmReject()" [disabled]="!rejectMotif.trim() || (rejectingItem.idRapport && rejecting[rejectingItem.idRapport!])">
+          @if (rejectingItem.idRapport && rejecting[rejectingItem.idRapport!]) { <span class="spinner-sm"></span> }
+          @else { Rejeter le rapport }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
   <div *ngIf="loading" class="loading-wrap">
     <div class="spinner"></div><span>Chargement...</span>
   </div>
@@ -83,8 +121,8 @@
             <td class="truncate" [title]="r.commentaire">{{ r.commentaire }}</td>
             <td>{{ r.resultat }}</td>
             <td>
-              <span class="valid-badge" [class.valid]="isValidated(r)" [class.pending]="!isValidated(r)">
-                {{ isValidated(r) ? 'Validé' : 'Soumis' }}
+              <span class="valid-badge" [ngClass]="getStatusClass(r)">
+                {{ getStatusLabel(r) }}
               </span>
             </td>
             <td>
@@ -113,6 +151,9 @@
                   <button type="button" class="act-btn validate" (click)="validateReport(r)" [disabled]="!r.idRapport || isValidating(r)" [title]="isValidating(r) ? 'Validation...' : 'Valider'">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                   </button>
+                  <button type="button" class="act-btn delete" (click)="rejectReport(r)" [disabled]="!r.idRapport || rejecting[r.idRapport!]" [title]="rejecting[r.idRapport!] ? 'Rejet...' : 'Rejeter'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                 }
                 @if (isAdmin || isDelegue) {
                   <button type="button" class="act-btn delete" (click)="deleteRapport(r)" title="Supprimer">
@@ -140,9 +181,15 @@
                   </div>
                   <div>
                     <span class="detail-label">Statut</span>
-                    <strong>{{ isValidated(r) ? 'Validé par superviseur' : 'En attente de validation' }}</strong>
+                    <strong [ngClass]="getStatusClass(r)">{{ getStatusLabel(r) === 'Validé' ? 'Validé par superviseur' : getStatusLabel(r) === 'Rejeté' ? 'Rejeté par superviseur' : 'En attente de validation' }}</strong>
                   </div>
                 </div>
+                @if (isRejected(r) && r.motifRejet) {
+                  <div class="reject-banner">
+                    <span class="detail-label">⚠️ Motif du rejet</span>
+                    <p class="reject-motif">{{ r.motifRejet }}</p>
+                  </div>
+                }
                 @if (parseProduitsDiscutes(r).length > 0) {
                   <div class="produits-section">
                     <span class="detail-label">💊 Produits discutés</span>

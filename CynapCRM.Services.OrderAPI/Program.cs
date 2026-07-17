@@ -1,12 +1,12 @@
+using CynapCRM.MessageBus.Extensions;
+using CynapCRM.Services.OrderAPI.Consumers;
 using CynapCRM.Services.OrderAPI.Data;
 using CynapCRM.Services.OrderAPI.Extensions;
 using CynapCRM.Services.OrderAPI.Service;
 using CynapCRM.Services.OrderAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Services.AddControllers();
 
 builder.Services.AddSwaggerGen(option =>
@@ -43,6 +43,12 @@ builder.Services.AddScoped<ILigneService, LigneService>();
 builder.Services.AddScoped<IReclamationService, ReclamationService>();
 
 builder.AddAppAuthentication();
+builder.Services.AddCynapMessageBus(builder.Configuration, x =>
+{
+    x.AddConsumer<VisiteCompletedConsumer>();
+    x.AddConsumer<ProductPriceChangedConsumer>(); 
+
+});
 
 var app = builder.Build();
 //if (app.Environment.IsDevelopment())

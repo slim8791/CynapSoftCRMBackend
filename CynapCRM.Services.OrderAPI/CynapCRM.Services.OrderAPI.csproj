@@ -29,4 +29,8 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CynapCRM.MessageBus\CynapCRM.MessageBus.csproj" />
+  </ItemGroup>
+
 </Project>

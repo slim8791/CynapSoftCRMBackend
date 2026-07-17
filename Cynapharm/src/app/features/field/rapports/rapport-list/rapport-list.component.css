@@ -24,6 +24,9 @@
     .valid   { background: #dcfce7; color: #166534; }
     .invalid { background: #fee2e2; color: #991b1b; }
     .pending { background: #fef9c3; color: #a16207; }
+    .rejected { background: #fee2e2; color: #991b1b; }
+    .reject-banner { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; margin-top: 4px; }
+    .reject-motif { margin: 4px 0 0; color: #991b1b; font-weight: 500; font-size: 13px; }
     .link-btn { font-size: 13px; color: #6366f1; text-decoration: none; font-weight: 500; }
     .link-btn:hover { text-decoration: underline; }
     .button-link { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
@@ -109,3 +112,46 @@
       width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #ffffff;
       border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block;
     }
+
+    /* ── Rejection Modal ─────────────────────────────────── */
+    .modal-icon-reject {
+      width: 60px;
+      height: 60px;
+      background: #fff7ed;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .modal-icon-reject svg { width: 28px; height: 28px; color: #ea580c; stroke: #ea580c; }
+    .reject-field { text-align: left; margin-bottom: 20px; }
+    .reject-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+    .reject-label .required { color: #e11d48; }
+    .reject-textarea {
+      width: 100%;
+      min-height: 80px;
+      padding: 12px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #1f2937;
+      background: #f9fafb;
+      resize: vertical;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+    }
+    .reject-textarea:focus {
+      outline: none;
+      border-color: #ea580c;
+      box-shadow: 0 0 0 3px rgba(234,88,12,0.12);
+    }
+    .reject-textarea::placeholder { color: #9ca3af; }
+    .btn-confirm-danger:disabled { opacity: 0.5; cursor: not-allowed; }

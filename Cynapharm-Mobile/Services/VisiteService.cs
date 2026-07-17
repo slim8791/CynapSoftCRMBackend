@@ -102,12 +102,17 @@ public class VisiteService
         return await _api.PostAsync<Rapport>("fields/rapports/createUpdate", payload);
     }
 
-    public Task<List<Rapport>?> GetRapportsAsync(int? visiteId)
+    public async Task<List<Rapport>?> GetRapportsAsync(int? visiteId)
     {
         // Backend endpoint: GET /api/rapports/by-visite/{idVisite}
         if (visiteId.HasValue && visiteId > 0)
-            return _api.GetAsync<List<Rapport>>($"fields/rapports/by-visite/{visiteId}");
+        {
+            var rapport = await _api.GetAsync<Rapport>($"fields/rapports/by-visite/{visiteId}");
+            if (rapport != null)
+                return new List<Rapport> { rapport };
+            return new List<Rapport>();
+        }
 
-        return _api.GetAsync<List<Rapport>>("fields/rapports/all");
+        return await _api.GetAsync<List<Rapport>>("fields/rapports/all");
     }
 }

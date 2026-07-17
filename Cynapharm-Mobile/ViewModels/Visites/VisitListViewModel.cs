@@ -19,11 +19,11 @@ public partial class VisitListViewModel : BaseViewModel
     public ObservableCollection<Visite> Visites { get; } = new();
 
     [ObservableProperty] private DateTime _filterStartDate = DateTime.Today.AddDays(-30);
-    [ObservableProperty] private DateTime _filterEndDate   = DateTime.Today;
-    [ObservableProperty] private string   _filterStatus    = "Tous";
+    [ObservableProperty] private DateTime _filterEndDate   = DateTime.Today.AddDays(15);
+    [ObservableProperty] private string   _filterStatus    = "Toutes";
     [ObservableProperty] private string   _searchQuery     = string.Empty;
 
-    public List<string> StatusOptions { get; } = new() { "Tous", "Non complétée", "Complétée" };
+    public List<string> StatusOptions { get; } = new() { "Toutes", "En attente", "À corriger", "Validées" };
 
     partial void OnFilterStartDateChanged(DateTime value) => ScheduleDebouncedLoad();
     partial void OnFilterEndDateChanged(DateTime value)   => ScheduleDebouncedLoad();
@@ -49,9 +49,10 @@ public partial class VisitListViewModel : BaseViewModel
     private IEnumerable<Visite> ApplyFilter(IEnumerable<Visite> visites) =>
         FilterStatus switch
         {
-            "Complétée"     => visites.Where(v => v.IsCompleted),
-            "Non complétée" => visites.Where(v => !v.IsCompleted),
-            _               => visites
+            "En attente" => visites.Where(v => v.Statut == "En attente"),
+            "À corriger" => visites.Where(v => v.Statut == "Rejetée"),
+            "Validées"   => visites.Where(v => v.Statut == "Validée"),
+            _            => visites // "Toutes" ou cas par défaut
         };
 
     private void ApplySearch()

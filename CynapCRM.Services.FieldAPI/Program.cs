@@ -5,6 +5,9 @@ using CynapCRM.Services.FieldAPI.Service.IService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
+using CynapCRM.MessageBus.Extensions;
+using CynapCRM.Services.FieldAPI.Consumers;
+
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -50,6 +53,12 @@ builder.Services.AddScoped<IPlanningService, PlanningService>();
 builder.Services.AddScoped<IRapportService, RapportService>();
 builder.Services.AddScoped<IRegionService, RegionService>();
 builder.Services.AddScoped<IVisiteService, VisiteService>();
+builder.Services.AddCynapMessageBus(builder.Configuration, x =>
+{
+    x.AddConsumer<StockDistributedConsumer>();
+    x.AddConsumer<UserCreatedConsumer>(); 
+
+});
 
 var app = builder.Build();
 
