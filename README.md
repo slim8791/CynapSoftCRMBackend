@@ -137,9 +137,3 @@ dotnet ef database update --project CynapCRM.Services.AuthAPI
 
 ## License
 Add a LICENSE file to the repository and copy the license name here.
-
----
-
-If you'd like, I can:
-- Commit this README (I will) and add a docker-compose.yml and a .env.example with placeholders for the secrets (I can commit those too).
-- Or I can only commit the README and the .env.example. Reply with 'Commit README + docker-compose + .env.example' or 'Only commit README'.
