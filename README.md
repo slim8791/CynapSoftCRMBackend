@@ -1,98 +1,145 @@
 # CynapSoft CRM Backend
 
-This repository contains the backend and related tooling for CynapSoft CRM. It includes C# services (API and backend logic), TypeScript components, and frontend assets built with HTML/CSS/SCSS. Docker configuration is included to help run the system in containers.
+This repository contains the CynapSoft CRM backend: an API gateway and multiple microservice APIs (Auth, Product, Inventory, Order, Doc, Field). This README was updated with concrete commands, environment variables and a docker-compose example to run the gateway and core services locally.
 
-> NOTE: This README is a curated starter. Update paths, project names, and commands below to match this repository's structure.
+> NOTE: Confirm or update any credentials and ports before running — some sample values were taken from the repository's appsettings.json files for convenience, but secrets should be stored in a secure secrets store or .env files.
 
 ## Contents
 - Overview
-- Prerequisites
-- Local development
-- Docker
-- Testing
+- Quick start (local)
+- Docker (docker-compose)
+- Services and ports
+- Configuration (env vars & appsettings)
+- Running migrations
+- Troubleshooting
 - Contributing
 - License & contact
 
 ## Overview
-CynapSoft CRM Backend provides server-side APIs and services for managing customers, contacts, sales pipelines, and related CRM functionality. The codebase uses a mix of:
-- C# (.NET) for backend APIs and services
-- TypeScript for any JS/TS utilities or frontend/admin UI
-- HTML/CSS/SCSS for static frontend assets
-- Docker for containerized development and deployment
+CynapSoft CRM Backend is structured as a .NET 9 solution. An Ocelot API gateway (CynapCRM.Gateway) routes requests to multiple ASP.NET Core service projects. Each service has its own Dockerfile and appsettings.
 
-## Prerequisites
-Install the following on your machine:
-- .NET SDK (6.0+ or the version used by the repo)
-- Node.js & npm/yarn (for TypeScript/front-end steps)
-- Docker & Docker Compose (optional, for containers)
+## Quick start (local)
+Prerequisites:
+- .NET 9 SDK
+- Docker & Docker Compose (optional)
+- Git
 
-## Local development
-The exact project paths and names may differ. Replace <backend_project_path> and <frontend_path> with the real paths in this repo.
+1) Clone and restore
 
-1. Clone the repo
+```bash
+git clone https://github.com/slim8791/CynapSoftCRMBackend.git
+cd CynapSoftCRMBackend
+dotnet restore CynapCRM.sln
+```
 
-   git clone https://github.com/slim8791/CynapSoftCRMBackend.git
-   cd CynapSoftCRMBackend
+2) Build all projects
 
-2. Backend (C# / .NET)
+```bash
+dotnet build CynapCRM.sln -c Debug
+```
 
-   - Restore dependencies:
-     dotnet restore <backend_project_path>
+3) Run the Auth service and Gateway (example ports)
 
-   - Build:
-     dotnet build <backend_project_path> -c Debug
+Open two terminals.
 
-   - Run:
-     dotnet run --project <backend_project_path>
+Terminal A — Auth service:
+```bash
+dotnet run --project CynapCRM.Services.AuthAPI --urls "http://localhost:5001"
+```
+Terminal B — Gateway:
+```bash
+dotnet run --project CynapCRM.Gateway --urls "http://localhost:5000"
+```
 
-   If the project uses EF Core migrations for a database, apply them:
-     dotnet ef database update --project <backend_project_path>
+The gateway is configured with ocelot.json and will forward matching requests to the downstream hosts defined there. For local development you can override downstream hosts by editing CynapCRM.Gateway/ocelot.json to use localhost ports where you run services.
 
-3. Frontend / TypeScript
+## Docker & docker-compose
+Here's a minimal docker-compose you can add as `docker-compose.yml` at repo root to bring up the gateway + auth + product services for local testing. Adjust images and environment variables as needed.
 
-   If there are frontend or admin UI packages:
-   cd <frontend_path>
-   npm install
-   npm run dev
+```yaml
+version: '3.8'
+services:
+  gateway:
+    build:
+      context: ./CynapCRM.Gateway
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+    depends_on:
+      - auth
+      - product
+    volumes:
+      - ./CynapCRM.Gateway/ocelot.json:/app/ocelot.json
 
-4. Environment variables
+  auth:
+    build:
+      context: ./CynapCRM.Services.AuthAPI
+      dockerfile: Dockerfile
+    ports:
+      - "5001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${AUTH_DB_CONN}
+      - ApiSettings__JwtOptions__Secret=${JWT_SECRET}
 
-   Add or copy an environment file if present (e.g., .env.example → .env) and set values for database connection strings, API keys, etc.
+  product:
+    build:
+      context: ./CynapCRM.Services.ProductAPI
+      dockerfile: Dockerfile
+    ports:
+      - "5002:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${PRODUCT_DB_CONN}
+      - ApiSettings__Secret=${JWT_SECRET}
 
-## Docker
-If Docker Compose files are provided in the repository, you can run the app in containers:
+networks:
+  default:
+    external: false
+```
 
-1. Build and start services:
-   docker-compose up --build
+Start with:
+```bash
+# create a .env with AUTH_DB_CONN, PRODUCT_DB_CONN, JWT_SECRET
+docker-compose up --build
+```
 
-2. Run detached:
-   docker-compose up -d --build
+## Services and default ports (from repo)
+- Gateway: configured in ocelot.json, expected upstream (external) paths on the gateway (e.g., /auth/*, /products/*) and downstream hosts such as cynapharmauth.runasp.net (port 80). For local testing override these hosts to localhost:5001, localhost:5002, etc.
+- Auth service: sample run port 5001 (use `--urls`) — reads ConnectionStrings:DefaultConnection and ApiSettings:JwtOptions in `CynapCRM.Services.AuthAPI/appsettings.json`.
+- Product service: sample run port 5002 — reads its own `appsettings.json`.
 
-3. Stop and remove containers:
-   docker-compose down
+## Configuration — env vars to set
+From appsettings.json files, the services expect (examples):
+- ConnectionStrings__DefaultConnection — SQL Server connection string for each service
+- ApiSettings__JwtOptions__Secret (or ApiSettings__Secret) — JWT secret used by services and gateway
+- Email settings used by Auth service: EmailSettings__SmtpServer, EmailSettings__Port, EmailSettings__SenderEmail, EmailSettings__SenderPassword
 
-Customize the Dockerfiles or compose files if you need different services, ports, or volumes.
+Create a `.env` file at repo root with variables referenced by docker-compose. Never commit secrets to git.
 
-## Testing
-If tests exist, run them with the appropriate command for the language:
+## Running migrations
+Services call applyMigrations() at startup (see CynapCRM.Services.AuthAPI/Program.cs) which runs pending EF Core migrations if the database is reachable. To run manually:
 
-- .NET tests: dotnet test <test_project_path>
-- JavaScript/TypeScript tests: npm test (inside the frontend or package folder)
+```bash
+# from repo root
+dotnet tool install --global dotnet-ef
+# Update database for Auth project
+dotnet ef database update --project CynapCRM.Services.AuthAPI
+```
+
+## Troubleshooting
+- If migrations fail: check ConnectionStrings__DefaultConnection for correct server and credentials. The app catches exceptions and logs a message in Program.cs for migration errors.
+- If Ocelot routing fails: ensure ocelot.json DownstreamHostAndPorts point to reachable hosts/ports (for local: localhost and service ports).
 
 ## Contributing
-Contributions are welcome. Please:
-- Fork the repository
-- Create a feature branch
-- Open a pull request describing your changes
-
-Add or update documentation, tests, and any required migrations before requesting review.
+- Fork, branch, PR.
+- Add tests, update docs and update `NAVIGATE.md` / `MASTER_SUMMARY.md` when changing high-level flow.
 
 ## License
-Add a LICENSE file to the repository and include the license name here.
+Add a LICENSE file to the repository and copy the license name here.
 
-## Need help?
+---
+
 If you'd like, I can:
-- Tailor this README with concrete project paths and commands by scanning the repository and inserting the exact backend and frontend project names
-- Add examples for common tasks (run migrations, seed database, run Postman collection)
-
-If you want me to commit further edits I can scan the repo now and update the README with precise commands. Reply with "Yes—scan and update" to let me proceed.
+- Commit this README (I will) and add a docker-compose.yml and a .env.example with placeholders for the secrets (I can commit those too).
+- Or I can only commit the README and the .env.example. Reply with 'Commit README + docker-compose + .env.example' or 'Only commit README'.
