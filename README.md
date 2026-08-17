@@ -1,63 +1,107 @@
-# CynapSoft CRM Backend
+# CynaPharm — Pharmaceutical CRM (Web & Mobile)
 
-This repository contains the CynapSoft CRM backend: an API gateway and multiple microservice APIs (Auth, Product, Inventory, Order, Doc, Field). This README was updated with concrete commands, environment variables and a docker-compose example to run the gateway and core services locally.
+A CRM platform for the pharmaceutical industry, built as a .NET 9 microservices solution with an Angular back-office and a .NET MAUI field application. It covers medical visits, orders, sample inventory and commercial documents.
 
-> NOTE: Confirm or update any credentials and ports before running — some sample values were taken from the repository's appsettings.json files for convenience, but secrets should be stored in a secure secrets store or .env files.
+**Stack** — ASP.NET Core 9 · Entity Framework Core · SQL Server · Ocelot API Gateway · RabbitMQ · Docker · Angular · .NET MAUI (MVVM) · SQLite · JWT / ASP.NET Core Identity
 
-## Contents
-- Overview
-- Quick start (local)
-- Docker (docker-compose)
-- Services and ports
-- Configuration (env vars & appsettings)
-- Running migrations
-- Troubleshooting
-- Contributing
-- License & contact
+---
 
-## Overview
-CynapSoft CRM Backend is structured as a .NET 9 solution. An Ocelot API gateway (CynapCRM.Gateway) routes requests to multiple ASP.NET Core service projects. Each service has its own Dockerfile and appsettings.
+## Table of contents
+
+- [Architecture](#architecture)
+- [Repository layout](#repository-layout)
+- [Quick start (local)](#quick-start-local)
+- [Docker Compose](#docker-compose)
+- [Configuration](#configuration)
+- [Database migrations](#database-migrations)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
+---
+
+## Architecture
+
+Clients talk to a single Ocelot gateway, which routes each request to the service that owns the corresponding domain. Every service is an independent ASP.NET Core project with its own database and its own Dockerfile.
+
+```
+┌──────────────────┐     ┌────────────────────┐
+│  Angular         │     │  .NET MAUI         │
+│  back-office     │     │  field app         │
+└────────┬─────────┘     └─────────┬──────────┘
+         │                         │  (offline mode, SQLite sync)
+         └───────────┬─────────────┘
+                     ▼
+          ┌─────────────────────┐
+          │  Ocelot API Gateway │
+          └──────────┬──────────┘
+                     ▼
+   ┌──────┬─────────┬───────────┬───────┬──────┬───────┐
+   │ Auth │ Product │ Inventory │ Order │ Doc  │ Field │
+   └──────┴─────────┴───────────┴───────┴──────┴───────┘
+                     │
+                  SQL Server
+```
+
+| Service | Responsibility |
+|---|---|
+| `AuthAPI` | Authentication, users and roles (ASP.NET Core Identity, JWT) |
+| `ProductAPI` | Product catalogue |
+| `InventoryAPI` | Sample stock management |
+| `OrderAPI` | Orders |
+| `DocAPI` | Commercial documents |
+| `FieldAPI` | Medical visits and field activity |
+
+## Repository layout
+
+```
+CynapCRM.Gateway/               Ocelot API gateway
+CynapCRM.Services.AuthAPI/      Authentication service
+CynapCRM.Services.ProductAPI/   Product service
+CynapCRM.Services.InventoryAPI/ Inventory service
+CynapCRM.Services.OrderAPI/     Order service
+CynapCRM.Services.DocAPI/       Document service
+CynapCRM.Services.FieldAPI/     Field activity service
+Cynapharm/                      Angular back-office
+Cynapharm-Mobile/               .NET MAUI field application
+CynapCRM.sln                    Backend solution file
+```
 
 ## Quick start (local)
-Prerequisites:
-- .NET 9 SDK
-- Docker & Docker Compose (optional)
-- Git
 
-1) Clone and restore
+**Prerequisites** — .NET 9 SDK, SQL Server (or a SQL Server container), Node.js and the Angular CLI for the web client, Docker (optional).
 
 ```bash
 git clone https://github.com/slim8791/CynapSoftCRMBackend.git
 cd CynapSoftCRMBackend
 dotnet restore CynapCRM.sln
-```
-
-2) Build all projects
-
-```bash
 dotnet build CynapCRM.sln -c Debug
 ```
 
-3) Run the Auth service and Gateway (example ports)
+Run a service and the gateway in two terminals:
 
-Open two terminals.
-
-Terminal A — Auth service:
 ```bash
+# Terminal A — Auth service
 dotnet run --project CynapCRM.Services.AuthAPI --urls "http://localhost:5001"
-```
-Terminal B — Gateway:
-```bash
+
+# Terminal B — Gateway
 dotnet run --project CynapCRM.Gateway --urls "http://localhost:5000"
 ```
 
-The gateway is configured with ocelot.json and will forward matching requests to the downstream hosts defined there. For local development you can override downstream hosts by editing CynapCRM.Gateway/ocelot.json to use localhost ports where you run services.
+`CynapCRM.Gateway/ocelot.json` points to the hosted environment by default. For local development, change the `DownstreamHostAndPorts` entries to `localhost` and the ports you started the services on.
 
-## Docker & docker-compose
-Here's a minimal docker-compose you can add as `docker-compose.yml` at repo root to bring up the gateway + auth + product services for local testing. Adjust images and environment variables as needed.
+Angular back-office:
+
+```bash
+cd Cynapharm
+npm install
+ng serve
+```
+
+## Docker Compose
+
+Create a `docker-compose.yml` at the repository root:
 
 ```yaml
-version: '3.8'
 services:
   gateway:
     build:
@@ -92,48 +136,48 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=${PRODUCT_DB_CONN}
       - ApiSettings__Secret=${JWT_SECRET}
-
-networks:
-  default:
-    external: false
 ```
 
-Start with:
+Then:
+
 ```bash
-# create a .env with AUTH_DB_CONN, PRODUCT_DB_CONN, JWT_SECRET
-docker-compose up --build
+# create a .env file with AUTH_DB_CONN, PRODUCT_DB_CONN and JWT_SECRET
+docker compose up --build
 ```
 
-## Services and default ports (from repo)
-- Gateway: configured in ocelot.json, expected upstream (external) paths on the gateway (e.g., /auth/*, /products/*) and downstream hosts such as cynapharmauth.runasp.net (port 80). For local testing override these hosts to localhost:5001, localhost:5002, etc.
-- Auth service: sample run port 5001 (use `--urls`) — reads ConnectionStrings:DefaultConnection and ApiSettings:JwtOptions in `CynapCRM.Services.AuthAPI/appsettings.json`.
-- Product service: sample run port 5002 — reads its own `appsettings.json`.
+## Configuration
 
-## Configuration — env vars to set
-From appsettings.json files, the services expect (examples):
-- ConnectionStrings__DefaultConnection — SQL Server connection string for each service
-- ApiSettings__JwtOptions__Secret (or ApiSettings__Secret) — JWT secret used by services and gateway
-- Email settings used by Auth service: EmailSettings__SmtpServer, EmailSettings__Port, EmailSettings__SenderEmail, EmailSettings__SenderPassword
+Each service reads its own `appsettings.json`. Override these values with environment variables or a `.env` file — never commit real credentials.
 
-Create a `.env` file at repo root with variables referenced by docker-compose. Never commit secrets to git.
+| Variable | Used by | Purpose |
+|---|---|---|
+| `ConnectionStrings__DefaultConnection` | every service | SQL Server connection string |
+| `ApiSettings__JwtOptions__Secret` | Auth, Gateway | Signing key for JWT tokens |
+| `ApiSettings__Secret` | downstream services | Key used to validate incoming tokens |
+| `EmailSettings__SmtpServer` | Auth | SMTP host for transactional e-mails |
+| `EmailSettings__Port` | Auth | SMTP port |
+| `EmailSettings__SenderEmail` | Auth | Sender address |
+| `EmailSettings__SenderPassword` | Auth | SMTP password |
 
-## Running migrations
-Services call applyMigrations() at startup (see CynapCRM.Services.AuthAPI/Program.cs) which runs pending EF Core migrations if the database is reachable. To run manually:
+A `.env.example` file with empty placeholders is the right place to document these.
+
+## Database migrations
+
+Each service runs its pending EF Core migrations at startup (`applyMigrations()` in `Program.cs`) when the database is reachable. To run them manually:
 
 ```bash
-# from repo root
 dotnet tool install --global dotnet-ef
-# Update database for Auth project
 dotnet ef database update --project CynapCRM.Services.AuthAPI
 ```
 
 ## Troubleshooting
-- If migrations fail: check ConnectionStrings__DefaultConnection for correct server and credentials. The app catches exceptions and logs a message in Program.cs for migration errors.
-- If Ocelot routing fails: ensure ocelot.json DownstreamHostAndPorts point to reachable hosts/ports (for local: localhost and service ports).
 
-## Contributing
-- Fork, branch, PR.
-- Add tests, update docs and update `NAVIGATE.md` / `MASTER_SUMMARY.md` when changing high-level flow.
+**Migrations fail at startup** — check `ConnectionStrings__DefaultConnection`: wrong server name or credentials is the usual cause. The startup code catches the exception and logs it instead of crashing, so check the console output.
+
+**Gateway returns 404 or 502** — the `DownstreamHostAndPorts` entries in `ocelot.json` still point to an unreachable host. Set them to the local host and port of the running service.
+
+**401 on every downstream call** — the JWT secret configured in the Auth service and in the downstream service must be identical.
 
 ## License
-Add a LICENSE file to the repository and copy the license name here.
+
+Copyright © CynapSoft. All rights reserved.
